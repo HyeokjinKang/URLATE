@@ -1,0 +1,692 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css");
+@import url("https://fonts.googleapis.com/css?family=Heebo:400,500,600&display=swap");
+@import url("metropolis.css");
+
+body {
+  background: #eee url("/images/backgrounds/editor.png");
+  background-size: 130vw;
+  background-repeat: repeat;
+  width: 100vw;
+  height: 100vh;
+  cursor: url("/images/parts/cursor/blueCursor.cur"), default;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  font-family: "Pretendard Variable", "나눔바른고딕", arial;
+  letter-spacing: -0.5px;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+.pace {
+  -webkit-pointer-events: none;
+  pointer-events: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+.pace-inactive {
+  display: none;
+}
+
+.pace .pace-progress {
+  background: #1788de;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+  position: fixed;
+  z-index: 2000;
+  bottom: 0;
+  right: 100%;
+  width: 100%;
+  height: 1vh;
+}
+
+.pace .pace-activity {
+  display: block;
+  position: fixed;
+  z-index: 2000;
+  bottom: 2vh;
+  right: 15px;
+  width: 14px;
+  height: 14px;
+  border: solid 2px transparent;
+  border-top-color: #1788de;
+  border-left-color: #1788de;
+  border-radius: 10px;
+  -webkit-animation: pace-spinner 400ms linear infinite;
+  -moz-animation: pace-spinner 400ms linear infinite;
+  -ms-animation: pace-spinner 400ms linear infinite;
+  -o-animation: pace-spinner 400ms linear infinite;
+  animation: pace-spinner 400ms linear infinite;
+}
+
+@-webkit-keyframes pace-spinner {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-moz-keyframes pace-spinner {
+  0% {
+    -moz-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -moz-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-o-keyframes pace-spinner {
+  0% {
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-ms-keyframes pace-spinner {
+  0% {
+    -ms-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes pace-spinner {
+  0% {
+    transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+#navbar {
+  font-size: 2.3vh;
+  color: #555;
+  display: flex;
+  width: 100vw;
+  height: 8vh;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  filter: drop-shadow(0 0px 5px rgba(65, 65, 65, 0.1));
+}
+
+.navbarElements {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+#topLeftBar {
+  font-weight: 600;
+  padding-left: 2vw;
+  text-align: left;
+  justify-content: flex-start;
+  width: 30%;
+}
+
+.metropolis {
+  font-family: "Metropolis", "Pretendard Variable", "나눔바른고딕", arial;
+}
+
+#topCenterBar {
+  font-weight: 400;
+  text-align: center;
+  justify-content: center;
+  width: 40%;
+}
+
+#topRightBar {
+  padding-right: 2vw;
+  text-align: right;
+  justify-content: flex-end;
+  width: 30%;
+}
+
+.backText {
+  font-size: 1.8vh;
+}
+
+.icon {
+  filter: invert(35%) sepia(0%) saturate(0%) hue-rotate(64deg) brightness(92%) contrast(96%);
+  width: 1vw;
+}
+
+.menuIcon {
+  filter: invert(70%) sepia(53%) saturate(0%) hue-rotate(222deg) brightness(100%) contrast(95%);
+  width: 1.3vw;
+  margin-top: 3vh;
+}
+
+.biggerIcon {
+  width: 1.5vw;
+}
+
+.menuSelected {
+  filter: invert(25%) sepia(0%) saturate(0%) hue-rotate(64deg) brightness(92%) contrast(96%);
+}
+
+.backIcon {
+  margin-bottom: -0.1vh;
+  padding-right: 5px;
+  height: 1.5vh;
+}
+
+#horizontalLine {
+  filter: invert(83%) sepia(53%) saturate(0%) hue-rotate(222deg) brightness(100%) contrast(95%);
+  width: 2vw;
+  height: 2px;
+  background-color: #000;
+}
+
+#workingSpaceContainer {
+  display: flex;
+  width: 100vw;
+  height: 65vh;
+}
+
+#menuContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fff;
+  filter: drop-shadow(0 0 5px rgba(65, 65, 65, 0.1));
+  width: 5vw;
+  height: calc(100% - 3vh);
+  overflow-y: auto;
+  padding-bottom: 3vh;
+}
+
+#workingContainer {
+  text-align: left;
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+#componentView {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.bold {
+  font-weight: 700;
+}
+
+.clickable {
+  cursor: url("/images/parts/cursor/blueSelect.cur"), pointer;
+}
+
+#canvasContainer {
+  position: initial;
+  z-index: -1;
+  background-color: #fff;
+  width: 60vw;
+  height: 100%;
+}
+
+#canvasBackground {
+  position: fixed;
+  z-index: -1;
+  width: 60%;
+  height: 65%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+#componentCanvas {
+  width: 100%;
+  height: 100%;
+}
+
+#timelineContainer {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  z-index: 2;
+  /*overflow-y: scroll;
+  overflow-x: scroll;*/
+  background-color: #fff;
+  width: 100vw;
+  height: 27vh;
+  scrollbar-width: 1vh;
+  filter: drop-shadow(0 0px 5px rgba(65, 65, 65, 0.1));
+}
+
+::-webkit-scrollbar {
+  width: 0.5vh;
+  height: 0.5vh;
+}
+
+::-webkit-scrollbar-track {
+  background: #eee;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #999;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+#settingsContainer {
+  display: none;
+  color: #555;
+  flex-direction: column;
+  align-items: center;
+  position: static;
+  z-index: 5;
+  width: 25vw;
+  height: 100vh;
+  background-color: #fff;
+  filter: drop-shadow(0 0px 5px rgba(65, 65, 65, 0.1));
+}
+
+#timelineInner {
+  pointer-events: none;
+  height: 100%;
+}
+
+#timelineCanvas {
+  z-index: 5;
+  pointer-events: none;
+  position: fixed;
+  width: 100vw;
+  height: 26vh;
+  left: 0;
+  bottom: 1vh;
+}
+
+#settingsName {
+  padding-top: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80%;
+  height: 8%;
+  border-bottom: 1px solid #dedede;
+}
+
+#dot {
+  margin-bottom: 6px;
+  font-size: 5em;
+  color: #9d4ec2;
+}
+
+#settingsNameSpace {
+  font-weight: 500;
+  font-size: 2.3vh;
+  margin-right: 1em;
+}
+
+#settingsProperties {
+  color: #777;
+  text-align: left;
+  width: 80%;
+  height: 80%;
+}
+
+.settingsPropertiesContainer {
+  width: 70%;
+}
+
+#settingsTracksContainer {
+  width: 80%;
+}
+
+.settingsSemiTitle {
+  margin-top: 3vh;
+  margin-bottom: 0vh;
+  font-weight: 600;
+  letter-spacing: 1px;
+  font-size: 1.8vh;
+}
+
+.settingsPropertiesTitle {
+  letter-spacing: 0px;
+  margin-left: 1.5vw;
+  font-size: 1.5vh;
+}
+
+.settingsPropertiesTextbox {
+  text-align: center;
+  margin-left: 0.5vw;
+  width: 50%;
+  height: 2vh;
+  border-radius: 2px;
+  border: 1px solid #bbb;
+  color: #999;
+  font-weight: 500;
+  font-size: 1.5vh;
+}
+
+.settingsPropertiesIndividual {
+  margin-top: 1vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settingsButtons {
+  width: 25%;
+  margin: 0.1vw;
+  border: solid 1px #aaa;
+  background-color: #fff;
+  color: #555;
+  border-radius: 3px;
+  height: 2.5vh;
+}
+
+#elementsSettings {
+  display: none;
+}
+
+#editorMainContainer {
+  display: none;
+}
+
+#initialScreenContainer {
+  width: 100vw;
+  height: 100vh;
+  /*display: none;*/
+}
+
+#initialButtonsContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+}
+
+.initialButtons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  font-size: 3vh;
+  font-weight: 500;
+  width: 10vw;
+  height: 10vw;
+  margin: 2vw;
+  background-color: white;
+  border: 1px solid #bbb;
+}
+
+.initialIcon {
+  width: 4vw;
+  margin-bottom: 2vh;
+}
+
+#songSelectionContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+#songSelection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background-color: white;
+  border: 1px solid #bbb;
+  width: 25vw;
+  height: 30vh;
+}
+
+#songSelectBox {
+  text-align: center;
+  width: 20vw;
+  height: 5vh;
+  margin: 2vh;
+  background-color: #fff;
+  border: 1px solid #dedede;
+  filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.1));
+}
+
+.initlalButtons {
+  width: 5vw;
+  height: 3vh;
+  border: 1px solid #bbb;
+  margin-top: 2vh;
+  background-color: white;
+}
+
+#gotoGame {
+  position: fixed;
+  left: 3vw;
+  top: 4.5vh;
+}
+
+.controllers {
+  position: fixed;
+  display: flex;
+  z-index: 5;
+}
+
+#timelineZoomController {
+  align-content: flex-end;
+  bottom: 4vh;
+  right: 1.5vw;
+}
+
+#timelinePlayController {
+  align-items: center;
+  bottom: 23.5vh;
+  left: 1vw;
+  filter: invert(30%) sepia(0%) saturate(572%) hue-rotate(158deg) brightness(102%) contrast(86%);
+}
+
+#timelineSplitController {
+  align-items: center;
+  bottom: 4vh;
+  left: 11vw;
+}
+
+.timeline-icon {
+  height: 2vh;
+}
+
+.timeline-play {
+  content: url("https://img.icons8.com/ios-glyphs/24/000000/play.png");
+}
+
+.timeline-pause {
+  content: url("https://img.icons8.com/ios-glyphs/24/000000/pause.png");
+}
+
+#percentage {
+  font-size: 1.7vh;
+}
+
+#split {
+  font-size: 1.7vh;
+}
+
+#controlBtn {
+  height: 1.6vh;
+}
+
+#helpContainer {
+  z-index: 100;
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+#helpBox {
+  width: 80vw;
+  height: 80vh;
+  border-radius: 10px;
+  background-color: #fdfdfd;
+  filter: drop-shadow(0 0 7px #00000010);
+}
+
+#helpTitleContainer {
+  margin-top: 3vh;
+  width: 100%;
+  height: auto;
+  text-align: center;
+}
+
+#helpTitle {
+  font-weight: 600;
+  font-size: 4vh;
+  color: #555;
+}
+
+.helpBoxSpliter {
+  display: flex;
+  flex-direction: column;
+  align-content: space-around;
+  justify-content: space-around;
+  margin-top: 3vh;
+  width: 50%;
+  float: left;
+  height: 80%;
+}
+
+.helpKeyContainer {
+  display: flex;
+  width: 100%;
+  height: 6vh;
+  font-size: 3vh;
+  color: #444;
+}
+
+.helpKey {
+  width: 50%;
+  font-weight: 600;
+}
+
+.helpDescription {
+  width: 50%;
+  font-weight: 400;
+}
+
+.settingsSelectBox {
+  width: 53%;
+  height: 2.6vh;
+  border-radius: 2px;
+  border: 1px solid #bbb;
+  color: #999;
+  background-color: #fff;
+  font-weight: 500;
+  font-size: 1.5vh;
+}
+
+kbd {
+  font-family: "Metropolis", "Pretendard Variable", "나눔바른고딕", arial;
+  font-style: italic;
+  border: 2px solid #555;
+  padding: 4px 14px 4px 8px;
+  border-radius: 5px;
+}
+
+.noItalic {
+  font-style: normal;
+  padding: 4px 8px 4px 8px;
+}
+
+.helpMotion {
+  font-style: italic;
+}
+
+.overlay {
+  transition-duration: 0.5s;
+  transform: translateY(10vh);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 8vh;
+  background-color: white;
+  box-shadow: 0 0 20px rgba(50, 50, 50, 0.3);
+}
+
+.overlayOpen {
+  transform: translateY(0vh);
+}
+
+.optionSlider {
+  margin-right: 0.5vw;
+  -webkit-appearance: none;
+  width: 10vw;
+  height: 3px;
+  background: #616161;
+  outline: none;
+}
+
+.optionSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 1000px;
+  background: #363636;
+  cursor: pointer;
+}
+
+.optionSlider::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 1000px;
+  background: #363636;
+  cursor: pointer;
+}
+
+.optionSemiTitle {
+  font-weight: 600;
+  color: #404040;
+  font-size: 2.5vh;
+  margin-right: 1vw;
+}
+
+.optionValue {
+  font-family: "Metropolis", "Pretendard Variable", "나눔바른고딕", arial;
+  font-weight: 400;
+  color: #404040;
+  font-size: 2vh;
+}
+
+.hideBGA {
+  display: none;
+}

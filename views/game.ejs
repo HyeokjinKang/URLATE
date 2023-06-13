@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="<%= __('lang') %>">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-177236027-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "UA-177236027-1");
+    </script>
+    <meta charset="UTF-8" />
+    <title>URLATE Client</title>
+    <link rel="stylesheet" href="/css/game.css" />
+    <link rel="shortcut icon" href="/images/favicon.ico" />
+    <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
+    <script>
+      let intro1load = 0;
+
+      const intro1loaded = () => {
+        if (intro1load == 1) {
+          document.getElementById("pressAnywhere").textContent = pressAnywhere;
+          document.getElementById("warningContainer").onclick = warningSkip;
+        }
+        intro1load++;
+      };
+    </script>
+  </head>
+  <body oncontextmenu="return false">
+    <div id="footer">
+      <div id="footerLeft">
+        <img src="/images/parts/icons/return.png" class="icon" />
+        <span class="medium">&nbsp;&nbsp;Enter or Click to <strong>Select</strong></span>
+      </div>
+      <div id="footerCenter">
+        <strong id="songName"><img src="/images/parts/icons/note.png" id="noteIcon" /><span id="songNameText">&nbsp;URLATE Theme</span></strong>
+        <span id="urlateText"><strong>URLATE</strong> Pure</span>
+      </div>
+      <div id="footerRight">
+        <span
+          ><span class="medium"
+            ><%= __('more_info_1') %><a href="https://rhyga.me/info" target="_blank" rel="noopener noreferrer" class="link"><%= __('more_info_here') %></a><%= __('more_info_2') %></span
+          ><br />&copy; 2021 <strong>URLATE</strong>, All contents cannot be copied without permission.</span
+        >
+      </div>
+    </div>
+    <div id="warningContainer" class="introContainer">
+      <span id="warningTitle"><%= __('warning') %></span>
+      <div id="warningInner">
+        <span><%= __('warning1') %><br /><%= __('warning2') %><br /><%= __('warning3') %><br /><br /><%= __('warning4') %><br /><%= __('warning5') %><br /><br /><%= __('warning6') %></span>
+      </div>
+      <span id="pressAnywhere"><%= __('loading') %></span>
+    </div>
+    <div id="intro1container" class="introContainer" onclick="intro1skip()">
+      <video id="intro1video" onloadeddata="intro1loaded()">
+        <source type="video/webm" src="<%= cdn %>/videos/croissant.webm" />
+        <source type="video/mp4" src="<%= cdn %>/videos/croissant.mp4" />
+      </video>
+    </div>
+    <div id="intro2container" class="introContainer" onclick="intro2skip()">
+      <div id="intro2"></div>
+    </div>
+    <div id="loadingContainer">
+      <a id="copyrightLogo" href="https://kdce.or.kr/user/ctf/clmsCtfTransList.do?websiteName=rhyga.me" onclick="window.open(this.href,'저작권 정보','width=800, height=800'); return false;"
+        ><img src="/images/logos/02.gif" id="copyrightLogoImg"
+      /></a>
+      <img src="/images/logos/URLATE.png" id="logo" />
+    </div>
+    <div id="header">
+      <div id="headerLeft">
+        <strong id="name" class="metropolis">USERNAME</strong>
+      </div>
+      <div id="headerRight">
+        <img src="https://img.icons8.com/windows/64/000000/info.png" class="icon clickable" onclick="infoScreen()" />
+        <div id="line"></div>
+        <img src="https://img.icons8.com/windows/64/000000/settings.png" class="icon clickable" onclick="optionScreen()" />
+      </div>
+    </div>
+    <div id="tutorialInformation" class="containers metropolis">
+      <div id="tutorialInfoTop" class="tutorialInner">
+        <h1 class="containersTitle"><span class="light">Welcome to</span> URLATE!</h1>
+        <span id="tutorialText"><%= __('tutorial_information_1') %><br /><%= __('tutorial_information_2') %></span>
+      </div>
+      <div id="tutorialInfoMid" class="tutorialInner">
+        <img src="/images/parts/elements/elements.png" alt="O O O" />
+      </div>
+      <div id="tutorialInfoBottom" class="tutorialInner">
+        <button class="storeButton metropolis" onclick="location.href = '<%= url %>/tutorial'"><%= __('all_good') %></button>
+        <span id="tutorialSkip" onclick="tutorialSkip()"><%= __('skip_tutorial') %></span>
+      </div>
+    </div>
+    <div id="menuContainer">
+      <div id="menuMain" class="menuSelector clickable" onclick="menuSelected(0)">
+        <div class="fadeIconContainer">
+          <img src="/images/parts/graphicIcons/play.png" class="mainIcon" />
+          <img src="/images/parts/graphicIcons/play_selected.png" class="fadeIcon" />
+        </div>
+        <span class="menuTitle"><%= __('play_title') %></span>
+        <span class="light menuSubtitle"><%= __('play_subtitle') %></span>
+      </div>
+      <div id="menuEditor" class="menuSelector clickable" onclick="menuSelected(1)">
+        <div class="fadeIconContainer">
+          <img src="/images/parts/graphicIcons/editor.png" class="mainIcon" />
+          <img src="/images/parts/graphicIcons/editor_selected.png" class="fadeIcon" />
+        </div>
+        <span class="menuTitle"><%= __('editor_title') %></span>
+        <span class="light menuSubtitle"><%= __('editor_subtitle') %></span>
+      </div>
+      <div id="menuStore" class="menuSelector clickable" onclick="menuSelected(3)">
+        <div class="fadeIconContainer">
+          <img src="/images/parts/graphicIcons/store.png" class="mainIcon" />
+          <img src="/images/parts/graphicIcons/store_selected.png" class="fadeIcon" />
+        </div>
+        <span class="menuTitle"><%= __('store_title') %></span>
+        <span class="light menuSubtitle"><%= __('store_subtitle') %></span>
+      </div>
+      <div id="menuAdvanced" class="menuSelector clickable" onclick="menuSelected(2)">
+        <div class="fadeIconContainer">
+          <img src="/images/parts/graphicIcons/advanced.png" class="mainIcon" />
+          <img src="/images/parts/graphicIcons/advanced_selected.png" class="fadeIcon" />
+        </div>
+        <span class="menuTitle"><%= __('advanced_title') %></span>
+        <span class="light menuSubtitle"><%= __('advanced_subtitle') %></span>
+      </div>
+    </div>
+    <div id="selectContainer" class="containers metropolis">
+      <div id="visualizer"><canvas id="renderer"></canvas></div>
+      <div id="selectBackground"></div>
+      <img src="https://img.icons8.com/windows/32/FFFFFF/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+      <div id="selectContainerTopLeft">
+        <img src="/images/parts/elements/TRACKS.png" id="tracks" />
+        <div id="tracksLine"></div>
+        <span class="tracksSelection selected" onclick="tracksToggle()"> <strong>Official</strong> Pattern <span class="bottomArrow">▼</span> </span>
+        <span class="tracksSelection" onclick="tracksToggle()"> <strong>Community</strong> Pattern <span class="bottomArrow">▼</span> </span>
+      </div>
+      <div id="selectContainerLeft">
+        <div id="selectContainerTitle">
+          <div id="selectContainerTitleLeft">
+            <span id="selectTitle"></span>
+            <span id="selectArtist"></span>
+          </div>
+          <div id="selectContainerTitleRight">
+            <span id="selectScore">SCORE</span>
+            <span id="selectScoreValue"></span>
+          </div>
+        </div>
+        <div id="selectContainerAlbum">
+          <div id="selectContainerAlbumLeft">
+            <div id="selectAlbumContainer">
+              <img id="selectAlbum" />
+              <div id="starContainer">
+                <span id="selectStars">★★★★★☆☆☆☆☆</span>
+              </div>
+            </div>
+          </div>
+          <div id="selectContainerAlbumRight">
+            <span id="trackStats">TRACK STATISTICS</span>
+            <div class="trackStatContainer">
+              <span><%= __('bullet_density') %></span>
+              <span id="bulletDensity">0</span>
+            </div>
+            <div class="trackStatLineContainer"><div class="trackStatLine" id="bulletDensityValue"></div></div>
+            <div class="trackStatContainer">
+              <span><%= __('note_density') %></span>
+              <span id="noteDensity">0</span>
+            </div>
+            <div class="trackStatLineContainer"><div class="trackStatLine" id="noteDensityValue"></div></div>
+            <div class="trackStatContainer">
+              <span>BPM</span>
+              <span id="bpmText">0</span>
+            </div>
+            <div class="trackStatLineContainer"><div class="trackStatLine" id="bpmValue"></div></div>
+            <div class="trackStatContainer">
+              <span><%= __('speed') %></span>
+              <span id="speed">0</span>
+            </div>
+            <div class="trackStatLineContainer"><div class="trackStatLine" id="speedValue"></div></div>
+            <div id="modsTitleContainer">
+              <div class="modsTitleLine"></div>
+              <div id="modsTitle">MODS</div>
+              <div class="modsTitleLine"></div>
+            </div>
+            <div class="trackStatContainer">
+              <span class="trackModsTitle"><%= __('playback_rate') %></span>
+              <input type="number" id="trackModsRate" class="trackModsValue metropolis" value="1.0" onchange="rateChanged(this)" />
+            </div>
+            <div class="trackStatContainer">
+              <span class="trackModsTitle"><%= __('disable_text') %></span>
+              <div class="trackModsValue" id="trackModsText" onclick="textDisabled()">No</div>
+            </div>
+          </div>
+        </div>
+        <div id="selectContainerInfo">
+          <div class="selectInfo">
+            <div class="selectInfoTitleContainer">
+              <span class="selectInfoTitle">DIFFICULTY</span>
+              <span class="key">TAB</span>
+            </div>
+            <div class="selectInfoContentsContainer">
+              <div class="difficulty difficultySelected" onclick="difficultySelected(0)"><span class="difficultyNumber">1</span><span class="difficultyText">EZ</span></div>
+              <div class="difficulty" onclick="difficultySelected(1)"><span class="difficultyNumber">3</span><span class="difficultyText">MID</span></div>
+              <div class="difficulty right" onclick="difficultySelected(2)"><span class="difficultyNumber">5</span><span class="difficultyText">HARD</span></div>
+            </div>
+          </div>
+          <div class="selectInfo clickable" onclick="rankToggle()">
+            <div class="selectInfoTitleContainer">
+              <span class="selectInfoTitle">RANK</span>
+              <span class="key">F2</span>
+            </div>
+            <div class="selectInfoContentsContainer">
+              <span id="selectRank">-</span>
+            </div>
+          </div>
+          <div class="selectInfo clickable" onclick="medalDescription()">
+            <div class="selectInfoTitleContainer">
+              <span class="selectInfoTitle">MEDAL</span>
+              <span class="key">?</span>
+            </div>
+            <div class="selectInfoContentsContainer">
+              <img src="/images/parts/icons/GOLD_MEDAL.png" class="medals" id="goldMedal" />
+              <img src="/images/parts/icons/SILVER_MEDAL.png" class="medals" id="silverMedal" />
+              <img src="/images/parts/icons/CHECK_MEDAL.png" class="medals" id="checkMedal" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="selectContainerRight">
+        <div id="selectContainerRightTitles">
+          <span class="sortText selected" onclick="sortSelected(0)"><%= __('sort_as_name') %></span>
+          <span class="sortText" onclick="sortSelected(1)"><%= __('sort_as_producer') %></span>
+          <span class="sortText" onclick="sortSelected(2)"><%= __('sort_as_difficulty') %></span>
+          <span class="sortText" id="sortTextRight" onclick="sortSelected(3)"><%= __('sort_as_bpm') %></span>
+          <div id="trackListLine"></div>
+          <span id="trackList">TRACK <strong>LIST</strong></span>
+        </div>
+        <div id="selectSongContainer"></div>
+      </div>
+      <div id="selectRankContainer">
+        <div id="selectRankInnerContainer">
+          <div id="selectRankTitleContainer">
+            <div id="selectRankTitleLeftContainer">
+              <span id="selectRankTitle"><strong>R</strong>ANKING</span>
+            </div>
+            <div id="selectRankTitleRightContainer">
+              <img src="https://img.icons8.com/windows/32/FFFFFF/macos-close.png" class="icon clickable rankCloseBtn" onclick="displayClose()" />
+            </div>
+          </div>
+          <div class="selectRank">
+            <div class="selectRankNumber rankGuide">#</div>
+            <div class="selectRankName rankGuide">NAME</div>
+            <div class="selectRankScore rankGuide">SCORE</div>
+          </div>
+          <div id="selectRankScoreContainer"></div>
+        </div>
+      </div>
+      <div id="CPLContainer">
+        <div id="CPLInnerContainer">
+          <div id="CPLTopContainer">
+            <div id="CPLTopLeftContainer">
+              <div id="CPLAlbumContainer">
+                <img id="CPLAlbum" />
+              </div>
+              <div id="CPLTopLeftVerticalContainer">
+                <span id="CPLTitle">Community Pattern Library</span>
+                <span id="CPLTrack">Track Name</span>
+              </div>
+            </div>
+            <div id="CPLTopRightContainer">
+              <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable rankCloseBtn" onclick="displayClose()" />
+            </div>
+          </div>
+          <div id="CPLListIndex">
+            <div class="CPLListLeft">이름 - 제작자</div>
+            <div class="CPLListRight">
+              <div class="CPLListRightDifficulty">측정된 난이도</div>
+              <div class="CPLListRightDifficulty">커뮤니티 난이도</div>
+              <div class="CPLListRightStar noMargin">평가</div>
+            </div>
+          </div>
+          <div id="CPLListContainer"></div>
+        </div>
+      </div>
+    </div>
+    <div id="advancedContainer" class="containers">
+      <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+      <span class="storeFooterLeft metropolis">
+        통신판매업신고번호: 2021-제주조천-0014<br />
+        사업장주소: 제주특별자치도 제주시 조천읍 신촌8길1 편안채1층 102호<br />
+        팀 크루아상│사업자등록번호: 310-10-22439 <a href="http://www.ftc.go.kr/bizCommPop.do?wrkr_no=3101022439" target="_blank" class="link">사업자등록번호 조회</a><br />
+        E-mail: coupy@croissant.tech│대표: 강혁진│전화번호: 070-4505-6424│FAX: 070-7966-3277
+      </span>
+      <h1 id="advancedTitle"><strong>URLATE</strong> ADVANCED</h1>
+      <p class="advancedDescription"><%= __('advanced_description_1') %><br /><strong><%= __('advanced_description_2') %></strong></p>
+      <p class="advancedSubtitle"><%= __('advanced_subtitle_1') %></p>
+      <p class="advancedDescription"><%= __('advanced_description_4') %><br /><%= __('advanced_description_5') %><br /><%= __('advanced_description_6') %></p>
+      <p class="advancedSubtitle"><span id="subtitleHighlight"><%= __('advanced_subtitle_2') %></span></p>
+      <p class="advancedDescription"><%= __('advanced_description_7') %></p>
+      <div id="advancedIconsContainer">
+        <div id="advancedIconsInnerContainer">
+          <div class="advancedIconWithDescription">
+            <img class="advancedIcon" src="/images/parts/graphicIcons/advanced_icon_1.png" />
+            <span class="advancedIconDescription"><%= __('advanced_wicon_description_1') %><br /><%= __('advanced_wicon_description_2') %></span>
+          </div>
+          <div class="advancedIconWithDescription">
+            <img class="advancedIcon" src="/images/parts/graphicIcons/advanced_icon_2.png" />
+            <span class="advancedIconDescription"><%= __('advanced_wicon_description_3') %><br /><%= __('advanced_wicon_description_4') %></span>
+          </div>
+          <div class="advancedIconWithDescription">
+            <img class="advancedIcon" src="/images/parts/graphicIcons/advanced_icon_3.png" />
+            <span class="advancedIconDescription"
+              ><%= __('advanced_wicon_description_5') %><br /><%= __('advanced_wicon_description_6') %><br /><span class="additionalDescription"
+                ><%= __('advanced_additional_description_1') %></span
+              ></span
+            >
+          </div>
+          <div class="advancedIconWithDescription">
+            <img class="advancedIcon" src="/images/parts/graphicIcons/advanced_icon_4.png" />
+            <span class="advancedIconDescription"><%= __('advanced_wicon_description_7') %><br /><%= __('advanced_wicon_description_8') %></span>
+          </div>
+          <!-- <div class="advancedIconWithDescription">
+                    <img class="advancedIcon" src="/images/parts/graphicIcons/advanced_icon_5.png">
+                    <span class="advancedIconDescription"><%= __('advanced_wicon_description_9') %><br><%= __('advanced_wicon_description_10') %></span>
+                </div> -->
+          <div class="advancedIconWithDescription">
+            <img class="advancedIcon" src="/images/parts/graphicIcons/advanced_icon_6.png" />
+            <span class="advancedIconDescription"><%= __('advanced_wicon_description_11') %><br /><%= __('advanced_wicon_description_12') %><br /><%= __('advanced_wicon_description_13') %></span>
+          </div>
+          <div class="advancedIconWithDescription">
+            <img class="advancedIcon" src="/images/parts/graphicIcons/advanced_icon_7.png" />
+            <span class="advancedIconDescription"><%= __('advanced_wicon_description_14') %><br /><%= __('advanced_wicon_description_15') %></span>
+          </div>
+        </div>
+      </div>
+      <p class="advancedSubtitle"><%= __('advanced_subtitle_3') %></p>
+      <p class="advancedDescription">
+        <%= __('advanced_description_8') %><br /><%= __('advanced_description_9') %>4,900₩<%= __('advanced_description_10') %><br /><strong><%= __('advanced_description_11') %></strong>
+      </p>
+      <br />
+      <input type="button" id="registerBtn" class="clickable metropolis" value="<%= __('register') %>" onclick="getAdvanced()" />
+    </div>
+    <div id="infoContainer" class="containers metropolis">
+      <div id="infoProfileContainer" class="containers">
+        <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+        <div id="infoProfileLeft">
+          <img src="" id="infoProfileImg" />
+        </div>
+        <div id="infoProfileRight">
+          <div id="infoProfileTop">
+            <span id="infoProfileName"></span>
+            <br />
+            <span id="infoProfilePosition"></span>
+          </div>
+          <div id="infoProfileBottom"></div>
+        </div>
+      </div>
+      <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+      <img src="/images/logos/URLATE_NO_CIRCLE.png" id="infoLogo" />
+      <br />
+      <span id="license">
+        <span id="licenseMain">URLATE is under the MIT license.</span>
+        <br /><br />
+        Copyright notices for resources included in the game are located at <a href="https://rhyga.me/info" target="_blank" class="link">rhyga.me/info</a>.
+        <br />
+        Excluding some music and images, URLATE resources are copyrighted by Team Croissant.
+      </span>
+      <div id="infoLineContainer"><div id="infoLine"></div></div>
+      <span id="infoTitle">TEAM CROISSANT</span>
+      <br />
+      <span id="infoSubtitle">(Click to show details)</span>
+      <br />
+      <div class="profileContainer">
+        <div class="profile" id="profileCoupy">
+          <div class="profileHover" onclick="showProfile('coupy')">Coupy</div>
+        </div>
+        <div class="profile" id="profileAlta">
+          <div class="profileHover" onclick="showProfile('altadex')">AltaDex</div>
+        </div>
+        <div class="profile" id="profileShd">
+          <div class="profileHover" onclick="showProfile('sancheon')">Sihyeon</div>
+        </div>
+        <div class="profile" id="profileGreenstar">
+          <div class="profileHover" onclick="showProfile('greenstar')">Greenstar</div>
+        </div>
+        <div class="profile" id="profileJoon">
+          <div class="profileHover" onclick="showProfile('joon')">Joon</div>
+        </div>
+      </div>
+      <div class="profileContainer">
+        <div class="profile" id="profileRanol">
+          <div class="profileHover" onclick="showProfile('ranolp')">RanolP</div>
+        </div>
+        <div class="profile" id="profileKiwi">
+          <div class="profileHover" onclick="showProfile('kiwiyou')">kiwiyou</div>
+        </div>
+        <div class="profile" id="profilePine">
+          <div class="profileHover" onclick="showProfile('pine')">Pine</div>
+        </div>
+        <div class="profile" id="profileSkylight">
+          <div class="profileHover" onclick="showProfile('skylightqp')">SkylightQP</div>
+        </div>
+        <div class="profile" id="profileDanu">
+          <div class="profileHover" onclick="showProfile('danuel')">Danuel</div>
+        </div>
+      </div>
+      <div class="profileContainer">
+        <div class="profile" id="profileBasix">
+          <div class="profileHover" onclick="showProfile('basix')">Basix</div>
+        </div>
+      </div>
+      <span id="infoTitle">THANKS TO</span>
+      <br />
+      <span id="infoSubtitle">(Click to show details)</span>
+      <br />
+      <div class="profileContainer">
+        <div class="profile" id="profileHanu">
+          <div class="profileHover" onclick="showProfile('hanukoon')">Hanukoon</div>
+        </div>
+        <div class="profile" id="profileGeoplex">
+          <div class="profileHover" onclick="showProfile('geoplex')">Geoplex</div>
+        </div>
+        <div class="profile" id="profileViktor">
+          <div class="profileHover" onclick="showProfile('viktor')">Viktor Kadic</div>
+        </div>
+        <div class="profile" id="profileSaw">
+          <div class="profileHover" onclick="showProfile('saw')">Saw</div>
+        </div>
+        <div class="profile" id="profileYou">..and You</div>
+      </div>
+      <div id="infoLineContainer"><div id="infoLine"></div></div>
+      <span id="infoTitle">TUMBLBUG SUPPORTERS</span>
+      <br />
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug1">
+          <span class="profileText">NeuroWhAI</span>
+        </div>
+        <div class="profile tumblbug1">
+          <span class="profileText">Kroisse</span>
+        </div>
+        <div class="profile tumblbug1">
+          <span class="profileText">피달이</span>
+        </div>
+        <div class="profile tumblbug1">
+          <span class="profileText">ept_goop</span>
+        </div>
+        <div class="profile tumblbug1">
+          <span class="profileText">Taekhan</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug1">
+          <span class="profileText">강은홍</span>
+        </div>
+        <div class="profile tumblbug1">
+          <span class="profileText">AncientTroll</span>
+        </div>
+        <div class="profile tumblbug1">
+          <span class="profileText">민유</span>
+        </div>
+        <div class="profile tumblbug1">
+          <span class="profileText">설류희</span>
+        </div>
+        <div class="profile tumblbug2">
+          <span class="profileText">Lcmykr</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug3">
+          <span class="profileText">OPNay</span>
+        </div>
+        <div class="profile tumblbug3">
+          <span class="profileText">쿠반</span>
+        </div>
+        <div class="profile tumblbug3">
+          <span class="profileText">너임나임</span>
+        </div>
+        <div class="profile tumblbug3">
+          <span class="profileText">청연</span>
+        </div>
+        <div class="profile tumblbug3">
+          <span class="profileText">ErrorRN</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug3">
+          <span class="profileText">pine5508</span>
+        </div>
+        <div class="profile tumblbug3">
+          <span class="profileText">흑묘일</span>
+        </div>
+        <div class="profile tumblbug4">
+          <span class="profileText">우영</span>
+        </div>
+        <div class="profile tumblbug4">
+          <span class="profileText">배수찬</span>
+        </div>
+        <div class="profile tumblbug4">
+          <span class="profileText">헨치</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug4">
+          <span class="profileText">커비하티</span>
+        </div>
+        <div class="profile tumblbug4">
+          <span class="profileText">kiwiyou</span>
+        </div>
+        <div class="profile tumblbug4">
+          <span class="profileText">R:D</span>
+        </div>
+        <div class="profile tumblbug4">
+          <span class="profileText">BlueKnave</span>
+        </div>
+        <div class="profile tumblbug4">
+          <span class="profileText">우유들컹</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug4">
+          <span class="profileText">RyCont</span>
+        </div>
+        <div class="profile tumblbug4">
+          <span class="profileText">채사</span>
+        </div>
+        <div class="profile tumblbug4">
+          <span class="profileText">보빈</span>
+        </div>
+        <div class="profile tumblbug4">
+          <span class="profileText">하늘빛</span>
+        </div>
+        <div class="profile tumblbug4">
+          <span class="profileText">한둥진</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug5">
+          <span class="profileText">⁝ØΔŦ</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">AAA</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">Creta Park</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">CYAN4S</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">Dryrain39</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug5">
+          <span class="profileText">Hare</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">header4</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">LH안에별있다</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">LR</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">LV03_Johell</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug5">
+          <span class="profileText">Melodiya</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">peruci</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">Plum</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">Soniii</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">Soonjook</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug5">
+          <span class="profileText">Sou:P</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">TB</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">Tomato G.</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">곰도리 ;></span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">괭이</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug5">
+          <span class="profileText">김뇸뇸</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">김여백</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">김예은</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">낙쥐</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">냠마</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug5">
+          <span class="profileText">닝</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">나쉘라</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">류현오</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">망고라이또</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">밥풀과자</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug5">
+          <span class="profileText">블루펜슬</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">뽕파챠</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">삠뺙</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">서동휘</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">송채은</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug5">
+          <span class="profileText">수은</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">아이델</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">양태희</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">에바치</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">에처</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug5">
+          <span class="profileText">양태원</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">옴</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">은월광</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">이군</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">이나뮤</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug5">
+          <span class="profileText">이재민</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">이호</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">잉여제조공장</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">정민</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">지빵</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug5">
+          <span class="profileText">청하율</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">치즈젤리</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">카온시</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">키요리코</span>
+        </div>
+        <div class="profile tumblbug5">
+          <span class="profileText">피아노리</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug5">
+          <span class="profileText">황금사과</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">anaclumos</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">BePex</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">Carex</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">JUNO</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug6">
+          <span class="profileText">karies</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">kevin5871</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">KGJ</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">Nathroo</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">Reshb</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug6">
+          <span class="profileText">T4PH1L</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">trchobo</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">YeoPEVA</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">고한혁</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">곽사야</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug6">
+          <span class="profileText">김키멍</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">네그</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">루인아크</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">맨드레이크</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">샨블</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug6">
+          <span class="profileText">시빈빈</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">이민우</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">이유진</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">잇창명</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">참치고래</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug6">
+          <span class="profileText">최건희</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">칼브</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">피타</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">홍지훈</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">KLBSice</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug6">
+          <span class="profileTextSmall">전국리듬게임개발자협회</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">Dismf</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">Dew2</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">DagomDream</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">포세이동</span>
+        </div>
+      </div>
+      <div class="tumblbugContainer">
+        <div class="profile tumblbug6">
+          <span class="profileText">•w•</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">IDMhan</span>
+        </div>
+        <div class="profile tumblbug6">
+          <span class="profileText">뜨로리</span>
+        </div>
+      </div>
+      <div id="infoLineContainer"><div id="infoLine"></div></div>
+      <div class="profileContainer">
+        <a
+          href="https://www.grac.or.kr/Statistics/Popup/Pop_StatisticsDetails.aspx?bfe594b3906a6fc21ebfb5982f7132cda6c813a6a053e8e5ec12581d53453bb0"
+          class="link"
+          onclick="window.open(this.href,'저작권 정보','width=800, height=800'); return false;"
+          ><img src="/images/logos/all.png" class="badgeIcon"
+        /></a>
+        <a href="https://kdce.or.kr/user/ctf/clmsCtfTransList.do?websiteName=rhyga.me" onclick="window.open(this.href,'저작권 정보','width=800, height=800'); return false;"
+          ><img class="badgeIcon" src="/images/logos/02.gif"
+        /></a>
+      </div>
+    </div>
+    <div id="optionContainer" class="containers">
+      <div id="offsetContiner" class="containers">
+        <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+        <h1 id="offsetTitle"><%= __('offset_setting') %></h1>
+        <div class="offsetPreviewContainer">
+          <div class="offsetViewContainer">
+            <span class="offsetText"><%= __('input') %></span>
+            <div id="offsetInputCircle" class="offsetCircle"></div>
+          </div>
+          <div class="offsetViewContainer">
+            <span class="offsetText"><%= __('offset') %></span>
+            <div id="offsetOffsetCircle" class="offsetCircle"></div>
+          </div>
+        </div>
+        <div class="offsetPreviewContainer">
+          <div class="offsetViewContainer">
+            <div id="offsetPrevCircle" class="timingCircle"></div>
+            <span class="timingText">-50ms</span>
+          </div>
+          <div class="offsetViewContainer">
+            <div id="offsetTimingCircle" class="timingCircle"></div>
+            <span class="timingText">0ms</span>
+          </div>
+          <div class="offsetViewContainer">
+            <div id="offsetNextCircle" class="timingCircle"></div>
+            <span class="timingText">50ms</span>
+          </div>
+        </div>
+        <span id="offsetDescription"><%= __('offset_description_1') %><strong><%= __('offset_description_2') %></strong><%= __('offset_description_3') %></span>
+        <span id="offsetSubDescription"><%= __('offset_sub_description_1') %></span>
+        <div id="offsetButtonContainer">
+          <div class="offsetSideContainer">
+            <img src="https://img.icons8.com/metro/50/373737/collapse-arrow.png" class="icon offsetSideIcon clickable" onclick="offsetSpeedUp()" />
+            <span id="offsetSpeedText" class="metropolis">1x</span>
+            <img src="https://img.icons8.com/metro/50/373737/expand-arrow.png" class="icon offsetSideIcon clickable" onclick="offsetSpeedDown()" />
+          </div>
+          <div id="offsetTapButton" onmousedown="offsetButtonDown()" onmouseup="offsetButtonUp()">
+            <span id="offsetButtonText" class="metropolis">TAP</span>
+          </div>
+          <div class="offsetSideContainer">
+            <img src="https://img.icons8.com/metro/50/373737/plus-math.png" class="icon offsetSideIcon clickable" onclick="offsetUp()" />
+            <img src="https://img.icons8.com/metro/50/373737/minus-math.png" class="icon offsetSideIcon clickable" onclick="offsetDown()" />
+          </div>
+        </div>
+        <div id="offsetResetButton" onclick="offsetReset()">
+          <span id="offsetResetButtonText" class="metropolis"><%= __('reset') %></span>
+        </div>
+      </div>
+      <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+      <h1 class="containersTitle"><%= __('option') %></h1>
+      <div id="optionElementsContainer">
+        <div id="optionSelectorContainer">
+          <span class="optionSelectors optionSelected" onclick="optionSelect(0)"><%= __('general') %></span>
+          <span class="optionSelectors" onclick="optionSelect(1)"><%= __('screen') %></span>
+          <span class="optionSelectors" onclick="optionSelect(2)"><%= __('sound') %></span>
+          <span class="optionSelectors" onclick="optionSelect(3)"><%= __('input') %></span>
+          <span class="optionSelectors" onclick="optionSelect(4)"><%= __('game') %></span>
+          <span class="optionSelectors" onclick="optionSelect(5)"><%= __('editor_title') %></span>
+        </div>
+        <div class="optionContentsContainer optionShow" id="optionGeneral">
+          <p class="optionTitle"><%= __('my_info') %></p>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('namePlaceholder') %></p>
+            <p class="optionValue" id="optionName">USERNAME</p>
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle">ADVANCED</p>
+            <p class="optionValue" id="optionAdvanced"><%= __('disabled') %></p>
+          </div>
+          <div class="optionValueContainer">
+            <a class="optionButton" onclick="logout()" id="logoutButton"><%= __('logout') %></a>
+          </div>
+          <p class="optionTitle"><%= __('language') %></p>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('general_language') %></p>
+            <select class="optionSelect" id="langSelector" onchange="langChanged(this)">
+              <option value="ko">한국어</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('music_artist') %></p>
+            <select class="optionSelect" id="langDetailSelector" onchange="settingChanged(this, 'detailLang')">
+              <option value="original"><%= __('show_original') %></option>
+              <option value="english"><%= __('show_english') %></option>
+            </select>
+          </div>
+          <p class="optionValue"><%= __('detail_lang_warning') %></p>
+          <p class="optionTitle"><%= __('game') %></p>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('coupon_code_enter') %></p>
+            <a class="optionButton" onclick="couponEnter()"><%= __('apply') %></a>
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('retry_tutorial') %></p>
+            <a class="optionButton" onclick="window.location.href = '<%= url %>/tutorial';"><%= __('move') %></a>
+          </div>
+        </div>
+        <div class="optionContentsContainer" id="optionDisplay">
+          <p class="optionTitle"><%= __('resolution') %></p>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('canvas') %></p>
+            <select class="optionSelect" id="canvasResSelector" onchange="settingChanged(this, 'canvasRes')">
+              <option value="100">100%</option>
+              <option value="75">75%</option>
+              <option value="50">50%</option>
+              <option value="25">25%</option>
+            </select>
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('album_art') %></p>
+            <select class="optionSelect" id="albumResSelector" onchange="settingChanged(this, 'albumRes')">
+              <option value="100">100%</option>
+              <option value="75">75%</option>
+              <option value="50">50%</option>
+            </select>
+          </div>
+        </div>
+        <div class="optionContentsContainer" id="optionSound">
+          <p class="optionTitle"><%= __('volume') %></p>
+          <p class="optionValue"><%= __('sound_volume_tip') %></p>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('volume_all') %></p>
+            <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" oninput="settingChanged(this, 'volumeMaster')" />
+            <p class="optionValue volumeMasterValue">50%</p>
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('volume_song') %></p>
+            <input type="range" min="0" max="100" value="100" id="volumeSong" class="optionSlider" oninput="settingChanged(this, 'volumeSong')" />
+            <p class="optionValue" id="volumeSongValue">100%</p>
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('volume_hitsound') %></p>
+            <input type="range" min="0" max="100" value="100" id="volumeHit" class="optionSlider" oninput="settingChanged(this, 'volumeHitsound')" />
+            <p class="optionValue" id="volumeHitValue">100%</p>
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('volume_effect') %></p>
+            <input type="range" min="0" max="100" value="100" id="volumeEft" class="optionSlider" oninput="settingChanged(this, 'volumeEffect')" />
+            <p class="optionValue" id="volumeEftValue">100%</p>
+          </div>
+          <p class="optionTitle"><%= __('details') %></p>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('offset') %></p>
+            <a class="optionButton" onclick="offsetSetting()" id="offsetButton">0ms</a>
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('resolution') %></p>
+            <select class="optionSelect" id="soundResSelector" onchange="settingChanged(this, 'soundRes')">
+              <option>96kbps</option>
+              <option>128kbps</option>
+              <option class="advancedOnly">192kbps</option>
+            </select>
+          </div>
+        </div>
+        <div class="optionContentsContainer" id="optionInput">
+          <p class="optionTitle"><%= __('mouse') %></p>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('sensitivity') %></p>
+            <input type="range" min="100" max="250" value="100" id="inputSensitive" class="optionSlider" oninput="settingChanged(this, 'sensitive')" />
+            <p id="sensitiveValue" class="optionValue">1x</p>
+          </div>
+          <p class="optionValue"><%= __('sensitivity_warning') %></p>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('wheel') %></p>
+            <select class="optionSelect" id="wheelSelector" onchange="settingChanged(this, 'wheel')">
+              <option value="0"><%= __('wheel_forward') %></option>
+              <option value="1"><%= __('wheel_reverse') %></option>
+            </select>
+          </div>
+          <p class="optionTitle"><%= __('keyboard') %></p>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('input_key') %></p>
+            <select class="optionSelect" id="inputSelector" onchange="settingChanged(this, 'inputKey')">
+              <option value="0"><%= __('all_key') %></option>
+              <option value="1"><%= __('alphabet_key') %></option>
+              <option value="2"><%= __('zx_key') %></option>
+            </select>
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('click_with_mouse') %></p>
+            <input type="checkbox" class="optionCheckbox" id="mouseCheck" onchange="settingChanged(this, 'inputMouse')" />
+          </div>
+        </div>
+        <div class="optionContentsContainer" id="optionGame">
+          <p class="optionTitle"><%= __('visual') %></p>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('skin') %></p>
+            <select class="optionSelect" id="skinSelector" onchange="settingChanged(this, 'skin')"></select>
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('cursor_size') %></p>
+            <input type="range" min="5" max="20" value="10" id="inputSize" class="optionSlider" oninput="settingChanged(this, 'inputSize')" />
+            <p id="inputSizeValue" class="optionValue">1x</p>
+          </div>
+          <p class="optionValue"><%= __('cursor_size_warning') %></p>
+          <div class="optionValueContainer advancedOnly">
+            <p class="optionSemiTitle"><%= __('apply_to_judge') %></p>
+            <input type="checkbox" class="optionCheckbox" id="judgeSkin" onchange="settingChanged(this, 'judgeSkin')" />
+          </div>
+          <p class="optionTitle advancedOnly"><%= __('hide_judge') %></p>
+          <div class="optionValueContainer advancedOnly">
+            <p class="optionSemiTitle">Perfect</p>
+            <input type="checkbox" class="optionCheckbox" id="judgePerfect" onchange="settingChanged(this, 'Perfect')" />
+            <p class="optionSemiTitle">Great</p>
+            <input type="checkbox" class="optionCheckbox" id="judgeGreat" onchange="settingChanged(this, 'Great')" />
+            <p class="optionSemiTitle">Good</p>
+            <input type="checkbox" class="optionCheckbox" id="judgeGood" onchange="settingChanged(this, 'Good')" />
+          </div>
+          <div class="optionValueContainer advancedOnly">
+            <p class="optionSemiTitle">Bad</p>
+            <input type="checkbox" class="optionCheckbox" id="judgeBad" onchange="settingChanged(this, 'Bad')" />
+            <p class="optionSemiTitle">Miss</p>
+            <input type="checkbox" class="optionCheckbox" id="judgeMiss" onchange="settingChanged(this, 'Miss')" />
+            <!-- <p class="optionSemiTitle">Bullet</p>
+                    <input type="checkbox" class="optionCheckbox" id="judgeBullet" onchange="settingChanged(this, 'Bullet')"> -->
+          </div>
+          <p class="optionTitle"><%= __('info') %></p>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('frame_counter') %></p>
+            <input type="checkbox" class="optionCheckbox" id="frameCheck" onchange="settingChanged(this, 'frameCounter')" />
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('combo_alert') %></p>
+            <input type="checkbox" class="optionCheckbox" id="comboAlertCheck" onchange="settingChanged(this, 'comboAlert')" />
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('alert_interval') %></p>
+            <select class="optionSelect" id="comboSelector" onchange="settingChanged(this, 'comboCount')">
+              <option>10x</option>
+              <option>25x</option>
+              <option>50x</option>
+              <option>100x</option>
+              <option>200x</option>
+            </select>
+          </div>
+        </div>
+        <div class="optionContentsContainer" id="optionInput">
+          <p class="optionTitle"><%= __('personalize') %></p>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('ignore_cursor_at_editor') %></p>
+            <input type="checkbox" class="optionCheckbox" id="ignoreCursorCheck" onchange="settingChanged(this, 'ignoreCursor')" />
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('ignore_at_editor') %></p>
+            <input type="checkbox" class="optionCheckbox" id="ignoreEditorCheck" onchange="settingChanged(this, 'ignoreEditor')" />
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('ignore_at_test') %></p>
+            <input type="checkbox" class="optionCheckbox" id="ignoreTestCheck" onchange="settingChanged(this, 'ignoreTest')" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="storeContainer" class="containers metropolis">
+      <div id="storeTutorialContainer" class="containers metropolis">
+        <h1 class="containersTitle">STORE</h1>
+        <div id="storeTutorialScreen">
+          <div class="storeTutorial">
+            <img src="/images/parts/elements/store_songs.png" class="storeTutorialImage" />
+            <span class="storeTutorialText">
+              <%= __('store_tutorial_1_1') %><br />
+              <%= __('store_tutorial_1_2') %><br />
+              <%= __('store_tutorial_1_3') %>
+            </span>
+          </div>
+          <div class="storeTutorial">
+            <img src="/images/parts/elements/store_skins.png" class="storeTutorialImage" />
+            <span class="storeTutorialText">
+              <%= __('store_tutorial_2_1') %><br />
+              <%= __('store_tutorial_2_2') %><br />
+              <%= __('store_tutorial_2_3') %>
+            </span>
+          </div>
+        </div>
+        <div id="storeTutorialButtonContainer">
+          <button class="storeButton metropolis" onclick="displayClose()"><%= __('all_good') %></button>
+        </div>
+      </div>
+      <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+      <span class="storeFooterLeft">
+        통신판매업신고번호: 2021-제주조천-0014<br />
+        사업장주소: 제주특별자치도 제주시 조천읍 신촌8길1 편안채1층 102호<br />
+        팀 크루아상│사업자등록번호: 310-10-22439 <a href="http://www.ftc.go.kr/bizCommPop.do?wrkr_no=3101022439" target="_blank" class="link">사업자등록번호 조회</a><br />
+        E-mail: coupy@croissant.tech│대표: 강혁진│전화번호: 070-4505-6424│FAX: 070-7966-3277
+      </span>
+      <div id="storeFooterRight">
+        <script type="text/javascript">
+          //<![CDATA[
+          var tlJsHost = window.location.protocol == "https:" ? "https://secure.trust-provider.com/" : "http://www.trustlogo.com/";
+          document.write(unescape("%3Cscript src='" + tlJsHost + "trustlogo/javascript/trustlogo.js' type='text/javascript'%3E%3C/script%3E"));
+          //]]>
+        </script>
+        <script language="JavaScript" type="text/javascript">
+          TrustLogo("https://www.positivessl.com/images/seals/positivessl_trust_seal_md_167x42.png", "POSDV", "none");
+        </script>
+      </div>
+      <h1 class="containersTitle">STORE</h1>
+      <div id="optionElementsContainer">
+        <div id="optionSelectorContainer">
+          <img src="https://img.icons8.com/material/40/000000/musical--v1.png" class="storeSelectors storeSelected" onclick="storeSelect(0)" />
+          <img src="https://img.icons8.com/material/40/000000/paint-palette--v1.png" class="storeSelectors" onclick="storeSelect(1)" />
+          <img src="https://img.icons8.com/fluent-systems-regular/40/000000/shopping-bag-full.png" class="storeSelectors" onclick="storeSelect(2)" />
+        </div>
+        <div class="storeContentsContainer storeShow"></div>
+        <div class="storeContentsContainer"></div>
+        <div class="storeContentsContainer" id="storeContentsBaskets">
+          <div id="storeBasketsContainer">
+            <div class="storeColumnContainer">
+              <div class="storeBasketsContainer">
+                <div class="storeBasketsLeft">
+                  <img class="storeBasketsAlbum" src="/images/mainImage.png" />
+                  <div class="storeBasketsInfo">
+                    <span class="storeName">DLC Name</span>
+                    <span class="storeSongArtist">Composer Name</span>
+                  </div>
+                </div>
+                <div class="storeBasketsRight">
+                  <span class="storePrice"></span>
+                </div>
+              </div>
+            </div>
+            <div class="storeColumnContainer">
+              <div class="storeBasketsContainer">
+                <div class="storeBasketsLeft">
+                  <img src="/images/skin.png" class="storeBasketsSkin" />
+                  <div class="storeBasketsInfo">
+                    <span class="storeName">DLC Name</span>
+                  </div>
+                </div>
+                <div class="storeBasketsRight">
+                  <span class="storePrice"><%= __('purchased') %></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="basketsButtonContainer">
+            <button class="storeButton metropolis" onclick="storePurchase('카드')" id="basketButton"><%= __('purchase') %></button>
+          </div>
+        </div>
+      </div>
+      <div class="storeInfoBackground" id="storeDLCInfo">
+        <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable storeInfoCloseBtn" onclick="displayClose()" />
+        <div class="storeInfoContainer">
+          <div id="DLCinfoTitleContainer">
+            <span class="storeInfoTitle"><%= __('DLC_info') %></span>
+          </div>
+          <div id="DLCinfoContentsContainer">
+            <img src="" id="DLCInfoAlbum" />
+            <div id="DLCinfoSongsContainer"></div>
+          </div>
+          <div id="DLCinfoAboutContainer">
+            <span class="storeName" id="DLCinfoDLCName"></span>
+            <span class="storeSongArtist" id="DLCinfoArtistName"></span>
+          </div>
+          <div id="DLCinfoButtonContainer">
+            <button class="storeButton storeButtonDisabled metropolis" onclick="addToCart('DLC')" id="DLCbasketButton"><%= __('add_to_bag') %></button>
+          </div>
+        </div>
+      </div>
+      <div class="storeInfoBackground" id="storeSkinInfo">
+        <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable storeInfoCloseBtn" onclick="displayClose()" />
+        <div class="storeInfoContainer">
+          <div id="skinInfoTitleContainer">
+            <span class="storeInfoTitle"><%= __('Skin_info') %></span>
+            <span id="SkininfoSkinName"></span>
+          </div>
+          <div id="skinInfoPreviewContainer">
+            <img src="" id="skinInfoPreview" />
+          </div>
+          <div class="storeInfoButtonContainer">
+            <button class="storeButton storeButtonDisabled metropolis" onclick="addToCart('Skin')" id="skinBasketButton"><%= __('add_to_bag') %></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="overlayContainer" id="overlayCodeContainer">
+      <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable" id="codeCloseBtn" onclick="displayClose()" />
+      <div id="codeContainer">
+        <span class="menuTitle" id="codeTitle"><%= __('coupon_code_enter') %></span>
+        <input type="text" id="codeInput" />
+        <a class="optionButton" onclick="couponApply()"><%= __('apply') %></a>
+      </div>
+    </div>
+    <div class="overlayContainer" id="overlayPaymentContainer">
+      <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable" id="paymentCloseBtn" onclick="displayClose()" />
+      <div id="overlayPaymentSelectionContainer">
+        <span class="menuTitle" id="paymentTitle"><%= __('payment_method') %></span>
+        <div id="overlayPaymentSelection">
+          <div class="overlayPaymentItem" onclick="storePurchase('카드')">
+            <img src="https://img.icons8.com/ios/48/000000/bank-card-back-side.png" class="paymentIcon" />
+            <span class="paymentText"><%= __('Card') %></span>
+          </div>
+          <div class="overlayPaymentItem" onclick="storePurchase('문화상품권')">
+            <img src="https://img.icons8.com/ios/48/000000/ticket.png" class="paymentIcon" />
+            <span class="paymentText"><%= __('Cultureland') %></span>
+          </div>
+          <div class="overlayPaymentItem" onclick="storePurchase('게임문화상품권')">
+            <img src="https://img.icons8.com/ios/48/000000/controller.png" class="paymentIcon" />
+            <span class="paymentText"><%= __('smart_Culture') %></span>
+          </div>
+          <div class="overlayPaymentItem" onclick="storePurchase('도서문화상품권')">
+            <img src="https://img.icons8.com/ios/48/000000/book.png" class="paymentIcon" />
+            <span class="paymentText"><%= __('Booknlife') %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="overlayContainer" id="overlayLoadingContainer">
+      <span class="overlayContainerText"><%= __('loading') %></span>
+      <br />
+      <img src="/images/parts/elements/loading.png" alt="loading" class="loadingCircle" />
+    </div>
+    <img src="/images/parts/elements/loading.png" alt="loading" class="loadingCircle" id="loadingCircle" />
+    <div class="overlayContainer" id="purchasingContainer">
+      <span class="overlayLoadingContainerText"><%= __('purchasing_1') %><br /><%= __('purchasing_2') %></span>
+      <br />
+      <img src="/images/parts/elements/loading.png" alt="loading" class="loadingCircle" />
+    </div>
+    <div class="overlay" id="volumeOverlay">
+      <p class="optionSemiTitle"><%= __('volume') %></p>
+      <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" oninput="settingChanged(this, 'volumeMaster')" />
+      <p class="optionValue volumeMasterValue">50%</p>
+    </div>
+    <div id="animContainer" class="widthAnim"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.2/howler.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+    <script>
+      const cdn = "<%= cdn %>";
+      const url = "<%= url %>";
+      const api = "<%= api %>";
+      const pressAnywhere = "<%= __('press_anywhere') %>";
+      const enabled = "<%= __('enabled') %>";
+      const registered = "<%= __('registered') %>";
+      const cancelSubscription = "<%= __('cancel_subscription') %>";
+      const currency = "<%= __('currency') %>";
+      const purchased = "<%= __('purchased') %>";
+      const addToBag = "<%= __('add_to_bag') %>";
+      const addedToBag = "<%= __('added_to_bag') %>";
+      const nothingHere = "<%= __('nothing_here') %>";
+      const couponApplySuccess = "<%= __('coupon_apply_success') %>";
+      const couponInvalid1 = "<%= __('coupon_invalid_1') %>";
+      const couponInvalid2 = "<%= __('coupon_invalid_2') %>";
+      const couponUsed = "<%= __('coupon_used') %>";
+      const inputEmpty = "<%= __('input_empty') %>";
+      const alreadySubscribed1 = "<%= __('already_subscribed1') %>";
+      const alreadySubscribed2 = "<%= __('already_subscribed2') %>";
+      const confirmExit = "<%= __('confirm_exit_tutorial') %>";
+      const medalDesc = "<%= __('medal_description') %>";
+      const lang = "<%= __('lang') %>";
+      const count = "<%= __('count') %>";
+      const bulletDensity = "<%= __('bullet_density') %>";
+      const noteDensity = "<%= __('note_density') %>";
+      const speed = "<%= __('speed') %>";
+      const advancedNeeded = "<%= __('advanced_needed') %>";
+      const DLCNeeded = "<%= __('DLC_needed') %>";
+      const notAvailable1 = "<%= __('not_available_1') %>";
+      const notAvailable2 = "<%= __('not_available_2') %>";
+      const advancedPreview1 = "<%= __('advanced_preview_1') %>";
+      const advancedPreview2 = "<%= __('advanced_preview_2') %>";
+      if (lang == "en") document.body.style.letterSpacing = "-0.3px";
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.5/lottie.js"></script>
+    <script src="/js/game.js"></script>
+  </body>
+</html>

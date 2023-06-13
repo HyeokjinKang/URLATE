@@ -1,0 +1,93 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css");
+
+body {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  font-family: "Pretendard Variable", "나눔바른고딕", arial;
+  letter-spacing: -0.5px;
+  overflow: hidden;
+  user-select: none;
+}
+
+#animContainer {
+  width: 100vw;
+  height: 100vh;
+  background: url(/images/backgrounds/main.png);
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+#logoContainer {
+  position: relative;
+  z-index: 1;
+  width: 100vw;
+  height: 62vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+#buttonContainer {
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 2vh;
+  transition-duration: 0s;
+}
+
+#logo {
+  height: 25vh;
+}
+
+#footerLeft {
+  position: fixed;
+  text-align: left;
+  font-size: 0.8em;
+  color: #aaa;
+  left: 2vh;
+  bottom: 2vh;
+}
+
+#footerRight {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: flex-end;
+  position: fixed;
+  font-size: 0.8em;
+  color: #aaa;
+  right: 2vh;
+  bottom: 2vh;
+}
+
+#allContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.link {
+  color: #000000dd;
+}
+
+.bottomLang {
+  text-decoration: none;
+  color: #000000dd;
+  font-size: 1em;
+}
+
+#allImage {
+  margin-left: 0.5vw;
+  height: 6vh;
+}

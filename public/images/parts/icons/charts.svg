@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="97" height="88" viewBox="0 0 97 88">
+  <g id="charts" transform="translate(-1461 -395.736)">
+    <g id="사각형_295" data-name="사각형 295" transform="translate(1531 457.736)" stroke="#000" stroke-width="1">
+      <rect width="27" height="26" rx="10" stroke="none"/>
+      <rect x="0.5" y="0.5" width="26" height="25" rx="9.5" fill="none"/>
+    </g>
+    <g id="사각형_296" data-name="사각형 296" transform="translate(1461 426.736)" stroke="#000" stroke-width="1">
+      <rect width="26" height="57" rx="10" stroke="none"/>
+      <rect x="0.5" y="0.5" width="25" height="56" rx="9.5" fill="none"/>
+    </g>
+    <g id="사각형_297" data-name="사각형 297" transform="translate(1496 395.736)" stroke="#000" stroke-width="1">
+      <rect width="26" height="88" rx="10" stroke="none"/>
+      <rect x="0.5" y="0.5" width="25" height="87" rx="9.5" fill="none"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="<%= __('lang') %>">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="/css/join.css" />
+    <link rel="shortcut icon" href="/images/favicon.ico" />
+    <title><%= __('join_title') %></title>
+  </head>
+  <body>
+    <span id="title"><%= __('join') %></span>
+    <span id="desc"><%= __('join_desc') %></span>
+    <br />
+    <input type="text" name="displayName" placeholder="<%= __('namePlaceholder') %>" id="nickname" class="textbox" pattern="^[a-zA-Z0-9_-]*$" minlength="5" maxlength="12" required />
+    <span id="nameExist"><%= __('nameExist') %></span>
+    <span id="name"><%= __('nameText') %></span>
+    <input type="submit" class="button" onclick="check()" value="<%= __('done') %>" />
+    <h5><a href="<%= api %>/auth/logout?redirect=true" style="color: rgb(0, 135, 197); font-weight: 400"><%= __('mainPage') %></a></h5>
+    <script>
+      const projectUrl = "<%= url %>";
+      const api = "<%= api %>";
+      const lang = "<%= __('lang') %>";
+      if (lang == "en") document.body.style.letterSpacing = "-0.3px";
+    </script>
+    <script src="/js/join.js"></script>
+  </body>
+</html>

@@ -1,0 +1,112 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css");
+
+body {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-color: #eee;
+  font-family: "Pretendard Variable", "나눔바른고딕", arial;
+  letter-spacing: -0.5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+input {
+  font-family: "Pretendard Variable", "나눔바른고딕", arial;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#title {
+  font-size: 2em;
+  font-weight: bold;
+}
+
+#desc {
+  font-size: 1em;
+  color: #888;
+}
+
+.textbox {
+  background-color: #eee;
+  border: 0;
+  width: 15vw;
+  min-width: 200px;
+  height: 3vh;
+  min-height: 25px;
+  margin: 10px;
+  border-bottom: 2px solid rgb(110, 110, 110);
+  transition-duration: 0.3s;
+}
+
+.textbox:hover {
+  background-color: rgb(250, 250, 250);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  border-bottom: 2px solid rgb(35, 35, 35);
+}
+
+.textbox:focus {
+  background-color: rgb(250, 250, 250);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  border-bottom: 2px solid rgb(35, 35, 35);
+}
+
+.button {
+  color: black;
+  font-weight: bold;
+  background-color: #fff;
+  border: 0;
+  width: 5vw;
+  min-width: 50px;
+  height: 3vh;
+  min-height: 25px;
+  margin: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+}
+
+#name {
+  opacity: 0;
+  transition-duration: 0.5s;
+}
+
+#name.show {
+  opacity: 1;
+}
+
+#nameExist {
+  display: none;
+  opacity: 0;
+  transition-duration: 0.5s;
+}
+
+#nameExist.show {
+  opacity: 1;
+}
+
+#pw {
+  opacity: 0;
+  transition-duration: 0.5s;
+}
+
+#pw.show {
+  opacity: 1;
+}
+
+#failed {
+  opacity: 0;
+  color: red;
+  transition-duration: 0.5s;
+}
+
+#failed.show {
+  opacity: 1;
+}

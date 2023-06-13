@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="<%= __('lang') %>">
+<head>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-177236027-1"></script>
+  <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-177236027-1');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Editor</title>
+  <link rel="stylesheet" href="/css/editor.css">
+  <link rel="shortcut icon" href="/images/favicon.ico">
+  <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
+</head>
+<body oncontextmenu='return false'>
+  <div id="initialScreenContainer" class="metropolis">
+    <br><br>
+    <h2>Editor</h2>
+    <div id="initialButtonsContainer">
+      <span id="gotoGame" class="backText clickable" onclick="window.location.href = '<%= url %>/game?initialize=0'"><img src="https://img.icons8.com/ios-filled/24/000000/back.png" class="backIcon"><%= __('goto_game') %></span>
+      <span class="initialButtons clickable" onclick="newEditor()"><img src="https://img.icons8.com/ios/96/000000/edit.png" class="initialIcon clickable">New</span>
+      <span class="initialButtons clickable" onclick="loadEditor()"><img src="https://img.icons8.com/ios/96/000000/circled-right-2.png" class="initialIcon clickable">Load</span>
+    </div>
+    <div id="songSelectionContainer">
+      <div id="songSelection">
+        <span id="gotoGame" class="backText clickable" onclick="gotoMain(true)"><img src="https://img.icons8.com/ios-filled/24/000000/back.png" class="backIcon"><%= __('cancel') %></span>
+        <h2>Select Song</h2>
+        <select id="songSelectBox" class="clickable">
+        </select>
+        <input type="button" class="initlalButtons" value="Select" onclick="songSelected()">
+      </div>
+    </div>
+  </div>
+  <div id="editorMainContainer">
+    <div id="helpContainer" class="metropolis">
+      <div id="helpBox">
+        <div id="helpTitleContainer">
+          <span id="helpTitle">HELP</span>
+        </div>
+        <div class="helpBoxSpliter">
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>F1</kbd></span>
+            <span class="helpDescription">Help</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>Ctrl</kbd> + <kbd>C</kbd></span>
+            <span class="helpDescription">Copy</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>Ctrl</kbd> + <kbd>V</kbd></span>
+            <span class="helpDescription">Paste</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>Ctrl</kbd> + <kbd>S</kbd></span>
+            <span class="helpDescription">Save</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>Ctrl</kbd> + <kbd>Z</kbd></span>
+            <span class="helpDescription">Undo</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></span>
+            <span class="helpDescription">Redo</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>Del</kbd></span>
+            <span class="helpDescription">Delete</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>1</kbd></span>
+            <span class="helpDescription">Move</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>2</kbd></span>
+            <span class="helpDescription">Edit</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>3</kbd></span>
+            <span class="helpDescription">Add</span>
+          </div>
+        </div>
+        <div class="helpBoxSpliter">
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>F2</kbd></span>
+            <span class="helpDescription">Toggle Grid</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>F3</kbd></span>
+            <span class="helpDescription">Toggle Magnet</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>Space</kbd></span>
+            <span class="helpDescription">Play/Pause</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>Esc</kbd></span>
+            <span class="helpDescription">Stop</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd class="noItalic">←</kbd> <kbd class="noItalic">→</kbd></span>
+            <span class="helpDescription">Seek Horizontally</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd class="noItalic">↑</kbd> <kbd class="noItalic">↓</kbd></span>
+            <span class="helpDescription">Seek Vertically</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><span class="helpMotion">Scroll</span></span>
+            <span class="helpDescription">Seek Horizontally</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>Shift</kbd> + <span class="helpMotion">Scroll</span></span>
+            <span class="helpDescription">Seek Vertically</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>Alt</kbd></span>
+            <span class="helpDescription">Change Element</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>Ctrl</kbd> + <kbd>P</kbd></span>
+            <span class="helpDescription">Test</span>
+          </div>
+          <div class="helpKeyContainer">
+            <span class="helpKey"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Del</kbd></span>
+            <span class="helpDescription">Delete All</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="navbar">
+      <div id="topLeftBar" class="navbarElements">
+        <span class="backText clickable" onclick="gotoMain()"><img src="https://img.icons8.com/ios-filled/24/000000/back.png" class="backIcon"><%= __('editor_main') %></span>
+      </div>
+      <div id="topCenterBar" class="navbarElements">
+        <span id="songName" class="metropolis">Song Name here</span>
+      </div>
+      <div id="topRightBar" class="navbarElements">
+        <img src="https://img.icons8.com/material-rounded/48/000000/horizontal-settings-mixer.png" class="icon clickable" onclick="toggleSettings()">
+      </div>
+    </div>
+    <div id="workingSpaceContainer">
+      <div id="workingContainer">
+        <div id="menuContainer">
+          <img src="https://img.icons8.com/ios-filled/48/000000/resize-four-directions.png" class="menuIcon menuSelected" onclick="changeMode(0)">
+          <img src="https://img.icons8.com/ios-glyphs/48/000000/edit.png" class="menuIcon biggerIcon clickable" onclick="changeMode(1)">
+          <img src="https://img.icons8.com/ios-glyphs/48/000000/add.png" class="menuIcon biggerIcon clickable" onclick="changeMode(2)">
+          <div id="horizontalLine" class="menuIcon">&nbsp;</div>
+          <img src="https://img.icons8.com/ios-glyphs/48/000000/play.png" class="menuIcon clickable" onclick="test()">
+          <img src="https://img.icons8.com/ios-glyphs/48/000000/save.png" class="menuIcon clickable" onclick="save()">
+          <img src="https://img.icons8.com/ios-glyphs/48/000000/delete.png" class="menuIcon clickable" onclick="deleteAll()">
+          <div id="horizontalLine" class="menuIcon">&nbsp;</div>
+          <img src="https://img.icons8.com/ios-glyphs/48/000000/metronome.png" class="menuIcon clickable menuSelected" onclick="toggleMetronome()">
+          <img src="https://img.icons8.com/ios-glyphs/48/000000/grid.png" class="menuIcon clickable" onclick="toggleGrid()">
+          <img src="https://img.icons8.com/ios-glyphs/48/000000/magnet.png" class="menuIcon clickable menuSelected" onclick="toggleMagnet()">
+          <img src="https://img.icons8.com/ios-glyphs/48/000000/coordinate-system.png" class="menuIcon clickable menuSelected" onclick="toggleExplain()">
+          <div id="horizontalLine" class="menuIcon">&nbsp;</div>
+          <img src="https://img.icons8.com/ios-glyphs/48/000000/arrow.png" class="menuIcon clickable" onclick="moveTo()">
+          <img src="https://img.icons8.com/ios-glyphs/48/000000/question-mark.png" class="menuIcon clickable" onmouseover="showHelp()" onmouseout="hideHelp()">
+        </div>
+        <div id="componentView" onmousemove="trackMousePos(event)" onmousedown="compClicked()">
+          <div id="canvasContainer">
+            <div id="canvasBackground"></div>
+            <canvas id="componentCanvas" width="100%" height="100%">
+            </canvas>
+          </div>
+        </div>
+      </div>
+      <div id="settingsContainer">
+        <div id="settingsName">
+          <span id="dot">·</span>
+          <span id="settingsNameSpace">Settings</span>
+        </div>
+        <div id="settingsProperties" class="metropolis">
+          <div id="elementsSettings">
+            <div id="noteSettingsContainer">
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">POSITION</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">X</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onkeyup="settingsInput('x', this)" onfocus="textFocused()" onblur="textBlurred()">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">Y</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onkeyup="settingsInput('y', this)" onfocus="textFocused()" onblur="textBlurred()">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">DIRECTION</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onkeyup="settingsInput('direction', this)" onfocus="textFocused()" onblur="textBlurred()">
+                </div>
+              </div>
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">PROPERTY</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">TIMING</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onkeyup="settingsInput('Timing', this)" onfocus="textFocused()" onblur="textBlurred()">
+                </div>
+              </div>
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">ACTION</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">CHANGE</span>
+                  <input type="button" class="settingsButtons metropolis clickable" onclick="changeNote()" value="▶">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">DELETE</span>
+                  <input type="button" class="settingsButtons metropolis clickable" onclick="deleteElement()" value="▶">
+                </div>
+              </div>
+            </div>
+            <div id="bulletSettingsContainer">
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">POSITION</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">SIDE</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Side', this)">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">LOCATION</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Location', this)">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">ANGLE</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Angle', this)">
+                </div>
+              </div>
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">PROPERTY</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">TIMING</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">SPEED</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Speed', this)">
+                </div>
+              </div>
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">ACTION</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">CHANGE</span>
+                  <input type="button" class="settingsButtons metropolis clickable" onclick="changeBullet()" value="▶">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">DELETE</span>
+                  <input type="button" class="settingsButtons metropolis clickable" onclick="deleteElement()" value="▶">
+                </div>
+              </div>
+            </div>
+            <div id="triggerInitializeContainer">
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">GENERAL</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">TYPE</span>
+                  <select class="settingsSelectBox metropolis clickable" id="triggerInitBox" onchange="triggerSet()">
+                    <option></option>
+                    <option>Destroy</option>
+                    <option>Destroy All</option>
+                    <option>BPM</option>
+                    <option>Opacity</option>
+                    <option>Speed</option>
+                    <option>Text</option>
+                    <!-- <option>Seek</option> -->
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div id="triggerSettingsContainer">
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">GENERAL</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">TYPE</span>
+                  <select class="settingsSelectBox metropolis clickable" id="triggerSelectBox" onchange="triggerSet(true)">
+                    <option>Destroy</option>
+                    <option>Destroy All</option>
+                    <option>BPM</option>
+                    <option>Opacity</option>
+                    <option>Speed</option>
+                    <option>Text</option>
+                    <!-- <option>Seek</option> -->
+                  </select>
+                </div>
+              </div>
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">PROPERTY</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">TIMING</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">TARGET NUM</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('num', this)">
+                </div>
+              </div>
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">PROPERTY</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">TIMING</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)">
+                </div>
+              </div>
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">PROPERTY</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">TIMING</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">BPM</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('bpm', this)">
+                </div>
+              </div>
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">PROPERTY</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">TIMING</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">OPACITY</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('opacity', this)">
+                </div>
+              </div>
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">PROPERTY</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">TIMING</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">SPEED</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="triggersInput('speed', this)">
+                </div>
+              </div>
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">PROPERTY</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">TIMING</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">V-ALIGN</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="triggersInput('valign', this)">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">ALIGN</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="triggersInput('align', this)">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">WEIGHT</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('weight', this)">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">SIZE</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('size', this)">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">TIME</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="triggersInput('time', this)">
+                </div>
+                <p class="settingsSemiTitle">POSITION</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">X</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('x', this)">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">Y</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('y', this)">
+                </div>
+                <p class="settingsSemiTitle">VALUE</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">TEXT</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('text', this)">
+                </div>
+              </div>
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">PROPERTY</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">TIMING</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)">
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">SEEK TO</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('seek', this)">
+                </div>
+              </div>
+              <div class="settingsPropertiesContainer">
+                <p class="settingsSemiTitle">ACTION</p>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">DELETE</span>
+                  <input type="button" class="settingsButtons metropolis clickable" onclick="deleteElement()" value="▶">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="trackSettings">
+            <div class="settingsPropertiesContainer">
+              <p class="settingsSemiTitle">INFORMATION</p>
+              <div class="settingsPropertiesIndividual">
+                <span class="settingsPropertiesTitle">TRACK</span>
+                <input type="text" class="settingsPropertiesTextbox metropolis" readonly>
+              </div>
+              <div class="settingsPropertiesIndividual">
+                <span class="settingsPropertiesTitle">PRODUCER</span>
+                <input type="text" class="settingsPropertiesTextbox metropolis" readonly>
+              </div>
+              <div class="settingsPropertiesIndividual">
+                <span class="settingsPropertiesTitle">AUTHOR</span>
+                <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" value="">
+              </div>
+            </div>
+            <div class="settingsPropertiesContainer">
+              <p class="settingsSemiTitle">PROPERTY</p>
+              <div class="settingsPropertiesIndividual">
+                <span class="settingsPropertiesTitle">TEMPO</span>
+                <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="changeTempo(this)">
+              </div>
+              <div class="settingsPropertiesIndividual">
+                <span class="settingsPropertiesTitle">BPM</span>
+              <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="changeBPM(this)">
+              </div>
+              <div class="settingsPropertiesIndividual">
+                <span class="settingsPropertiesTitle">SPEED</span>
+                <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="changeSpeed(this)" value="1">
+              </div>
+              <div class="settingsPropertiesIndividual">
+                <span class="settingsPropertiesTitle">OFFSET</span>
+                <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="changeOffset(this)" value="0">
+              </div>
+            </div>
+            <div class="settingsPropertiesContainer">
+              <p class="settingsSemiTitle">BACKGROUND</p>
+              <div class="settingsPropertiesIndividual">
+                <span class="settingsPropertiesTitle">LOTTIE</span>
+                <input type="button" class="settingsButtons metropolis clickable" onclick="lottieUpload()" value="▶">
+              </div>
+              <div id="settingsBGAContainer" class="hideBGA">
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">TYPE</span>
+                  <select class="settingsSelectBox metropolis clickable" id="lottieInitBox" onchange="lottieSet()">
+                    <option value="0">Image</option>
+                    <option value="1">Image & BGA</option>
+                    <option value="2">BGA</option>
+                  </select>
+                </div>
+                <div class="settingsPropertiesIndividual">
+                  <span class="settingsPropertiesTitle">LETTERBOX COLOR</span>
+                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="changeLetterbox(this)" value="FFFFFF">
+                </div>
+              </div>
+              <div class="settingsPropertiesIndividual">
+                <span class="settingsPropertiesTitle">GRAYSCALE</span>
+                <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="changeGrayscale(this)" value="30">
+              </div>
+              <div class="settingsPropertiesIndividual">
+                <span class="settingsPropertiesTitle">OPACITY</span>
+                <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="changeOpacity(this)" value="20">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="timelineContainer" onmousemove="trackTimelineMousePos()" onmousedown="tmlClicked()">
+      <div id="timelineInner"></div>
+    </div>
+    <canvas id="timelineCanvas" width="100%" height="100%">
+    </canvas>
+    <div id="timelineZoomController" class="controllers">
+      <img src="https://img.icons8.com/ios-glyphs/24/000000/zoom-in.png" class="clickable timeline-icon" onclick="zoomIn()">
+      <img src="https://img.icons8.com/ios-glyphs/24/000000/zoom-out.png" class="clickable timeline-icon" onclick="zoomOut()">
+    </div>
+    <div id="timelinePlayController" class="controllers">
+      <img src="https://img.icons8.com/ios-glyphs/24/000000/play.png" id="controlBtn" class="clickable timeline-play" onclick="playPauseBtn()">
+      <img src="https://img.icons8.com/ios-glyphs/24/000000/stop.png" class="clickable timeline-icon" onclick="stopBtn()">
+      <span class="clickable" id="percentage" onclick="changeRate();">100%</span>
+    </div>
+    <div id="timelineSplitController" class="controllers">
+      <span class="clickable" id="split" onclick="changeSplit();">1/2</span>
+    </div>
+  </div>
+  <div class="overlay" id="volumeOverlay">
+    <p class="optionSemiTitle"><%= __('volume') %></p>
+    <input type="range" min="0" max="100" value="50" id="volumeMaster" class="optionSlider" oninput="settingChanged(this, 'volumeMaster')">
+    <p class="optionValue" id="volumeMasterValue">50%</p>
+  </div>
+  <script>
+    const moveToAlert = "<%= __('moveToAlert') %>";
+    const timeAlert = "<%= __('timeAlert') %>";
+    const copiedText = "<%= __('copied') %>";
+    const syncAlert = "<%- __('syncAlert') %>";
+    const need2Save = "<%= __('needToSave') %>";
+    const rusure = "<%= __('RUSure') %>";
+    const deleteSure = "<%= __('DeleteSure') %>";
+    const cdn = "<%= cdn %>";
+    const url = "<%= url %>";
+    const api = "<%= api %>";
+    const lang = "<%= __('lang') %>";
+    if(lang == "en") document.body.style.letterSpacing = "-0.3px";
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.5/lottie.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.2/howler.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+  <script src="/js/playerModules.js"></script>
+  <script src="/js/editor.js"></script>
+</body>
+</html>

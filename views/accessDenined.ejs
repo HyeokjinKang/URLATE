@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="<%= __('lang') %>">
+<head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-177236027-1"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-177236027-1');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="/css/error.css">
+    <link rel="shortcut icon" href="/images/favicon.ico">
+    <title><%= __('oops') %></title>
+</head>
+<body>
+    <h1><%= __('access_denined') %></h1>
+    <h3><%= __('access_denined_text') %></h3>
+    <h5><a href="<%= api %>/logout?redirect=true" style="color: rgb(0, 135, 197); font-weight: 400;"><%= __('mainPage') %></a></h5>
+</body>
+</html>

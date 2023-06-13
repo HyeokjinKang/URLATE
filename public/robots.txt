@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /
+Allow : /$
+Allow: /images/favicon.ico
+Allow: /images/mainImage.png
+Allow: /images/logo
+
+#DaumWebMasterTool:97796b1c540bcf7d43b34bd394290e85c516dcd6c6d29fb2554d0982c98029b8:VhlwUBHXEAdV//AaR9ZMLw==
