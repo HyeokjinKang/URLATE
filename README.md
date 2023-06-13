@@ -38,6 +38,11 @@ URLATE-v3과 URLATE-v3l은 MIT라이센스를 따르고 있습니다. MIT라이�
 - 조건
   - 라이선스 및 저작권을 고지할 것
 
-더불어, MIT라이센스의 내용과는 별개로 게임 내 잘보이는 곳에 다음의 원작자표시를 해주시면 감사하겠습니다.
+추가적으로, URLATE를 수정하여 상업게임으로 재배포 할 경우 다음 사항을 반드시 지켜주셔야합니다(info 화면을 추천합니다).
 
-`This game is based on URLATE-v3 by Team Croissant and HyeokjinKang(Coupy).`
+- 게임 내 잘보이는 곳에 다음의 원작자표시를 해야합니다.
+  - `This game is based on URLATE-v3 by Team Croissant and HyeokjinKang(Coupy).`
+- 게임 실행시 Team Croissant의 인트로를 제거하면 안됩니다.
+- info화면의 Team Croissant 크레딧을 제거하면 안됩니다.
+- 게임의 모든 리소스는 CC BY-NC-ND 4.0를 따릅니다. 상업게임으로 배포하는 경우에 이미지, 음악, 로고 등을 포함하는 모든 리소스를 새롭게 제작해야합니다.
+- 게임의 이름에 URLATE가 포함되면 안됩니다.
