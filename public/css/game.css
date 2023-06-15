@@ -595,7 +595,7 @@ p {
 }
 
 #profileGreenstar {
-  background-image: url("/images/credits/greenstar.jpg");
+  background-image: url("/images/credits/greenstar.png");
 }
 
 #profileRanol {
@@ -603,7 +603,7 @@ p {
 }
 
 #profileKiwi {
-  background-image: url("/images/credits/kiwi.png");
+  background-image: url("/images/credits/kiwiyou.jpg");
 }
 
 #profilePine {
@@ -682,9 +682,10 @@ p {
 }
 
 #infoProfilePosition {
+  margin-top: 0.5em;
   color: #666;
   font-size: 3vh;
-  font-weight: 500;
+  font-weight: 300;
 }
 
 #infoProfileBottom {
