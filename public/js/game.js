@@ -35,7 +35,6 @@ const SkinInfoSkinName = document.getElementById("SkininfoSkinName");
 const skinInfoPreview = document.getElementById("skinInfoPreview");
 const skinBasketButton = document.getElementById("skinBasketButton");
 const basketsButtonContainer = document.getElementById("basketsButtonContainer");
-const storeBasketsContainer = document.getElementById("storeBasketsContainer");
 const purchasingContainer = document.getElementById("purchasingContainer");
 const goldMedal = document.getElementById("goldMedal");
 const silverMedal = document.getElementById("silverMedal");
@@ -759,14 +758,14 @@ const songSelected = (n, refreshed) => {
     selectTitle.style.fontSize = "5vh";
   }
   document.getElementById("selectArtist").textContent = tracks[n].producer;
-  document.getElementById("selectAlbum").src = `${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName} (Custom).png`;
-  document.getElementById("CPLAlbum").src = `${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName} (Custom).png`;
+  document.getElementById("selectAlbum").src = `${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.png`;
+  document.getElementById("CPLAlbum").src = `${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.png`;
   if (isOfficial) {
     for (let i = 0; i <= 2; i++) {
       document.getElementsByClassName("difficultyNumber")[i].textContent = JSON.parse(tracks[n].difficulty)[i];
     }
   }
-  document.getElementById("selectBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName} (Custom).png")`;
+  document.getElementById("selectBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.png")`;
   setTimeout(
     () => {
       let underLimit = window.innerHeight * 0.08 * n + window.innerHeight * 0.09;
@@ -1254,414 +1253,6 @@ const loadingHide = () => {
   loadingCircle.style.opacity = "0";
 };
 
-const showDLCinfo = async (n) => {
-  loadingOverlayShow();
-  DLCinfoDLCName.textContent = document.getElementsByClassName("storeName")[n].textContent;
-  DLCinfoArtistName.textContent = document.getElementsByClassName("storeSongArtist")[n].textContent;
-  document.getElementById("DLCInfoAlbum").src = document.getElementsByClassName("storeSongsAlbum")[n].src;
-  if (DLCs.indexOf(DLCinfoDLCName.textContent) != -1) {
-    DLCbasketButton.classList.add("storeButtonDisabled");
-    DLCbasketButton.disabled = true;
-    DLCbasketButton.textContent = purchased;
-  } else if (carts.has(DLCinfoDLCName.textContent)) {
-    DLCbasketButton.classList.add("storeButtonDisabled");
-    DLCbasketButton.disabled = true;
-    DLCbasketButton.textContent = addedToBag;
-  } else {
-    DLCbasketButton.classList.remove("storeButtonDisabled");
-    DLCbasketButton.disabled = false;
-    DLCbasketButton.textContent = addToBag;
-  }
-  let elements = "";
-  for (let i = 0; i < DLCdata[n].length; i++) {
-    await fetch(`${api}/track/${DLCdata[n][i]}`, {
-      method: "GET",
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        data = data.track[0];
-        elements += `<div class="DLCinfoSongContainer">
-                      <img src="${cdn}/albums/50/${data.fileName} (Custom).png" class="DLCinfoSongAlbum">
-                      <div class="DLCinfoSongAbout">
-                          <span class="DLCinfoSongName">${settings.general.detailLang == "original" ? data.originalName : data.name}</span>
-                          <span class="DLCinfoSongProd">${data.producer}</span>
-                      </div>
-                  </div>`;
-      })
-      .catch((error) => {
-        alert(`Error occured.\n${error}`);
-        console.error(`Error occured.\n${error}`);
-      });
-  }
-  DLCinfoSongsContainer.innerHTML = elements;
-  document.getElementById("storeDLCInfo").style.display = "flex";
-  document.getElementById("storeDLCInfo").classList.add("fadeIn");
-  loadingOverlayHide();
-  display = 9;
-};
-
-const showSkinInfo = (n) => {
-  loadingOverlayShow();
-  SkinInfoSkinName.textContent = document.getElementsByClassName("storeSkinName")[n].textContent;
-  skinInfoPreview.src = `${cdn}/skins/preview/${skinData[n]}.png`;
-  if (skins.indexOf(SkinInfoSkinName.textContent) != -1) {
-    skinBasketButton.classList.add("storeButtonDisabled");
-    skinBasketButton.disabled = true;
-    skinBasketButton.textContent = purchased;
-  } else if (carts.has(SkinInfoSkinName.textContent)) {
-    skinBasketButton.classList.add("storeButtonDisabled");
-    skinBasketButton.disabled = true;
-    skinBasketButton.textContent = addedToBag;
-  } else {
-    skinBasketButton.classList.remove("storeButtonDisabled");
-    skinBasketButton.disabled = false;
-    skinBasketButton.textContent = addToBag;
-  }
-  document.getElementById("storeSkinInfo").style.display = "flex";
-  document.getElementById("storeSkinInfo").classList.add("fadeIn");
-  loadingOverlayHide();
-  display = 10;
-};
-
-const cartDelete = async (type, item) => {
-  loadingOverlayShow();
-  await fetch(`${api}/store/bag`, {
-    method: "DELETE",
-    credentials: "include",
-    body: JSON.stringify({
-      type: type,
-      item: item,
-    }),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.result == "success") {
-        let cart = data.bag;
-        updateCart(cart);
-      } else {
-        alert(`Error occured.\n${data.error}`);
-      }
-    });
-};
-
-const updateCart = async (cart) => {
-  loadingOverlayShow();
-  let langCode = 0;
-  if (lang == "ko") {
-    langCode = 0;
-  } else if (lang == "ja") {
-    langCode = 1;
-  } else if (lang == "en") {
-    langCode = 2;
-  }
-  if (!cart) {
-    await fetch(`${api}/store/bag`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.result == "success") {
-          cart = data.bag.sort((a, b) => {
-            return a.type > b.type ? 1 : -1;
-          });
-        } else {
-          alert(`Error occured.\n${data.error}`);
-        }
-      })
-      .catch((error) => {
-        alert(`Error occured.\n${error}`);
-        console.error(`Error occured.\n${error}`);
-      });
-  }
-  let elements = "";
-  cartArray = cart;
-  carts = new Set();
-  for (let i = 0; i < cart.length; i++) {
-    carts.add(cart[i].item);
-    elements += `<div class="storeColumnContainer">
-                    <div class="storeBasketsContainer">
-                        <div class="storeBasketsLeft">`;
-    if (cart[i].type == "DLC") {
-      await fetch(`${api}/store/DLC/${cart[i].item}`, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.result == "success") {
-            data = data.data;
-            elements += `<img class="storeBasketsAlbum" src="${cdn}/dlc/${data.previewFile}.png">
-                        <div class="storeBasketsInfo">
-                            <span class="storeName">${data.name}</span>
-                            <span class="storeSongArtist">${data.composer}</span>
-                        </div>
-                      </div>
-                      <div class="storeBasketsRight">
-                        <span class="storePrice">
-                          ${getPriceText([], true, data, langCode)}
-                        </span>
-                        <img src="https://img.icons8.com/material-rounded/24/000000/delete-sign.png" class="storeDelete" onclick="cartDelete('DLC', '${data.name}')">`;
-          } else {
-            alert(`Error occured.\n${data.error}`);
-          }
-        })
-        .catch((error) => {
-          alert(`Error occured.\n${error}`);
-          console.error(`Error occured.\n${error}`);
-        });
-    } else if (cart[i].type == "Skin") {
-      await fetch(`${api}/store/skin/${cart[i].item}`, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.result == "success") {
-            data = data.data;
-            elements += `<img src="${cdn}/skins/${data.previewFile}.png" class="storeBasketsSkin">
-                        <div class="storeBasketsInfo">
-                            <span class="storeName">${data.name}</span>
-                        </div>
-                      </div>
-                      <div class="storeBasketsRight">
-                        <span class="storePrice">
-                          ${getPriceText([], true, data, langCode)}
-                        </span>
-                        <img src="https://img.icons8.com/material-rounded/50/000000/delete-sign.png" class="storeDelete" onclick="cartDelete('Skin', '${data.name}')">`;
-          } else {
-            alert(`Error occured.\n${data.error}`);
-          }
-        });
-    }
-    elements += `</div>
-            </div>
-        </div>`;
-  }
-  basketsButtonContainer.style.display = "flex";
-  storeBasketsContainer.innerHTML = elements;
-  if (cart.length == 0) {
-    basketsButtonContainer.style.display = "none";
-    storeBasketsContainer.innerHTML = `<div id="nothingHere"><span>${nothingHere.split("/")[0]}</span><span>${nothingHere.split("/")[1]}<strong>DLC</strong>${nothingHere.split("/")[2]}<strong>${
-      nothingHere.split("/")[3]
-    }</strong>${nothingHere.split("/")[4]}</span></div>`;
-  }
-  updateStore();
-};
-
-const storeMethod = () => {
-  display = 11;
-  overlayPaymentContainer.style.pointerEvents = "all";
-  overlayPaymentContainer.style.opacity = "1";
-};
-
-const storePurchase = (method) => {
-  overlayPaymentContainer.style.pointerEvents = "none";
-  overlayPaymentContainer.style.opacity = "0";
-  purchasingContainer.style.pointerEvents = "all";
-  purchasingContainer.style.opacity = "1";
-  fetch(`${api}/store/purchase`, {
-    method: "POST",
-    credentials: "include",
-    body: JSON.stringify({
-      cart: cartArray,
-    }),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      let international = !(lang == "ko");
-      tossPayments.requestPayment(method, {
-        amount: data.amount,
-        orderId: data.orderId,
-        orderName: `URLATE 상점 ${cartArray[0].item}${cartArray.length == 1 ? "" : `외 ${cartArray.length - 1}건`}`,
-        customerName: username,
-        customerEmail: data.email,
-        successUrl: `${api}/store/success`,
-        failUrl: `${api}/store/fail`,
-        useInternationalCardOnly: international,
-      });
-      purchasingContainer.style.pointerEvents = "none";
-      purchasingContainer.style.opacity = "0";
-    })
-    .catch((error) => {
-      purchasingContainer.style.pointerEvents = "none";
-      purchasingContainer.style.opacity = "0";
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
-    });
-};
-
-const getPriceText = (array, ignoreCart, data, langCode) => {
-  let priceData = "";
-  if (array.indexOf(data.name) != -1) {
-    priceData = purchased;
-  } else if (carts.has(data.name) && !ignoreCart) {
-    priceData = addedToBag;
-  } else if (isAdvanced) {
-    let originalPrice = numberWithCommas(JSON.parse(data.price)[0]) + "₩";
-    let saledPrice = numberWithCommas(Math.round(JSON.parse(data.price)[0] * 0.8 * data.sale) / 100) + "₩";
-    if (langCode) {
-      saledPrice += `(${numberWithCommas(Math.round(JSON.parse(data.price)[langCode] * 0.8 * data.sale) / 100) + currency})`;
-    }
-    priceData = `<span class="storePriceSale">${originalPrice}</span>${saledPrice}`;
-  } else {
-    let originalPrice = numberWithCommas(JSON.parse(data.price)[0]) + "₩";
-    let saledPrice = "";
-    if (data.sale != "100") {
-      saledPrice = numberWithCommas(Math.round(JSON.parse(data.price)[0] * data.sale) / 100) + "₩";
-    }
-    if (saledPrice == "") {
-      priceData = originalPrice;
-    } else {
-      priceData = `<span class="storePriceSale">${originalPrice}</span>${saledPrice}`;
-    }
-    if (langCode) {
-      priceData += `(${numberWithCommas(Math.round(JSON.parse(data.price)[langCode] * data.sale) / 100) + currency})`;
-    }
-  }
-  return priceData;
-};
-
-const updateStore = () => {
-  let langCode = 0;
-  if (lang == "ko") {
-    langCode = 0;
-  } else if (lang == "ja") {
-    langCode = 1;
-  } else if (lang == "en") {
-    langCode = 2;
-  }
-  fetch(`${api}/store/DLCs`, {
-    method: "GET",
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      DLCdata = [];
-      data = data.data;
-      let elements = "";
-      for (let i = 0; i < data.length / 2; i++) {
-        elements += '<div class="storeRowContainer">';
-        for (let j = 0; j < 2; j++) {
-          if (data[i * 2 + j]) {
-            DLCdata[i * 2 + j] = JSON.parse(data[i * 2 + j].songs);
-            elements += `<div class="storeSongsContainer" onclick="showDLCinfo(${i * 2 + j})">
-                        <div class="storeSongsLeft">
-                          <img class="storeSongsAlbum" src="${cdn}/dlc/${data[i * 2 + j].previewFile}.png">
-                        </div>
-                        <div class="storeSongsRight">
-                          <div class="storeSongsTop">
-                            <span class="storeName">${data[i * 2 + j].name}</span>
-                            <span class="storeSongArtist">${data[i * 2 + j].composer}</span>
-                          </div>
-                          <div class="storeSongsBottom">
-                            <span class="storePrice">${getPriceText(DLCs, false, data[i * 2 + j], langCode)}</span>
-                          </div>
-                        </div>
-                      </div>`;
-          } else {
-            elements += `<div class="storeSongsContainer hide"></div>`;
-          }
-        }
-        elements += "</div>";
-      }
-      document.getElementsByClassName("storeContentsContainer")[0].innerHTML = elements;
-      loadingOverlayHide();
-    })
-    .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
-    });
-  fetch(`${api}/store/skins`, {
-    method: "GET",
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      skinData = [];
-      data = data.data;
-      let elements = "";
-      for (let i = 0; i < data.length / 2; i++) {
-        elements += '<div class="storeRowContainer">';
-        for (let j = 0; j < 2; j++) {
-          if (data[i * 2 + j]) {
-            skinData[i * 2 + j] = JSON.parse(data[i * 2 + j].previewFile);
-            elements += `<div class="storeSkinsContainer" onclick="showSkinInfo(${i * 2 + j})">
-                        <div class="storeSkinTitleContainer">
-                          <span class="storeSkinName">${data[i * 2 + j].name}</span>
-                        </div>
-                        <div class="storeSkinContentContainer">
-                          <img src="${cdn}/skins/${data[i * 2 + j].previewFile}.png" class="storeSkin">
-                        </div>
-                        <div class="storeSkinPriceContainer">
-                        <span class="storePrice">${getPriceText(skins, false, data[i * 2 + j], langCode)}</span>
-                        </div>
-                      </div>`;
-          } else {
-            elements += `<div class="storeSkinsContainer hide"></div>`;
-          }
-        }
-        elements += "</div>";
-      }
-      document.getElementsByClassName("storeContentsContainer")[1].innerHTML = elements;
-    })
-    .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
-    });
-};
-
-const addToCart = (s) => {
-  fetch(`${api}/store/bag`, {
-    method: "POST",
-    credentials: "include",
-    body: JSON.stringify({
-      type: s,
-      item: document.getElementById(`${s}info${s}Name`).textContent,
-    }),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.result != "success") {
-        alert(`Error occured.\n${data.error}`);
-      } else {
-        if (s == "DLC") {
-          DLCbasketButton.classList.add("storeButtonDisabled");
-          DLCbasketButton.disabled = true;
-          DLCbasketButton.textContent = addedToBag;
-        } else if (s == "Skin") {
-          skinBasketButton.classList.add("storeButtonDisabled");
-          skinBasketButton.disabled = true;
-          skinBasketButton.textContent = addedToBag;
-        }
-        updateCart(data.bag);
-      }
-    })
-    .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
-    });
-};
-
 const menuSelected = (n) => {
   lottieAnim.pause();
   if (n == 0) {
@@ -1704,13 +1295,7 @@ const menuSelected = (n) => {
     fadeRate(storeSong, 1.5818181818, 1, 300, new Date().getTime());
     document.getElementById("storeContainer").style.display = "block";
     document.getElementById("storeContainer").classList.add("fadeIn");
-    updateCart();
     display = 8;
-    if (tutorial == 1) {
-      document.getElementById("storeTutorialContainer").style.display = "flex";
-      document.getElementById("storeTutorialContainer").classList.add("fadeIn");
-      display = 13;
-    }
   }
 };
 
@@ -1724,49 +1309,6 @@ const fadeRate = (track, start, end, duration, time) => {
   requestAnimationFrame(() => {
     fadeRate(track, start, end, duration, time);
   });
-};
-
-const getAdvanced = () => {
-  purchasingContainer.style.pointerEvents = "all";
-  purchasingContainer.style.opacity = "1";
-  if (registerBtn.classList.contains("cancel")) {
-    let result = confirm(cancelSubscription);
-    purchasingContainer.style.pointerEvents = "none";
-    purchasingContainer.style.opacity = "0";
-    if (!result) return;
-  }
-  fetch(`${api}/billing/cancel`, {
-    method: "PUT",
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.result == "failed") {
-        tossBilling.requestBillingAuth("카드", {
-          customerKey: userid,
-          successUrl: `${api}/billing/success`,
-          failUrl: `${api}/store/fail`,
-        });
-      } else {
-        window.location.href = `${url}/advanced/canceled`;
-      }
-      purchasingContainer.style.pointerEvents = "none";
-      purchasingContainer.style.opacity = "0";
-    });
-};
-
-const optionSelect = (n) => {
-  document.getElementsByClassName("optionSelected")[0].classList.remove("optionSelected");
-  document.getElementsByClassName("optionSelectors")[n].classList.add("optionSelected");
-  document.getElementsByClassName("optionShow")[0].classList.remove("optionShow");
-  document.getElementsByClassName("optionContentsContainer")[n].classList.add("optionShow");
-};
-
-const storeSelect = (n) => {
-  document.getElementsByClassName("storeSelected")[0].classList.remove("storeSelected");
-  document.getElementsByClassName("storeSelectors")[n].classList.add("storeSelected");
-  document.getElementsByClassName("storeShow")[0].classList.remove("storeShow");
-  document.getElementsByClassName("storeContentsContainer")[n].classList.add("storeShow");
 };
 
 const langChanged = (e) => {
@@ -1863,9 +1405,7 @@ const showProfile = (name) => {
         if (info[i].icon.indexOf("soundcloud") != -1) {
           link = `https://soundcloud.com/${info[i].content}`;
         } else if (info[i].icon.indexOf("youtube") != -1) {
-          if (info[i].link != undefined) {
-            link = info[i].link;
-          }
+          link = `https://youtube.com/c/${info[i].content}`;
         } else if (info[i].icon.indexOf("web") != -1) {
           link = `https://${info[i].content}`;
         } else if (info[i].icon.indexOf("github") != -1) {

@@ -809,52 +809,12 @@ p {
   }
 }
 
-#advancedContainer {
+#storeContainer {
   background-color: #fff;
   background-image: url("/images/backgrounds/advanced_decorations.png");
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
-}
-
-#advancedTitle {
-  font-size: 5vh;
-  margin-top: 4vh;
-  padding: 0;
-  font-weight: 100;
-}
-
-.advancedDescription {
-  font-size: 2vh;
-  margin: 4.5vh 0 0 0;
-  padding: 0;
-}
-
-.advancedSubtitle {
-  font-size: 3vh;
-  font-weight: 600;
-  margin: 7vh 0 0 0;
-  padding: 0;
-}
-
-#advancedIconsContainer {
-  width: 100vw;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.advancedIconWithDescription {
-  margin-top: 4.5vh;
-  display: flex;
-  text-align: left;
-  align-items: center;
-}
-
-.advancedIconDescription {
-  font-size: 2vh;
-  margin-left: 2vw;
 }
 
 #subtitleHighlight {
@@ -1038,10 +998,6 @@ p {
   border: solid #666 5px;
   width: 1vw;
   height: 1vw;
-}
-
-.advancedOnly {
-  display: none;
 }
 
 #selectContainer {
