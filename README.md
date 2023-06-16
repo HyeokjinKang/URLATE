@@ -1,5 +1,9 @@
 ## URLATE-v3l-frontend
 
+![GitHub](https://img.shields.io/github/license/HyeokjinKang/urlate-v3l-frontend)
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/HyeokjinKang/urlate-v3l-frontend/main?label=updated)
+![Snyk Vulnerabilities for GitHub Repo](https://img.shields.io/snyk/vulnerabilities/github/HyeokjinKang/urlate-v3l-frontend)
+
 ![image](urlate-v3l.png)
 
 > Avoid & Get on the tempo, URLATE.
