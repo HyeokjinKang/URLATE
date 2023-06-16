@@ -956,6 +956,7 @@ p {
 .optionSlider {
   margin-right: 0.5vw;
   -webkit-appearance: none;
+  appearance: none;
   width: 10vw;
   height: 3px;
   background: #616161;
@@ -1240,6 +1241,7 @@ input[type="number"]::-webkit-inner-spin-button {
 
 input[type="number"] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .trackStatContainer {
