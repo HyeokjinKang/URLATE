@@ -1040,7 +1040,7 @@ p {
 
 .tracksSelection {
   display: none;
-  cursor: pointer;
+  cursor: default;
   margin-bottom: 3px;
   margin-left: 10px;
   color: white;
@@ -1049,7 +1049,7 @@ p {
 
 .tracksSelection.selected {
   display: inline-block;
-  cursor: pointer;
+  cursor: default;
   margin-bottom: 3px;
   margin-left: 10px;
   color: white;
