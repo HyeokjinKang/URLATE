@@ -972,6 +972,10 @@ const gameLoaded = () => {
       songSelected(songNum, true);
     }
     menuSelected(0);
+  } else if (iniMode == 2) {
+    //dev purpose
+    menuSelected(3);
+    themeSong.play();
   } else if (display == 0 && songSelection == -1) {
     themeSong.play();
   }
@@ -1405,8 +1409,8 @@ const showProfile = (name) => {
         if (info[i].icon.indexOf("soundcloud") != -1) {
           link = `https://soundcloud.com/${info[i].content}`;
         } else if (info[i].icon.indexOf("youtube") != -1) {
-          link = `https://youtube.com/c/${info[i].content}`;
-        } else if (info[i].icon.indexOf("web") != -1) {
+          link = `https://youtube.com/@${info[i].content}`;
+        } else if (info[i].icon.indexOf("globe") != -1) {
           link = `https://${info[i].content}`;
         } else if (info[i].icon.indexOf("github") != -1) {
           link = `https://github.com/${info[i].content}`;
