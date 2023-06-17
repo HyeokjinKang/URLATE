@@ -1439,6 +1439,13 @@ const showProfile = (name) => {
     });
 };
 
+const optionSelect = (n) => {
+  document.getElementsByClassName("optionSelected")[0].classList.remove("optionSelected");
+  document.getElementsByClassName("optionSelectors")[n].classList.add("optionSelected");
+  document.getElementsByClassName("optionShow")[0].classList.remove("optionShow");
+  document.getElementsByClassName("optionContentsContainer")[n].classList.add("optionShow");
+};
+
 const updateDetails = (n) => {
   if (isOfficial) {
     document.getElementById("bulletDensity").textContent = bulletDensities[difficultySelection];
