@@ -1,7 +1,12 @@
 /* global api, projectUrl, lottie, bodymovin, shutdownAlert, auth2, loginFailed, loginError*/
 const animContainer = document.getElementById("animContainer");
+const safariBlocker = document.getElementById("safariBlocker");
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 document.addEventListener("DOMContentLoaded", () => {
+  if (isSafari) {
+    safariBlocker.classList.remove("hide");
+  }
   if (document.location.protocol == "http:") {
     document.location.href = document.location.href.replace("http:", "https:");
     return;

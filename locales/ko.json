@@ -175,5 +175,6 @@
   "wheel": "휠 방향",
   "wheel_forward": "정방향",
   "wheel_reverse": "역방향",
-  "coupon_code_enter": "쿠폰 번호 입력"
+  "coupon_code_enter": "쿠폰 번호 입력",
+  "safari_alert": "Safari 브라우저나 모바일에선 이용할 수 없습니다 :("
 }

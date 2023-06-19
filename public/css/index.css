@@ -91,3 +91,25 @@ body {
   margin-left: 0.5vw;
   height: 6vh;
 }
+
+#safariBlocker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 1;
+  font-size: 1em;
+}
+
+#safariBlocker.hide {
+  font-size: 2em;
+  opacity: 0;
+  pointer-events: none;
+}
