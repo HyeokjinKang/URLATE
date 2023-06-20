@@ -8,6 +8,16 @@ const getTan = (deg) => {
   return Math.tan(rad);
 };
 
+const getCos = (deg) => {
+  let rad = (deg * Math.PI) / 180;
+  return Math.cos(rad);
+};
+
+const getSin = (deg) => {
+  let rad = (deg * Math.PI) / 180;
+  return Math.sin(rad);
+};
+
 const calcAngleDegrees = (x, y) => {
   return (Math.atan2(y, x) * 180) / Math.PI;
 };
