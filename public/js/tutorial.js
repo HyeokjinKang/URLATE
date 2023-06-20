@@ -187,8 +187,8 @@ const lottieSet = () => {
 };
 
 const settingApply = () => {
-  tick.volume(settings.sound.volume.master * settings.sound.volume.hitSound);
-  resultEffect.volume(settings.sound.volume.master * settings.sound.volume.effect);
+  tick.volume(settings.sound.volume.hitSound);
+  resultEffect.volume(settings.sound.volume.effect);
   sync = parseInt(settings.sound.offset);
   document.getElementById("loadingContainer").style.opacity = 1;
   sens = settings.input.sens;
@@ -239,7 +239,7 @@ const settingApply = () => {
       calculateResult();
     },
     onload: () => {
-      song.volume(settings.sound.volume.master * settings.sound.volume.music);
+      song.volume(settings.sound.volume.music);
       if (load == 1) {
         doneLoading();
       }
@@ -1077,6 +1077,8 @@ const doneLoading = () => {
     document.getElementById("wallLeft").style.left = "0vw";
     document.getElementById("wallRight").style.right = "0vw";
     setTimeout(() => {
+      Howler.volume(settings.sound.volume.master);
+      song.volume(settings.sound.volume.music);
       document.getElementById("loadingContainer").style.display = "none";
       document.getElementById("componentCanvas").style.transitionDuration = "0s";
     }, 1000);
