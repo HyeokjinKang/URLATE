@@ -927,7 +927,7 @@ const calculateResult = () => {
   }
   if (missPoint.length == 0) {
     missCtx.fillStyle = "#FFF";
-    ctx.font = `500 ${canvas.height / 30}px Metropolis, Pretendard Variable`;
+    missCtx.font = `500 ${canvas.height / 40}px Metropolis, Pretendard Variable`;
     missCtx.textAlign = "right";
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
