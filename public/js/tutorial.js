@@ -70,7 +70,6 @@ let resultEffect = new Howl({
   autoplay: false,
   loop: false,
 });
-let advanced = false;
 
 document.addEventListener("DOMContentLoaded", () => {
   menuContainer.style.display = "none";
@@ -80,18 +79,10 @@ document.addEventListener("DOMContentLoaded", () => {
   })
     .then((res) => res.json())
     .then((data) => {
-      if (data.status == "Not authorized") {
-        window.location.href = `${url}/authorize`;
-      } else if (data.status == "Not registered") {
+      if (data.status == "Not registered") {
         window.location.href = `${url}/join`;
       } else if (data.status == "Not logined") {
         window.location.href = url;
-      } else if (data.status == "Not authenticated") {
-        window.location.href = `${url}/authentication`;
-      } else if (data.status == "Not authenticated(adult)") {
-        window.location.href = `${url}/authentication?adult=1`;
-      } else if (data.status == "Shutdowned") {
-        window.location.href = `${api}/auth/logout?redirect=true&shutdowned=true`;
       } else {
         fetch(`${api}/user`, {
           method: "GET",
@@ -103,10 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
               data = data.user;
               settings = JSON.parse(data.settings);
               initialize(true);
-              advanced = data.advanced;
-              if (data.advanced) {
-                urlate.innerHTML = "<strong>URLATE</strong> Advanced";
-              }
               settingApply();
             } else {
               alert(`Error occured.\n${data.description}`);
@@ -185,11 +172,11 @@ const lottieSet = () => {
   switch (pattern.background.type) {
     case 0: //Image
       canvasBackground.getElementsByTagName("canvas")[0].style.display = "none";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/tutorial (Custom).png")`;
+      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/tutorial.png")`;
       break;
     case 1: //Image & BGA
       canvasBackground.getElementsByTagName("canvas")[0].style.display = "initial";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/tutorial (Custom).png")`;
+      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/tutorial.png")`;
       break;
     case 2: //BGA
       canvasBackground.getElementsByTagName("canvas")[0].style.display = "initial";
@@ -220,10 +207,10 @@ const settingApply = () => {
   for (let i = 0; i <= 1; i++) {
     document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
   }
-  document.getElementById("album").src = `${cdn}/albums/${settings.display.albumRes}/tutorial (Custom).png`;
-  document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/tutorial (Custom).png")`;
-  document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/tutorial (Custom).png")`;
-  document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/tutorial (Custom).png")`;
+  document.getElementById("album").src = `${cdn}/albums/${settings.display.albumRes}/tutorial.png`;
+  document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/tutorial.png")`;
+  document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/tutorial.png")`;
+  document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/tutorial.png")`;
   fetch(`${api}/skin/${settings.game.skin}`, {
     method: "GET",
     credentials: "include",
@@ -269,7 +256,7 @@ const getJudgeStyle = (j, p, x, y) => {
   p = parseInt(p);
   if (p <= 0) p = 0;
   p = `${p}`.padStart(2, "0");
-  if (!judgeSkin || !advanced) {
+  if (!judgeSkin) {
     if (j == "miss") {
       return `rgba(237, 78, 50, ${1 - p / 100})`;
     } else if (j == "perfect") {

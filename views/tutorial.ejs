@@ -1,144 +1,134 @@
 <!DOCTYPE html>
 <html lang="<%= __('lang') %>">
-<head>
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-177236027-1"></script>
-  <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'UA-177236027-1');
-  </script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Tutorial</title>
-  <link rel="stylesheet" href="/css/test.css">
-  <link rel="shortcut icon" href="/images/favicon.ico">
-  <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
-</head>
-<body oncontextmenu='return false'>
-  <div id="colorOverlayContainer"></div>
-  <div id="scoreContainer">
-    <div id="scoreBackground"></div>
-    <div id="scoreDecorations"></div>
-    <div id="scoreAlbumInformations">
-      <div id="scoreAlbum"></div>
-      <div id="scoreAlbumInfo">
-        <span id="scoreTitle">Tutorial</span>
-        <br>
-        <span id="scoreArtist">Artist</span>
-        <br><br>
-        <span id="scoreDifficulty"><span id="scoreDifficultyNum">!</span> Welcome Mode</span>
-        <br><br><br>
-        <canvas id="missPointCanvas"></canvas>
-        <br>
-        <span id="missPoint">Miss Point</span>
-      </div>
-    </div>
-    <div id="resultContainer">
-      <span id="result">RESULT</span>
-      <img src="https://img.icons8.com/metro/50/F3F3F3/expand-arrow.png"/>
-    </div>
-    <div id="scoreInfoContainer">
-      <div id="scoreInfoScore">
-        <span class="scoreSemiTitle">Total Score</span>
-        <span class="scoreValue" id="scoreText">000,000,000</span>
-        <br>
-        <span class="scoreSemiTitle">Max Combo</span>
-        <span class="scoreValue" id="comboText">0x</span>
-        <br>
-        <span class="scoreSemiTitle">Accuracy</span>
-        <span class="scoreValue" id="accuracyText">0.0%</span> 
-      </div>
-      <div id="scoreInfoRank">
-        <img id="rankImg" src="">
-      </div>
-      <div id="scoreInfoJudge">
-        <div id="scoreJudgeLeft">
-          <span class="judge" id="perfect">Perfect</span>
-          <span class="judge" id="great">Great</span>
-          <span class="judge" id="good">Good</span>
-          <span class="judge" id="bad">Bad</span>
-          <span class="judge" id="miss">Miss</span>
-          <span class="judge" id="bullet">Bullet</span>
-        </div>
-        <div id="scoreJudgeRight">
-          <span class="judgeResult" id="perfectResult">0</span>
-          <span class="judgeResult" id="greatResult">0</span>
-          <span class="judgeResult" id="goodResult">0</span>
-          <span class="judgeResult" id="badResult">0</span>
-          <span class="judgeResult" id="missResult">0</span>
-          <span class="judgeResult" id="bulletResult">0</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Tutorial</title>
+    <link rel="stylesheet" href="/css/test.css" />
+    <link rel="shortcut icon" href="/images/favicon.ico" />
+    <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
+  </head>
+  <body oncontextmenu="return false">
+    <div id="colorOverlayContainer"></div>
+    <div id="scoreContainer">
+      <div id="scoreBackground"></div>
+      <div id="scoreDecorations"></div>
+      <div id="scoreAlbumInformations">
+        <div id="scoreAlbum"></div>
+        <div id="scoreAlbumInfo">
+          <span id="scoreTitle">Tutorial</span>
+          <br />
+          <span id="scoreArtist">Artist</span>
+          <br /><br />
+          <span id="scoreDifficulty"><span id="scoreDifficultyNum">!</span> Welcome Mode</span>
+          <br /><br /><br />
+          <canvas id="missPointCanvas"></canvas>
+          <br />
+          <span id="missPoint">Miss Point</span>
         </div>
       </div>
-    </div>
-    <span id="urlate"><strong>URLATE</strong> Pure</span>
-    <div id="skip">
-      <div id="retryButton" onclick="retry()">
-        <img src="/images/parts/icons/retry.svg" id="retryIcon">
+      <div id="resultContainer">
+        <span id="result">RESULT</span>
+        <img src="https://img.icons8.com/metro/50/F3F3F3/expand-arrow.png" />
       </div>
-      <div id="nextButton" onclick="finish()">
-        <span>Next</span>
-        <img src="/images/parts/icons/next.svg" id="nextIcon">
+      <div id="scoreInfoContainer">
+        <div id="scoreInfoScore">
+          <span class="scoreSemiTitle">Total Score</span>
+          <span class="scoreValue" id="scoreText">000,000,000</span>
+          <br />
+          <span class="scoreSemiTitle">Max Combo</span>
+          <span class="scoreValue" id="comboText">0x</span>
+          <br />
+          <span class="scoreSemiTitle">Accuracy</span>
+          <span class="scoreValue" id="accuracyText">0.0%</span>
+        </div>
+        <div id="scoreInfoRank">
+          <img id="rankImg" src="" />
+        </div>
+        <div id="scoreInfoJudge">
+          <div id="scoreJudgeLeft">
+            <span class="judge" id="perfect">Perfect</span>
+            <span class="judge" id="great">Great</span>
+            <span class="judge" id="good">Good</span>
+            <span class="judge" id="bad">Bad</span>
+            <span class="judge" id="miss">Miss</span>
+            <span class="judge" id="bullet">Bullet</span>
+          </div>
+          <div id="scoreJudgeRight">
+            <span class="judgeResult" id="perfectResult">0</span>
+            <span class="judgeResult" id="greatResult">0</span>
+            <span class="judgeResult" id="goodResult">0</span>
+            <span class="judgeResult" id="badResult">0</span>
+            <span class="judgeResult" id="missResult">0</span>
+            <span class="judgeResult" id="bulletResult">0</span>
+          </div>
+        </div>
+      </div>
+      <span id="urlate"><strong>URLATE</strong> LITE</span>
+      <div id="skip">
+        <div id="retryButton" onclick="retry()">
+          <img src="/images/parts/icons/retry.svg" id="retryIcon" />
+        </div>
+        <div id="nextButton" onclick="finish()">
+          <span>Next</span>
+          <img src="/images/parts/icons/next.svg" id="nextIcon" />
+        </div>
       </div>
     </div>
-  </div>
-  <div id="menuContainer">
-    <div id="menuBox">
-      <div id="resume" class="menuBtn" onclick="resume()"><span>Resume</span></div>
-      <div id="retry" class="menuBtn" onclick="retry()"><span>Retry</span></div>
-      <div id="backToHome" class="menuBtn" onclick="home()"><span>Back to home</span></div>
-      <div class="optionValueContainer">
+    <div id="menuContainer">
+      <div id="menuBox">
+        <div id="resume" class="menuBtn" onclick="resume()"><span>Resume</span></div>
+        <div id="retry" class="menuBtn" onclick="retry()"><span>Retry</span></div>
+        <div id="backToHome" class="menuBtn" onclick="home()"><span>Back to home</span></div>
+        <div class="optionValueContainer">
           <p class="optionSemiTitle"><%= __('volume') %></p>
-          <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" oninput="settingChanged(this, 'volumeMaster')">
+          <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" oninput="settingChanged(this, 'volumeMaster')" />
+        </div>
       </div>
     </div>
-  </div>
-  <div id="loadingContainer">
-    <span id="alertMessage">Welcome Mode</span>
-    <br>
-    <img id="album">
-    <span id="title">Title</span>
-    <br>
-    <span id="artist">Various Artists</span>
-    <span id="author">Author: <span id="authorNamespace"></span></span>
-  </div>
-  <div id="canvasContainer">
-    <div id="floatingResultContainer">
-      <span id="floatingResult">RESULT</span>
+    <div id="loadingContainer">
+      <span id="alertMessage">Welcome Mode</span>
+      <br />
+      <img id="album" />
+      <span id="title">Title</span>
+      <br />
+      <span id="artist">Various Artists</span>
+      <span id="author">Author: <span id="authorNamespace"></span></span>
     </div>
-    <div id="floatingArrowContainer">
-      <img src="https://img.icons8.com/metro/50/333333/expand-arrow.png"/>
+    <div id="canvasContainer">
+      <div id="floatingResultContainer">
+        <span id="floatingResult">RESULT</span>
+      </div>
+      <div id="floatingArrowContainer">
+        <img src="https://img.icons8.com/metro/50/333333/expand-arrow.png" />
+      </div>
+      <div id="floatingResumeContainer">
+        <span id="floatingResume">Click anywhere to resume the game</span>
+      </div>
+      <img src="/images/parts/elements/wall.svg" class="wall" id="wallLeft" />
+      <img src="/images/parts/elements/wall.svg" class="wall" id="wallRight" />
+      <div id="canvasBackground"></div>
+      <canvas id="componentCanvas" width="100%" height="100%" onmousemove="trackMousePos(event)" onmousedown="compClicked()" onmouseup="compReleased()"> </canvas>
     </div>
-    <div id="floatingResumeContainer">
-      <span id="floatingResume">Click anywhere to resume the game</span>
+    <div class="overlay" id="volumeOverlay">
+      <p class="optionSemiTitle"><%= __('volume') %></p>
+      <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" oninput="settingChanged(this, 'volumeMaster')" />
+      <p class="optionValue" id="volumeMasterValue">50%</p>
     </div>
-    <img src="/images/parts/elements/wall.svg" class="wall" id="wallLeft">
-    <img src="/images/parts/elements/wall.svg" class="wall" id="wallRight">
-    <div id="canvasBackground"></div>
-    <canvas id="componentCanvas" width="100%" height="100%" onmousemove="trackMousePos(event)" onmousedown="compClicked()" onmouseup="compReleased()">
-    </canvas>
-  </div>
-  <div class="overlay" id="volumeOverlay">
-    <p class="optionSemiTitle"><%= __('volume') %></p>
-    <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" oninput="settingChanged(this, 'volumeMaster')">
-    <p class="optionValue" id="volumeMasterValue">50%</p>
-  </div>
-  <script>
-    const cdn = "<%= cdn %>";
-    const url = "<%= url %>";
-    const api = "<%= api %>";
-    const returnToGame = "<%= __('return_to_game') %>";
-    const lang = "<%= __('lang') %>";
-    const confirmExit = "<%= __('confirm_exit_tutorial') %>";
-    if(lang == "en") document.body.style.letterSpacing = "-0.3px";
-  </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.5/lottie.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.2/howler.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
-  <script src="/js/playerModules.js"></script>
-  <script src="/js/tutorial.js"></script>
-</body>
+    <script>
+      const cdn = "<%= cdn %>";
+      const url = "<%= url %>";
+      const api = "<%= api %>";
+      const returnToGame = "<%= __('return_to_game') %>";
+      const lang = "<%= __('lang') %>";
+      const confirmExit = "<%= __('confirm_exit_tutorial') %>";
+      if (lang == "en") document.body.style.letterSpacing = "-0.3px";
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.5/lottie.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.2/howler.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+    <script src="/js/playerModules.js"></script>
+    <script src="/js/tutorial.js"></script>
+  </body>
 </html>
