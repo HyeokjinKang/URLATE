@@ -226,5 +226,6 @@
   "advanced_preview_2": "By joining ADVANCED, you can play all new patterns a week in advance.",
   "wheel": "Wheel direction",
   "wheel_forward": "Default",
-  "wheel_reverse": "Reversed"
+  "wheel_reverse": "Reversed",
+  "safari_alert": "Not available on Safari browser or mobile :("
 }
