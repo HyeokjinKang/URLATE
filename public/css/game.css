@@ -811,7 +811,7 @@ p {
 }
 
 #storeContainer {
-  display: flex;
+  display: none;
   align-items: flex-start;
   justify-content: center;
   background-color: #fff;
