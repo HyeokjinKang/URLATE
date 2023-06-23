@@ -1297,7 +1297,7 @@ const menuSelected = (n) => {
     }
     storeSong.fade(0, 1, 300);
     fadeRate(storeSong, 1.5818181818, 1, 300, new Date().getTime());
-    document.getElementById("storeContainer").style.display = "block";
+    document.getElementById("storeContainer").style.display = "flex";
     document.getElementById("storeContainer").classList.add("fadeIn");
     display = 8;
   }

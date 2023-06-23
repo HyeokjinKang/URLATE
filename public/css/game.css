@@ -811,6 +811,9 @@ p {
 }
 
 #storeContainer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
   background-color: #fff;
   background-image: url("/images/backgrounds/advanced_decorations.png");
   background-position: center;
@@ -2799,4 +2802,33 @@ input[type="number"] {
 
 del {
   color: #555;
+}
+
+#infoInnerContainer {
+  width: 50vw;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-top: 6vh;
+  padding-bottom: 6vh;
+  box-sizing: border-box;
+}
+
+#infoImg {
+  width: 100%;
+}
+
+.infoTitle {
+  margin-top: 3vh;
+  margin-bottom: 1vh;
+  font-size: 3vh;
+  font-weight: 700;
+}
+
+.infoText {
+  text-align: left;
+  line-height: 2;
+  font-size: 2vh;
+  font-weight: 500;
 }
