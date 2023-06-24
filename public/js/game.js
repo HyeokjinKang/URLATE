@@ -697,7 +697,9 @@ const songSelected = (n, refreshed) => {
   loadingShow();
   if (songSelection == n && !refreshed) {
     //play
-    if (isOfficial) {
+    if (JSON.parse(tracks[songSelection].difficulty)[difficultySelection] == 0 && isOfficial) {
+      alert(`${notAvailable1}\n${notAvailable2}`);
+    } else if (isOfficial) {
       localStorage.rate = rate;
       localStorage.disableText = disableText;
       localStorage.songNum = songSelection;
