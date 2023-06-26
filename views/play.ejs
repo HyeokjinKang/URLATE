@@ -1,15 +1,6 @@
 <!DOCTYPE html>
 <html lang="<%= __('lang') %>">
 <head>
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-177236027-1"></script>
-  <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'UA-177236027-1');
-  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -74,7 +65,7 @@
         </div>
       </div>
     </div>
-    <span id="urlate"><strong>URLATE</strong> Pure</span>
+    <span id="urlate"><strong>URLATE</strong> LITE</span>
     <div id="skip">
       <div id="retryButton" onclick="retry()">
         <img src="/images/parts/icons/retry.svg" id="retryIcon">
@@ -130,13 +121,11 @@
     const cdn = "<%= cdn %>";
     const url = "<%= url %>";
     const api = "<%= api %>";
-    const game = "<%= game %>";
     const patternError = "<%= __('pattern_error') %>";
     const returnToGame = "<%= __('return_to_game') %>";
     const lang = "<%= __('lang') %>";
     if(lang == "en") document.body.style.letterSpacing = "-0.3px";
   </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.5/lottie.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.2/howler.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-/* global api, url, Howl, cdn, game, bodymovin, getTan, calcAngleDegrees, lowerBound, upperBound, numberWithCommas, Pace, Howler, io, patternError, returnToGame */
+/* global api, url, Howl, cdn, bodymovin, getTan, calcAngleDegrees, lowerBound, upperBound, numberWithCommas, Pace, Howler, patternError, returnToGame */
 const menuContainer = document.getElementById("menuContainer");
 const canvasBackground = document.getElementById("canvasBackground");
 const canvasContainer = document.getElementById("canvasContainer");
@@ -84,7 +84,6 @@ let resultEffect = new Howl({
   autoplay: false,
   loop: false,
 });
-let socket;
 let startDate = 0;
 let pauseDate = 0;
 let isPaused = false;
@@ -92,53 +91,6 @@ let rate = 1;
 let disableText = false;
 let advanced = false;
 let songData = [];
-
-const socketInitialize = () => {
-  socket = io(game, {
-    query: `id=${userid}&name=${userName}`,
-  });
-
-  socket.on("connect", () => {
-    socket.emit("game init", localStorage.songName, localStorage.difficultySelection, localStorage.rate, localStorage.patternId);
-
-    socket.on("game result", (perfect, great, good, bad, miss, bullet, score, accuracy, rank) => {
-      resultEffect.play();
-      document.getElementById("perfectResult").textContent = perfect;
-      document.getElementById("greatResult").textContent = great;
-      document.getElementById("goodResult").textContent = good;
-      document.getElementById("badResult").textContent = bad;
-      document.getElementById("missResult").textContent = miss;
-      document.getElementById("bulletResult").textContent = bullet;
-      document.getElementById("scoreText").textContent = numberWithCommas(`${score}`);
-      document.getElementById("comboText").textContent = `${maxCombo}x`;
-      document.getElementById("accuracyText").textContent = `${accuracy}%`;
-      rankImg.src = `/images/parts/elements/${rank}.png`;
-      if (rank == "SS") {
-        rankImg.style.animationName = "rainbow";
-      }
-      document.getElementById("scoreInfoRank").style.setProperty("--background", `url('/images/parts/elements/${rank}back.png')`);
-      setTimeout(() => {
-        document.getElementById("componentCanvas").style.opacity = "0";
-      }, 500);
-      setTimeout(() => {
-        floatingArrowContainer.style.display = "flex";
-        floatingArrowContainer.classList.toggle("arrowFade");
-      }, 1000);
-      setTimeout(() => {
-        floatingResultContainer.style.display = "flex";
-        floatingResultContainer.classList.toggle("resultFade");
-      }, 1300);
-      setTimeout(() => {
-        scoreContainer.style.opacity = "1";
-        scoreContainer.style.pointerEvents = "all";
-      }, 2000);
-    });
-  });
-};
-
-const socketUpdate = (d) => {
-  socket.emit("game update", mouseX, mouseY, offset + sync, d);
-};
 
 document.addEventListener("DOMContentLoaded", () => {
   menuContainer.style.display = "none";
@@ -165,16 +117,10 @@ document.addEventListener("DOMContentLoaded", () => {
   })
     .then((res) => res.json())
     .then((data) => {
-      if (data.status == "Not authorized") {
-        window.location.href = `${url}/authorize`;
-      } else if (data.status == "Not registered") {
+      if (data.status == "Not registered") {
         window.location.href = `${url}/join`;
       } else if (data.status == "Not logined") {
         window.location.href = url;
-      } else if (data.status == "Not authenticated") {
-        window.location.href = `${url}/authentication`;
-      } else if (data.status == "Not authenticated(adult)") {
-        window.location.href = `${url}/authentication?adult=1`;
       } else if (data.status == "Shutdowned") {
         window.location.href = `${api}/auth/logout?redirect=true&shutdowned=true`;
       } else {
@@ -183,40 +129,12 @@ document.addEventListener("DOMContentLoaded", () => {
           credentials: "include",
         })
           .then((res) => res.json())
-          .then(async (data) => {
+          .then((data) => {
             if (data.result == "success") {
               data = data.user;
               userName = data.nickname;
               userid = data.userid;
               settings = JSON.parse(data.settings);
-              const DLCs = JSON.parse(data.DLCs);
-              for (let i = 0; i < DLCs.length; i++) {
-                await fetch(`${api}/store/DLC/${DLCs[i]}`, {
-                  method: "GET",
-                  credentials: "include",
-                })
-                  .then((res) => res.json())
-                  .then((data) => {
-                    if (data.result == "success") {
-                      data = data.data;
-                      data.songs = JSON.parse(data.songs);
-                      for (let j = 0; j < data.songs.length; j++) {
-                        songData.push(data.songs[j]);
-                      }
-                    } else {
-                      alert("Failed to load DLC list.");
-                      console.error("Failed to load DLC list.");
-                    }
-                  })
-                  .catch((error) => {
-                    alert(`Error occured.\n${error}`);
-                    console.error(`Error occured.\n${error}`);
-                  });
-              }
-              advanced = data.advanced;
-              if (advanced) {
-                document.getElementById("urlate").innerHTML = "<strong>URLATE</strong> Advanced";
-              }
               initialize(true);
               settingApply();
             } else {
@@ -250,7 +168,6 @@ const initialize = (isFirstCalled) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        socketInitialize();
         pattern = data;
         fetch(`${api}/trackCount/${pattern.information.track}`);
         patternLength = pattern.patterns.length;
@@ -266,26 +183,13 @@ const initialize = (isFirstCalled) => {
         speed = pattern.information.speed;
         for (let i = 0; i < tracks.length; i++) {
           if (tracks[i].name == pattern.information.track) {
-            if (tracks[i].type == 1 && !advanced) {
-              alert("Wrong Access");
-              window.location.href = `${url}/game?initialize=1`;
-              return;
-            } else if (tracks[i].type == 2 && !(songData.indexOf(tracks[i].name) != -1)) {
-              alert("Wrong Access");
-              window.location.href = `${url}/game?initialize=1`;
-              return;
-            } else if (JSON.parse(tracks[i].isPreview)[localStorage.difficultySelection] && !advanced) {
-              alert("Wrong Access");
-              window.location.href = `${url}/game?initialize=1`;
-              return;
-            }
             document.getElementById("scoreTitle").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
             document.getElementById("title").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
             fileName = tracks[i].fileName;
-            document.getElementById("album").src = `${cdn}/albums/${settings.display.albumRes}/${fileName} (Custom).png`;
-            document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName} (Custom).png")`;
-            document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName} (Custom).png")`;
-            document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName} (Custom).png")`;
+            document.getElementById("album").src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.png`;
+            document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
+            document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
+            document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
             break;
           }
         }
@@ -330,20 +234,14 @@ const initialize = (isFirstCalled) => {
           },
         });
       })
-      .catch(() => {
-        alert(patternError);
+      .catch((e) => {
+        alert(`Error occured.\n${e}`);
         window.location.href = `${url}/game?initialize=1`;
       });
   } else {
     if (pattern.background.type) {
       lottieLoad(true);
     }
-    socket.emit(
-      "game resized",
-      canvas.width,
-      ((window.innerWidth / 200) * pixelRatio * settings.display.canvasRes) / 100,
-      ((window.innerHeight / 200) * pixelRatio * settings.display.canvasRes) / 100
-    );
   }
 };
 
@@ -409,9 +307,9 @@ const settingApply = () => {
   hide.miss = settings.game.applyJudge.Miss;
   frameCounter = settings.game.counter;
   for (let i = 0; i <= 1; i++) {
-    document.getElementsByClassName("volumeMaster")[i].value = settings.sound.volume.master * 100;
+    document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
   }
-  volumeMasterValue.textContent = settings.sound.volume.master * 100 + "%";
+  volumeMasterValue.textContent = Math.round(settings.sound.volume.master * 100) + "%";
 };
 
 const eraseCnt = () => {
@@ -423,7 +321,7 @@ const getJudgeStyle = (j, p, x, y) => {
   if (p <= 0) p = 0;
   p = `${p}`.padStart(2, "0");
   if (p <= 0) p = 0;
-  if (!judgeSkin || !advanced) {
+  if (!judgeSkin) {
     if (j == "miss") {
       return `rgba(237, 78, 50, ${1 - p / 100})`;
     } else if (j == "perfect") {
@@ -858,16 +756,14 @@ const cntRender = () => {
     ctx.fillStyle = "#222";
     ctx.strokeRect(rectX, rectY, rectWidth, rectHeight);
     ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
+    ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
     let date = new Date().getTime();
     let seek = 0;
     if (isPaused || startDate == 0) {
-      seek = song.seek() * 1000 - (offset + sync);
+      seek = (date - (startDate + date - pauseDate) - (offset + sync)) * rate;
     } else {
       seek = (date - startDate - (offset + sync)) * rate;
-    }
-    if (song.playing()) {
-      socketUpdate(date);
     }
     let start = lowerBound(pattern.triggers, 0);
     let end = upperBound(pattern.triggers, seek + 0.002); //for floating point miss
@@ -1025,10 +921,52 @@ const trackMousePos = () => {
 };
 
 const calculateResult = () => {
-  socket.emit("game end", maxCombo);
   lottieAnim.stop();
   document.getElementById("wallLeft").style.left = "-10vw";
   document.getElementById("wallRight").style.right = "-10vw";
+  resultEffect.play();
+  document.getElementById("perfectResult").textContent = perfect;
+  document.getElementById("greatResult").textContent = great;
+  document.getElementById("goodResult").textContent = good;
+  document.getElementById("badResult").textContent = bad;
+  document.getElementById("missResult").textContent = miss;
+  document.getElementById("bulletResult").textContent = bullet;
+  document.getElementById("scoreText").textContent = numberWithCommas(`${score}`);
+  document.getElementById("comboText").textContent = `${maxCombo}x`;
+  let accuracy = (((perfect + (great / 10) * 7 + good / 2 + (bad / 10) * 3) / (perfect + great + good + bad + miss + bullet)) * 100).toFixed(1);
+  document.getElementById("accuracyText").textContent = `${accuracy}%`;
+  let rank = "";
+  if (accuracy >= 98 && bad == 0 && miss == 0 && bullet == 0) {
+    rankImg.style.animationName = "rainbow";
+    rank = "SS";
+  } else if (accuracy >= 95) {
+    rank = "S";
+  } else if (accuracy >= 90) {
+    rank = "A";
+  } else if (accuracy >= 80) {
+    rank = "B";
+  } else if (accuracy >= 70) {
+    rank = "C";
+  } else {
+    rank = "F";
+  }
+  rankImg.src = `/images/parts/elements/${rank}.png`;
+  document.getElementById("scoreInfoRank").style.setProperty("--background", `url('/images/parts/elements/${rank}back.png')`);
+  setTimeout(() => {
+    document.getElementById("componentCanvas").style.opacity = "0";
+  }, 500);
+  setTimeout(() => {
+    floatingArrowContainer.style.display = "flex";
+    floatingArrowContainer.classList.toggle("arrowFade");
+  }, 1000);
+  setTimeout(() => {
+    floatingResultContainer.style.display = "flex";
+    floatingResultContainer.classList.toggle("resultFade");
+  }, 1300);
+  setTimeout(() => {
+    scoreContainer.style.opacity = "1";
+    scoreContainer.style.pointerEvents = "all";
+  }, 2000);
   missCtx.beginPath();
   missCtx.fillStyle = "#FFF";
   missCtx.strokeStyle = "#FFF";
@@ -1098,15 +1036,12 @@ const compClicked = (isTyped, key, isWheel) => {
   if (!song.playing() && isPaused) {
     isPaused = false;
     startDate = startDate + d - pauseDate;
-    socket.emit("game resume", d);
     floatingResumeContainer.style.opacity = 0;
     setTimeout(() => {
       floatingResumeContainer.style.display = "none";
     }, 300);
     song.play();
     lottieAnim.play();
-  } else {
-    socket.emit("game click", mouseX, mouseY, offset + sync, d, key, isWheel);
   }
   if (key && !isWheel) mouseClicked = key;
   else if (!isWheel) mouseClicked = true;
@@ -1215,13 +1150,6 @@ const doneLoading = () => {
       lottieAnim.play();
       menuAllowed = true;
       startDate = new Date().getTime();
-      socket.emit(
-        "game start",
-        startDate,
-        canvas.width,
-        ((canvas.offsetWidth / 200) * pixelRatio * settings.display.canvasRes) / 100,
-        ((canvas.offsetHeight / 200) * pixelRatio * settings.display.canvasRes) / 100
-      );
     }, 4000);
   }, 1000);
 };
@@ -1394,7 +1322,7 @@ document.onkeyup = (e) => {
 };
 
 window.addEventListener("resize", () => {
-  if (pixelRatio) initialize(false);
+  initialize(false);
 });
 
 window.addEventListener("mousewheel", globalScrollEvent);
