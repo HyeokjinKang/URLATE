@@ -60,6 +60,7 @@ let lottieAnim = {
   setSpeed: () => {},
 };
 let paceLoaded = 0;
+let scrollTimer = 0;
 let tick = new Howl({
   src: [`/sounds/tick.mp3`],
   autoplay: false,
@@ -1173,65 +1174,67 @@ const overlayClose = (s) => {
 };
 
 const globalScrollEvent = (e) => {
-  if (shiftDown) {
-    e = window.event || e;
-    let delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail));
-    if (settings.input.wheelReverse) delta > 0 ? (delta = -1) : (delta = 1);
-    if (delta == 1) {
-      //UP
-      if (settings.sound.volume.master <= 0.95) {
-        settings.sound.volume.master = Math.round((settings.sound.volume.master + 0.05) * 100) / 100;
-      } else {
-        settings.sound.volume.master = 1;
-      }
-    } else {
-      //DOWN
-      if (settings.sound.volume.master >= 0.05) {
-        settings.sound.volume.master = Math.round((settings.sound.volume.master - 0.05) * 100) / 100;
-      } else {
-        settings.sound.volume.master = 0;
-      }
-    }
-    for (let i = 0; i <= 1; i++) {
-      document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
-    }
-    volumeMasterValue.textContent = `${Math.round(settings.sound.volume.master * 100)}%`;
-    Howler.volume(settings.sound.volume.master);
-    volumeOverlay.classList.add("overlayOpen");
-    overlayTime = new Date().getTime();
+  if(scrollTimer == 0) {
+    scrollTimer = 1;
     setTimeout(() => {
-      overlayClose("volume");
-    }, 1500);
-    fetch(`${api}/settings`, {
-      method: "PUT",
-      credentials: "include",
-      body: JSON.stringify({
-        settings: settings,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.result != "success") {
-          alert(`Error occured.\n${data.error}`);
-        }
-      })
-      .catch((error) => {
-        alert(`Error occured.\n${error}`);
-        console.error(`Error occured.\n${error}`);
-      });
-  } else {
-    e = window.event || e;
-    let delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail));
+      scrollTimer = 0;
+    }, 50);
+    let delta = Math.max(-1, Math.min(1, e.deltaY));
     if (settings.input.wheelReverse) delta > 0 ? (delta = -1) : (delta = 1);
-    if (delta == 1) {
-      //UP
-      compClicked(false, 1, true);
+    if (shiftDown) {
+      if (delta == 1) {
+        //UP
+        if (settings.sound.volume.master <= 0.95) {
+          settings.sound.volume.master = Math.round((settings.sound.volume.master + 0.05) * 100) / 100;
+        } else {
+          settings.sound.volume.master = 1;
+        }
+      } else {
+        //DOWN
+        if (settings.sound.volume.master >= 0.05) {
+          settings.sound.volume.master = Math.round((settings.sound.volume.master - 0.05) * 100) / 100;
+        } else {
+          settings.sound.volume.master = 0;
+        }
+      }
+      for (let i = 0; i <= 1; i++) {
+        document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
+      }
+      volumeMasterValue.textContent = `${Math.round(settings.sound.volume.master * 100)}%`;
+      Howler.volume(settings.sound.volume.master);
+      volumeOverlay.classList.add("overlayOpen");
+      overlayTime = new Date().getTime();
+      setTimeout(() => {
+        overlayClose("volume");
+      }, 1500);
+      fetch(`${api}/settings`, {
+        method: "PUT",
+        credentials: "include",
+        body: JSON.stringify({
+          settings: settings,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.result != "success") {
+            alert(`Error occured.\n${data.error}`);
+          }
+        })
+        .catch((error) => {
+          alert(`Error occured.\n${error}`);
+          console.error(`Error occured.\n${error}`);
+        });
     } else {
-      //DOWN
-      compClicked(false, -1, true);
+      if (delta == 1) {
+        //UP
+        compClicked(false, 1, true);
+      } else {
+        //DOWN
+        compClicked(false, -1, true);
+      }
     }
   }
 };
@@ -1301,5 +1304,4 @@ window.addEventListener("resize", () => {
   initialize(false);
 });
 
-window.addEventListener("mousewheel", globalScrollEvent);
-window.addEventListener("DOMMouseScroll", globalScrollEvent);
+window.addEventListener("wheel", globalScrollEvent);

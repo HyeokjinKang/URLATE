@@ -121,6 +121,8 @@ let offsetSong = new Howl({
   loop: true,
 });
 
+let scrollTimer = 0;
+
 const lottieResize = () => {
   let widthWidth = window.innerWidth;
   let heightWidth = (window.innerHeight / 9) * 16;
@@ -1751,55 +1753,61 @@ const tracksToggle = () => {
 };
 
 const scrollEvent = (e) => {
-  if (shiftDown) {
-    e = window.event || e;
-    let delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail));
-    if (delta == 1) {
-      //UP
-      if (settings.sound.volume.master <= 0.95) {
-        settings.sound.volume.master = Math.round((settings.sound.volume.master + 0.05) * 100) / 100;
-      } else {
-        settings.sound.volume.master = 1;
-      }
-    } else {
-      //DOWN
-      if (settings.sound.volume.master >= 0.05) {
-        settings.sound.volume.master = Math.round((settings.sound.volume.master - 0.05) * 100) / 100;
-      } else {
-        settings.sound.volume.master = 0;
-      }
-    }
-    for (let i = 0; i <= 1; i++) {
-      document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
-      document.getElementsByClassName("volumeMasterValue")[i].textContent = `${Math.round(settings.sound.volume.master * 100)}%`;
-    }
-    Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
-    intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
-    volumeOverlay.classList.add("overlayOpen");
-    overlayTime = new Date().getTime();
+  if(scrollTimer == 0) {
+    scrollTimer = 1;
     setTimeout(() => {
-      overlayClose("volume");
-    }, 1500);
-    fetch(`${api}/settings`, {
-      method: "PUT",
-      credentials: "include",
-      body: JSON.stringify({
-        settings: settings,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.result != "success") {
-          alert(`Error occured.\n${data.error}`);
+      scrollTimer = 0;
+    }, 50);
+    let delta = Math.max(-1, Math.min(1, e.deltaY));
+    if (settings.input.wheelReverse) delta > 0 ? (delta = -1) : (delta = 1);
+    if (shiftDown) {
+      if (delta == 1) {
+        //UP
+        if (settings.sound.volume.master <= 0.95) {
+          settings.sound.volume.master = Math.round((settings.sound.volume.master + 0.05) * 100) / 100;
+        } else {
+          settings.sound.volume.master = 1;
         }
+      } else {
+        //DOWN
+        if (settings.sound.volume.master >= 0.05) {
+          settings.sound.volume.master = Math.round((settings.sound.volume.master - 0.05) * 100) / 100;
+        } else {
+          settings.sound.volume.master = 0;
+        }
+      }
+      for (let i = 0; i <= 1; i++) {
+        document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
+        document.getElementsByClassName("volumeMasterValue")[i].textContent = `${Math.round(settings.sound.volume.master * 100)}%`;
+      }
+      Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
+      intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
+      volumeOverlay.classList.add("overlayOpen");
+      overlayTime = new Date().getTime();
+      setTimeout(() => {
+        overlayClose("volume");
+      }, 1500);
+      fetch(`${api}/settings`, {
+        method: "PUT",
+        credentials: "include",
+        body: JSON.stringify({
+          settings: settings,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
-      .catch((error) => {
-        alert(`Error occured.\n${error}`);
-        console.error(`Error occured.\n${error}`);
-      });
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.result != "success") {
+            alert(`Error occured.\n${data.error}`);
+          }
+        })
+        .catch((error) => {
+          alert(`Error occured.\n${error}`);
+          console.error(`Error occured.\n${error}`);
+        });
+    }
   }
 };
 
@@ -1877,8 +1885,7 @@ document.onkeyup = (e) => {
 };
 
 window.addEventListener("resize", initialize);
-window.addEventListener("mousewheel", scrollEvent);
-window.addEventListener("DOMMouseScroll", scrollEvent);
+window.addEventListener("wheel", scrollEvent);
 
 window.onpopstate = () => {
   if (display != 0) {
