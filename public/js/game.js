@@ -732,16 +732,13 @@ const songSelected = (n, refreshed) => {
         songs[i].stop();
       }, 200);
     }
-    themeSong.fade(1, 0, 500);
-    setTimeout(() => {
-      themeSong.stop();
-    }, 500);
-    if (songs[n]) songs[n].play();
-    if (tracks[n].name == "URLATE Theme") {
+    if(themeSong.playing()) {
+      themeSong.fade(1, 0, 500);
       setTimeout(() => {
-        storeSong.seek(0);
-      }, 1400);
+        themeSong.stop();
+      }, 500);
     }
+    if (songs[n]) songs[n].play();
   }
   if (document.getElementsByClassName("songSelected")[0]) {
     arrowAnim.destroy();
@@ -1136,10 +1133,10 @@ const displayClose = () => {
       document.getElementById("offsetContiner").classList.remove("fadeIn");
       document.getElementById("offsetContiner").classList.add("fadeOut");
       if (songSelection != -1) {
-        songs[songSelection].play();
+        if(!songs[songSelection].playing()) songs[songSelection].play();
         songs[songSelection].fade(0, 1, 500);
       } else {
-        themeSong.play();
+        if(!themeSong.playing()) themeSong.play();
         themeSong.fade(0, 1, 500);
       }
       offsetSong.fade(1, 0, 500);
@@ -1155,6 +1152,7 @@ const displayClose = () => {
       document.getElementById("storeContainer").classList.remove("fadeIn");
       document.getElementById("storeContainer").classList.add("fadeOut");
       if (songSelection != -1) {
+        if(!songs[songSelection].playing()) songs[songSelection].play();
         songs[songSelection].fade(0, 1, 300);
         fadeRate(songs[songSelection], 0.632183908, 1, 300, new Date().getTime());
       } else {
@@ -1292,7 +1290,7 @@ const menuSelected = (n) => {
     document.getElementById("advancedContainer").classList.add("fadeIn");
   } else if (n == 3) {
     //store
-    if (songSelection != -1) {
+    if (!themeSong.playing()) {
       songs[songSelection].fade(1, 0, 300);
       fadeRate(songs[songSelection], 1, 0.632183908, 300, new Date().getTime());
     } else {
@@ -1522,7 +1520,7 @@ const offsetSetting = () => {
   display = 7;
   document.getElementById("offsetContiner").style.display = "flex";
   document.getElementById("offsetContiner").classList.add("fadeIn");
-  if (songSelection != -1) {
+  if (!themeSong.playing()) {
     songs[songSelection].fade(1, 0, 500);
     setTimeout(() => {
       songs[songSelection].pause();
