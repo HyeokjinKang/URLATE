@@ -91,6 +91,7 @@ let rate = 1;
 let disableText = false;
 let advanced = false;
 let songData = [];
+let record = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   menuContainer.style.display = "none";
@@ -828,6 +829,7 @@ const cntRender = () => {
         });
         miss++;
         missPoint.push(song.seek() * 1000);
+        record.push({index: record.length, pointingCntElement, mouseX, mouseY, judge: "bullet", seek});
       }
     }
     for (let i = 0; i < missParticles.length; i++) {
@@ -1059,27 +1061,26 @@ const compClicked = (isTyped, key, isWheel) => {
       let badJudge = (60000 / bpm / 2) * rate;
       let x = pattern.patterns[pointingCntElement[i].i].x;
       let y = pattern.patterns[pointingCntElement[i].i].y;
+      let judge = "";
       if (seek < ms + perfectJudge && seek > ms - perfectJudge) {
-        calculateScore("perfect", pointingCntElement[i].i);
-        drawParticle(3, x, y, "Perfect");
+        judge = "Perfect";
         perfect++;
       } else if (seek < ms + greatJudge && seek > ms - greatJudge) {
-        calculateScore("great", pointingCntElement[i].i);
-        drawParticle(3, x, y, "Great");
+        judge = "Great";
         great++;
       } else if (seek > ms - goodJudge && seek < ms) {
-        calculateScore("good", pointingCntElement[i].i);
-        drawParticle(3, x, y, "Good");
+        judge = "Good";
         good++;
       } else if ((seek > ms - badJudge && seek < ms) || ms < seek) {
-        calculateScore("bad", pointingCntElement[i].i);
-        drawParticle(3, x, y, "Bad");
+        judge = "Bad";
         bad++;
       } else {
-        calculateScore("miss", pointingCntElement[i].i);
-        drawParticle(3, x, y, "Miss");
+        judge = "Miss";
         miss++;
       }
+      calculateScore(judge, pointingCntElement[i].i);
+      drawParticle(3, x, y, judge);
+      record.push({index: record.length, pointingCntElement, mouseX, mouseY, judge, seek});
       return;
     }
   }
@@ -1092,6 +1093,7 @@ const compReleased = () => {
 };
 
 const calculateScore = (judge, i, isMissed) => {
+  judge = judge.toLowerCase();
   scoreMs = Date.now();
   prevScore = displayScore;
   destroyedNotes.add(i);
