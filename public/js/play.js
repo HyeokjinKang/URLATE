@@ -1213,8 +1213,7 @@ const overlayClose = (s) => {
 
 const globalScrollEvent = (e) => {
   if (shiftDown) {
-    e = window.event || e;
-    let delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail));
+    let delta = Math.max(-1, Math.min(1, e.deltaY));
     if (settings.input.wheelReverse) delta > 0 ? (delta = -1) : (delta = 1);
     if (delta == 1) {
       //UP
@@ -1262,8 +1261,7 @@ const globalScrollEvent = (e) => {
         console.error(`Error occured.\n${error}`);
       });
   } else {
-    e = window.event || e;
-    let delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail));
+    let delta = Math.max(-1, Math.min(1, e.deltaY));
     if (settings.input.wheelReverse) delta > 0 ? (delta = -1) : (delta = 1);
     if (delta == 1) {
       //UP
@@ -1292,9 +1290,7 @@ document.onkeydown = (e) => {
           menuContainer.style.display = "flex";
           song.pause();
           lottieAnim.pause();
-          let d = new Date().getTime();
-          pauseDate = d;
-          socket.emit("game pause", d);
+          pauseDate = new Date().getTime();
         } else {
           resume();
         }
@@ -1325,5 +1321,4 @@ window.addEventListener("resize", () => {
   initialize(false);
 });
 
-window.addEventListener("mousewheel", globalScrollEvent);
-window.addEventListener("DOMMouseScroll", globalScrollEvent);
+window.addEventListener("wheel", globalScrollEvent);
