@@ -92,6 +92,7 @@ let disableText = false;
 let advanced = false;
 let songData = [];
 let record = [];
+let trackName = "";
 
 document.addEventListener("DOMContentLoaded", () => {
   menuContainer.style.display = "none";
@@ -186,6 +187,7 @@ const initialize = (isFirstCalled) => {
           if (tracks[i].name == pattern.information.track) {
             document.getElementById("scoreTitle").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
             document.getElementById("title").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
+            trackName = tracks[i].name;
             fileName = tracks[i].fileName;
             document.getElementById("album").src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.png`;
             document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
@@ -276,11 +278,11 @@ const lottieSet = () => {
   switch (pattern.background.type) {
     case 0: //Image
       canvasBackground.getElementsByTagName("canvas")[0].style.display = "none";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName} (Custom).png")`;
+      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
       break;
     case 1: //Image & BGA
       canvasBackground.getElementsByTagName("canvas")[0].style.display = "initial";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName} (Custom).png")`;
+      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
       break;
     case 2: //BGA
       canvasBackground.getElementsByTagName("canvas")[0].style.display = "initial";
@@ -993,6 +995,22 @@ const calculateResult = () => {
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
   }
+  fetch(`${api}/playRecord`, {
+    method: "PUT",
+    credentials: "include",
+    body: JSON.stringify({name: trackName, difficulty: Number(localStorage.difficultySelection) + 1, userid, userName, rank, score, maxCombo, perfect, great, good, bad, miss, bullet, accuracy, record}),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if(data.result == "success") {
+        console.log("score submitted!");
+      }
+    }).catch((error) => {
+      alert(`Error occured while submitting result.\n${error}`);
+    });
 };
 
 const trackMouseSelection = (i, v1, v2, x, y) => {
