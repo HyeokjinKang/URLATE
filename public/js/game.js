@@ -215,6 +215,7 @@ const settingApply = () => {
       break;
     }
   }
+  document.getElementById("wheelSelector").getElementsByTagName("option")[Number(settings.input.wheelReverse)].selected = true;
   document.getElementById("inputSelector").getElementsByTagName("option")[Number(settings.input.keys)].selected = true;
   for (let i = 0; i <= 1; i++) {
     document.getElementsByClassName("volumeMaster")[i].value = settings.sound.volume.master * 100;
@@ -1756,8 +1757,10 @@ const scrollEvent = (e) => {
     setTimeout(() => {
       scrollTimer = 0;
     }, 50);
-    let delta = Math.max(-1, Math.min(1, e.deltaY));
-    if (settings.input.wheelReverse) delta > 0 ? (delta = -1) : (delta = 1);
+    let delta = 0;
+    if (e.deltaY != 0) delta = Math.max(-1, Math.min(1, e.deltaY));
+    else delta = Math.max(-1, Math.min(1, e.deltaX));
+    if (settings.input.wheelReverse) delta *= -1;
     if (shiftDown) {
       if (delta == 1) {
         //UP
