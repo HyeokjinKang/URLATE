@@ -89,7 +89,6 @@ let pauseDate = 0;
 let isPaused = false;
 let rate = 1;
 let disableText = false;
-let advanced = false;
 let songData = [];
 let record = [];
 let trackName = "";
@@ -171,7 +170,6 @@ const initialize = (isFirstCalled) => {
       .then((res) => res.json())
       .then((data) => {
         pattern = data;
-        fetch(`${api}/trackCount/${pattern.information.track}`);
         patternLength = pattern.patterns.length;
         document.getElementById("scoreDifficultyNum").textContent = localStorage.difficulty;
         document.getElementById("scoreDifficultyName").textContent = difficultyNames[localStorage.difficultySelection];
