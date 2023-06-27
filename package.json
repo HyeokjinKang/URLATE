@@ -28,6 +28,7 @@
     "@typescript-eslint/parser": "^4.33.0",
     "eslint": "^7.32.0",
     "javascript-obfuscator": "^4.0.2",
+    "prettier": "^2.8.8",
     "signale": "^1.4.0",
     "supervisor": "^0.12.0",
     "typescript": "^5.1.3"

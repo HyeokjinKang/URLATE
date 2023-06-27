@@ -831,7 +831,7 @@ const cntRender = () => {
         });
         miss++;
         missPoint.push(song.seek() * 1000);
-        record.push({index: record.length, pointingCntElement, mouseX, mouseY, judge: "bullet", seek});
+        record.push({ index: record.length, pointingCntElement, mouseX, mouseY, judge: "bullet", seek });
       }
     }
     for (let i = 0; i < missParticles.length; i++) {
@@ -998,17 +998,34 @@ const calculateResult = () => {
   fetch(`${api}/playRecord`, {
     method: "PUT",
     credentials: "include",
-    body: JSON.stringify({name: trackName, difficulty: Number(localStorage.difficultySelection) + 1, userid, userName, rank, score, maxCombo, perfect, great, good, bad, miss, bullet, accuracy, record}),
+    body: JSON.stringify({
+      name: trackName,
+      difficulty: Number(localStorage.difficultySelection) + 1,
+      userid,
+      userName,
+      rank,
+      score,
+      maxCombo,
+      perfect,
+      great,
+      good,
+      bad,
+      miss,
+      bullet,
+      accuracy,
+      record,
+    }),
     headers: {
       "Content-Type": "application/json",
     },
   })
     .then((res) => res.json())
     .then((data) => {
-      if(data.result == "success") {
+      if (data.result == "success") {
         console.log("score submitted!");
       }
-    }).catch((error) => {
+    })
+    .catch((error) => {
       alert(`Error occured while submitting result.\n${error}`);
     });
 };
@@ -1098,7 +1115,7 @@ const compClicked = (isTyped, key, isWheel) => {
       }
       calculateScore(judge, pointingCntElement[i].i);
       drawParticle(3, x, y, judge);
-      record.push({index: record.length, pointingCntElement, mouseX, mouseY, judge, seek});
+      record.push({ index: record.length, pointingCntElement, mouseX, mouseY, judge, seek });
       return;
     }
   }
@@ -1234,7 +1251,7 @@ const overlayClose = (s) => {
 let scrollTimer = 0;
 
 const globalScrollEvent = (e) => {
-  if(scrollTimer == 0) {
+  if (scrollTimer == 0) {
     scrollTimer = 1;
     setTimeout(() => {
       scrollTimer = 0;

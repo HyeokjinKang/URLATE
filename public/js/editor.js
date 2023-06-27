@@ -2387,7 +2387,7 @@ const overlayClose = (s) => {
 };
 
 const globalScrollEvent = (e) => {
-  if(scrollTimer == 0) {
+  if (scrollTimer == 0) {
     scrollTimer = 1;
     setTimeout(() => {
       scrollTimer = 0;

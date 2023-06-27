@@ -733,7 +733,7 @@ const songSelected = (n, refreshed) => {
         songs[i].stop();
       }, 200);
     }
-    if(themeSong.playing()) {
+    if (themeSong.playing()) {
       themeSong.fade(1, 0, 500);
       setTimeout(() => {
         themeSong.stop();
@@ -1134,10 +1134,10 @@ const displayClose = () => {
       document.getElementById("offsetContiner").classList.remove("fadeIn");
       document.getElementById("offsetContiner").classList.add("fadeOut");
       if (songSelection != -1) {
-        if(!songs[songSelection].playing()) songs[songSelection].play();
+        if (!songs[songSelection].playing()) songs[songSelection].play();
         songs[songSelection].fade(0, 1, 500);
       } else {
-        if(!themeSong.playing()) themeSong.play();
+        if (!themeSong.playing()) themeSong.play();
         themeSong.fade(0, 1, 500);
       }
       offsetSong.fade(1, 0, 500);
@@ -1153,7 +1153,7 @@ const displayClose = () => {
       document.getElementById("storeContainer").classList.remove("fadeIn");
       document.getElementById("storeContainer").classList.add("fadeOut");
       if (songSelection != -1) {
-        if(!songs[songSelection].playing()) songs[songSelection].play();
+        if (!songs[songSelection].playing()) songs[songSelection].play();
         songs[songSelection].fade(0, 1, 300);
         fadeRate(songs[songSelection], 0.632183908, 1, 300, new Date().getTime());
       } else {
@@ -1752,7 +1752,7 @@ const tracksToggle = () => {
 };
 
 const scrollEvent = (e) => {
-  if(scrollTimer == 0) {
+  if (scrollTimer == 0) {
     scrollTimer = 1;
     setTimeout(() => {
       scrollTimer = 0;
