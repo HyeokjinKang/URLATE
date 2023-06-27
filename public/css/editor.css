@@ -648,6 +648,7 @@ kbd {
 
 .optionSlider {
   margin-right: 0.5vw;
+  appearance: none;
   -webkit-appearance: none;
   width: 10vw;
   height: 3px;
