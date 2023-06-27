@@ -58,7 +58,6 @@ let comboAlert = false,
   comboCount = 50;
 let comboAlertMs = 0,
   comboAlertCount = 0;
-let shiftDown = false;
 let hide = {},
   frameCounter;
 let load = 0;
@@ -73,8 +72,7 @@ let lottieAnim = {
   setSpeed: () => {},
 };
 let overlayTime = 0;
-let advanced = false;
-
+let shiftDown = false;
 let tick = new Howl({
   src: [`/sounds/tick.mp3`],
   autoplay: false,
@@ -85,6 +83,13 @@ let resultEffect = new Howl({
   autoplay: false,
   loop: false,
 });
+let startDate = 0;
+let pauseDate = 0;
+let isPaused = false;
+let rate = 1;
+let disableText = false;
+let songData = [];
+let trackName = "";
 
 document.addEventListener("DOMContentLoaded", () => {
   menuContainer.style.display = "none";
@@ -111,16 +116,10 @@ document.addEventListener("DOMContentLoaded", () => {
   })
     .then((res) => res.json())
     .then((data) => {
-      if (data.status == "Not authorized") {
-        window.location.href = `${url}/authorize`;
-      } else if (data.status == "Not registered") {
+      if (data.status == "Not registered") {
         window.location.href = `${url}/join`;
       } else if (data.status == "Not logined") {
         window.location.href = url;
-      } else if (data.status == "Not authenticated") {
-        window.location.href = `${url}/authentication`;
-      } else if (data.status == "Not authenticated(adult)") {
-        window.location.href = `${url}/authentication?adult=1`;
       } else if (data.status == "Shutdowned") {
         window.location.href = `${api}/auth/logout?redirect=true&shutdowned=true`;
       } else {
@@ -134,19 +133,15 @@ document.addEventListener("DOMContentLoaded", () => {
               data = data.user;
               settings = JSON.parse(data.settings);
               initialize(true);
-              advanced = data.advanced;
-              if (data.advanced) {
-                document.getElementById("urlate").innerHTML = "<strong>URLATE</strong> Advanced";
-              }
               settingApply();
             } else {
               alert(`Error occured.\n${data.description}`);
               console.error(`Error occured.\n${data.description}`);
             }
           })
-          .catch(() => {
-            alert(patternError);
-            window.location.href = `${url}/game?initialize=0`;
+          .catch((error) => {
+            alert(`Error occured.\n${error}`);
+            console.error(`Error occured.\n${error}`);
           });
       }
     })
@@ -157,6 +152,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 const initialize = (isFirstCalled) => {
+  canvas.width = (window.innerWidth * pixelRatio * settings.display.canvasRes) / 100;
+  canvas.height = (window.innerHeight * pixelRatio * settings.display.canvasRes) / 100;
+  missCanvas.width = window.innerWidth * 0.2 * pixelRatio;
+  missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
   if (isFirstCalled) {
     pattern = JSON.parse(localStorage.pattern);
     patternLength = pattern.patterns.length;
@@ -167,15 +166,63 @@ const initialize = (isFirstCalled) => {
     offset = pattern.information.offset;
     bpm = pattern.information.bpm;
     speed = pattern.information.speed;
+    for (let i = 0; i < tracks.length; i++) {
+      if (tracks[i].name == pattern.information.track) {
+        document.getElementById("scoreTitle").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
+        document.getElementById("title").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
+        trackName = tracks[i].name;
+        fileName = tracks[i].fileName;
+        document.getElementById("album").src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.png`;
+        document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
+        document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
+        document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
+        break;
+      }
+    }
+    if (pattern.background.type) {
+      lottieLoad();
+    }
+    fetch(`${api}/skin/${settings.game.skin}`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.result == "success") {
+          skin = JSON.parse(data.data);
+        } else {
+          alert(`Error occured.\n${data.description}`);
+          console.error(`Error occured.\n${data.description}`);
+        }
+      })
+      .catch((error) => {
+        alert(`Error occured.\n${error}`);
+        console.error(`Error occured.\n${error}`);
+      });
+    song = new Howl({
+      src: `${cdn}/tracks/${settings.sound.res}/${fileName}.ogg`,
+      format: ["ogg"],
+      autoplay: false,
+      loop: false,
+      onend: () => {
+        isResultShowing = true;
+        menuAllowed = false;
+        calculateResult();
+      },
+      onload: () => {
+        Howler.volume(settings.sound.volume.master);
+        song.volume(settings.sound.volume.music);
+        if (load == 1) {
+          doneLoading();
+        }
+        load++;
+      },
+    });
   } else {
     if (pattern.background.type) {
       lottieLoad(true);
     }
   }
-  canvas.width = (window.innerWidth * pixelRatio * settings.display.canvasRes) / 100;
-  canvas.height = (window.innerHeight * pixelRatio * settings.display.canvasRes) / 100;
-  missCanvas.width = window.innerWidth * 0.2 * pixelRatio;
-  missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
 };
 
 const lottieLoad = (needToSeek) => {
@@ -208,11 +255,11 @@ const lottieSet = () => {
   switch (pattern.background.type) {
     case 0: //Image
       canvasBackground.getElementsByTagName("canvas")[0].style.display = "none";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName} (Custom).png")`;
+      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
       break;
     case 1: //Image & BGA
       canvasBackground.getElementsByTagName("canvas")[0].style.display = "initial";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName} (Custom).png")`;
+      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
       break;
     case 2: //BGA
       canvasBackground.getElementsByTagName("canvas")[0].style.display = "initial";
@@ -223,8 +270,8 @@ const lottieSet = () => {
 };
 
 const settingApply = () => {
-  tick.volume(settings.sound.volume.master * settings.sound.volume.hitSound);
-  resultEffect.volume(settings.sound.volume.master * settings.sound.volume.effect);
+  tick.volume(settings.sound.volume.hitSound);
+  resultEffect.volume(settings.sound.volume.effect);
   sync = parseInt(settings.sound.offset);
   document.getElementById("loadingContainer").style.opacity = 1;
   sens = settings.input.sens;
@@ -243,56 +290,7 @@ const settingApply = () => {
   for (let i = 0; i <= 1; i++) {
     document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
   }
-  for (let i = 0; i < tracks.length; i++) {
-    if (tracks[i].name == pattern.information.track) {
-      fileName = tracks[i].fileName;
-      document.getElementById("scoreTitle").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
-      document.getElementById("title").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
-      document.getElementById("album").src = `${cdn}/albums/${settings.display.albumRes}/${fileName} (Custom).png`;
-      document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName} (Custom).png")`;
-      document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName} (Custom).png")`;
-      document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName} (Custom).png")`;
-      break;
-    }
-  }
-  if (pattern.background.type) {
-    lottieLoad();
-  }
-  fetch(`${api}/skin/${settings.game.skin}`, {
-    method: "GET",
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.result == "success") {
-        skin = JSON.parse(data.data);
-      } else {
-        alert(`Error occured.\n${data.description}`);
-        console.error(`Error occured.\n${data.description}`);
-      }
-    })
-    .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
-    });
-  song = new Howl({
-    src: `${cdn}/tracks/${settings.sound.res}/${fileName}.ogg`,
-    format: ["ogg"],
-    autoplay: false,
-    loop: false,
-    onend: () => {
-      isResultShowing = true;
-      menuAllowed = false;
-      calculateResult();
-    },
-    onload: () => {
-      song.volume(settings.sound.volume.master * settings.sound.volume.music);
-      if (load == 1) {
-        doneLoading();
-      }
-      load++;
-    },
-  });
+  volumeMasterValue.textContent = Math.round(settings.sound.volume.master * 100) + "%";
 };
 
 const eraseCnt = () => {
@@ -303,7 +301,8 @@ const getJudgeStyle = (j, p, x, y) => {
   p = parseInt(p);
   if (p <= 0) p = 0;
   p = `${p}`.padStart(2, "0");
-  if (denySkin || !judgeSkin || !advanced) {
+  if (p <= 0) p = 0;
+  if (!judgeSkin || denySkin) {
     if (j == "miss") {
       return `rgba(237, 78, 50, ${1 - p / 100})`;
     } else if (j == "perfect") {
@@ -324,6 +323,7 @@ const getJudgeStyle = (j, p, x, y) => {
     p = parseInt(255 - p * 2.55);
     if (p <= 0) p = 0;
     p = p.toString(16).padStart(2, "0");
+    if (p <= 0) p = "00";
     if (skin[j].type == "gradient") {
       let grd = ctx.createLinearGradient(x - 50, y - 20, x + 50, y + 20);
       for (let i = 0; i < skin[j].stops.length; i++) {
@@ -678,8 +678,9 @@ const drawBullet = (n, x, y, a) => {
 };
 
 const callBulletDestroy = (j) => {
-  const seek = song.seek() - (offset + sync) / 1000;
-  const p = ((seek * 1000 - pattern.bullets[j].ms) / ((bpm * 40) / speed / pattern.bullets[j].speed)) * 100;
+  let date = new Date().getTime();
+  const seek = (date - startDate - (offset + sync)) * rate;
+  const p = ((seek - pattern.bullets[j].ms) / ((bpm * 40) / speed / pattern.bullets[j].speed)) * 100;
   const left = pattern.bullets[j].direction == "L";
   let x = (left ? -1 : 1) * (100 - p);
   let y = 0;
@@ -758,9 +759,15 @@ const cntRender = () => {
     ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
-    const seek = song.seek() - (offset + sync) / 1000;
+    let date = new Date().getTime();
+    let seek = 0;
+    if (isPaused || startDate == 0) {
+      seek = (date - (startDate + date - pauseDate) - (offset + sync)) * rate;
+    } else {
+      seek = (date - startDate - (offset + sync)) * rate;
+    }
     let start = lowerBound(pattern.triggers, 0);
-    let end = upperBound(pattern.triggers, seek * 1000 + 2); //2 for floating point miss
+    let end = upperBound(pattern.triggers, seek + 0.002); //for floating point miss
     const renderTriggers = pattern.triggers.slice(start, end);
     for (let i = 0; i < renderTriggers.length; i++) {
       if (renderTriggers[i].value == 0) {
@@ -782,7 +789,7 @@ const cntRender = () => {
       } else if (renderTriggers[i].value == 4) {
         speed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
-        if (renderTriggers[i].ms - 1 <= seek * 1000 && renderTriggers[i].ms + renderTriggers[i].time > seek * 1000) {
+        if (renderTriggers[i].ms - 1 <= seek && renderTriggers[i].ms + renderTriggers[i].time > seek && disableText == "false") {
           ctx.beginPath();
           ctx.fillStyle = "#111";
           ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Metropolis, Pretendard Variable`;
@@ -801,17 +808,17 @@ const cntRender = () => {
         destroyParticles[i].n++;
       }
     }
-    start = lowerBound(pattern.patterns, seek * 1000 - (bpm * 4) / speed);
-    end = upperBound(pattern.patterns, seek * 1000 + (bpm * 14) / speed);
+    start = lowerBound(pattern.patterns, seek - (bpm * 4) / speed);
+    end = upperBound(pattern.patterns, seek + (bpm * 14) / speed);
     const renderNotes = pattern.patterns.slice(start, end);
     for (let i = 0; renderNotes.length > i; i++) {
-      const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek * 1000)) / ((bpm * 14) / speed)) * 100;
+      const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
       if (p >= 50) {
         trackMouseSelection(start + i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
       }
     }
     for (let i = renderNotes.length - 1; i >= 0; i--) {
-      const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek * 1000)) / ((bpm * 14) / speed)) * 100;
+      const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
       drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction);
       if (p >= 120 && !destroyedNotes.has(start + i)) {
         calculateScore("miss", start + i, true);
@@ -829,12 +836,12 @@ const cntRender = () => {
         drawParticle(4, missParticles[i].x, missParticles[i].y, i);
       }
     }
-    start = lowerBound(pattern.bullets, seek * 1000 - bpm * 100);
-    end = upperBound(pattern.bullets, seek * 1000);
+    start = lowerBound(pattern.bullets, seek - bpm * 100);
+    end = upperBound(pattern.bullets, seek);
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
       if (!destroyedBullets.has(start + i)) {
-        const p = ((seek * 1000 - renderBullets[i].ms) / ((bpm * 40) / speed / renderBullets[i].speed)) * 100;
+        const p = ((seek - renderBullets[i].ms) / ((bpm * 40) / speed / renderBullets[i].speed)) * 100;
         const left = renderBullets[i].direction == "L";
         let x = (left ? -1 : 1) * (100 - p);
         let y = 0;
@@ -873,7 +880,7 @@ const cntRender = () => {
   } else {
     displayScore = score;
   }
-  ctx.font = `700 ${canvas.height / 30}px Metropolis, Pretendard Variable`;
+  ctx.font = `700 ${canvas.height / 25}px Metropolis, Pretendard Variable`;
   ctx.fillStyle = "#333";
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
@@ -886,14 +893,21 @@ const cntRender = () => {
   //fps counter
   if (frameCounter) {
     frameArray.push(1000 / (Date.now() - frameCounterMs));
-    if (frameArray.length == 5) {
-      fps = (frameArray[0] + frameArray[1] + frameArray[2] + frameArray[3] + frameArray[4]) / 5;
+    if (frameArray.length == 20) {
+      fps =
+        frameArray.reduce((sum, current) => {
+          return sum + current;
+        }, 0) / 20;
       frameArray = [];
     }
     // ctx.font = "2.5vh Heebo";
     // ctx.fillStyle = "#555";
     // ctx.textBaseline = "bottom";
-    // ctx.fillText(fps.toFixed(), canvas.width / 2, canvas.height - canvas.height / 70);
+    // ctx.fillText(
+    //   fps.toFixed(),
+    //   canvas.width / 2,
+    //   canvas.height - canvas.height / 70
+    // );
     frameCounterMs = Date.now();
   }
   drawCursor();
@@ -1019,7 +1033,10 @@ const compClicked = (isTyped, key, isWheel) => {
   if ((!isTyped && !settings.input.mouse && !isWheel) || isMenuOpened || !menuAllowed || mouseClicked == key) {
     return;
   }
-  if (!song.playing()) {
+  let d = new Date().getTime();
+  if (!song.playing() && isPaused) {
+    isPaused = false;
+    startDate = startDate + d - pauseDate;
     floatingResumeContainer.style.opacity = 0;
     setTimeout(() => {
       floatingResumeContainer.style.display = "none";
@@ -1034,35 +1051,34 @@ const compClicked = (isTyped, key, isWheel) => {
     if (pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && (pointingCntElement[i].v2 === 0) == !isWheel) {
       if (pointingCntElement[i].v2 == 1 && pattern.patterns[pointingCntElement[i].i].direction != key) return;
       drawParticle(1, mouseX, mouseY, 0, pointingCntElement[i].v2);
-      let seek = song.seek() * 1000 - (offset + sync);
+      let date = d;
+      const seek = (date - startDate - (offset + sync)) * rate;
       let ms = pattern.patterns[pointingCntElement[i].i].ms;
-      let perfectJudge = 60000 / bpm / 8;
-      let greatJudge = 60000 / bpm / 5;
-      let goodJudge = 60000 / bpm / 3;
-      let badJudge = 60000 / bpm / 2;
+      let perfectJudge = (60000 / bpm / 8) * rate;
+      let greatJudge = (60000 / bpm / 5) * rate;
+      let goodJudge = (60000 / bpm / 3) * rate;
+      let badJudge = (60000 / bpm / 2) * rate;
       let x = pattern.patterns[pointingCntElement[i].i].x;
       let y = pattern.patterns[pointingCntElement[i].i].y;
+      let judge = "";
       if (seek < ms + perfectJudge && seek > ms - perfectJudge) {
-        calculateScore("perfect", pointingCntElement[i].i);
-        drawParticle(3, x, y, "Perfect");
+        judge = "Perfect";
         perfect++;
       } else if (seek < ms + greatJudge && seek > ms - greatJudge) {
-        calculateScore("great", pointingCntElement[i].i);
-        drawParticle(3, x, y, "Great");
+        judge = "Great";
         great++;
       } else if (seek > ms - goodJudge && seek < ms) {
-        calculateScore("good", pointingCntElement[i].i);
-        drawParticle(3, x, y, "Good");
+        judge = "Good";
         good++;
       } else if ((seek > ms - badJudge && seek < ms) || ms < seek) {
-        calculateScore("bad", pointingCntElement[i].i);
-        drawParticle(3, x, y, "Bad");
+        judge = "Bad";
         bad++;
       } else {
-        calculateScore("miss", pointingCntElement[i].i);
-        drawParticle(3, x, y, "Miss");
+        judge = "Miss";
         miss++;
       }
+      calculateScore(judge, pointingCntElement[i].i);
+      drawParticle(3, x, y, judge);
       return;
     }
   }
@@ -1075,6 +1091,7 @@ const compReleased = () => {
 };
 
 const calculateScore = (judge, i, isMissed) => {
+  judge = judge.toLowerCase();
   scoreMs = Date.now();
   prevScore = displayScore;
   destroyedNotes.add(i);
@@ -1090,15 +1107,17 @@ const calculateScore = (judge, i, isMissed) => {
   if (maxCombo < combo) {
     maxCombo = combo;
   }
+  let basicScore = 100000000 / patternLength;
+  const rateCalc = rate * 0.5 + 0.5;
   if (judge == "perfect") {
-    score += Math.round(100000000 / patternLength) + combo * 5;
+    score += Math.round((basicScore + combo * 5) * rateCalc);
   } else if (judge == "great") {
-    score += Math.round((100000000 / patternLength) * 0.5) + combo * 5;
+    score += Math.round((basicScore * 0.5 + combo * 5) * rateCalc);
   } else if (judge == "good") {
-    score += Math.round((100000000 / patternLength) * 0.2) + combo * 3;
+    score += Math.round((basicScore * 0.2 + combo * 3) * rateCalc);
   } else {
     combo = 0;
-    score += Math.round((100000000 / patternLength) * 0.05);
+    score += Math.round(basicScore * 0.05 * rateCalc);
   }
   if (combo % comboCount == 0 && combo != 0) {
     comboAlertMs = Date.now();
@@ -1126,20 +1145,13 @@ const doneLoading = () => {
       document.getElementById("loadingContainer").style.display = "none";
       document.getElementById("componentCanvas").style.transitionDuration = "0s";
     }, 1000);
-    setTimeout(songPlayPause, 4000);
+    setTimeout(() => {
+      song.play();
+      lottieAnim.play();
+      menuAllowed = true;
+      startDate = new Date().getTime();
+    }, 4000);
   }, 1000);
-};
-
-const songPlayPause = () => {
-  if (song.playing()) {
-    song.pause();
-    lottieAnim.pause();
-    menuAllowed = false;
-  } else {
-    song.play();
-    lottieAnim.play();
-    menuAllowed = true;
-  }
 };
 
 const resume = () => {
@@ -1203,66 +1215,72 @@ const overlayClose = (s) => {
   }
 };
 
+let scrollTimer = 0;
+
 const globalScrollEvent = (e) => {
-  if (shiftDown) {
-    e = window.event || e;
-    let delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail));
-    if (settings.input.wheelReverse) delta > 0 ? (delta = -1) : (delta = 1);
-    if (delta == 1) {
-      //UP
-      if (settings.sound.volume.master <= 0.95) {
-        settings.sound.volume.master = Math.round((settings.sound.volume.master + 0.05) * 100) / 100;
-      } else {
-        settings.sound.volume.master = 1;
-      }
-    } else {
-      //DOWN
-      if (settings.sound.volume.master >= 0.05) {
-        settings.sound.volume.master = Math.round((settings.sound.volume.master - 0.05) * 100) / 100;
-      } else {
-        settings.sound.volume.master = 0;
-      }
-    }
-    for (let i = 0; i <= 1; i++) {
-      document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
-    }
-    volumeMasterValue.textContent = `${Math.round(settings.sound.volume.master * 100)}%`;
-    Howler.volume(settings.sound.volume.master);
-    volumeOverlay.classList.add("overlayOpen");
-    overlayTime = new Date().getTime();
+  if (scrollTimer == 0) {
+    scrollTimer = 1;
     setTimeout(() => {
-      overlayClose("volume");
-    }, 1500);
-    fetch(`${api}/settings`, {
-      method: "PUT",
-      credentials: "include",
-      body: JSON.stringify({
-        settings: settings,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.result != "success") {
-          alert(`Error occured.\n${data.error}`);
+      scrollTimer = 0;
+    }, 50);
+    let delta = 0;
+    if (e.deltaY != 0) delta = Math.max(-1, Math.min(1, e.deltaY));
+    else delta = Math.max(-1, Math.min(1, e.deltaX));
+    if (settings.input.wheelReverse) delta *= -1;
+    if (shiftDown) {
+      if (delta == 1) {
+        //UP
+        if (settings.sound.volume.master <= 0.95) {
+          settings.sound.volume.master = Math.round((settings.sound.volume.master + 0.05) * 100) / 100;
+        } else {
+          settings.sound.volume.master = 1;
         }
+      } else {
+        //DOWN
+        if (settings.sound.volume.master >= 0.05) {
+          settings.sound.volume.master = Math.round((settings.sound.volume.master - 0.05) * 100) / 100;
+        } else {
+          settings.sound.volume.master = 0;
+        }
+      }
+      for (let i = 0; i <= 1; i++) {
+        document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
+      }
+      volumeMasterValue.textContent = `${Math.round(settings.sound.volume.master * 100)}%`;
+      Howler.volume(settings.sound.volume.master);
+      volumeOverlay.classList.add("overlayOpen");
+      overlayTime = new Date().getTime();
+      setTimeout(() => {
+        overlayClose("volume");
+      }, 1500);
+      fetch(`${api}/settings`, {
+        method: "PUT",
+        credentials: "include",
+        body: JSON.stringify({
+          settings: settings,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
-      .catch((error) => {
-        alert(`Error occured.\n${error}`);
-        console.error(`Error occured.\n${error}`);
-      });
-  } else {
-    e = window.event || e;
-    let delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail));
-    if (settings.input.wheelReverse) delta > 0 ? (delta = -1) : (delta = 1);
-    if (delta == 1) {
-      //UP
-      compClicked(false, 1, true);
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.result != "success") {
+            alert(`Error occured.\n${data.error}`);
+          }
+        })
+        .catch((error) => {
+          alert(`Error occured.\n${error}`);
+          console.error(`Error occured.\n${error}`);
+        });
     } else {
-      //DOWN
-      compClicked(false, -1, true);
+      if (delta == 1) {
+        //UP
+        compClicked(false, 1, true);
+      } else {
+        //DOWN
+        compClicked(false, -1, true);
+      }
     }
   }
 };
@@ -1277,12 +1295,14 @@ document.onkeydown = (e) => {
       e.preventDefault();
       if (menuAllowed) {
         if (menuContainer.style.display == "none") {
+          isPaused = true;
           floatingResumeContainer.style.opacity = 0;
           floatingResumeContainer.style.display = "none";
           isMenuOpened = true;
           menuContainer.style.display = "flex";
           song.pause();
           lottieAnim.pause();
+          pauseDate = new Date().getTime();
         } else {
           resume();
         }
@@ -1313,5 +1333,4 @@ window.addEventListener("resize", () => {
   initialize(false);
 });
 
-window.addEventListener("mousewheel", globalScrollEvent);
-window.addEventListener("DOMMouseScroll", globalScrollEvent);
+window.addEventListener("wheel", globalScrollEvent);
