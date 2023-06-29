@@ -35,6 +35,13 @@
     </div>
     <div id="buttonContainer">
       <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
+      <div id="policies">
+        <% if(__('lang') == 'en') { %>
+        <a href="/privacy" class="bottomPolicy">Privacy Policy</a>
+        <% } else { %>
+        <a href="/privacy" class="bottomPolicy">개인정보처리방침</a>
+        <% } %>
+      </div>
     </div>
     <span id="footerLeft">
       <b>E-mail</b>: coupy1024@icloud.com | <b>담당자</b>: 강혁진<br />

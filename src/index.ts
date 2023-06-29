@@ -136,6 +136,10 @@ app.get("/info", (req, res) => {
   res.render("information");
 });
 
+app.get("/privacy", (req, res) => {
+  res.render("privacy");
+});
+
 app.get("/storePurchased", (req, res) => {
   res.render("storePurchased", { url: config.project.url });
 });
