@@ -116,12 +116,11 @@ body {
 
 #policies {
   z-index: 1;
-  margin: 2vh;
+  margin: 1vh;
 }
 
 .bottomPolicy {
   color: #7f89bc;
   text-decoration: none;
-  font-size: 1.7vh;
-  margin: 0.3vh;
+  font-size: 0.8em;
 }
