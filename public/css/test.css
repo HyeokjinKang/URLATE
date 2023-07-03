@@ -1,9 +1,9 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css");
 @import url("https://fonts.googleapis.com/css?family=Heebo:400,500,600&display=swap");
-@import url("metropolis.css");
+@import url("https://fonts.googleapis.com/css?family=Montserrat:400,500,600,800&display=swap");
 
 body {
-  background: #eee;
+  background: #222;
   background-repeat: repeat;
   width: 100vw;
   height: 100vh;
@@ -11,7 +11,7 @@ body {
   margin: 0;
   padding: 0;
   text-align: center;
-  font-family: "Metropolis", "Pretendard Variable", "나눔바른고딕", arial;
+  font-family: "Montserrat", "Pretendard Variable", "나눔바른고딕", arial;
   letter-spacing: -0.5px;
   overflow-x: hidden;
   overflow-y: hidden;
@@ -162,11 +162,12 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  filter: grayscale(30%) opacity(20%);
+  filter: blur(10px) brightness(50%);
+  scale: 1.05;
 }
 
 #loadingContainer {
-  background: #ffffffaa;
+  background: #33333333;
   position: fixed;
   width: 100vw;
   height: 100vh;
@@ -180,44 +181,88 @@ body {
 }
 
 #title {
+  color: white;
   filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.2));
   font-size: 2em;
-  font-weight: 600;
+  font-weight: 800;
 }
 
 #artist {
+  color: white;
   filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.2));
-  font-size: 1.3em;
+  margin-top: 2px;
+  font-size: 1.2em;
+  font-weight: 600;
+  opacity: 0.7;
 }
 
-#alertMessage {
-  color: #ff5555;
-  filter: drop-shadow(0 0 5px rgba(255, 100, 100, 0.2));
-  font-size: 1.3em;
-}
-
-#album {
-  width: 30vw;
+#albumContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  width: 25vw;
+  height: 25vw;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   margin-bottom: 3vh;
-  border-radius: 5px;
-  filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.2));
+  filter: drop-shadow(0 0 20px rgba(20, 20, 20, 0.5));
+  border: 3px solid white;
 }
 
-.opacity1 {
-  opacity: 1;
+#albumInfo {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  width: 100%;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 6px;
+  padding-bottom: 3px;
+}
+
+#author {
+  font-size: 2vh;
+  font-weight: 400;
+  color: black;
+}
+
+#authorNamespace {
+  font-weight: 800;
+}
+
+#albumDifficulty {
+  font-size: 2vh;
+  font-weight: 400;
+  color: black;
+}
+
+#albumDifficultyNum {
+  font-size: 2vh;
+  color: black;
+  font-weight: 800;
 }
 
 .opacity0 {
   opacity: 0 !important;
 }
 
-#author {
-  color: #222;
+#loadingUrlate {
+  color: #fff;
   font-size: 1.2em;
   text-align: right;
   position: fixed;
   bottom: 2vh;
   right: 2vw;
+  font-weight: 800;
+}
+
+#loadingLite {
+  font-weight: 400;
 }
 
 #menuContainer {
@@ -241,7 +286,7 @@ body {
   width: 30vw;
   height: 70vh;
   background-color: #eee;
-  color: #222;
+  color: #fff;
   border-radius: 10px;
 }
 
@@ -284,7 +329,7 @@ body {
 #scoreContainer {
   opacity: 0;
   pointer-events: none;
-  background-color: #222;
+  background-color: #fff;
   align-items: center;
   justify-content: center;
   cursor: initial;

@@ -173,11 +173,12 @@ const initialize = (isFirstCalled) => {
         patternLength = pattern.patterns.length;
         document.getElementById("scoreDifficultyNum").textContent = localStorage.difficulty;
         document.getElementById("scoreDifficultyName").textContent = difficultyNames[localStorage.difficultySelection];
-        document.getElementById("alertMessage").textContent = difficultyNames[localStorage.difficultySelection];
+        document.getElementById("albumDifficulty").textContent = difficultyNames[localStorage.difficultySelection];
+        document.getElementById("albumDifficultyNum").textContent = localStorage.difficulty;
         document.getElementById("artist").textContent = pattern.information.producer;
         document.getElementById("scoreArtist").textContent = pattern.information.producer;
         document.getElementById("authorNamespace").textContent = pattern.information.author;
-        canvasBackground.style.filter = `grayscale(${pattern.background.grayscale}%) opacity(${pattern.background.opacity}%)`;
+        // canvasBackground.style.filter = `grayscale(${pattern.background.grayscale}%) opacity(${pattern.background.opacity}%)`;
         offset = pattern.information.offset;
         bpm = pattern.information.bpm;
         speed = pattern.information.speed;
@@ -187,7 +188,7 @@ const initialize = (isFirstCalled) => {
             document.getElementById("title").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
             trackName = tracks[i].name;
             fileName = tracks[i].fileName;
-            document.getElementById("album").src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.png`;
+            document.getElementById("albumContainer").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
             document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
             document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
             document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
