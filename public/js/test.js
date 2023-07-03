@@ -1295,6 +1295,7 @@ document.onkeydown = (e) => {
       e.preventDefault();
       if (menuAllowed) {
         if (menuContainer.style.display == "none") {
+          if (song.playing()) pauseDate = new Date().getTime();
           isPaused = true;
           floatingResumeContainer.style.opacity = 0;
           floatingResumeContainer.style.display = "none";
@@ -1302,7 +1303,6 @@ document.onkeydown = (e) => {
           menuContainer.style.display = "flex";
           song.pause();
           lottieAnim.pause();
-          pauseDate = new Date().getTime();
         } else {
           resume();
         }
