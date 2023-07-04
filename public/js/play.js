@@ -309,9 +309,7 @@ const settingApply = () => {
   hide.bad = settings.game.applyJudge.Bad;
   hide.miss = settings.game.applyJudge.Miss;
   frameCounter = settings.game.counter;
-  for (let i = 0; i <= 1; i++) {
-    document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
-  }
+  document.getElementsByClassName("volumeMaster")[0].value = Math.round(settings.sound.volume.master * 100);
   volumeMasterValue.textContent = Math.round(settings.sound.volume.master * 100) + "%";
 };
 
@@ -1272,9 +1270,7 @@ const globalScrollEvent = (e) => {
           settings.sound.volume.master = 0;
         }
       }
-      for (let i = 0; i <= 1; i++) {
-        document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
-      }
+      document.getElementsByClassName("volumeMaster")[0].value = Math.round(settings.sound.volume.master * 100);
       volumeMasterValue.textContent = `${Math.round(settings.sound.volume.master * 100)}%`;
       Howler.volume(settings.sound.volume.master);
       volumeOverlay.classList.add("overlayOpen");

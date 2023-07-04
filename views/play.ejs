@@ -77,15 +77,13 @@
       </div>
     </div>
     <div id="menuContainer">
+      <span id="menuTitle">Paused</span>
       <div id="menuBox">
         <div id="resume" class="menuBtn" onclick="resume()"><span>Resume</span></div>
         <div id="retry" class="menuBtn" onclick="retry()"><span>Retry</span></div>
         <div id="backToHome" class="menuBtn" onclick="home()"><span>Back to home</span></div>
-        <div class="optionValueContainer">
-          <p class="optionSemiTitle"><%= __('volume') %></p>
-          <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" oninput="settingChanged(this, 'volumeMaster')" />
-        </div>
       </div>
+      <span id="menuVolume"><%= __('menu_volume') %></span>
     </div>
     <div id="loadingContainer">
       <div id="albumContainer">

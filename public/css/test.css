@@ -239,8 +239,14 @@ body {
 }
 
 #menuContainer {
-  align-items: center;
-  justify-content: center;
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+  padding-left: 10vw;
+  padding-top: 20vh;
+  padding-bottom: 20vh;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-around;
   cursor: initial;
   z-index: 100;
   position: fixed;
@@ -248,55 +254,42 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: #1111114b;
+  background-color: #11111188;
+}
+
+#menuTitle {
+  color: white;
+  font-size: 4vh;
+  font-weight: 800;
 }
 
 #menuBox {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-around;
-  width: 30vw;
-  height: 70vh;
-  background-color: #eee;
-  color: #fff;
-  border-radius: 10px;
 }
 
 .menuBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 500;
-  width: 20vw;
-  height: 10vh;
-  font-size: 4vh;
-  transition-duration: 0.2s;
   cursor: pointer;
-  border-radius: 50vh;
-  background-size: cover;
+  text-align: left;
+  box-sizing: border-box;
+  color: white;
+  font-size: 3vh;
+  font-weight: 400;
+  width: 100%;
+  padding: 5px 15px;
+  transition-duration: 0.2s;
+  margin-top: 2px;
+  margin-bottom: 2px;
 }
 
 .menuBtn:hover {
-  width: 23vw;
-  height: 11vh;
-  color: white;
+  background-color: #ffffff22;
 }
 
-#resume:hover {
-  background-image: url("/images/parts/elements/resume_button_background.png");
-}
-
-#retry:hover {
-  background-image: url("/images/parts/elements/retry_button_background.png");
-}
-
-#backToHome:hover {
-  background-image: url("/images/parts/elements/back_to_home_button_background.png");
-}
-
-#backToEditor:hover {
-  background-image: url("/images/parts/elements/back_to_editor_button_background.png");
+#menuVolume {
+  color: #ffffff77;
+  font-size: 2vh;
+  font-weight: 600;
 }
 
 #scoreContainer {
@@ -673,16 +666,18 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #333;
+  color: black;
   animation: floatResume 1s ease-in-out infinite;
   animation-direction: alternate;
   transition-duration: 0.3s;
 }
 
 #floatingResume {
-  background-color: white;
+  opacity: 0.8;
+  background-color: #ffffff;
+  backdrop-filter: blur(5px);
   padding: 0.5em;
-  border-radius: 10px;
+  border-radius: 5px;
   position: fixed;
   font-size: 3vh;
   font-weight: 600;
@@ -691,7 +686,6 @@ body {
 @keyframes floatResume {
   0% {
     top: -2vh;
-    color: #333;
   }
   100% {
     top: 2vh;
