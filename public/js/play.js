@@ -926,8 +926,6 @@ const trackMousePos = () => {
 
 const calculateResult = () => {
   lottieAnim.stop();
-  document.getElementById("wallLeft").style.left = "-10vw";
-  document.getElementById("wallRight").style.right = "-10vw";
   resultEffect.play();
   document.getElementById("perfectResult").textContent = perfect;
   document.getElementById("greatResult").textContent = great;
@@ -1176,8 +1174,6 @@ const doneLoading = () => {
     cntRender();
     document.getElementById("componentCanvas").style.opacity = "1";
     document.getElementById("loadingContainer").style.opacity = "0";
-    document.getElementById("wallLeft").style.left = "0vw";
-    document.getElementById("wallRight").style.right = "0vw";
     setTimeout(() => {
       document.getElementById("loadingContainer").style.display = "none";
       document.getElementById("componentCanvas").style.transitionDuration = "0s";

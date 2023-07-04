@@ -130,29 +130,6 @@ body {
   transition-duration: 1s;
 }
 
-.wall {
-  filter: drop-shadow(0 0px 10px rgba(0, 0, 0, 0.5));
-  position: fixed;
-  -webkit-pointer-events: none;
-  pointer-events: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-  top: 0;
-  height: 100vh;
-  width: 10vw;
-  transition-duration: 1s;
-}
-
-#wallLeft {
-  left: -10vw;
-}
-
-#wallRight {
-  right: -10vw;
-  transform: rotate(180deg);
-}
-
 #canvasBackground {
   cursor: none;
   position: fixed;
