@@ -178,8 +178,8 @@ body {
   flex-direction: column;
   justify-content: flex-end;
   align-items: center;
-  width: 25vw;
-  height: 25vw;
+  width: 28vw;
+  height: 28vw;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -189,6 +189,8 @@ body {
 }
 
 #albumInfo {
+  font-size: 1.8vh;
+  color: black;
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
@@ -203,9 +205,7 @@ body {
 }
 
 #author {
-  font-size: 2vh;
   font-weight: 400;
-  color: black;
 }
 
 #authorNamespace {
@@ -213,14 +213,10 @@ body {
 }
 
 #albumDifficulty {
-  font-size: 2vh;
   font-weight: 400;
-  color: black;
 }
 
 #albumDifficultyNum {
-  font-size: 2vh;
-  color: black;
   font-weight: 800;
 }
 
@@ -230,7 +226,7 @@ body {
 
 #loadingUrlate {
   color: #fff;
-  font-size: 1.2em;
+  font-size: 1em;
   text-align: right;
   position: fixed;
   bottom: 2vh;
@@ -765,7 +761,7 @@ body {
 }
 
 .optionValue {
-  font-family: "Metropolis", "Pretendard Variable", "나눔바른고딕", arial;
+  font-family: "Montserrat", "Pretendard Variable", "나눔바른고딕", arial;
   font-weight: 400;
   color: #404040;
   font-size: 2vh;
