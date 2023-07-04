@@ -248,6 +248,7 @@ const initialize = (isFirstCalled) => {
 };
 
 const lottieLoad = (needToSeek) => {
+  if (JSON.stringify(pattern.background.lottie) == "{}") return;
   let blob = new Blob([pattern.background.lottie], {
     type: "application/json",
   });
