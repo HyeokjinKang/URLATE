@@ -92,6 +92,7 @@ let disableText = false;
 let songData = [];
 let record = [];
 let trackName = "";
+const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
   menuContainer.style.display = "none";
@@ -192,6 +193,7 @@ const initialize = (isFirstCalled) => {
             document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
             document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
             document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
+            albumImg.src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.png`;
             break;
           }
         }
@@ -454,7 +456,7 @@ const drawParticle = (n, x, y, j, d) => {
         let newY = cy - Math.round(p / 10);
         ctx.fillStyle = getJudgeStyle(j.toLowerCase(), p, cx, newY);
         ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
-        ctx.font = `600 ${canvas.height / 25}px Metropolis, Pretendard Variable`;
+        ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.lineWidth = 2;
@@ -476,7 +478,7 @@ const drawParticle = (n, x, y, j, d) => {
       let newY = cy - Math.round(p / 10);
       ctx.fillStyle = getJudgeStyle("miss", p);
       ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
-      ctx.font = `600 ${canvas.height / 25}px Metropolis, Pretendard Variable`;
+      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.lineWidth = 2;
@@ -668,7 +670,7 @@ const drawBullet = (n, x, y, a) => {
       if (skin.bullet.outline) ctx.stroke();
       break;
     default:
-      ctx.font = `500 ${canvas.height / 30}px Metropolis, Pretendard Variable`;
+      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
       ctx.fillStyle = "#F55";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
@@ -739,7 +741,7 @@ const cntRender = () => {
       }
       fontSize = (canvas.height / 100) * (30 - (comboAlertMs + 900 - Date.now()) / 90);
       ctx.beginPath();
-      ctx.font = `700 ${fontSize}px Metropolis, Pretendard Variable`;
+      ctx.font = `700 ${fontSize}px Montserrat, Pretendard Variable`;
       ctx.fillStyle = `rgba(200,200,200,${comboOpacity})`;
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
@@ -792,9 +794,9 @@ const cntRender = () => {
         if (renderTriggers[i].ms - 1 <= seek && renderTriggers[i].ms + renderTriggers[i].time > seek && disableText == "false") {
           ctx.beginPath();
           ctx.fillStyle = "#111";
-          ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Metropolis, Pretendard Variable`;
+          ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Montserrat, Pretendard Variable`;
           if (renderTriggers[i].size.indexOf("vh") != -1)
-            ctx.font = `${renderTriggers[i].weight} ${(canvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Metropolis, Pretendard Variable`;
+            ctx.font = `${renderTriggers[i].weight} ${(canvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Montserrat, Pretendard Variable`;
           ctx.textAlign = renderTriggers[i].align;
           ctx.textBaseline = renderTriggers[i].valign;
           ctx.fillText(renderTriggers[i].text, (canvas.width / 200) * (renderTriggers[i].x + 100), (canvas.height / 200) * (renderTriggers[i].y + 100));
@@ -867,7 +869,7 @@ const cntRender = () => {
     }
   } catch (e) {
     if (e) {
-      ctx.font = `500 ${canvas.height / 30}px Metropolis, Pretendard Variable`;
+      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
       ctx.fillStyle = "#F55";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
@@ -875,20 +877,32 @@ const cntRender = () => {
       console.error(e);
     }
   }
+  ctx.beginPath();
+  if (localStorage.difficultySelection == 0) ctx.fillStyle = "#31A97E";
+  else if (localStorage.difficultySelection == 1) ctx.fillStyle = "#F0C21D";
+  else ctx.fillStyle = "#FF774B";
+  ctx.rect(canvas.width * 0.92, canvas.height * 0.05, canvas.height / 15 + 10, canvas.height / 15 + 10);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.fillStyle = "#fff";
+  ctx.rect(canvas.width * 0.92 - 5, canvas.height * 0.05 - 5, canvas.height / 15 + 10, canvas.height / 15 + 10);
+  ctx.fill();
+  ctx.drawImage(albumImg, canvas.width * 0.92, canvas.height * 0.05, canvas.height / 15, canvas.height / 15);
   if (Date.now() - scoreMs < 500) {
     displayScore += ((score - prevScore) / 500) * (Date.now() - scoreMs);
     prevScore = displayScore;
   } else {
     displayScore = score;
   }
-  ctx.font = `700 ${canvas.height / 25}px Metropolis, Pretendard Variable`;
-  ctx.fillStyle = "#333";
-  ctx.textAlign = "center";
+  ctx.beginPath();
+  ctx.font = `700 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "right";
   ctx.textBaseline = "top";
-  ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvas.width / 2, canvas.height / 80);
-  ctx.font = `${canvas.height / 40}px Metropolis, Pretendard Variable`;
-  ctx.fillStyle = "#555";
-  ctx.fillText(`${combo}x`, canvas.width / 2, canvas.height / 70 + canvas.height / 25);
+  ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvas.width * 0.92 - 20, canvas.height * 0.05);
+  ctx.font = `${canvas.height / 40}px Montserrat, Pretendard Variable`;
+  ctx.fillStyle = "#fff";
+  ctx.fillText(`${combo}x`, canvas.width * 0.92 - 20, canvas.height * 0.05 + canvas.height / 25);
   drawCursor();
 
   //fps counter
@@ -986,7 +1000,7 @@ const calculateResult = () => {
   }
   if (missPoint.length == 0) {
     missCtx.fillStyle = "#FFF";
-    missCtx.font = `500 ${canvas.height / 30}px Metropolis, Pretendard Variable`;
+    missCtx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
     missCtx.textAlign = "right";
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
@@ -1051,7 +1065,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
         }
         break;
       default:
-        ctx.font = `500 ${canvas.height / 30}px Metropolis, Pretendard Variable`;
+        ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
         ctx.fillStyle = "#F55";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
