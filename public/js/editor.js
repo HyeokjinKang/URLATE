@@ -93,8 +93,6 @@ let pattern = {
     lottie: {},
     type: 0,
     boxColor: "FFFFFF",
-    grayscale: 30,
-    opacity: 20,
   },
   patterns: [],
   bullets: [],
@@ -351,8 +349,6 @@ const songSelected = (isLoaded, withoutSong) => {
   settingsPropertiesTextbox[5].value = pattern.information.speed;
   settingsPropertiesTextbox[6].value = pattern.information.offset;
   settingsPropertiesTextbox[7].value = pattern.background.boxColor;
-  settingsPropertiesTextbox[8].value = pattern.background.grayscale;
-  settingsPropertiesTextbox[9].value = pattern.background.opacity;
   lottieInitBox.value = pattern.background.type;
   canvasBackground.style.filter = `grayscale(${pattern.background.grayscale}%) opacity(${pattern.background.opacity}%)`;
   metronomeLimit = pattern.information.tempo ? pattern.information.tempo : 4;
@@ -721,8 +717,6 @@ const gotoMain = (isCalledByMain) => {
         lottie: {},
         type: 0,
         boxColor: "FFFFFF",
-        grayscale: 30,
-        opacity: 20,
       },
       patterns: [],
       bullets: [],
@@ -1362,8 +1356,6 @@ const deleteAll = () => {
         lottie: {},
         type: 0,
         boxColor: "FFFFFF",
-        grayscale: 30,
-        opacity: 20,
       },
       patterns: [],
       bullets: [],
@@ -2514,26 +2506,6 @@ const changeLetterbox = (e) => {
   }
   canvasBackground.style.backgroundColor = `#${e.value}`;
   pattern.background.boxColor = e.value;
-};
-
-const changeGrayscale = (e) => {
-  if (isNaN(Number(e.value))) {
-    alert("Input value is not number.");
-    e.value = "30";
-  } else {
-    canvasBackground.style.filter = `grayscale(${e.value}%) opacity(${settingsPropertiesTextbox[9].value}%)`;
-  }
-  pattern.background.grayscale = Number(e.value);
-};
-
-const changeOpacity = (e) => {
-  if (isNaN(Number(e.value))) {
-    alert("Input value is not number.");
-    e.value = "20";
-  } else {
-    canvasBackground.style.filter = `grayscale(${settingsPropertiesTextbox[8].value}%) opacity(${e.value}%)`;
-  }
-  pattern.background.opacity = Number(e.value);
 };
 
 const changeTempo = (e) => {
