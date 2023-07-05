@@ -433,10 +433,7 @@ const drawParticle = (n, x, y, j, d) => {
       ctx.strokeWidth = 3;
       let width = canvas.width / 60;
       let p = 100 - (s + 300 - Date.now()) / 3;
-      let grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
-      grd.addColorStop(0, `rgba(174, 102, 237, ${0.5 - p / 200})`);
-      grd.addColorStop(1, `rgba(102, 183, 237, ${0.5 - p / 200})`);
-      ctx.strokeStyle = grd;
+      ctx.strokeStyle = `rgba(67, 221, 166, ${0.5 - p / 200})`;
       ctx.arc(cx, cy, w, 0, 2 * Math.PI);
       ctx.stroke();
       w = canvas.width / 70 + canvas.width / 400 + width * (p / 100);
@@ -453,14 +450,14 @@ const drawParticle = (n, x, y, j, d) => {
       const raf = (y, s) => {
         ctx.beginPath();
         let p = 100 - (s + 300 - Date.now()) / 3;
-        let newY = cy - Math.round(p / 10);
+        let newY = y - 2 * Math.round(p / 10);
         ctx.fillStyle = getJudgeStyle(j.toLowerCase(), p, cx, newY);
-        ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
+        ctx.strokeStyle = `rgba(0, 0, 0, ${1 - p / 100})`;
         ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.lineWidth = 2;
-        ctx.strokeText(j, cx, newY);
+        // ctx.strokeText(j, cx, newY);
         ctx.fillText(j, cx, newY);
         if (p < 100) {
           requestAnimationFrame(() => {
@@ -482,7 +479,6 @@ const drawParticle = (n, x, y, j, d) => {
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.lineWidth = 2;
-      ctx.strokeText("Miss", cx, newY);
       ctx.fillText("Miss", cx, newY);
     }
   }
@@ -755,8 +751,8 @@ const cntRender = () => {
     const rectWidth = canvas.width / 7;
     const rectHeight = canvas.height / 200;
     ctx.lineWidth = 1;
-    ctx.strokeStyle = "#222";
-    ctx.fillStyle = "#222";
+    ctx.strokeStyle = "#fff";
+    ctx.fillStyle = "#fff";
     ctx.strokeRect(rectX, rectY, rectWidth, rectHeight);
     ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
     ctx.lineWidth = 5;
@@ -881,11 +877,11 @@ const cntRender = () => {
   if (localStorage.difficultySelection == 0) ctx.fillStyle = "#31A97E";
   else if (localStorage.difficultySelection == 1) ctx.fillStyle = "#F0C21D";
   else ctx.fillStyle = "#FF774B";
-  ctx.rect(canvas.width * 0.92, canvas.height * 0.05, canvas.height / 15 + 10, canvas.height / 15 + 10);
+  ctx.rect(canvas.width * 0.92, canvas.height * 0.05, canvas.height / 15 + canvas.width * 0.004, canvas.height / 15 + canvas.width * 0.004);
   ctx.fill();
   ctx.beginPath();
   ctx.fillStyle = "#fff";
-  ctx.rect(canvas.width * 0.92 - 5, canvas.height * 0.05 - 5, canvas.height / 15 + 10, canvas.height / 15 + 10);
+  ctx.rect(canvas.width * 0.92 - canvas.width * 0.002, canvas.height * 0.05 - canvas.width * 0.002, canvas.height / 15 + canvas.width * 0.004, canvas.height / 15 + canvas.width * 0.004);
   ctx.fill();
   ctx.drawImage(albumImg, canvas.width * 0.92, canvas.height * 0.05, canvas.height / 15, canvas.height / 15);
   if (Date.now() - scoreMs < 500) {
@@ -899,10 +895,10 @@ const cntRender = () => {
   ctx.fillStyle = "#fff";
   ctx.textAlign = "right";
   ctx.textBaseline = "top";
-  ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvas.width * 0.92 - 20, canvas.height * 0.05);
+  ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05);
   ctx.font = `${canvas.height / 40}px Montserrat, Pretendard Variable`;
   ctx.fillStyle = "#fff";
-  ctx.fillText(`${combo}x`, canvas.width * 0.92 - 20, canvas.height * 0.05 + canvas.height / 25);
+  ctx.fillText(`${combo}x`, canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05 + canvas.height / 25);
   drawCursor();
 
   //fps counter

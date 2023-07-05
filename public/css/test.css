@@ -139,7 +139,7 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  filter: blur(10px) brightness(50%);
+  filter: blur(10px) brightness(30%);
   scale: 1.05;
 }
 
@@ -621,7 +621,7 @@ body {
 }
 
 #floatingResult {
-  color: #333;
+  color: #fff;
   font-weight: 600;
   font-size: 5vh;
 }
