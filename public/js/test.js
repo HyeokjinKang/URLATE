@@ -163,7 +163,6 @@ const initialize = (isFirstCalled) => {
     document.getElementById("artist").textContent = pattern.information.producer;
     document.getElementById("scoreArtist").textContent = pattern.information.producer;
     document.getElementById("authorNamespace").textContent = pattern.information.author;
-    canvasBackground.style.filter = `grayscale(${pattern.background.grayscale}%) opacity(${pattern.background.opacity}%)`;
     offset = pattern.information.offset;
     bpm = pattern.information.bpm;
     speed = pattern.information.speed;
@@ -789,7 +788,7 @@ const cntRender = () => {
       } else if (renderTriggers[i].value == 4) {
         speed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
-        if (renderTriggers[i].ms - 1 <= seek && renderTriggers[i].ms + renderTriggers[i].time > seek && disableText == "false") {
+        if (renderTriggers[i].ms - 1 <= seek && renderTriggers[i].ms + renderTriggers[i].time > seek && disableText == false) {
           ctx.beginPath();
           ctx.fillStyle = "#fff";
           ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Montserrat, Pretendard Variable`;
