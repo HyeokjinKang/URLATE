@@ -826,7 +826,7 @@ const cntRender = () => {
         });
         miss++;
         missPoint.push(song.seek() * 1000);
-        record.push({ index: record.length, pointingCntElement, mouseX, mouseY, judge: "bullet", seek });
+        record.push({ index: record.length, pointingCntElement, mouseX, mouseY, judge: "miss", seek });
       }
     }
     for (let i = 0; i < missParticles.length; i++) {
@@ -1056,6 +1056,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
             setTimeout(() => {
               colorOverlayContainer.classList.remove("show");
             }, 100);
+            record.push({ index: record.length, pointingCntElement, mouseX, mouseY, judge: "bullet", seek: song.seek() * 1000 });
           }
         }
         break;
