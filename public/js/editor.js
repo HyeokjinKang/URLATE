@@ -350,7 +350,7 @@ const songSelected = (isLoaded, withoutSong) => {
   settingsPropertiesTextbox[6].value = pattern.information.offset;
   settingsPropertiesTextbox[7].value = pattern.background.boxColor;
   lottieInitBox.value = pattern.background.type;
-  canvasBackground.style.filter = `grayscale(${pattern.background.grayscale}%) opacity(${pattern.background.opacity}%)`;
+  canvasBackground.style.filter = `grayscale(30%) opacity(20%)`;
   metronomeLimit = pattern.information.tempo ? pattern.information.tempo : 4;
   bpm = pattern.information.bpm;
   offset = pattern.information.offset;
