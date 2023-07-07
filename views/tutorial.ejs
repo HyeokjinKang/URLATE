@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Tutorial</title>
+    <title>URLATE Tutorial</title>
     <link rel="stylesheet" href="/css/test.css" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
@@ -17,12 +17,12 @@
       <div id="scoreAlbumInformations">
         <div id="scoreAlbum"></div>
         <div id="scoreAlbumInfo">
-          <span id="scoreTitle">Tutorial</span>
+          <span id="scoreTitle">Title</span>
           <br />
           <span id="scoreArtist">Artist</span>
+          <br />
+          <span id="scoreDifficulty"><span id="scoreDifficultyNum">?</span> <span id="scoreDifficultyName"></span></span>
           <br /><br />
-          <span id="scoreDifficulty"><span id="scoreDifficultyNum">!</span> Welcome Mode</span>
-          <br /><br /><br />
           <canvas id="missPointCanvas"></canvas>
           <br />
           <span id="missPoint">Miss Point</span>
@@ -30,7 +30,7 @@
       </div>
       <div id="resultContainer">
         <span id="result">RESULT</span>
-        <img src="https://img.icons8.com/metro/50/F3F3F3/expand-arrow.png" />
+        <img src="https://img.icons8.com/metro/100/F3F3F3/expand-arrow.png" id="arrow" />
       </div>
       <div id="scoreInfoContainer">
         <div id="scoreInfoScore">
@@ -77,37 +77,35 @@
       </div>
     </div>
     <div id="menuContainer">
+      <span id="menuTitle">Paused</span>
       <div id="menuBox">
         <div id="resume" class="menuBtn" onclick="resume()"><span>Resume</span></div>
         <div id="retry" class="menuBtn" onclick="retry()"><span>Retry</span></div>
         <div id="backToHome" class="menuBtn" onclick="home()"><span>Back to home</span></div>
-        <div class="optionValueContainer">
-          <p class="optionSemiTitle"><%= __('volume') %></p>
-          <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" oninput="settingChanged(this, 'volumeMaster')" />
-        </div>
       </div>
+      <span id="menuVolume"><%= __('menu_volume') %></span>
     </div>
     <div id="loadingContainer">
-      <span id="alertMessage">Welcome Mode</span>
-      <br />
-      <img id="album" />
+      <div id="albumContainer">
+        <div id="albumInfo">
+          <span id="author">Pattern by - <span id="authorNamespace">Author</span></span>
+          <span><span id="albumDifficulty">MID</span>&nbsp;<span id="albumDifficultyNum">5</span></span>
+        </div>
+      </div>
       <span id="title">Title</span>
-      <br />
       <span id="artist">Various Artists</span>
-      <span id="author">Author: <span id="authorNamespace"></span></span>
+      <span id="loadingUrlate">URLATE <span id="loadingLite">LITE</span></span>
     </div>
     <div id="canvasContainer">
       <div id="floatingResultContainer">
         <span id="floatingResult">RESULT</span>
       </div>
       <div id="floatingArrowContainer">
-        <img src="https://img.icons8.com/metro/50/333333/expand-arrow.png" />
+        <img src="https://img.icons8.com/metro/40/ffffff/expand-arrow.png" />
       </div>
       <div id="floatingResumeContainer">
         <span id="floatingResume">Click anywhere to resume the game</span>
       </div>
-      <img src="/images/parts/elements/wall.svg" class="wall" id="wallLeft" />
-      <img src="/images/parts/elements/wall.svg" class="wall" id="wallRight" />
       <div id="canvasBackground"></div>
       <canvas id="componentCanvas" width="100%" height="100%" onmousemove="trackMousePos(event)" onmousedown="compClicked()" onmouseup="compReleased()"> </canvas>
     </div>
@@ -120,6 +118,7 @@
       const cdn = "<%= cdn %>";
       const url = "<%= url %>";
       const api = "<%= api %>";
+      const patternError = "<%= __('pattern_error') %>";
       const returnToGame = "<%= __('return_to_game') %>";
       const lang = "<%= __('lang') %>";
       const confirmExit = "<%= __('confirm_exit_tutorial') %>";

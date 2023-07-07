@@ -1,12 +1,23 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-/* eslint-disable no-undef */
+/* global api, url, Howl, cdn, bodymovin, getTan, calcAngleDegrees, lowerBound, upperBound, numberWithCommas, Pace, Howler, patternError, returnToEditor */
+const menuContainer = document.getElementById("menuContainer");
+const canvasBackground = document.getElementById("canvasBackground");
+const canvasContainer = document.getElementById("canvasContainer");
+const rankImg = document.getElementById("rankImg");
+const floatingArrowContainer = document.getElementById("floatingArrowContainer");
+const floatingResultContainer = document.getElementById("floatingResultContainer");
+const scoreContainer = document.getElementById("scoreContainer");
+const colorOverlayContainer = document.getElementById("colorOverlayContainer");
+const floatingResumeContainer = document.getElementById("floatingResumeContainer");
+const volumeMasterValue = document.getElementById("volumeMasterValue");
+const volumeOverlay = document.getElementById("volumeOverlay");
 const canvas = document.getElementById("componentCanvas");
 const ctx = canvas.getContext("2d");
 const missCanvas = document.getElementById("missPointCanvas");
 const missCtx = missCanvas.getContext("2d");
 let pattern = {};
 let patternLength = 0;
-let settings, sync, song, pixelRatio, offset, bpm, speed;
+let settings, sync, song, tracks, pixelRatio, offset, bpm, speed;
 let pointingCntElement = [{ v1: "", v2: "", i: "" }];
 let circleBulletAngles = [];
 let destroyParticles = [];
@@ -27,7 +38,6 @@ let good = 0;
 let bad = 0;
 let miss = 0;
 let bullet = 0; //miss와 bullet을 따로 처리
-let shiftDown = false;
 let mouseClicked = false;
 let menuAllowed = false;
 let mouseClickedMs = -1;
@@ -51,6 +61,8 @@ let comboAlertMs = 0,
 let hide = {},
   frameCounter;
 let load = 0;
+let fileName = "tutorial";
+let paceLoaded = 0;
 let lottieAnim = {
   play: () => {},
   stop: () => {},
@@ -59,8 +71,8 @@ let lottieAnim = {
   goToAndStop: () => {},
   setSpeed: () => {},
 };
-let paceLoaded = 0;
-let scrollTimer = 0;
+let overlayTime = 0;
+let shiftDown = false;
 let tick = new Howl({
   src: [`/sounds/tick.mp3`],
   autoplay: false,
@@ -71,6 +83,13 @@ let resultEffect = new Howl({
   autoplay: false,
   loop: false,
 });
+let startDate = 0;
+let pauseDate = 0;
+let isPaused = false;
+let rate = 1;
+let disableText = false;
+let songData = [];
+const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
   menuContainer.style.display = "none";
@@ -84,6 +103,8 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = `${url}/join`;
       } else if (data.status == "Not logined") {
         window.location.href = url;
+      } else if (data.status == "Shutdowned") {
+        window.location.href = `${api}/auth/logout?redirect=true&shutdowned=true`;
       } else {
         fetch(`${api}/user`, {
           method: "GET",
@@ -100,6 +121,10 @@ document.addEventListener("DOMContentLoaded", () => {
               alert(`Error occured.\n${data.description}`);
               console.error(`Error occured.\n${data.description}`);
             }
+          })
+          .catch((error) => {
+            alert(`Error occured.\n${error}`);
+            console.error(`Error occured.\n${error}`);
           });
       }
     })
@@ -110,6 +135,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 const initialize = (isFirstCalled) => {
+  canvas.width = (window.innerWidth * pixelRatio * settings.display.canvasRes) / 100;
+  canvas.height = (window.innerHeight * pixelRatio * settings.display.canvasRes) / 100;
+  missCanvas.width = window.innerWidth * 0.2 * pixelRatio;
+  missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
   if (isFirstCalled) {
     fetch(`${cdn}/URLATE-patterns/tutorial/0_${lang}.json`, {
       method: "GET",
@@ -119,31 +148,72 @@ const initialize = (isFirstCalled) => {
       .then((data) => {
         pattern = data;
         patternLength = pattern.patterns.length;
-        document.getElementById("title").textContent = pattern.information.track;
-        document.getElementById("scoreTitle").textContent = pattern.information.track;
-        document.getElementById("artist").textContent = pattern.information.producer;
-        document.getElementById("scoreArtist").textContent = pattern.information.producer;
-        document.getElementById("authorNamespace").textContent = pattern.information.author;
-        canvasBackground.style.filter = `grayscale(${pattern.background.grayscale}%) opacity(${pattern.background.opacity}%)`;
         offset = pattern.information.offset;
         bpm = pattern.information.bpm;
         speed = pattern.information.speed;
+        document.getElementById("scoreDifficultyNum").textContent = "Mode";
+        document.getElementById("scoreDifficultyName").textContent = "Tutorial";
+        document.getElementById("albumDifficulty").textContent = "Tutorial";
+        document.getElementById("albumDifficultyNum").textContent = "Mode";
+        document.getElementById("artist").textContent = pattern.information.producer;
+        document.getElementById("scoreArtist").textContent = pattern.information.producer;
+        document.getElementById("authorNamespace").textContent = pattern.information.author;
+        document.getElementById("scoreTitle").textContent = "Turorial";
+        document.getElementById("title").textContent = "Turorial";
+        document.getElementById("albumContainer").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
+        document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
+        document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
+        document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
+        albumImg.src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.png`;
         if (pattern.background.type) {
           lottieLoad();
         }
       });
+    fetch(`${api}/skin/${settings.game.skin}`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.result == "success") {
+          skin = JSON.parse(data.data);
+        } else {
+          alert(`Error occured.\n${data.description}`);
+          console.error(`Error occured.\n${data.description}`);
+        }
+      })
+      .catch((error) => {
+        alert(`Error occured.\n${error}`);
+        console.error(`Error occured.\n${error}`);
+      });
+    song = new Howl({
+      src: `${cdn}/tracks/192kbps/${fileName}.ogg`,
+      format: ["ogg"],
+      autoplay: false,
+      loop: false,
+      onend: () => {
+        isResultShowing = true;
+        menuAllowed = false;
+        calculateResult();
+      },
+      onload: () => {
+        Howler.volume(settings.sound.volume.master);
+        song.volume(settings.sound.volume.music);
+        if (load == 1) {
+          doneLoading();
+        }
+        load++;
+      },
+    });
   } else {
     if (pattern.background.type) {
       lottieLoad(true);
     }
   }
-  canvas.width = (window.innerWidth * pixelRatio * settings.display.canvasRes) / 100;
-  canvas.height = (window.innerHeight * pixelRatio * settings.display.canvasRes) / 100;
-  missCanvas.width = window.innerWidth * 0.2 * pixelRatio;
-  missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
 };
 
 const lottieLoad = (needToSeek) => {
+  if (JSON.stringify(pattern.background.lottie) == "{}") return;
   let blob = new Blob([pattern.background.lottie], {
     type: "application/json",
   });
@@ -173,11 +243,11 @@ const lottieSet = () => {
   switch (pattern.background.type) {
     case 0: //Image
       canvasBackground.getElementsByTagName("canvas")[0].style.display = "none";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/tutorial.png")`;
+      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
       break;
     case 1: //Image & BGA
       canvasBackground.getElementsByTagName("canvas")[0].style.display = "initial";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/tutorial.png")`;
+      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
       break;
     case 2: //BGA
       canvasBackground.getElementsByTagName("canvas")[0].style.display = "initial";
@@ -205,48 +275,8 @@ const settingApply = () => {
   hide.bad = settings.game.applyJudge.Bad;
   hide.miss = settings.game.applyJudge.Miss;
   frameCounter = settings.game.counter;
-  for (let i = 0; i <= 1; i++) {
-    document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
-  }
-  document.getElementById("album").src = `${cdn}/albums/${settings.display.albumRes}/tutorial.png`;
-  document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/tutorial.png")`;
-  document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/tutorial.png")`;
-  document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/tutorial.png")`;
-  fetch(`${api}/skin/${settings.game.skin}`, {
-    method: "GET",
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.result == "success") {
-        skin = JSON.parse(data.data);
-      } else {
-        alert(`Error occured.\n${data.description}`);
-        console.error(`Error occured.\n${data.description}`);
-      }
-    })
-    .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
-    });
-  song = new Howl({
-    src: `${cdn}/tracks/192kbps/tutorial.ogg`,
-    format: ["ogg"],
-    autoplay: false,
-    loop: false,
-    onend: () => {
-      isResultShowing = true;
-      menuAllowed = false;
-      calculateResult();
-    },
-    onload: () => {
-      song.volume(settings.sound.volume.music);
-      if (load == 1) {
-        doneLoading();
-      }
-      load++;
-    },
-  });
+  document.getElementsByClassName("volumeMaster")[0].value = Math.round(settings.sound.volume.master * 100);
+  volumeMasterValue.textContent = Math.round(settings.sound.volume.master * 100) + "%";
 };
 
 const eraseCnt = () => {
@@ -257,7 +287,8 @@ const getJudgeStyle = (j, p, x, y) => {
   p = parseInt(p);
   if (p <= 0) p = 0;
   p = `${p}`.padStart(2, "0");
-  if (!judgeSkin) {
+  if (p <= 0) p = 0;
+  if (!judgeSkin || denySkin) {
     if (j == "miss") {
       return `rgba(237, 78, 50, ${1 - p / 100})`;
     } else if (j == "perfect") {
@@ -278,6 +309,7 @@ const getJudgeStyle = (j, p, x, y) => {
     p = parseInt(255 - p * 2.55);
     if (p <= 0) p = 0;
     p = p.toString(16).padStart(2, "0");
+    if (p <= 0) p = "00";
     if (skin[j].type == "gradient") {
       let grd = ctx.createLinearGradient(x - 50, y - 20, x + 50, y + 20);
       for (let i = 0; i < skin[j].stops.length; i++) {
@@ -365,10 +397,7 @@ const drawParticle = (n, x, y, j, d) => {
       ctx.strokeWidth = 3;
       let width = canvas.width / 60;
       let p = 100 - (s + 300 - Date.now()) / 3;
-      let grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
-      grd.addColorStop(0, `rgba(174, 102, 237, ${0.5 - p / 200})`);
-      grd.addColorStop(1, `rgba(102, 183, 237, ${0.5 - p / 200})`);
-      ctx.strokeStyle = grd;
+      ctx.strokeStyle = `rgba(67, 221, 166, ${0.5 - p / 200})`;
       ctx.arc(cx, cy, w, 0, 2 * Math.PI);
       ctx.stroke();
       w = canvas.width / 70 + canvas.width / 400 + width * (p / 100);
@@ -385,14 +414,16 @@ const drawParticle = (n, x, y, j, d) => {
       const raf = (y, s) => {
         ctx.beginPath();
         let p = 100 - (s + 300 - Date.now()) / 3;
-        let newY = cy - Math.round(p / 10);
+        let newY = y - 2 * Math.round(p / 10);
         ctx.fillStyle = getJudgeStyle(j.toLowerCase(), p, cx, newY);
+        ctx.strokeStyle = `rgba(0, 0, 0, ${1 - p / 100})`;
+        ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
         ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
-        ctx.font = `600 ${canvas.height / 25}px Metropolis, Pretendard Variable`;
+        ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.lineWidth = 2;
-        ctx.strokeText(j, cx, newY);
+        // ctx.strokeText(j, cx, newY);
         ctx.fillText(j, cx, newY);
         if (p < 100) {
           requestAnimationFrame(() => {
@@ -410,11 +441,11 @@ const drawParticle = (n, x, y, j, d) => {
       let newY = cy - Math.round(p / 10);
       ctx.fillStyle = getJudgeStyle("miss", p);
       ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
-      ctx.font = `600 ${canvas.height / 25}px Metropolis, Pretendard Variable`;
+      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.lineWidth = 2;
-      ctx.strokeText("Miss", cx, newY);
+      // ctx.strokeText("Miss", cx, newY);
       ctx.fillText("Miss", cx, newY);
     }
   }
@@ -537,8 +568,8 @@ const drawCursor = () => {
       w = w + ((canvas.width / 400) * (mouseClickedMs + 100 - Date.now())) / 100;
     }
   }
-  x = (canvas.width / 200) * (mouseX + 100);
-  y = (canvas.height / 200) * (mouseY + 100);
+  let x = (canvas.width / 200) * (mouseX + 100);
+  let y = (canvas.height / 200) * (mouseY + 100);
   if (!denySkin) {
     if (skin.cursor.type == "gradient") {
       let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
@@ -622,7 +653,7 @@ const drawBullet = (n, x, y, a) => {
       if (skin.bullet.outline) ctx.stroke();
       break;
     default:
-      ctx.font = `500 ${canvas.height / 30}px Metropolis, Pretendard Variable`;
+      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
       ctx.fillStyle = "#F55";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
@@ -632,8 +663,9 @@ const drawBullet = (n, x, y, a) => {
 };
 
 const callBulletDestroy = (j) => {
-  const seek = song.seek() - (offset + sync) / 1000;
-  const p = ((seek * 1000 - pattern.bullets[j].ms) / ((bpm * 40) / speed / pattern.bullets[j].speed)) * 100;
+  let date = new Date().getTime();
+  const seek = (date - startDate - (offset + sync)) * rate;
+  const p = ((seek - pattern.bullets[j].ms) / ((bpm * 40) / speed / pattern.bullets[j].speed)) * 100;
   const left = pattern.bullets[j].direction == "L";
   let x = (left ? -1 : 1) * (100 - p);
   let y = 0;
@@ -692,7 +724,7 @@ const cntRender = () => {
       }
       fontSize = (canvas.height / 100) * (30 - (comboAlertMs + 900 - Date.now()) / 90);
       ctx.beginPath();
-      ctx.font = `700 ${fontSize}px Metropolis, Pretendard Variable`;
+      ctx.font = `700 ${fontSize}px Montserrat, Pretendard Variable`;
       ctx.fillStyle = `rgba(200,200,200,${comboOpacity})`;
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
@@ -706,15 +738,21 @@ const cntRender = () => {
     const rectWidth = canvas.width / 7;
     const rectHeight = canvas.height / 200;
     ctx.lineWidth = 1;
-    ctx.strokeStyle = "#222";
-    ctx.fillStyle = "#222";
+    ctx.strokeStyle = "#fff";
+    ctx.fillStyle = "#fff";
     ctx.strokeRect(rectX, rectY, rectWidth, rectHeight);
     ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
-    const seek = song.seek() - (offset + sync) / 1000;
+    let date = new Date().getTime();
+    let seek = 0;
+    if (isPaused || startDate == 0) {
+      seek = (date - (startDate + date - pauseDate) - (offset + sync)) * rate;
+    } else {
+      seek = (date - startDate - (offset + sync)) * rate;
+    }
     let start = lowerBound(pattern.triggers, 0);
-    let end = upperBound(pattern.triggers, seek * 1000 + 2); //2 for floating point miss
+    let end = upperBound(pattern.triggers, seek);
     const renderTriggers = pattern.triggers.slice(start, end);
     for (let i = 0; i < renderTriggers.length; i++) {
       if (renderTriggers[i].value == 0) {
@@ -736,12 +774,12 @@ const cntRender = () => {
       } else if (renderTriggers[i].value == 4) {
         speed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
-        if (renderTriggers[i].ms - 1 <= seek * 1000 && renderTriggers[i].ms + renderTriggers[i].time > seek * 1000) {
+        if (renderTriggers[i].ms - 1 <= seek && renderTriggers[i].ms + renderTriggers[i].time > seek && disableText == false) {
           ctx.beginPath();
-          ctx.fillStyle = "#111";
-          ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Metropolis, Pretendard Variable`;
+          ctx.fillStyle = "#fff";
+          ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Montserrat, Pretendard Variable`;
           if (renderTriggers[i].size.indexOf("vh") != -1)
-            ctx.font = `${renderTriggers[i].weight} ${(canvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Metropolis, Pretendard Variable`;
+            ctx.font = `${renderTriggers[i].weight} ${(canvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Montserrat, Pretendard Variable`;
           ctx.textAlign = renderTriggers[i].align;
           ctx.textBaseline = renderTriggers[i].valign;
           ctx.fillText(renderTriggers[i].text, (canvas.width / 200) * (renderTriggers[i].x + 100), (canvas.height / 200) * (renderTriggers[i].y + 100));
@@ -755,18 +793,17 @@ const cntRender = () => {
         destroyParticles[i].n++;
       }
     }
-    prevDestroyedBullets = new Set(destroyedBullets);
-    start = lowerBound(pattern.patterns, seek * 1000 - (bpm * 4) / speed);
-    end = upperBound(pattern.patterns, seek * 1000 + (bpm * 14) / speed);
+    start = lowerBound(pattern.patterns, seek - (bpm * 4) / speed);
+    end = upperBound(pattern.patterns, seek + (bpm * 14) / speed);
     const renderNotes = pattern.patterns.slice(start, end);
     for (let i = 0; renderNotes.length > i; i++) {
-      const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek * 1000)) / ((bpm * 14) / speed)) * 100;
+      const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
       if (p >= 50) {
         trackMouseSelection(start + i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
       }
     }
     for (let i = renderNotes.length - 1; i >= 0; i--) {
-      const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek * 1000)) / ((bpm * 14) / speed)) * 100;
+      const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
       drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction);
       if (p >= 120 && !destroyedNotes.has(start + i)) {
         calculateScore("miss", start + i, true);
@@ -784,12 +821,12 @@ const cntRender = () => {
         drawParticle(4, missParticles[i].x, missParticles[i].y, i);
       }
     }
-    start = lowerBound(pattern.bullets, seek * 1000 - bpm * 100);
-    end = upperBound(pattern.bullets, seek * 1000);
+    start = lowerBound(pattern.bullets, seek - bpm * 100);
+    end = upperBound(pattern.bullets, seek);
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
       if (!destroyedBullets.has(start + i)) {
-        const p = ((seek * 1000 - renderBullets[i].ms) / ((bpm * 40) / speed / renderBullets[i].speed)) * 100;
+        const p = ((seek - renderBullets[i].ms) / ((bpm * 40) / speed / renderBullets[i].speed)) * 100;
         const left = renderBullets[i].direction == "L";
         let x = (left ? -1 : 1) * (100 - p);
         let y = 0;
@@ -814,7 +851,7 @@ const cntRender = () => {
     }
   } catch (e) {
     if (e) {
-      ctx.font = `500 ${canvas.height / 30}px Metropolis, Pretendard Variable`;
+      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
       ctx.fillStyle = "#F55";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
@@ -822,33 +859,50 @@ const cntRender = () => {
       console.error(e);
     }
   }
+  ctx.beginPath();
+  ctx.fillStyle = "#6021ff";
+  ctx.rect(canvas.width * 0.92, canvas.height * 0.05, canvas.height / 15 + canvas.width * 0.004, canvas.height / 15 + canvas.width * 0.004);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.fillStyle = "#fff";
+  ctx.rect(canvas.width * 0.92 - canvas.width * 0.002, canvas.height * 0.05 - canvas.width * 0.002, canvas.height / 15 + canvas.width * 0.004, canvas.height / 15 + canvas.width * 0.004);
+  ctx.fill();
+  ctx.drawImage(albumImg, canvas.width * 0.92, canvas.height * 0.05, canvas.height / 15, canvas.height / 15);
   if (Date.now() - scoreMs < 500) {
     displayScore += ((score - prevScore) / 500) * (Date.now() - scoreMs);
     prevScore = displayScore;
   } else {
     displayScore = score;
   }
-  ctx.font = `700 ${canvas.height / 30}px Metropolis, Pretendard Variable`;
-  ctx.fillStyle = "#333";
-  ctx.textAlign = "center";
+  ctx.beginPath();
+  ctx.font = `700 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "right";
   ctx.textBaseline = "top";
-  ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvas.width / 2, canvas.height / 80);
-  ctx.font = `${canvas.height / 40}px Metropolis, Pretendard Variable`;
-  ctx.fillStyle = "#555";
-  ctx.fillText(`${combo}x`, canvas.width / 2, canvas.height / 70 + canvas.height / 25);
+  ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05);
+  ctx.font = `${canvas.height / 40}px Montserrat, Pretendard Variable`;
+  ctx.fillStyle = "#fff";
+  ctx.fillText(`${combo}x`, canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05 + canvas.height / 25);
   drawCursor();
 
   //fps counter
   if (frameCounter) {
     frameArray.push(1000 / (Date.now() - frameCounterMs));
-    if (frameArray.length == 5) {
-      fps = (frameArray[0] + frameArray[1] + frameArray[2] + frameArray[3] + frameArray[4]) / 5;
+    if (frameArray.length == 20) {
+      fps =
+        frameArray.reduce((sum, current) => {
+          return sum + current;
+        }, 0) / 20;
       frameArray = [];
     }
     // ctx.font = "2.5vh Heebo";
     // ctx.fillStyle = "#555";
     // ctx.textBaseline = "bottom";
-    // ctx.fillText(fps.toFixed(), canvas.width / 2, canvas.height - canvas.height / 70);
+    // ctx.fillText(
+    //   fps.toFixed(),
+    //   canvas.width / 2,
+    //   canvas.height - canvas.height / 70
+    // );
     frameCounterMs = Date.now();
   }
   drawCursor();
@@ -864,19 +918,17 @@ const trackMousePos = () => {
 
 const calculateResult = () => {
   lottieAnim.stop();
-  document.getElementById("wallLeft").style.left = "-10vw";
-  document.getElementById("wallRight").style.right = "-10vw";
   resultEffect.play();
-  perfectResult.textContent = perfect;
-  greatResult.textContent = great;
-  goodResult.textContent = good;
-  badResult.textContent = bad;
-  missResult.textContent = miss;
-  bulletResult.textContent = bullet;
-  scoreText.textContent = numberWithCommas(`${score}`);
-  comboText.textContent = `${maxCombo}x`;
+  document.getElementById("perfectResult").textContent = perfect;
+  document.getElementById("greatResult").textContent = great;
+  document.getElementById("goodResult").textContent = good;
+  document.getElementById("badResult").textContent = bad;
+  document.getElementById("missResult").textContent = miss;
+  document.getElementById("bulletResult").textContent = bullet;
+  document.getElementById("scoreText").textContent = numberWithCommas(`${score}`);
+  document.getElementById("comboText").textContent = `${maxCombo}x`;
   let accuracy = (((perfect + (great / 10) * 7 + good / 2 + (bad / 10) * 3) / (perfect + great + good + bad + miss + bullet)) * 100).toFixed(1);
-  accuracyText.textContent = `${accuracy}%`;
+  document.getElementById("accuracyText").textContent = `${accuracy}%`;
   let rank = "";
   if (accuracy >= 98 && bad == 0 && miss == 0 && bullet == 0) {
     rankImg.style.animationName = "rainbow";
@@ -893,7 +945,7 @@ const calculateResult = () => {
     rank = "F";
   }
   rankImg.src = `/images/parts/elements/${rank}.png`;
-  scoreInfoRank.style.setProperty("--background", `url('/images/parts/elements/${rank}back.png')`);
+  document.getElementById("scoreInfoRank").style.setProperty("--background", `url('/images/parts/elements/${rank}back.png')`);
   setTimeout(() => {
     document.getElementById("componentCanvas").style.opacity = "0";
   }, 500);
@@ -928,7 +980,7 @@ const calculateResult = () => {
   }
   if (missPoint.length == 0) {
     missCtx.fillStyle = "#FFF";
-    missCtx.font = `500 ${canvas.height / 40}px Metropolis, Pretendard Variable`;
+    missCtx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
     missCtx.textAlign = "right";
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
@@ -960,7 +1012,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
         }
         break;
       default:
-        ctx.font = `500 ${canvas.height / 30}px Metropolis, Pretendard Variable`;
+        ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
         ctx.fillStyle = "#F55";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
@@ -974,7 +1026,10 @@ const compClicked = (isTyped, key, isWheel) => {
   if ((!isTyped && !settings.input.mouse && !isWheel) || isMenuOpened || !menuAllowed || mouseClicked == key) {
     return;
   }
-  if (!song.playing()) {
+  let d = new Date().getTime();
+  if (!song.playing() && isPaused) {
+    isPaused = false;
+    startDate = startDate + d - pauseDate;
     floatingResumeContainer.style.opacity = 0;
     setTimeout(() => {
       floatingResumeContainer.style.display = "none";
@@ -989,35 +1044,34 @@ const compClicked = (isTyped, key, isWheel) => {
     if (pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && (pointingCntElement[i].v2 === 0) == !isWheel) {
       if (pointingCntElement[i].v2 == 1 && pattern.patterns[pointingCntElement[i].i].direction != key) return;
       drawParticle(1, mouseX, mouseY, 0, pointingCntElement[i].v2);
-      let seek = song.seek() * 1000 - (offset + sync);
+      let date = d;
+      const seek = (date - startDate - (offset + sync)) * rate;
       let ms = pattern.patterns[pointingCntElement[i].i].ms;
-      let perfectJudge = 60000 / bpm / 3;
-      let greatJudge = 60000 / bpm / 2;
-      let goodJudge = 60000 / bpm / 1;
-      let badJudge = 60000 / bpm;
+      let perfectJudge = (60000 / bpm / 8) * rate;
+      let greatJudge = (60000 / bpm / 5) * rate;
+      let goodJudge = (60000 / bpm / 3) * rate;
+      let badJudge = (60000 / bpm / 2) * rate;
       let x = pattern.patterns[pointingCntElement[i].i].x;
       let y = pattern.patterns[pointingCntElement[i].i].y;
+      let judge = "";
       if (seek < ms + perfectJudge && seek > ms - perfectJudge) {
-        calculateScore("perfect", pointingCntElement[i].i);
-        drawParticle(3, x, y, "Perfect");
+        judge = "Perfect";
         perfect++;
       } else if (seek < ms + greatJudge && seek > ms - greatJudge) {
-        calculateScore("great", pointingCntElement[i].i);
-        drawParticle(3, x, y, "Great");
+        judge = "Great";
         great++;
       } else if (seek > ms - goodJudge && seek < ms) {
-        calculateScore("good", pointingCntElement[i].i);
-        drawParticle(3, x, y, "Good");
+        judge = "Good";
         good++;
       } else if ((seek > ms - badJudge && seek < ms) || ms < seek) {
-        calculateScore("bad", pointingCntElement[i].i);
-        drawParticle(3, x, y, "Bad");
+        judge = "Bad";
         bad++;
       } else {
-        calculateScore("miss", pointingCntElement[i].i);
-        drawParticle(3, x, y, "Miss");
+        judge = "Miss";
         miss++;
       }
+      calculateScore(judge, pointingCntElement[i].i);
+      drawParticle(3, x, y, judge);
       return;
     }
   }
@@ -1030,6 +1084,7 @@ const compReleased = () => {
 };
 
 const calculateScore = (judge, i, isMissed) => {
+  judge = judge.toLowerCase();
   scoreMs = Date.now();
   prevScore = displayScore;
   destroyedNotes.add(i);
@@ -1045,15 +1100,17 @@ const calculateScore = (judge, i, isMissed) => {
   if (maxCombo < combo) {
     maxCombo = combo;
   }
+  let basicScore = 100000000 / patternLength;
+  const rateCalc = rate * 0.5 + 0.5;
   if (judge == "perfect") {
-    score += Math.round(100000000 / patternLength) + combo * 5;
+    score += Math.round((basicScore + combo * 5) * rateCalc);
   } else if (judge == "great") {
-    score += Math.round((100000000 / patternLength) * 0.5) + combo * 5;
+    score += Math.round((basicScore * 0.5 + combo * 5) * rateCalc);
   } else if (judge == "good") {
-    score += Math.round((100000000 / patternLength) * 0.2) + combo * 3;
+    score += Math.round((basicScore * 0.2 + combo * 3) * rateCalc);
   } else {
     combo = 0;
-    score += Math.round((100000000 / patternLength) * 0.05);
+    score += Math.round(basicScore * 0.05 * rateCalc);
   }
   if (combo % comboCount == 0 && combo != 0) {
     comboAlertMs = Date.now();
@@ -1066,8 +1123,8 @@ Pace.on("done", () => {
   if (load == 1) {
     doneLoading();
   }
-  load++;
   paceLoaded++;
+  load++;
 });
 
 const doneLoading = () => {
@@ -1075,28 +1132,17 @@ const doneLoading = () => {
     cntRender();
     document.getElementById("componentCanvas").style.opacity = "1";
     document.getElementById("loadingContainer").style.opacity = "0";
-    document.getElementById("wallLeft").style.left = "0vw";
-    document.getElementById("wallRight").style.right = "0vw";
     setTimeout(() => {
-      Howler.volume(settings.sound.volume.master);
-      song.volume(settings.sound.volume.music);
       document.getElementById("loadingContainer").style.display = "none";
       document.getElementById("componentCanvas").style.transitionDuration = "0s";
     }, 1000);
-    setTimeout(songPlayPause, 1000);
+    setTimeout(() => {
+      song.play();
+      lottieAnim.play();
+      menuAllowed = true;
+      startDate = new Date().getTime();
+    }, 4000);
   }, 1000);
-};
-
-const songPlayPause = () => {
-  if (song.playing()) {
-    song.pause();
-    lottieAnim.pause();
-    menuAllowed = false;
-  } else {
-    song.play();
-    lottieAnim.play();
-    menuAllowed = true;
-  }
 };
 
 const resume = () => {
@@ -1154,9 +1200,7 @@ const settingChanged = (e, v) => {
   if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
     volumeMasterValue.textContent = e.value + "%";
-    for (let i = 0; i <= 1; i++) {
-      document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
-    }
+    document.getElementsByClassName("volumeMaster")[0].value = Math.round(settings.sound.volume.master * 100);
     overlayTime = new Date().getTime();
     setTimeout(() => {
       overlayClose("volume");
@@ -1172,6 +1216,27 @@ const overlayClose = (s) => {
     }
   }
 };
+
+const finish = () => {
+  fetch(`${api}/tutorial`, {
+    method: "PUT",
+    credentials: "include",
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.result != "success") {
+        alert(`Error occured.\n${data.error}`);
+      } else {
+        window.location.href = `${url}/game?initialize=0`;
+      }
+    })
+    .catch((error) => {
+      alert(`Error occured.\n${error}`);
+      console.error(`Error occured.\n${error}`);
+    });
+};
+
+let scrollTimer = 0;
 
 const globalScrollEvent = (e) => {
   if (scrollTimer == 0) {
@@ -1241,25 +1306,6 @@ const globalScrollEvent = (e) => {
   }
 };
 
-const finish = () => {
-  fetch(`${api}/tutorial`, {
-    method: "PUT",
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.result != "success") {
-        alert(`Error occured.\n${data.error}`);
-      } else {
-        window.location.href = `${url}/game?initialize=0`;
-      }
-    })
-    .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
-    });
-};
-
 document.onkeydown = (e) => {
   e = e || window.event;
   if (e.key == "Shift") {
@@ -1270,6 +1316,8 @@ document.onkeydown = (e) => {
       e.preventDefault();
       if (menuAllowed) {
         if (menuContainer.style.display == "none") {
+          if (song.playing()) pauseDate = new Date().getTime();
+          isPaused = true;
           floatingResumeContainer.style.opacity = 0;
           floatingResumeContainer.style.display = "none";
           isMenuOpened = true;
