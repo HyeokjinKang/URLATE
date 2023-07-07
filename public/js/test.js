@@ -90,6 +90,7 @@ let rate = 1;
 let disableText = false;
 let songData = [];
 let trackName = "";
+const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
   menuContainer.style.display = "none";
@@ -172,10 +173,11 @@ const initialize = (isFirstCalled) => {
         document.getElementById("title").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
         trackName = tracks[i].name;
         fileName = tracks[i].fileName;
-        document.getElementById("album").src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.png`;
+        document.getElementById("albumContainer").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
         document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
         document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
         document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
+        albumImg.src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.png`;
         break;
       }
     }
@@ -226,6 +228,7 @@ const initialize = (isFirstCalled) => {
 };
 
 const lottieLoad = (needToSeek) => {
+  if (JSON.stringify(pattern.background.lottie) == "{}") return;
   let blob = new Blob([pattern.background.lottie], {
     type: "application/json",
   });
@@ -287,9 +290,7 @@ const settingApply = () => {
   hide.bad = settings.game.applyJudge.Bad;
   hide.miss = settings.game.applyJudge.Miss;
   frameCounter = settings.game.counter;
-  for (let i = 0; i <= 1; i++) {
-    document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
-  }
+  document.getElementsByClassName("volumeMaster")[0].value = Math.round(settings.sound.volume.master * 100);
   volumeMasterValue.textContent = Math.round(settings.sound.volume.master * 100) + "%";
 };
 
@@ -411,10 +412,7 @@ const drawParticle = (n, x, y, j, d) => {
       ctx.strokeWidth = 3;
       let width = canvas.width / 60;
       let p = 100 - (s + 300 - Date.now()) / 3;
-      let grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
-      grd.addColorStop(0, `rgba(174, 102, 237, ${0.5 - p / 200})`);
-      grd.addColorStop(1, `rgba(102, 183, 237, ${0.5 - p / 200})`);
-      ctx.strokeStyle = grd;
+      ctx.strokeStyle = `rgba(67, 221, 166, ${0.5 - p / 200})`;
       ctx.arc(cx, cy, w, 0, 2 * Math.PI);
       ctx.stroke();
       w = canvas.width / 70 + canvas.width / 400 + width * (p / 100);
@@ -431,14 +429,16 @@ const drawParticle = (n, x, y, j, d) => {
       const raf = (y, s) => {
         ctx.beginPath();
         let p = 100 - (s + 300 - Date.now()) / 3;
-        let newY = cy - Math.round(p / 10);
+        let newY = y - 2 * Math.round(p / 10);
         ctx.fillStyle = getJudgeStyle(j.toLowerCase(), p, cx, newY);
+        ctx.strokeStyle = `rgba(0, 0, 0, ${1 - p / 100})`;
+        ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
         ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
-        ctx.font = `600 ${canvas.height / 25}px Metropolis, Pretendard Variable`;
+        ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.lineWidth = 2;
-        ctx.strokeText(j, cx, newY);
+        // ctx.strokeText(j, cx, newY);
         ctx.fillText(j, cx, newY);
         if (p < 100) {
           requestAnimationFrame(() => {
@@ -456,11 +456,11 @@ const drawParticle = (n, x, y, j, d) => {
       let newY = cy - Math.round(p / 10);
       ctx.fillStyle = getJudgeStyle("miss", p);
       ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
-      ctx.font = `600 ${canvas.height / 25}px Metropolis, Pretendard Variable`;
+      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.lineWidth = 2;
-      ctx.strokeText("Miss", cx, newY);
+      // ctx.strokeText("Miss", cx, newY);
       ctx.fillText("Miss", cx, newY);
     }
   }
@@ -668,7 +668,7 @@ const drawBullet = (n, x, y, a) => {
       if (skin.bullet.outline) ctx.stroke();
       break;
     default:
-      ctx.font = `500 ${canvas.height / 30}px Metropolis, Pretendard Variable`;
+      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
       ctx.fillStyle = "#F55";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
@@ -739,7 +739,7 @@ const cntRender = () => {
       }
       fontSize = (canvas.height / 100) * (30 - (comboAlertMs + 900 - Date.now()) / 90);
       ctx.beginPath();
-      ctx.font = `700 ${fontSize}px Metropolis, Pretendard Variable`;
+      ctx.font = `700 ${fontSize}px Montserrat, Pretendard Variable`;
       ctx.fillStyle = `rgba(200,200,200,${comboOpacity})`;
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
@@ -753,8 +753,8 @@ const cntRender = () => {
     const rectWidth = canvas.width / 7;
     const rectHeight = canvas.height / 200;
     ctx.lineWidth = 1;
-    ctx.strokeStyle = "#222";
-    ctx.fillStyle = "#222";
+    ctx.strokeStyle = "#fff";
+    ctx.fillStyle = "#fff";
     ctx.strokeRect(rectX, rectY, rectWidth, rectHeight);
     ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
     ctx.lineWidth = 5;
@@ -791,10 +791,10 @@ const cntRender = () => {
       } else if (renderTriggers[i].value == 5) {
         if (renderTriggers[i].ms - 1 <= seek && renderTriggers[i].ms + renderTriggers[i].time > seek && disableText == "false") {
           ctx.beginPath();
-          ctx.fillStyle = "#111";
-          ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Metropolis, Pretendard Variable`;
+          ctx.fillStyle = "#fff";
+          ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Montserrat, Pretendard Variable`;
           if (renderTriggers[i].size.indexOf("vh") != -1)
-            ctx.font = `${renderTriggers[i].weight} ${(canvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Metropolis, Pretendard Variable`;
+            ctx.font = `${renderTriggers[i].weight} ${(canvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Montserrat, Pretendard Variable`;
           ctx.textAlign = renderTriggers[i].align;
           ctx.textBaseline = renderTriggers[i].valign;
           ctx.fillText(renderTriggers[i].text, (canvas.width / 200) * (renderTriggers[i].x + 100), (canvas.height / 200) * (renderTriggers[i].y + 100));
@@ -866,7 +866,7 @@ const cntRender = () => {
     }
   } catch (e) {
     if (e) {
-      ctx.font = `500 ${canvas.height / 30}px Metropolis, Pretendard Variable`;
+      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
       ctx.fillStyle = "#F55";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
@@ -874,20 +874,30 @@ const cntRender = () => {
       console.error(e);
     }
   }
+  ctx.beginPath();
+  ctx.fillStyle = "#6021ff";
+  ctx.rect(canvas.width * 0.92, canvas.height * 0.05, canvas.height / 15 + canvas.width * 0.004, canvas.height / 15 + canvas.width * 0.004);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.fillStyle = "#fff";
+  ctx.rect(canvas.width * 0.92 - canvas.width * 0.002, canvas.height * 0.05 - canvas.width * 0.002, canvas.height / 15 + canvas.width * 0.004, canvas.height / 15 + canvas.width * 0.004);
+  ctx.fill();
+  ctx.drawImage(albumImg, canvas.width * 0.92, canvas.height * 0.05, canvas.height / 15, canvas.height / 15);
   if (Date.now() - scoreMs < 500) {
     displayScore += ((score - prevScore) / 500) * (Date.now() - scoreMs);
     prevScore = displayScore;
   } else {
     displayScore = score;
   }
-  ctx.font = `700 ${canvas.height / 25}px Metropolis, Pretendard Variable`;
-  ctx.fillStyle = "#333";
-  ctx.textAlign = "center";
+  ctx.beginPath();
+  ctx.font = `700 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "right";
   ctx.textBaseline = "top";
-  ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvas.width / 2, canvas.height / 80);
-  ctx.font = `${canvas.height / 40}px Metropolis, Pretendard Variable`;
-  ctx.fillStyle = "#555";
-  ctx.fillText(`${combo}x`, canvas.width / 2, canvas.height / 70 + canvas.height / 25);
+  ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05);
+  ctx.font = `${canvas.height / 40}px Montserrat, Pretendard Variable`;
+  ctx.fillStyle = "#fff";
+  ctx.fillText(`${combo}x`, canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05 + canvas.height / 25);
   drawCursor();
 
   //fps counter
@@ -923,8 +933,6 @@ const trackMousePos = () => {
 
 const calculateResult = () => {
   lottieAnim.stop();
-  document.getElementById("wallLeft").style.left = "-10vw";
-  document.getElementById("wallRight").style.right = "-10vw";
   resultEffect.play();
   document.getElementById("perfectResult").textContent = perfect;
   document.getElementById("greatResult").textContent = great;
@@ -987,7 +995,7 @@ const calculateResult = () => {
   }
   if (missPoint.length == 0) {
     missCtx.fillStyle = "#FFF";
-    missCtx.font = `500 ${canvas.height / 30}px Metropolis, Pretendard Variable`;
+    missCtx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
     missCtx.textAlign = "right";
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
@@ -1019,7 +1027,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
         }
         break;
       default:
-        ctx.font = `500 ${canvas.height / 30}px Metropolis, Pretendard Variable`;
+        ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
         ctx.fillStyle = "#F55";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
@@ -1139,8 +1147,6 @@ const doneLoading = () => {
     cntRender();
     document.getElementById("componentCanvas").style.opacity = "1";
     document.getElementById("loadingContainer").style.opacity = "0";
-    document.getElementById("wallLeft").style.left = "0vw";
-    document.getElementById("wallRight").style.right = "0vw";
     setTimeout(() => {
       document.getElementById("loadingContainer").style.display = "none";
       document.getElementById("componentCanvas").style.transitionDuration = "0s";
@@ -1196,9 +1202,7 @@ const settingChanged = (e, v) => {
   if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
     volumeMasterValue.textContent = e.value + "%";
-    for (let i = 0; i <= 1; i++) {
-      document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
-    }
+    document.getElementsByClassName("volumeMaster")[0].value = Math.round(settings.sound.volume.master * 100);
     overlayTime = new Date().getTime();
     setTimeout(() => {
       overlayClose("volume");
