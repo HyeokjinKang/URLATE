@@ -764,19 +764,20 @@ body {
 }
 
 #colorOverlayContainer {
+  z-index: 200;
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(255, 100, 100, 0.3);
+  background-color: rgb(255, 100, 100);
   opacity: 0;
   pointer-events: none;
   transition-duration: 0.5s;
 }
 
 #colorOverlayContainer.show {
-  opacity: 0.7;
+  opacity: 0.2;
   transition-duration: 0s;
 }
 
