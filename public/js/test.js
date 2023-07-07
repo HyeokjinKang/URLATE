@@ -364,10 +364,11 @@ const drawParticle = (n, x, y, j, d) => {
     //Click Note
     const raf = (w, s, n) => {
       ctx.beginPath();
-      ctx.strokeWidth = 3;
-      let width = canvas.width / 50;
+      let width = canvas.width / 60;
       let p = 100 - (s + 500 - Date.now()) / 5;
-      let opacity = parseInt(125 - p * 1.25);
+      if (p >= 100) return;
+      ctx.lineWidth = ((100 - p) / 100) * 10;
+      let opacity = parseInt(225 - p * 1.25);
       if (opacity <= 0) opacity = "00";
       if (skin.note[n].circle) {
         if (skin.note[n].circle.type == "gradient") {
@@ -396,21 +397,21 @@ const drawParticle = (n, x, y, j, d) => {
       }
       ctx.arc(cx, cy, w, 0, 2 * Math.PI);
       ctx.stroke();
-      w = canvas.width / 70 + canvas.width / 400 + width * (p / 100);
+      w = canvas.width / 40 + width * (p / 100);
       if (p < 100) {
         requestAnimationFrame(() => {
           raf(w, s, n);
         });
       }
     };
-    raf(canvas.width / 70 + canvas.width / 400, Date.now(), d);
+    raf(canvas.width / 40, Date.now(), d);
   } else if (n == 2) {
     //Click Default
     const raf = (w, s) => {
       ctx.beginPath();
-      ctx.strokeWidth = 3;
       let width = canvas.width / 60;
       let p = 100 - (s + 300 - Date.now()) / 3;
+      ctx.lineWidth = ((100 - p) / 100) * 5;
       ctx.strokeStyle = `rgba(67, 221, 166, ${0.5 - p / 200})`;
       ctx.arc(cx, cy, w, 0, 2 * Math.PI);
       ctx.stroke();
@@ -431,8 +432,6 @@ const drawParticle = (n, x, y, j, d) => {
         let newY = y - 2 * Math.round(p / 10);
         ctx.fillStyle = getJudgeStyle(j.toLowerCase(), p, cx, newY);
         ctx.strokeStyle = `rgba(0, 0, 0, ${1 - p / 100})`;
-        ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
-        ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
         ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -459,7 +458,6 @@ const drawParticle = (n, x, y, j, d) => {
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.lineWidth = 2;
-      // ctx.strokeText("Miss", cx, newY);
       ctx.fillText("Miss", cx, newY);
     }
   }
