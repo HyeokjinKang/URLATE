@@ -179,7 +179,6 @@ const initialize = (isFirstCalled) => {
         document.getElementById("artist").textContent = pattern.information.producer;
         document.getElementById("scoreArtist").textContent = pattern.information.producer;
         document.getElementById("authorNamespace").textContent = pattern.information.author;
-        // canvasBackground.style.filter = `grayscale(${pattern.background.grayscale}%) opacity(${pattern.background.opacity}%)`;
         offset = pattern.information.offset;
         bpm = pattern.information.bpm;
         speed = pattern.information.speed;
