@@ -353,7 +353,7 @@ const drawParticle = (n, x, y, j, d) => {
       let width = canvas.width / 60;
       let p = 100 - (s + 500 - Date.now()) / 5;
       if (p >= 100) return;
-      ctx.lineWidth = ((100 - p) / 100) * 10;
+      ctx.lineWidth = ((100 - p) / 100) * (canvas.width / 200);
       let opacity = parseInt(225 - p * 1.25);
       if (opacity <= 0) opacity = "00";
       if (skin.note[n].circle) {
