@@ -357,7 +357,8 @@ const songSelected = (isLoaded, withoutSong) => {
   speed = pattern.information.speed;
   document.getElementById("percentage").innerText = "100%";
   rate = 1;
-  canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[songSelectBox.selectedIndex].fileName}.png")`;
+  let background = new URLSearchParams(window.location.search).get("background");
+  if (background !== "0") canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[songSelectBox.selectedIndex].fileName}.png")`;
   document.getElementById("songSelectionContainer").style.display = "none";
   document.getElementById("initialScreenContainer").style.display = "none";
   document.getElementById("editorMainContainer").style.display = "initial";
