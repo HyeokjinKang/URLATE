@@ -64,10 +64,10 @@ let skin, denyCursor, denySkin;
 let dragMouseX, dragMouseY, originX, originY;
 let copied = false,
   copiedTime = 0;
-let gridToggle = false,
+let gridToggle = true,
   magnetToggle = true,
   explainToggle = true,
-  metronomeToggle = true;
+  metronomeToggle = false;
 let scrollTimer = 0;
 
 let lottieAnim = {
@@ -1122,7 +1122,7 @@ const cntRender = () => {
         const x1 = (cntCanvas.width / 200) * (i + 100);
         const x2 = (cntCanvas.width / 200) * (i + 105);
         const y = (cntCanvas.height / 200) * (i + 100);
-        cntCtx.strokeStyle = i == 0 ? "#ed3a2680" : "#88888850";
+        cntCtx.strokeStyle = i == 0 ? "#ed3a2680" : "#88888830";
         cntCtx.lineWidth = 2;
         cntCtx.beginPath();
         cntCtx.moveTo(x1, 0);
@@ -1130,7 +1130,7 @@ const cntRender = () => {
         cntCtx.moveTo(0, y);
         cntCtx.lineTo(cntCanvas.width, y);
         cntCtx.stroke();
-        cntCtx.strokeStyle = "#bbbbbb50";
+        cntCtx.strokeStyle = "#bbbbbb20";
         cntCtx.moveTo(x2, 0);
         cntCtx.lineTo(x2, cntCanvas.height);
         cntCtx.stroke();
