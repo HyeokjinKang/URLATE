@@ -600,9 +600,11 @@ const drawCursor = () => {
     for (let i = 0; i < skin.cursor.stops.length; i++) {
       grd.addColorStop(skin.cursor.stops[i].percentage / 100, `#${skin.cursor.stops[i].color}`);
     }
+    ctx.shadowColor = `#${skin.cursor.stops[0].color}90`;
     ctx.fillStyle = grd;
   } else if (skin.cursor.type == "color") {
     ctx.fillStyle = `#${skin.cursor.color}`;
+    ctx.shadowColor = `#${skin.cursor.color}90`;
   }
   if (skin.cursor.outline) {
     ctx.lineWidth = Math.round((canvas.width / 1000) * skin.cursor.outline.width);
@@ -611,14 +613,18 @@ const drawCursor = () => {
       for (let i = 0; i < skin.cursor.outline.stops.length; i++) {
         grd.addColorStop(skin.cursor.outline.stops[i].percentage / 100, `#${skin.cursor.outline.stops[i].color}`);
       }
+      ctx.shadowColor = `#${skin.cursor.outline.stops[0].color}90`;
       ctx.strokeStyle = grd;
     } else if (skin.cursor.outline.type == "color") {
+      ctx.shadowColor = `#${skin.cursor.outline.color}90`;
       ctx.strokeStyle = `#${skin.cursor.outline.color}`;
     }
   }
   ctx.arc(x, y, w, 0, 2 * Math.PI);
   ctx.fill();
+  ctx.shadowBlur = canvas.width / 100;
   if (skin.cursor.outline) ctx.stroke();
+  ctx.shadowBlur = 0;
 };
 
 const drawBullet = (n, x, y, a) => {
