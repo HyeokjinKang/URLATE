@@ -49,7 +49,6 @@ let frameArray = [];
 let fps = 0;
 let missPoint = [];
 let sens = 1,
-  denySkin = false,
   skin,
   cursorZoom,
   inputMode,
@@ -277,7 +276,6 @@ const settingApply = () => {
   sync = parseInt(settings.sound.offset);
   document.getElementById("loadingContainer").style.opacity = 1;
   sens = settings.input.sens;
-  denySkin = settings.editor.denyAtTest;
   cursorZoom = settings.game.size;
   inputMode = settings.input.keys;
   comboAlert = settings.game.comboAlert;
@@ -302,7 +300,7 @@ const getJudgeStyle = (j, p, x, y) => {
   if (p <= 0) p = 0;
   p = `${p}`.padStart(2, "0");
   if (p <= 0) p = 0;
-  if (!judgeSkin || denySkin) {
+  if (!judgeSkin) {
     if (j == "miss") {
       return `rgba(237, 78, 50, ${1 - p / 100})`;
     } else if (j == "perfect") {
@@ -474,35 +472,27 @@ const drawNote = (p, x, y, n, d) => {
     opacity = `${parseInt((130 - p) * 3.333)}`.padStart(2, "0");
   }
   if (opacity <= 0) opacity = "00";
-  if (!denySkin) {
-    if (skin.note[n].type == "gradient") {
-      let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-      for (let i = 0; i < skin.note[n].stops.length; i++) {
-        grd.addColorStop(skin.note[n].stops[i].percentage / 100, `#${skin.note[n].stops[i].color}${opacity.toString(16)}`);
-      }
-      ctx.fillStyle = grd;
-      ctx.strokeStyle = grd;
-    } else if (skin.note[n].type == "color") {
-      ctx.fillStyle = `#${skin.note[n].color}${opacity.toString(16)}`;
-      ctx.strokeStyle = `#${skin.note[n].color}${opacity.toString(16)}`;
-    }
-    if (skin.note[n].circle) {
-      if (skin.note[n].circle.type == "gradient") {
-        let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.note[n].circle.stops.length; i++) {
-          grd.addColorStop(skin.note[n].circle.stops[i].percentage / 100, `#${skin.note[n].circle.stops[i].color}${opacity.toString(16)}`);
-        }
-        ctx.strokeStyle = grd;
-      } else if (skin.note[n].circle.type == "color") {
-        ctx.strokeStyle = `#${skin.note[n].circle.color}${opacity.toString(16)}`;
-      }
-    }
-  } else {
+  if (skin.note[n].type == "gradient") {
     let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-    grd.addColorStop(0, `${["#fb4934", "#53cddb"][n]}${opacity}`);
-    grd.addColorStop(1, `${["#ebd934", "#0669ff"][n]}${opacity}`);
+    for (let i = 0; i < skin.note[n].stops.length; i++) {
+      grd.addColorStop(skin.note[n].stops[i].percentage / 100, `#${skin.note[n].stops[i].color}${opacity.toString(16)}`);
+    }
     ctx.fillStyle = grd;
     ctx.strokeStyle = grd;
+  } else if (skin.note[n].type == "color") {
+    ctx.fillStyle = `#${skin.note[n].color}${opacity.toString(16)}`;
+    ctx.strokeStyle = `#${skin.note[n].color}${opacity.toString(16)}`;
+  }
+  if (skin.note[n].circle) {
+    if (skin.note[n].circle.type == "gradient") {
+      let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
+      for (let i = 0; i < skin.note[n].circle.stops.length; i++) {
+        grd.addColorStop(skin.note[n].circle.stops[i].percentage / 100, `#${skin.note[n].circle.stops[i].color}${opacity.toString(16)}`);
+      }
+      ctx.strokeStyle = grd;
+    } else if (skin.note[n].circle.type == "color") {
+      ctx.strokeStyle = `#${skin.note[n].circle.color}${opacity.toString(16)}`;
+    }
   }
   ctx.lineWidth = Math.round(canvas.width / 300);
   if (n == 0) {
@@ -525,6 +515,12 @@ const drawNote = (p, x, y, n, d) => {
       ctx.lineWidth = Math.round((canvas.width / 1000) * skin.note[n].outline.width);
       ctx.stroke();
     }
+    ctx.beginPath();
+    ctx.globalAlpha = (0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100;
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.arc(x, y, w, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.globalAlpha = 1;
   } else if (n == 1) {
     w = w * 0.9;
     let parr = [p <= 20 ? p * 5 : 100, p >= 20 ? (p <= 80 ? (p - 20) * 1.66 : 100) : 0, p >= 80 ? (p <= 100 ? (p - 80) * 5 : 100) : 0];
@@ -560,6 +556,15 @@ const drawNote = (p, x, y, n, d) => {
       ctx.lineWidth = Math.round((canvas.width / 1000) * skin.note[n].outline.width);
       ctx.stroke();
     }
+    ctx.beginPath();
+    ctx.globalAlpha = (0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100;
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.moveTo(x, y - 1.5 * d * w);
+    if (d == 1) ctx.arc(x, y, w, -Math.PI / 5, (Math.PI / 5) * 6);
+    else ctx.arc(x, y, w, (-Math.PI / 5) * 6, Math.PI / 5);
+    ctx.lineTo(x, y - 1.5 * d * w);
+    ctx.fill();
+    ctx.globalAlpha = 1;
   }
 };
 
@@ -582,70 +587,64 @@ const drawCursor = () => {
   }
   let x = (canvas.width / 200) * (mouseX + 100);
   let y = (canvas.height / 200) * (mouseY + 100);
-  if (!denySkin) {
-    if (skin.cursor.type == "gradient") {
-      let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-      for (let i = 0; i < skin.cursor.stops.length; i++) {
-        grd.addColorStop(skin.cursor.stops[i].percentage / 100, `#${skin.cursor.stops[i].color}`);
-      }
-      ctx.fillStyle = grd;
-    } else if (skin.cursor.type == "color") {
-      ctx.fillStyle = `#${skin.cursor.color}`;
-    }
-    if (skin.cursor.outline) {
-      ctx.lineWidth = Math.round((canvas.width / 1000) * skin.cursor.outline.width);
-      if (skin.cursor.outline.type == "gradient") {
-        let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.cursor.outline.stops.length; i++) {
-          grd.addColorStop(skin.cursor.outline.stops[i].percentage / 100, `#${skin.cursor.outline.stops[i].color}`);
-        }
-        ctx.strokeStyle = grd;
-      } else if (skin.cursor.outline.type == "color") {
-        ctx.strokeStyle = `#${skin.cursor.outline.color}`;
-      }
-    }
-  } else {
+  if (skin.cursor.type == "gradient") {
     let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-    grd.addColorStop(0, `rgb(174, 102, 237)`);
-    grd.addColorStop(1, `rgb(102, 183, 237)`);
+    for (let i = 0; i < skin.cursor.stops.length; i++) {
+      grd.addColorStop(skin.cursor.stops[i].percentage / 100, `#${skin.cursor.stops[i].color}`);
+    }
+    ctx.shadowColor = `#${skin.cursor.stops[0].color}90`;
     ctx.fillStyle = grd;
+  } else if (skin.cursor.type == "color") {
+    ctx.fillStyle = `#${skin.cursor.color}`;
+    ctx.shadowColor = `#${skin.cursor.color}90`;
+  }
+  if (skin.cursor.outline) {
+    ctx.lineWidth = Math.round((canvas.width / 1000) * skin.cursor.outline.width);
+    if (skin.cursor.outline.type == "gradient") {
+      let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
+      for (let i = 0; i < skin.cursor.outline.stops.length; i++) {
+        grd.addColorStop(skin.cursor.outline.stops[i].percentage / 100, `#${skin.cursor.outline.stops[i].color}`);
+      }
+      ctx.shadowColor = `#${skin.cursor.outline.stops[0].color}90`;
+      ctx.strokeStyle = grd;
+    } else if (skin.cursor.outline.type == "color") {
+      ctx.shadowColor = `#${skin.cursor.outline.color}90`;
+      ctx.strokeStyle = `#${skin.cursor.outline.color}`;
+    }
   }
   ctx.arc(x, y, w, 0, 2 * Math.PI);
   ctx.fill();
+  ctx.shadowBlur = canvas.width / 100;
   if (skin.cursor.outline) ctx.stroke();
+  ctx.shadowBlur = 0;
 };
 
 const drawBullet = (n, x, y, a) => {
   x = (canvas.width / 200) * (x + 100);
   y = (canvas.height / 200) * (y + 100);
   let w = canvas.width / 80;
-  if (!denySkin) {
-    if (skin.bullet.type == "gradient") {
+  if (skin.bullet.type == "gradient") {
+    let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
+    for (let i = 0; i < skin.bullet.stops.length; i++) {
+      grd.addColorStop(skin.bullet.stops[i].percentage / 100, `#${skin.bullet.stops[i].color}`);
+    }
+    ctx.fillStyle = grd;
+    ctx.strokeStyle = grd;
+  } else if (skin.bullet.type == "color") {
+    ctx.fillStyle = `#${skin.bullet.color}`;
+    ctx.strokeStyle = `#${skin.bullet.color}`;
+  }
+  if (skin.bullet.outline) {
+    ctx.lineWidth = Math.round((canvas.width / 1000) * skin.bullet.outline.width);
+    if (skin.bullet.outline.type == "gradient") {
       let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-      for (let i = 0; i < skin.bullet.stops.length; i++) {
-        grd.addColorStop(skin.bullet.stops[i].percentage / 100, `#${skin.bullet.stops[i].color}`);
+      for (let i = 0; i < skin.bullet.outline.stops.length; i++) {
+        grd.addColorStop(skin.bullet.outline.stops[i].percentage / 100, `#${skin.bullet.outline.stops[i].color}`);
       }
-      ctx.fillStyle = grd;
       ctx.strokeStyle = grd;
-    } else if (skin.bullet.type == "color") {
-      ctx.fillStyle = `#${skin.bullet.color}`;
-      ctx.strokeStyle = `#${skin.bullet.color}`;
+    } else if (skin.bullet.outline.type == "color") {
+      ctx.strokeStyle = `#${skin.bullet.outline.color}`;
     }
-    if (skin.bullet.outline) {
-      ctx.lineWidth = Math.round((canvas.width / 1000) * skin.bullet.outline.width);
-      if (skin.bullet.outline.type == "gradient") {
-        let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.bullet.outline.stops.length; i++) {
-          grd.addColorStop(skin.bullet.outline.stops[i].percentage / 100, `#${skin.bullet.outline.stops[i].color}`);
-        }
-        ctx.strokeStyle = grd;
-      } else if (skin.bullet.outline.type == "color") {
-        ctx.strokeStyle = `#${skin.bullet.outline.color}`;
-      }
-    }
-  } else {
-    ctx.fillStyle = "#555";
-    ctx.strokeStyle = "#555";
   }
   ctx.beginPath();
   switch (n) {
