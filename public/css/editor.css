@@ -1,4 +1,4 @@
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css");
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable-jp-dynamic-subset.css");
 @import url("https://fonts.googleapis.com/css?family=Heebo:400,500,600&display=swap");
 @import url("metropolis.css");
 
@@ -12,7 +12,7 @@ body {
   margin: 0;
   padding: 0;
   text-align: center;
-  font-family: "Pretendard Variable", "나눔바른고딕", arial;
+  font-family: "Pretendard JP Variable", "나눔바른고딕", arial;
   letter-spacing: -0.5px;
   overflow-x: hidden;
   overflow-y: hidden;
@@ -139,7 +139,7 @@ body {
 }
 
 .metropolis {
-  font-family: "Metropolis", "Pretendard Variable", "나눔바른고딕", arial;
+  font-family: "Metropolis", "Pretendard JP Variable", "나눔바른고딕", arial;
 }
 
 #topCenterBar {
@@ -609,7 +609,7 @@ body {
 }
 
 kbd {
-  font-family: "Metropolis", "Pretendard Variable", "나눔바른고딕", arial;
+  font-family: "Metropolis", "Pretendard JP Variable", "나눔바른고딕", arial;
   font-style: italic;
   border: 2px solid #555;
   padding: 4px 14px 4px 8px;
@@ -682,7 +682,7 @@ kbd {
 }
 
 .optionValue {
-  font-family: "Metropolis", "Pretendard Variable", "나눔바른고딕", arial;
+  font-family: "Metropolis", "Pretendard JP Variable", "나눔바른고딕", arial;
   font-weight: 400;
   color: #404040;
   font-size: 2vh;
