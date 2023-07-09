@@ -538,6 +538,12 @@ const drawNote = (p, x, y, n, d) => {
       ctx.lineWidth = Math.round((canvas.width / 1000) * skin.note[n].outline.width);
       ctx.stroke();
     }
+    ctx.beginPath();
+    ctx.globalAlpha = (0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100;
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.arc(x, y, w, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.globalAlpha = 1;
   } else if (n == 1) {
     w = w * 0.9;
     let parr = [p <= 20 ? p * 5 : 100, p >= 20 ? (p <= 80 ? (p - 20) * 1.66 : 100) : 0, p >= 80 ? (p <= 100 ? (p - 80) * 5 : 100) : 0];
@@ -573,6 +579,15 @@ const drawNote = (p, x, y, n, d) => {
       ctx.lineWidth = Math.round((canvas.width / 1000) * skin.note[n].outline.width);
       ctx.stroke();
     }
+    ctx.beginPath();
+    ctx.globalAlpha = (0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100;
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.moveTo(x, y - 1.5 * d * w);
+    if (d == 1) ctx.arc(x, y, w, -Math.PI / 5, (Math.PI / 5) * 6);
+    else ctx.arc(x, y, w, (-Math.PI / 5) * 6, Math.PI / 5);
+    ctx.lineTo(x, y - 1.5 * d * w);
+    ctx.fill();
+    ctx.globalAlpha = 1;
   }
 };
 
