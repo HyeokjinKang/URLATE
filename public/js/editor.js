@@ -676,7 +676,7 @@ const initialize = () => {
   if (tmlCanvas.height / tmlCanvas.width > 0.18) {
     timelinePlayController.style.display = "none";
   } else {
-    timelinePlayController.style.display = "block";
+    timelinePlayController.style.display = "flex";
   }
 };
 
