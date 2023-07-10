@@ -1220,11 +1220,11 @@ const compClicked = (isTyped, key, isWheel) => {
       calculateScore(judge, pointingCntElement[i].i);
       drawParticle(3, x, y, judge);
       record.push({ index: record.length, pointingCntElement, mouseX, mouseY, judge, seek });
-      keyInput.push({ judge, key: isWheel ? "W" : key != undefined ? key : "Click", time: Date.now() });
+      keyInput.push({ judge, key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
       return;
     }
   }
-  keyInput.push({ judge: "Empty", key: isWheel ? "W" : key != undefined ? key : "Click", time: Date.now() });
+  keyInput.push({ judge: "Empty", key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
   drawParticle(2, mouseX, mouseY);
 };
 
