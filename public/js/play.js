@@ -91,6 +91,7 @@ let rate = 1;
 let disableText = false;
 let songData = [];
 let record = [];
+let keyInput = [];
 let trackName = "";
 const albumImg = new Image();
 
@@ -697,7 +698,7 @@ const drawBullet = (n, x, y, a) => {
 };
 
 const callBulletDestroy = (j) => {
-  let date = new Date().getTime();
+  let date = Date.now();
   const seek = (date - startDate - (offset + sync)) * rate;
   const p = ((seek - pattern.bullets[j].ms) / ((bpm * 40) / speed / pattern.bullets[j].speed)) * 100;
   const left = pattern.bullets[j].direction == "L";
@@ -731,6 +732,73 @@ const callBulletDestroy = (j) => {
     ms: Date.now(),
   });
   destroyedBullets.add(j);
+};
+
+const drawKeyInput = () => {
+  if (keyInput.length == 0) return;
+  let alpha = 1;
+  if (keyInput[keyInput.length - 1].time + 5000 <= Date.now()) {
+    alpha = 1 - (Date.now() - keyInput[keyInput.length - 1].time - 5000) / 1000;
+    if (alpha <= 0) return;
+  }
+  ctx.globalAlpha = alpha;
+  ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
+  ctx.fillStyle = "#FFF";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  let text = "";
+  for (let i = 0; i < keyInput.length; i++) {
+    text += keyInput[i].key;
+  }
+  for (let i = keyInput.length - 1; i >= (keyInput.length > 12 ? keyInput.length - 12 : 0); i--) {
+    let judge = keyInput[i].judge;
+    let color = "#FFF";
+    switch (judge) {
+      case "Perfect":
+        color = "#37E7E7";
+        break;
+      case "Great":
+        color = "#89DB57";
+        break;
+      case "Good":
+        color = "#EEE063";
+        break;
+      case "Bad":
+        color = "#E8AF5B";
+        break;
+      case "Miss":
+        color = "#F96C5A";
+        break;
+      case "Bullet":
+        color = "#C4A0E8";
+        break;
+      case "Empty":
+        color = "#ffffff00";
+        break;
+      default:
+        console.log(`drawKeyInput:${judge} isn't specified.`);
+    }
+    ctx.beginPath();
+    ctx.fillStyle = color;
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = canvas.width / 800;
+    ctx.roundRect(canvas.width * 0.08 - canvas.height / 15 + (keyInput.length - i - 1) * (canvas.width / 100 + canvas.width / 200), canvas.height * 0.05, canvas.width / 100, canvas.width / 100, [
+      canvas.width / 700,
+    ]);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.fillStyle = "#fff";
+    ctx.font = `600 5vh Montserrat, Pretendard Variable`;
+    ctx.textBaseline = "top";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      keyInput[i].key[0],
+      canvas.width * 0.08 - canvas.height / 15 + (keyInput.length - i - 1) * (canvas.width / 100 + canvas.width / 200) + canvas.width / 200,
+      canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200
+    );
+  }
+  ctx.globalAlpha = 1;
 };
 
 const cntRender = () => {
@@ -778,7 +846,7 @@ const cntRender = () => {
     ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
-    let date = new Date().getTime();
+    let date = Date.now();
     let seek = 0;
     if (isPaused || startDate == 0) {
       seek = (date - (startDate + date - pauseDate) - (offset + sync)) * rate;
@@ -849,6 +917,7 @@ const cntRender = () => {
         miss++;
         missPoint.push(song.seek() * 1000);
         record.push({ index: record.length, pointingCntElement, mouseX, mouseY, judge: "miss", seek });
+        keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
       }
     }
     for (let i = 0; i < missParticles.length; i++) {
@@ -921,6 +990,8 @@ const cntRender = () => {
   ctx.fillStyle = "#fff";
   ctx.fillText(`${combo}x`, canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05 + canvas.height / 25);
   drawCursor();
+
+  drawKeyInput();
 
   //fps counter
   if (frameCounter) {
@@ -1079,6 +1150,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
               colorOverlayContainer.classList.remove("show");
             }, 100);
             record.push({ index: record.length, pointingCntElement, mouseX, mouseY, judge: "bullet", seek: song.seek() * 1000 });
+            keyInput.push({ judge: "Bullet", key: "-", time: Date.now() });
           }
         }
         break;
@@ -1097,7 +1169,7 @@ const compClicked = (isTyped, key, isWheel) => {
   if ((!isTyped && !settings.input.mouse && !isWheel) || isMenuOpened || !menuAllowed || mouseClicked == key) {
     return;
   }
-  let d = new Date().getTime();
+  let d = Date.now();
   if (!song.playing() && isPaused) {
     isPaused = false;
     startDate = startDate + d - pauseDate;
@@ -1144,9 +1216,11 @@ const compClicked = (isTyped, key, isWheel) => {
       calculateScore(judge, pointingCntElement[i].i);
       drawParticle(3, x, y, judge);
       record.push({ index: record.length, pointingCntElement, mouseX, mouseY, judge, seek });
+      keyInput.push({ judge, key: isWheel ? "W" : key != undefined ? key : "Click", time: Date.now() });
       return;
     }
   }
+  keyInput.push({ judge: "Empty", key: isWheel ? "W" : key != undefined ? key : "Click", time: Date.now() });
   drawParticle(2, mouseX, mouseY);
 };
 
@@ -1212,7 +1286,7 @@ const doneLoading = () => {
       song.play();
       lottieAnim.play();
       menuAllowed = true;
-      startDate = new Date().getTime();
+      startDate = Date.now();
     }, 4000);
   }, 1000);
 };
@@ -1258,7 +1332,7 @@ const settingChanged = (e, v) => {
     for (let i = 0; i <= 1; i++) {
       document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
     }
-    overlayTime = new Date().getTime();
+    overlayTime = Date.now();
     setTimeout(() => {
       overlayClose("volume");
     }, 1500);
@@ -1268,7 +1342,7 @@ const settingChanged = (e, v) => {
 
 const overlayClose = (s) => {
   if (s == "volume") {
-    if (overlayTime + 1400 <= new Date().getTime()) {
+    if (overlayTime + 1400 <= Date.now()) {
       volumeOverlay.classList.remove("overlayOpen");
     }
   }
@@ -1306,7 +1380,7 @@ const globalScrollEvent = (e) => {
       volumeMasterValue.textContent = `${Math.round(settings.sound.volume.master * 100)}%`;
       Howler.volume(settings.sound.volume.master);
       volumeOverlay.classList.add("overlayOpen");
-      overlayTime = new Date().getTime();
+      overlayTime = Date.now();
       setTimeout(() => {
         overlayClose("volume");
       }, 1500);
@@ -1352,7 +1426,7 @@ document.onkeydown = (e) => {
       e.preventDefault();
       if (menuAllowed) {
         if (menuContainer.style.display == "none") {
-          if (song.playing()) pauseDate = new Date().getTime();
+          if (song.playing()) pauseDate = Date.now();
           isPaused = true;
           floatingResumeContainer.style.opacity = 0;
           floatingResumeContainer.style.display = "none";
