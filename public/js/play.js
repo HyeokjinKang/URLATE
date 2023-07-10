@@ -741,7 +741,6 @@ const drawKeyInput = () => {
     alpha = 1 - (Date.now() - keyInput[keyInput.length - 1].time - 5000) / 1000;
     if (alpha <= 0) return;
   }
-  ctx.globalAlpha = alpha;
   ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
   ctx.fillStyle = "#FFF";
   ctx.textAlign = "left";
@@ -751,6 +750,11 @@ const drawKeyInput = () => {
     text += keyInput[i].key;
   }
   for (let i = keyInput.length - 1; i >= (keyInput.length > 12 ? keyInput.length - 12 : 0); i--) {
+    let j = i - keyInput.length + 13;
+    if (j < 6) {
+      alpha *= (1 / 6) * (j + 1);
+    }
+    ctx.globalAlpha = alpha;
     let judge = keyInput[i].judge;
     let color = "#FFF";
     switch (judge) {
