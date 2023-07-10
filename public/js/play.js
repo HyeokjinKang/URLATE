@@ -756,15 +756,17 @@ const drawKeyInput = () => {
   for (let i = 0; i < keyInput.length; i++) {
     text += keyInput[i].key;
   }
+  let animDuration = 0;
   let animX = 0;
   if (keyInputMemoryMs + 100 >= Date.now()) {
-    animX = (1 - easeOutQuart((Date.now() - keyInputMemoryMs) / 100)) * (canvas.width / 100 + canvas.width / 200);
+    animDuration = 1 - easeOutQuart((Date.now() - keyInputMemoryMs) / 100);
+    animX = animDuration * (canvas.width / 100 + canvas.width / 200);
   }
   for (let i = keyInput.length - 1; i >= (keyInput.length > 12 ? keyInput.length - 12 : 0); i--) {
     let j = i - keyInput.length + 13;
     let partAlpha = alpha;
     if (j < 8) {
-      partAlpha *= (1 / 8) * (j + 1);
+      partAlpha *= (1 / 8) * (j + animDuration);
     }
     ctx.globalAlpha = partAlpha;
     let judge = keyInput[i].judge;
