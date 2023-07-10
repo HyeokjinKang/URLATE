@@ -92,6 +92,8 @@ let disableText = false;
 let songData = [];
 let record = [];
 let keyInput = [];
+let keyInputMemory = 0;
+let keyInputMemoryMs = 0;
 let trackName = "";
 const albumImg = new Image();
 
@@ -736,6 +738,11 @@ const callBulletDestroy = (j) => {
 
 const drawKeyInput = () => {
   if (keyInput.length == 0) return;
+  if (keyInput[keyInput.length - 1].time + 4000 <= Date.now()) return;
+  if (keyInputMemory != keyInput.length) {
+    keyInputMemory = keyInput.length;
+    keyInputMemoryMs = Date.now();
+  }
   let alpha = 1;
   if (keyInput[keyInput.length - 1].time + 3000 <= Date.now()) {
     alpha = 1 - (Date.now() - keyInput[keyInput.length - 1].time - 3000) / 1000;
@@ -749,12 +756,17 @@ const drawKeyInput = () => {
   for (let i = 0; i < keyInput.length; i++) {
     text += keyInput[i].key;
   }
+  let animX = 0;
+  if (keyInputMemoryMs + 100 >= Date.now()) {
+    animX = (1 - easeOutQuart((Date.now() - keyInputMemoryMs) / 100)) * (canvas.width / 100 + canvas.width / 200);
+  }
   for (let i = keyInput.length - 1; i >= (keyInput.length > 12 ? keyInput.length - 12 : 0); i--) {
     let j = i - keyInput.length + 13;
-    if (j < 6) {
-      alpha *= (1 / 6) * (j + 1);
+    let partAlpha = alpha;
+    if (j < 8) {
+      partAlpha *= (1 / 8) * (j + 1);
     }
-    ctx.globalAlpha = alpha;
+    ctx.globalAlpha = partAlpha;
     let judge = keyInput[i].judge;
     let color = "#FFF";
     switch (judge) {
@@ -786,9 +798,13 @@ const drawKeyInput = () => {
     ctx.fillStyle = color;
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = canvas.width / 800;
-    ctx.roundRect(canvas.width * 0.08 - canvas.height / 15 + (keyInput.length - i - 1) * (canvas.width / 100 + canvas.width / 200), canvas.height * 0.05, canvas.width / 100, canvas.width / 100, [
-      canvas.width / 700,
-    ]);
+    ctx.roundRect(
+      canvas.width * 0.08 - canvas.height / 15 + (keyInput.length - i - 1) * (canvas.width / 100 + canvas.width / 200) - animX,
+      canvas.height * 0.05,
+      canvas.width / 100,
+      canvas.width / 100,
+      [canvas.width / 700]
+    );
     ctx.fill();
     ctx.stroke();
     ctx.beginPath();
@@ -798,11 +814,12 @@ const drawKeyInput = () => {
     ctx.textAlign = "center";
     ctx.fillText(
       keyInput[i].key[0],
-      canvas.width * 0.08 - canvas.height / 15 + (keyInput.length - i - 1) * (canvas.width / 100 + canvas.width / 200) + canvas.width / 200,
+      canvas.width * 0.08 - canvas.height / 15 + (keyInput.length - i - 1) * (canvas.width / 100 + canvas.width / 200) + canvas.width / 200 - animX,
       canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200
     );
   }
   ctx.globalAlpha = 1;
+  ctx.clearRect(0, 0, canvas.width * 0.08 - canvas.height / 15 - canvas.width / 800, canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200 + canvas.height / 20);
 };
 
 const cntRender = () => {
