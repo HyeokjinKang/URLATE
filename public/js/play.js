@@ -737,8 +737,8 @@ const callBulletDestroy = (j) => {
 const drawKeyInput = () => {
   if (keyInput.length == 0) return;
   let alpha = 1;
-  if (keyInput[keyInput.length - 1].time + 5000 <= Date.now()) {
-    alpha = 1 - (Date.now() - keyInput[keyInput.length - 1].time - 5000) / 1000;
+  if (keyInput[keyInput.length - 1].time + 3000 <= Date.now()) {
+    alpha = 1 - (Date.now() - keyInput[keyInput.length - 1].time - 3000) / 1000;
     if (alpha <= 0) return;
   }
   ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
