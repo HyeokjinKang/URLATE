@@ -674,7 +674,7 @@ const drawBullet = (n, x, y, a) => {
 };
 
 const callBulletDestroy = (j) => {
-  let date = new Date().getTime();
+  let date = Date.now();
   const seek = (date - startDate - (offset + sync)) * rate;
   const p = ((seek - pattern.bullets[j].ms) / ((bpm * 40) / speed / pattern.bullets[j].speed)) * 100;
   const left = pattern.bullets[j].direction == "L";
@@ -755,7 +755,7 @@ const cntRender = () => {
     ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
-    let date = new Date().getTime();
+    let date = Date.now();
     let seek = 0;
     if (isPaused || startDate == 0) {
       seek = (date - (startDate + date - pauseDate) - (offset + sync)) * rate;
@@ -1037,7 +1037,7 @@ const compClicked = (isTyped, key, isWheel) => {
   if ((!isTyped && !settings.input.mouse && !isWheel) || isMenuOpened || !menuAllowed || mouseClicked == key) {
     return;
   }
-  let d = new Date().getTime();
+  let d = Date.now();
   if (!song.playing() && isPaused) {
     isPaused = false;
     startDate = startDate + d - pauseDate;
@@ -1151,7 +1151,7 @@ const doneLoading = () => {
       song.play();
       lottieAnim.play();
       menuAllowed = true;
-      startDate = new Date().getTime();
+      startDate = Date.now();
     }, 4000);
   }, 1000);
 };
@@ -1199,7 +1199,7 @@ const settingChanged = (e, v) => {
     settings.sound.volume.master = e.value / 100;
     volumeMasterValue.textContent = e.value + "%";
     document.getElementsByClassName("volumeMaster")[0].value = Math.round(settings.sound.volume.master * 100);
-    overlayTime = new Date().getTime();
+    overlayTime = Date.now();
     setTimeout(() => {
       overlayClose("volume");
     }, 1500);
@@ -1209,7 +1209,7 @@ const settingChanged = (e, v) => {
 
 const overlayClose = (s) => {
   if (s == "volume") {
-    if (overlayTime + 1400 <= new Date().getTime()) {
+    if (overlayTime + 1400 <= Date.now()) {
       volumeOverlay.classList.remove("overlayOpen");
     }
   }
@@ -1249,7 +1249,7 @@ const globalScrollEvent = (e) => {
       volumeMasterValue.textContent = `${Math.round(settings.sound.volume.master * 100)}%`;
       Howler.volume(settings.sound.volume.master);
       volumeOverlay.classList.add("overlayOpen");
-      overlayTime = new Date().getTime();
+      overlayTime = Date.now();
       setTimeout(() => {
         overlayClose("volume");
       }, 1500);
@@ -1295,7 +1295,7 @@ document.onkeydown = (e) => {
       e.preventDefault();
       if (menuAllowed) {
         if (menuContainer.style.display == "none") {
-          if (song.playing()) pauseDate = new Date().getTime();
+          if (song.playing()) pauseDate = Date.now();
           isPaused = true;
           floatingResumeContainer.style.opacity = 0;
           floatingResumeContainer.style.display = "none";
