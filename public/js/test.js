@@ -1311,7 +1311,7 @@ document.onkeydown = (e) => {
     }
     if (inputMode == 1 && !/^[a-z]{1}$/i.test(e.key)) {
       return;
-    } else if (inputMode == 2 && !/^[zx]{1}$/i.test(e.key)) {
+    } else if (inputMode == 2 && !(e.code == "KeyZ" || e.code == "KeyX")) {
       return;
     }
     compClicked(true, e.key, false);
