@@ -88,6 +88,9 @@ let isPaused = false;
 let rate = 1;
 let disableText = false;
 let songData = [];
+let keyInput = [];
+let keyInputMemory = 0;
+let keyInputMemoryMs = 0;
 let trackName = "";
 const albumImg = new Image();
 
@@ -710,6 +713,92 @@ const callBulletDestroy = (j) => {
   destroyedBullets.add(j);
 };
 
+const drawKeyInput = () => {
+  if (keyInput.length == 0) return;
+  if (keyInput[keyInput.length - 1].time + 4000 <= Date.now()) return;
+  if (keyInputMemory != keyInput.length) {
+    keyInputMemory = keyInput.length;
+    keyInputMemoryMs = Date.now();
+  }
+  let alpha = 1;
+  if (keyInput[keyInput.length - 1].time + 3000 <= Date.now()) {
+    alpha = 1 - (Date.now() - keyInput[keyInput.length - 1].time - 3000) / 1000;
+    if (alpha <= 0) return;
+  }
+  ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
+  ctx.fillStyle = "#FFF";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  let text = "";
+  for (let i = 0; i < keyInput.length; i++) {
+    text += keyInput[i].key;
+  }
+  let animX = 0;
+  if (keyInputMemoryMs + 100 >= Date.now()) {
+    animX = (1 - easeOutQuart((Date.now() - keyInputMemoryMs) / 100)) * (canvas.width / 100 + canvas.width / 200);
+  }
+  for (let i = keyInput.length - 1; i >= (keyInput.length > 12 ? keyInput.length - 12 : 0); i--) {
+    let j = i - keyInput.length + 13;
+    let partAlpha = alpha;
+    if (j < 8) {
+      partAlpha *= (1 / 8) * (j + 1);
+    }
+    ctx.globalAlpha = partAlpha;
+    let judge = keyInput[i].judge;
+    let color = "#FFF";
+    switch (judge) {
+      case "Perfect":
+        color = "#37E7E7";
+        break;
+      case "Great":
+        color = "#89DB57";
+        break;
+      case "Good":
+        color = "#EEE063";
+        break;
+      case "Bad":
+        color = "#E8AF5B";
+        break;
+      case "Miss":
+        color = "#F96C5A";
+        break;
+      case "Bullet":
+        color = "#C4A0E8";
+        break;
+      case "Empty":
+        color = "#ffffff00";
+        break;
+      default:
+        console.log(`drawKeyInput:${judge} isn't specified.`);
+    }
+    ctx.beginPath();
+    ctx.fillStyle = color;
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = canvas.width / 800;
+    ctx.roundRect(
+      canvas.width * 0.08 - canvas.height / 15 + (keyInput.length - i - 1) * (canvas.width / 100 + canvas.width / 200) - animX,
+      canvas.height * 0.05,
+      canvas.width / 100,
+      canvas.width / 100,
+      [canvas.width / 700]
+    );
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.fillStyle = "#fff";
+    ctx.font = `600 5vh Montserrat, Pretendard Variable`;
+    ctx.textBaseline = "top";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      keyInput[i].key[0],
+      canvas.width * 0.08 - canvas.height / 15 + (keyInput.length - i - 1) * (canvas.width / 100 + canvas.width / 200) + canvas.width / 200 - animX,
+      canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200
+    );
+  }
+  ctx.globalAlpha = 1;
+  ctx.clearRect(0, 0, canvas.width * 0.08 - canvas.height / 15 - canvas.width / 800, canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200 + canvas.height / 20);
+};
+
 const cntRender = () => {
   eraseCnt();
   if (window.devicePixelRatio != pixelRatio) {
@@ -825,6 +914,7 @@ const cntRender = () => {
         });
         miss++;
         missPoint.push(song.seek() * 1000);
+        keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
       }
     }
     for (let i = 0; i < missParticles.length; i++) {
@@ -895,6 +985,8 @@ const cntRender = () => {
   ctx.fillStyle = "#fff";
   ctx.fillText(`${combo}x`, canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05 + canvas.height / 25);
   drawCursor();
+
+  drawKeyInput();
 
   //fps counter
   if (frameCounter) {
@@ -1019,6 +1111,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
             setTimeout(() => {
               colorOverlayContainer.classList.remove("show");
             }, 100);
+            keyInput.push({ judge: "Bullet", key: "-", time: Date.now() });
           }
         }
         break;
@@ -1083,9 +1176,11 @@ const compClicked = (isTyped, key, isWheel) => {
       }
       calculateScore(judge, pointingCntElement[i].i);
       drawParticle(3, x, y, judge);
+      keyInput.push({ judge, key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
       return;
     }
   }
+  keyInput.push({ judge: "Empty", key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
   drawParticle(2, mouseX, mouseY);
 };
 
