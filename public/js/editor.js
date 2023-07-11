@@ -498,7 +498,7 @@ const drawNote = (p, x, y, s, n, d) => {
     cntCtx.beginPath();
     cntCtx.arc(x, y, (w / 100) * p, 0, 2 * Math.PI);
     cntCtx.fill();
-    if (skin.note[n].outline) {
+    if (skin.note[n].outline && !denySkin) {
       if (skin.note[n].outline.type == "gradient") {
         let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
         for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
@@ -533,7 +533,7 @@ const drawNote = (p, x, y, s, n, d) => {
     else cntCtx.arc(x, y, (w / 100) * p, (-Math.PI / 5) * 6, Math.PI / 5);
     cntCtx.lineTo(x, y - 1.5 * d * (w / 100) * p);
     cntCtx.fill();
-    if (skin.note[n].outline) {
+    if (skin.note[n].outline && !denySkin) {
       if (skin.note[n].outline.type == "gradient") {
         let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
         for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
@@ -624,12 +624,12 @@ const drawBullet = (n, x, y, a, s, l, d) => {
       cntCtx.lineTo(x + w * 2 * Math.cos(a), y + w * 2 * Math.sin(a));
       cntCtx.lineTo(x + w * Math.sin(a), y - w * Math.cos(a));
       cntCtx.fill();
-      if (skin.bullet.outline) cntCtx.stroke();
+      if (skin.bullet.outline && !denySkin) cntCtx.stroke();
       break;
     case 1:
       cntCtx.arc(x, y, w, 0, Math.PI * 2);
       cntCtx.fill();
-      if (skin.bullet.outline) cntCtx.stroke();
+      if (skin.bullet.outline && !denySkin) cntCtx.stroke();
       break;
     default:
       cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard Variable`;
