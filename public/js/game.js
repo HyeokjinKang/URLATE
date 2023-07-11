@@ -681,6 +681,7 @@ const tracksUpdate = () => {
 
 const sortSelected = (n, isInitializing) => {
   localStorage.sort = n;
+  let seek = songs[songSelection].seek();
   Array.prototype.forEach.call(document.getElementsByClassName("sortText"), (e) => {
     if (e.classList.contains("selected")) e.classList.remove("selected");
   });
@@ -692,10 +693,10 @@ const sortSelected = (n, isInitializing) => {
   tracks.sort(sortArray[n]);
   tracksUpdate();
   const index = tracks.findIndex((obj) => obj.fileName == prevName);
-  if (!isInitializing) songSelected(index, true);
+  if (!isInitializing) songSelected(index, true, seek);
 };
 
-const songSelected = (n, refreshed) => {
+const songSelected = (n, refreshed, seek) => {
   loadingShow();
   if (songSelection == n && !refreshed) {
     //play
@@ -738,7 +739,10 @@ const songSelected = (n, refreshed) => {
         themeSong.stop();
       }, 500);
     }
-    if (songs[n]) songs[n].play();
+    if (songs[n]) {
+      songs[n].play();
+      if (seek) songs[n].seek(seek);
+    }
   }
   if (document.getElementsByClassName("songSelected")[0]) {
     arrowAnim.destroy();
