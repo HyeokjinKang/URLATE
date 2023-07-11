@@ -352,9 +352,9 @@ const drawParticle = (n, x, y, j, d) => {
     const raf = (w, s, n) => {
       ctx.beginPath();
       let width = canvas.width / 60;
-      let p = 100 - (s + 500 - Date.now()) / 5;
-      if (p >= 100) return;
-      ctx.lineWidth = ((100 - p) / 100) * (canvas.width / 200);
+      if (Date.now() - s >= 1000) return;
+      let p = 100 * easeOutQuad((Date.now() - s) / 1000);
+      ctx.lineWidth = ((100 - p) / 100) * (canvas.width / 100);
       let opacity = parseInt(225 - p * 1.25);
       if (opacity <= 0) opacity = "00";
       if (skin.note[n].circle) {
@@ -385,11 +385,9 @@ const drawParticle = (n, x, y, j, d) => {
       ctx.arc(cx, cy, w, 0, 2 * Math.PI);
       ctx.stroke();
       w = canvas.width / 40 + width * (p / 100);
-      if (p < 100) {
-        requestAnimationFrame(() => {
-          raf(w, s, n);
-        });
-      }
+      requestAnimationFrame(() => {
+        raf(w, s, n);
+      });
     };
     raf(canvas.width / 40, Date.now(), d);
   } else if (n == 2) {
