@@ -1149,7 +1149,7 @@ const compClicked = (isTyped, key, isWheel) => {
   for (let i = 0; i < pointingCntElement.length; i++) {
     if (pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && (pointingCntElement[i].v2 === 0) == !isWheel) {
       if (pointingCntElement[i].v2 == 1 && pattern.patterns[pointingCntElement[i].i].direction != key) return;
-      drawParticle(1, mouseX, mouseY, 0, pointingCntElement[i].v2);
+      drawParticle(1, pattern.patterns[pointingCntElement[i].i].x, pattern.patterns[pointingCntElement[i].i].y, 0, pointingCntElement[i].v2);
       let date = d;
       const seek = (date - startDate - (offset + sync)) * rate;
       let ms = pattern.patterns[pointingCntElement[i].i].ms;
