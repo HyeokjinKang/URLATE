@@ -937,7 +937,7 @@ const cntRender = () => {
         });
         miss++;
         missPoint.push(song.seek() * 1000);
-        record.push({ index: record.length, pointingCntElement, mouseX, mouseY, judge: "miss", seek });
+        record.push([record.length, pointingCntElement.v1, pointingCntElement.v2, pointingCntElement.i, mouseX, mouseY, "miss", seek]);
         keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
       }
     }
@@ -1170,7 +1170,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
             setTimeout(() => {
               colorOverlayContainer.classList.remove("show");
             }, 100);
-            record.push({ index: record.length, pointingCntElement, mouseX, mouseY, judge: "bullet", seek: song.seek() * 1000 });
+            record.push([record.length, pointingCntElement.v1, pointingCntElement.v2, pointingCntElement.i, mouseX, mouseY, "bullet", song.seek() * 1000]);
             keyInput.push({ judge: "Bullet", key: "-", time: Date.now() });
           }
         }
@@ -1236,7 +1236,7 @@ const compClicked = (isTyped, key, isWheel) => {
       }
       calculateScore(judge, pointingCntElement[i].i);
       drawParticle(3, x, y, judge);
-      record.push({ index: record.length, pointingCntElement, mouseX, mouseY, judge, seek });
+      record.push([record.length, pointingCntElement.v1, pointingCntElement.v2, pointingCntElement.i, mouseX, mouseY, judge, seek]);
       keyInput.push({ judge, key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
       return;
     }
