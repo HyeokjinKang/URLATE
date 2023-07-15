@@ -1751,7 +1751,37 @@ const triggersInput = (v, e) => {
 };
 
 const moveTo = () => {
-  song.seek(prompt(moveToAlert));
+  let s = 0;
+  iziToast.info({
+    timeout: 20000,
+    overlay: true,
+    displayMode: "once",
+    id: "inputs",
+    zindex: 999,
+    title: "Move",
+    message: moveToAlert,
+    position: "center",
+    drag: false,
+    inputs: [
+      [
+        '<input type="number">',
+        "keyup",
+        (instance, toast, input, e) => {
+          s = Number(input.value);
+        },
+      ],
+    ],
+    buttons: [
+      [
+        "<button><b>GO</b></button>",
+        (instance, toast) => {
+          song.seek(s);
+          instance.hide({ transitionOut: "fadeOut" }, toast, "confirm");
+        },
+        true,
+      ],
+    ],
+  });
 };
 
 const changeBPM = (e) => {
@@ -2772,17 +2802,21 @@ document.onkeydown = (e) => {
     if (e.code == "Space") {
       songPlayPause();
     } else if (e.key == "1") {
-      e.preventDefault();
-      changeMode(0);
+      if (document.getElementsByClassName("iziToast-overlay").length == 0) {
+        e.preventDefault();
+        changeMode(0);
+      }
       return;
     } else if (e.key == "2") {
-      e.preventDefault();
-      changeMode(1);
-      return;
+      if (document.getElementsByClassName("iziToast-overlay").length == 0) {
+        e.preventDefault();
+        changeMode(1);
+      }
     } else if (e.key == "3") {
-      e.preventDefault();
-      changeMode(2);
-      return;
+      if (document.getElementsByClassName("iziToast-overlay").length == 0) {
+        e.preventDefault();
+        changeMode(2);
+      }
     } else if (e.key == "ArrowLeft") {
       tmlScrollLeft();
     } else if (e.key == "ArrowRight") {
