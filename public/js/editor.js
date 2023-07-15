@@ -2295,12 +2295,12 @@ const elementPaste = () => {
 };
 
 const showHelp = () => {
-  document.getElementsByClassName("menuIcon")[13].classList.add("menuSelected");
+  document.getElementsByClassName("menuIcon")[14].classList.add("menuSelected");
   document.getElementById("helpContainer").style.display = "flex";
 };
 
 const hideHelp = () => {
-  document.getElementsByClassName("menuIcon")[13].classList.remove("menuSelected");
+  document.getElementsByClassName("menuIcon")[14].classList.remove("menuSelected");
   document.getElementById("helpContainer").style.display = "none";
 };
 
