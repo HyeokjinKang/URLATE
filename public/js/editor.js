@@ -1388,12 +1388,21 @@ const settingsInput = (v, e) => {
     case "y":
       if (isNaN(Number(e.value))) {
         if (e.value != "-") {
-          alert("Input value is not number.");
+          iziToast.error({
+            title: "Input Error",
+            message: "Input value is not number.",
+          });
         }
       } else if (Number(e.value) > 100) {
-        alert("Input value is too high.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value is too high.",
+        });
       } else if (Number(e.value) < -100) {
-        alert("Input value is too low.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value is too low.",
+        });
       } else {
         pattern.patterns[selectedCntElement.i][v] = Number(e.value);
         patternChanged();
@@ -1406,10 +1415,16 @@ const settingsInput = (v, e) => {
     case "direction":
       if (isNaN(Number(e.value))) {
         if (e.value != "-") {
-          alert("Input value is not number.");
+          iziToast.error({
+            title: "Input Error",
+            message: "Input value is not number.",
+          });
         }
       } else if (Number(e.value) != 1 && Number(e.value) != -1) {
-        alert("Input value should be 1 or -1.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value should be 1 or -1.",
+        });
       } else {
         pattern.patterns[selectedCntElement.i][v] = Number(e.value);
         patternChanged();
@@ -1421,9 +1436,15 @@ const settingsInput = (v, e) => {
       break;
     case "Timing":
       if (isNaN(Number(e.value))) {
-        alert("Input value is not number.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value is not number.",
+        });
       } else if (Number(e.value) < 0) {
-        alert("Input value is too low.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value is too low.",
+        });
       } else {
         let targetElements, changedResult;
         if (selectedCntElement.v1 == 0) {
@@ -1484,19 +1505,31 @@ const settingsInput = (v, e) => {
           pattern.bullets[selectedCntElement.i].direction = "L";
           patternChanged();
         }
-        alert("Input is wrong value.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value should be L or R.",
+        });
       }
       e.value = pattern.bullets[selectedCntElement.i].direction;
       break;
     case "Location":
       if (isNaN(Number(e.value))) {
         if (e.value != "-") {
-          alert("Input value is not number.");
+          iziToast.error({
+            title: "Input Error",
+            message: "Input value is not number.",
+          });
         }
       } else if (Number(e.value) > 100) {
-        alert("Input value is too high.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value is too high.",
+        });
       } else if (Number(e.value) < -100) {
-        alert("Input value is too low.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value is too low.",
+        });
       } else {
         pattern.bullets[selectedCntElement.i].location = Number(e.value);
         patternChanged();
@@ -1509,7 +1542,10 @@ const settingsInput = (v, e) => {
     case "Angle":
       if (isNaN(Number(e.value))) {
         if (e.value != "-") {
-          alert("Input value is not number.");
+          iziToast.error({
+            title: "Input Error",
+            message: "Input value is not number.",
+          });
         }
       } else {
         pattern.bullets[selectedCntElement.i].angle = Number(e.value);
@@ -1526,16 +1562,28 @@ const settingsInput = (v, e) => {
       } else if (selectedCntElement.v1 == 1) {
         element = pattern.bullets[selectedCntElement.i];
       } else {
-        alert("Wrong Element.");
+        iziToast.error({
+          title: "Error",
+          message: "Wrong Element.",
+        });
       }
       if (isNaN(Number(e.value))) {
         if (e.value != "-") {
-          alert("Input value is not number.");
+          iziToast.error({
+            title: "Input Error",
+            message: "Input value is not number.",
+          });
         }
       } else if (Number(e.value) > 5) {
-        alert("Input value is too high.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value is too high.",
+        });
       } else if (e.value != "" && Number(e.value) < 1) {
-        alert("Input value is too low.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value is too low.",
+        });
       } else {
         element.speed = Number(e.value);
         patternChanged();
@@ -1553,12 +1601,21 @@ const triggersInput = (v, e) => {
     case "y":
       if (isNaN(Number(e.value))) {
         if (e.value != "-") {
-          alert("Input value is not number.");
+          iziToast.error({
+            title: "Input Error",
+            message: "Input value is not number.",
+          });
         }
       } else if (Number(e.value) > 100) {
-        alert("Input value is too high.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value is too high.",
+        });
       } else if (Number(e.value) < -100) {
-        alert("Input value is too low.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value is too low.",
+        });
       } else {
         pattern.triggers[selectedCntElement.i][v] = Number(e.value);
         patternChanged();
@@ -1570,9 +1627,15 @@ const triggersInput = (v, e) => {
       break;
     case "num":
       if (isNaN(Number(e.value))) {
-        alert("Input value is not number.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value is not number.",
+        });
       } else if (Number(e.value) > pattern.bullets.length || Number(e.value) < 0) {
-        alert(`Bullet${e.value} is undefined.`);
+        iziToast.error({
+          title: "Input Error",
+          message: `Input value must be between 0 and ${pattern.bullets.length}.`,
+        });
       } else {
         pattern.triggers[selectedCntElement.i][v] = Number(e.value);
         patternChanged();
@@ -1584,9 +1647,15 @@ const triggersInput = (v, e) => {
     case "time":
       textBlurred();
       if (isNaN(Number(e.value))) {
-        alert("Input value is not number.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value is not number.",
+        });
       } else if (Number(e.value) < 0) {
-        alert("Input value must not be less than 0.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value must not be less than 0.",
+        });
       } else {
         pattern.triggers[selectedCntElement.i][v] = Number(e.value);
         patternChanged();
@@ -1596,11 +1665,20 @@ const triggersInput = (v, e) => {
       break;
     case "opacity":
       if (isNaN(Number(e.value))) {
-        alert("Input value is not number.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value is not number.",
+        });
       } else if (Number(e.value) < 0) {
-        alert("Input value must not be less than 0.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value must not be less than 0.",
+        });
       } else if (Number(e.value) > 1) {
-        alert("Input value must not be more than 1.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value must not be more than 1.",
+        });
       } else {
         pattern.triggers[selectedCntElement.i][v] = Number(e.value);
         patternChanged();
@@ -1613,11 +1691,20 @@ const triggersInput = (v, e) => {
     case "speed":
       textBlurred();
       if (isNaN(Number(e.value))) {
-        alert("Input value is not number.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value is not number.",
+        });
       } else if (Number(e.value) < 0) {
-        alert("Input value must not be less than 0.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value must not be less than 0.",
+        });
       } else if (Number(e.value) > 5) {
-        alert("Input value must not be more than 5.");
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value must not be more than 5.",
+        });
       } else {
         pattern.triggers[selectedCntElement.i][v] = Number(e.value);
         patternChanged();
@@ -1632,7 +1719,10 @@ const triggersInput = (v, e) => {
         patternChanged();
         return;
       }
-      alert("Input value should be 'left', 'center', or 'right'.");
+      iziToast.error({
+        title: "Input Error",
+        message: "Input value should be 'left', 'center', or 'right'.",
+      });
       e.value = pattern.triggers[selectedCntElement.i][v];
       break;
     case "valign":
@@ -1642,7 +1732,10 @@ const triggersInput = (v, e) => {
         patternChanged();
         return;
       }
-      alert("Input value should be 'top', 'bottom', 'middle', 'alphabetic', 'hanging'.");
+      iziToast.error({
+        title: "Input Error",
+        message: "Input value should be 'top', 'bottom', 'middle', 'alphabetic', 'hanging'.",
+      });
       e.value = pattern.triggers[selectedCntElement.i][v];
       break;
     case "size":
@@ -1663,7 +1756,10 @@ const moveTo = () => {
 
 const changeBPM = (e) => {
   if (isNaN(Number(e.value))) {
-    alert("Input value is not number.");
+    iziToast.error({
+      title: "Input Error",
+      message: "Input value is not number.",
+    });
   } else {
     bpm = Number(e.value);
     pattern.information.bpm = bpm;
@@ -1673,12 +1769,21 @@ const changeBPM = (e) => {
 
 const changeSpeed = (e) => {
   if (isNaN(Number(e.value))) {
-    alert("Input value is not number.");
+    iziToast.error({
+      title: "Input Error",
+      message: "Input value is not number.",
+    });
   } else {
     if (Number(e.value) > 5) {
-      alert("Input value is too high.");
+      iziToast.error({
+        title: "Input Error",
+        message: "Input value is too high.",
+      });
     } else if (Number(e.value) <= 0) {
-      alert("Input value is too low.");
+      iziToast.error({
+        title: "Input Error",
+        message: "Input value is too low.",
+      });
     } else {
       speed = Number(e.value);
       pattern.information.speed = speed;
@@ -1689,7 +1794,10 @@ const changeSpeed = (e) => {
 
 const changeOffset = (e) => {
   if (isNaN(Number(e.value))) {
-    alert("Input value is not number.");
+    iziToast.error({
+      title: "Input Error",
+      message: "Input value is not number.",
+    });
   } else {
     offset = Number(e.value);
     pattern.information.offset = offset;
@@ -2175,7 +2283,10 @@ const changeRate = () => {
 };
 
 const test = () => {
-  alert(need2Save);
+  iziToast.warning({
+    title: "Caution",
+    message: need2Save,
+  });
   save();
   let trackSettingsForm = settingsPropertiesTextbox;
   pattern.information = {
@@ -2254,6 +2365,13 @@ const patternRedo = () => {
 };
 
 const elementCopy = () => {
+  if (selectedCntElement.i === "") {
+    iziToast.warning({
+      title: "Copy failed",
+      message: "Nothing Selected.",
+    });
+    return;
+  }
   copiedElement.v1 = selectedCntElement.v1;
   if (selectedCntElement.v1 == 0) {
     copiedElement.element = eval(`(${JSON.stringify(pattern.patterns[selectedCntElement.i])})`);
@@ -2262,9 +2380,20 @@ const elementCopy = () => {
   } else if (selectedCntElement.v1 == 2) {
     copiedElement.element = eval(`(${JSON.stringify(pattern.triggers[selectedCntElement.i])})`);
   }
+  iziToast.success({
+    title: "Copy",
+    message: `Copied ${selectedCntElement.v1 == 0 ? "Note" : selectedCntElement.v1 == 1 ? "Bullet" : "Trigger"}_${selectedCntElement.i}`,
+  });
 };
 
 const elementPaste = () => {
+  if (copiedElement.v1 === "") {
+    iziToast.warning({
+      title: "Paste failed",
+      message: "Nothing copied.",
+    });
+    return;
+  }
   copiedElement.element.ms = song.seek() * 1000;
   let searchTarget = "";
   if (copiedElement.v1 == 0) {
@@ -2292,6 +2421,10 @@ const elementPaste = () => {
   if (!isSettingsOpened) toggleSettings();
   changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
   patternChanged();
+  iziToast.success({
+    title: "Paste",
+    message: `Pasted ${selectedCntElement.v1 == 0 ? "Note" : selectedCntElement.v1 == 1 ? "Bullet" : "Trigger"}_${selectedCntElement.i}`,
+  });
 };
 
 const showHelp = () => {
@@ -2523,10 +2656,16 @@ const changeLetterbox = (e) => {
 
 const changeTempo = (e) => {
   if (isNaN(Number(e.value))) {
-    alert("Input value is not number.");
+    iziToast.error({
+      title: "Input Error",
+      message: "Input value is not number.",
+    });
     e.value = metronomeLimit;
   } else if (Number(e.value) < 2) {
-    alert("Input value is too low");
+    iziToast.error({
+      title: "Input Error",
+      message: "Input value is too low.",
+    });
     e.value = metronomeLimit;
   } else {
     metronomeLimit = Number(e.value);
