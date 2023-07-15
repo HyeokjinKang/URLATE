@@ -2602,6 +2602,7 @@ document.onkeydown = (e) => {
   } else if (e.key.toLowerCase() == "s") {
     if (ctrlDown) {
       e.preventDefault();
+      ctrlDown = false;
       save();
     }
   } else if (e.key.toLowerCase() == "z") {
@@ -2615,6 +2616,7 @@ document.onkeydown = (e) => {
   } else if (e.key.toLowerCase() == "p") {
     if (ctrlDown) {
       e.preventDefault();
+      ctrlDown = false;
       test();
     }
   } else if (e.key == "F1") {
@@ -2661,10 +2663,12 @@ document.onkeydown = (e) => {
       deleteElement();
     } else if (e.key.toLowerCase() == "c") {
       if (ctrlDown) {
+        ctrlDown = false;
         elementCopy();
       }
     } else if (e.key.toLowerCase() == "v") {
       if (ctrlDown) {
+        ctrlDown = false;
         elementPaste();
       }
     }
