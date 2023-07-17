@@ -2836,12 +2836,10 @@ document.onkeydown = (e) => {
       deleteElement();
     } else if (e.key.toLowerCase() == "c") {
       if (ctrlDown) {
-        ctrlDown = false;
         elementCopy();
       }
     } else if (e.key.toLowerCase() == "v") {
       if (ctrlDown) {
-        ctrlDown = false;
         elementPaste();
       }
     }
