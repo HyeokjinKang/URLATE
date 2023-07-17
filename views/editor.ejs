@@ -163,9 +163,21 @@
             <img src="https://img.icons8.com/ios-glyphs/48/000000/grid.png" class="menuIcon clickable menuSelected" onclick="toggleGrid()" />
             <img src="https://img.icons8.com/ios-glyphs/48/000000/magnet.png" class="menuIcon clickable menuSelected" onclick="toggleMagnet()" />
             <img src="https://img.icons8.com/ios-glyphs/48/000000/coordinate-system.png" class="menuIcon clickable menuSelected" onclick="toggleExplain()" />
+          </div>
+          <div id="toolContainer">
+            <img src="https://img.icons8.com/ios-glyphs/48/000000/copy.png" class="toolIcon clickable" onclick="elementCopy()" />
+            <span class="toolText">Copy</span>
+            <img src="https://img.icons8.com/ios-glyphs/48/000000/paste.png" class="toolIcon clickable" onclick="elementPaste()" />
+            <span class="toolText">Paste</span>
+            <img src="https://img.icons8.com/ios-glyphs/48/000000/copy-2.png" class="toolIcon clickable" onclick="rangeCopy()" />
+            <span class="toolText">Range<br />Copy</span>
+            <img src="https://img.icons8.com/ios-glyphs/48/000000/paste-special.png" class="toolIcon clickable" onclick="rangePaste()" />
+            <span class="toolText">Range<br />Paste</span>
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/arrow.png" class="menuIcon clickable" onclick="moveTo()" />
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/question-mark.png" class="menuIcon clickable" onmouseover="showHelp()" onmouseout="hideHelp()" />
+            <img src="https://img.icons8.com/ios-glyphs/48/000000/arrow.png" class="toolIcon clickable" onclick="moveTo()" />
+            <span class="toolText">Move</span>
+            <img src="https://img.icons8.com/ios-glyphs/48/000000/question-mark.png" class="toolIcon clickable" onmouseover="showHelp()" onmouseout="hideHelp()" />
+            <span class="toolText">Shortcuts</span>
           </div>
           <div id="componentView" onmousemove="trackMousePos(event)" onmousedown="compClicked()">
             <div id="canvasContainer">
@@ -491,6 +503,7 @@
       const need2Save = "<%= __('needToSave') %>";
       const rusure = "<%= __('RUSure') %>";
       const deleteSure = "<%= __('DeleteSure') %>";
+      const rangeCopyAlert = "<%= __('rangeCopyAlert') %>";
       const cdn = "<%= cdn %>";
       const url = "<%= url %>";
       const api = "<%= api %>";

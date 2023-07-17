@@ -171,6 +171,23 @@ body {
   margin-top: 3vh;
 }
 
+.toolIcon {
+  filter: invert(70%) sepia(53%) saturate(0%) hue-rotate(222deg) brightness(100%) contrast(95%);
+  width: 1.3vw;
+  margin-top: 3vh;
+}
+
+.toolIcon:hover {
+  filter: invert(25%) sepia(0%) saturate(0%) hue-rotate(64deg) brightness(92%) contrast(96%);
+}
+
+.toolText {
+  text-align: center;
+  color: #999;
+  font-size: 0.8vw;
+  font-weight: 500;
+}
+
 .biggerIcon {
   width: 1.5vw;
 }
@@ -210,6 +227,20 @@ body {
   padding-bottom: 3vh;
 }
 
+#toolContainer {
+  position: absolute;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fff;
+  filter: drop-shadow(0 0 5px rgba(65, 65, 65, 0.1));
+  width: 5vw;
+  height: calc(100% - 3vh);
+  overflow-y: auto;
+  padding-bottom: 3vh;
+}
+
 #workingContainer {
   text-align: left;
   display: flex;
@@ -218,6 +249,7 @@ body {
 }
 
 #componentView {
+  margin-right: 5vw;
   display: flex;
   justify-content: center;
   width: 100%;
