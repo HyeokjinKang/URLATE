@@ -2896,13 +2896,13 @@ document.onkeydown = (e) => {
     ctrlDown = true;
   } else if (e.key == "Shift") {
     shiftDown = true;
-  } else if (e.key.toLowerCase() == "s") {
+  } else if (e.code == "KeyS") {
     if (ctrlDown) {
       e.preventDefault();
       ctrlDown = false;
       save();
     }
-  } else if (e.key.toLowerCase() == "z") {
+  } else if (e.code == "KeyZ") {
     if (ctrlDown) {
       if (shiftDown) {
         patternRedo();
@@ -2910,7 +2910,7 @@ document.onkeydown = (e) => {
         patternUndo();
       }
     }
-  } else if (e.key.toLowerCase() == "p") {
+  } else if (e.code == "KeyP") {
     if (ctrlDown) {
       e.preventDefault();
       ctrlDown = false;
@@ -2962,11 +2962,11 @@ document.onkeydown = (e) => {
         }
       }
       deleteElement();
-    } else if (e.key.toLowerCase() == "c") {
+    } else if (e.code == "KeyC") {
       if (ctrlDown) {
         elementCopy();
       }
-    } else if (e.key.toLowerCase() == "v") {
+    } else if (e.code == "KeyV") {
       if (ctrlDown) {
         elementPaste();
       }
