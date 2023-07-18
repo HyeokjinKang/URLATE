@@ -58,3 +58,5 @@ const easeOutQuart = (x) => {
 const easeOutQuad = (x) => {
   return 1 - (1 - x) * (1 - x);
 };
+
+const isMac = navigator.userAgentData && navigator.userAgentData.platform ? navigator.userAgentData.platform === "macOS" : /Mac/.test(navigator.platform);

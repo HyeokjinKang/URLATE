@@ -1041,14 +1041,14 @@ const tmlRender = () => {
   } else if (shiftDown) {
     let msg = "Shift : ON";
     if (ctrlDown) {
-      msg += ", Ctrl : ON";
+      msg += `, ${isMac ? "Cmd" : "Ctrl"} : ON`;
     }
     tmlCtx.fillStyle = "#F55";
     tmlCtx.fillText(msg, tmlStartX, endY + 5);
   } else if (ctrlDown) {
-    let msg = "Ctrl : ON";
+    let msg = `${isMac ? "Cmd" : "Ctrl"} : ON`;
     if (shiftDown) {
-      msg = "Shift : ON, Ctrl : ON";
+      msg = `Shift : ON, ${isMac ? "Cmd" : "Ctrl"} : ON`;
     }
     tmlCtx.fillStyle = "#F55";
     tmlCtx.fillText(msg, tmlStartX, endY + 5);
@@ -2866,7 +2866,7 @@ window.addEventListener("beforeunload", (e) => {
 
 document.onkeyup = (e) => {
   e = e || window.event;
-  if (e.key == "Control") {
+  if (isMac ? e.key == "Meta" : e.key == "Control") {
     ctrlDown = false;
   } else if (e.key == "Shift") {
     shiftDown = false;
@@ -2892,7 +2892,7 @@ document.onkeydown = (e) => {
         lottieAnim.stop();
       }
     }
-  } else if (e.key == "Control") {
+  } else if (isMac ? e.key == "Meta" : e.key == "Control") {
     ctrlDown = true;
   } else if (e.key == "Shift") {
     shiftDown = true;
@@ -2990,4 +2990,21 @@ document.body.onmousedown = () => {
 
 document.body.onmouseup = () => {
   mouseDown = false;
+};
+
+window.onload = () => {
+  if (isMac) {
+    const ctrl = document.getElementsByClassName("ctrl");
+    for (let i = 0; i < ctrl.length; i++) {
+      ctrl[i].innerText = "⌘";
+    }
+    const alt = document.getElementsByClassName("alt");
+    for (let i = 0; i < alt.length; i++) {
+      alt[i].innerText = "⌥";
+    }
+    const shift = document.getElementsByClassName("shift");
+    for (let i = 0; i < shift.length; i++) {
+      shift[i].innerText = "⇧";
+    }
+  }
 };
