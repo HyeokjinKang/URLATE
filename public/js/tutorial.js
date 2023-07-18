@@ -160,8 +160,8 @@ const initialize = (isFirstCalled) => {
         document.getElementById("artist").textContent = pattern.information.producer;
         document.getElementById("scoreArtist").textContent = pattern.information.producer;
         document.getElementById("authorNamespace").textContent = pattern.information.author;
-        document.getElementById("scoreTitle").textContent = "Turorial";
-        document.getElementById("title").textContent = "Turorial";
+        document.getElementById("scoreTitle").textContent = "Tutorial";
+        document.getElementById("title").textContent = "Tutorial";
         document.getElementById("albumContainer").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
         document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
         document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
