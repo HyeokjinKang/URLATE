@@ -1036,25 +1036,20 @@ const tmlRender = () => {
     }
   }
   tmlCtx.textAlign = "left";
+  let msg = timeAlert;
   if (copied) {
-    tmlCtx.fillText(`${copiedText}`, tmlStartX, endY + 5);
+    msg = copiedText;
   } else if (shiftDown) {
-    let msg = "Shift : ON";
+    msg = "Shift : ON";
     if (ctrlDown) {
       msg += `, ${isMac ? "Cmd" : "Ctrl"} : ON`;
     }
     tmlCtx.fillStyle = "#F55";
-    tmlCtx.fillText(msg, tmlStartX, endY + 5);
   } else if (ctrlDown) {
-    let msg = `${isMac ? "Cmd" : "Ctrl"} : ON`;
-    if (shiftDown) {
-      msg = `Shift : ON, ${isMac ? "Cmd" : "Ctrl"} : ON`;
-    }
+    msg = `${isMac ? "Cmd" : "Ctrl"} : ON`;
     tmlCtx.fillStyle = "#F55";
-    tmlCtx.fillText(msg, tmlStartX, endY + 5);
-  } else {
-    tmlCtx.fillText(`${timeAlert}`, tmlStartX, endY + 5);
   }
+  tmlCtx.fillText(msg, tmlStartX, endY + 5);
   if (new Date() - copiedTime >= 1000) {
     copied = false;
   }
