@@ -484,7 +484,7 @@ const drawNote = (p, x, y, n, d) => {
   ctx.lineWidth = Math.round(canvas.width / 300);
   if (n == 0) {
     ctx.beginPath();
-    cntCtx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
+    ctx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
     ctx.stroke();
     ctx.beginPath();
     ctx.arc(x, y, (w / 100) * p, 0, 2 * Math.PI);
