@@ -446,10 +446,12 @@ const drawNote = (p, x, y, s, n, d, t) => {
   n = n == undefined ? 0 : n;
   let w = cntCanvas.width / 40;
   let opacity = 255;
-  if (p > 100) {
+  if (n != 2 && p >= 100) {
     opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
+  } else if (n == 2 && p >= 100 && t >= 100) {
+    opacity = Math.max(Math.round((255 / 50) * (150 - t)), 0);
   }
-  opacity = n != 2 ? opacity.toString(16).padStart(2, "0") : "";
+  opacity = opacity.toString(16).padStart(2, "0");
   if (s == true) {
     cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
     if (explainToggle) {
@@ -565,6 +567,9 @@ const drawNote = (p, x, y, s, n, d, t) => {
       cntCtx.arc(x, y, w, (3 / 2) * Math.PI + (t / 50) * Math.PI, (3 / 2) * Math.PI);
       cntCtx.lineTo(x, y);
       cntCtx.fill();
+    } else {
+      cntCtx.arc(x, y, w, 0, 2 * Math.PI);
+      cntCtx.stroke();
     }
     if (skin.note[n].outline && !denySkin) {
       if (skin.note[n].outline.type == "gradient") {
