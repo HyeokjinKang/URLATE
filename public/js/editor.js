@@ -439,7 +439,7 @@ const drawCursor = () => {
 
 const drawNote = (p, x, y, s, n, d, t) => {
   if (n != 2 && p >= 130) return;
-  else if (n == 2 && t >= 150) return;
+  else if (n == 2 && t >= 130) return;
   p = Math.max(p, 0);
   let originX = x;
   let originY = y;
@@ -451,7 +451,7 @@ const drawNote = (p, x, y, s, n, d, t) => {
   if (n != 2 && p >= 100) {
     opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
   } else if (n == 2 && p >= 100 && t >= 100) {
-    opacity = Math.max(Math.round((255 / 50) * (150 - t)), 0);
+    opacity = Math.max(Math.round((255 / 30) * (130 - t)), 0);
   }
   opacity = opacity.toString(16).padStart(2, "0");
   if (s == true) {
