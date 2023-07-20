@@ -438,6 +438,8 @@ const drawCursor = () => {
 };
 
 const drawNote = (p, x, y, s, n, d, t) => {
+  if (n != 2 && p >= 130) return;
+  else if (n == 2 && t >= 150) return;
   p = Math.max(p, 0);
   let originX = x;
   let originY = y;
@@ -1254,9 +1256,8 @@ const cntRender = () => {
     for (let i of destroyedSeeks) {
       prevDestroyedSeeks.add(i);
     }
-    let start = lowerBound(pattern.patterns, seek * 1000 - (bpm * 16) / speed);
     end = upperBound(pattern.patterns, seek * 1000 + (bpm * 14) / speed);
-    const renderNotes = pattern.patterns.slice(start, end);
+    const renderNotes = pattern.patterns.slice(0, end);
     if (mode == 2 && mouseMode == 0) {
       let p = [0, 0];
       if (mouseX < -80) {
@@ -1276,14 +1277,14 @@ const cntRender = () => {
       }
     }
     for (let i = 0; renderNotes.length > i; i++) {
-      if (mouseMode == 0) trackMouseSelection(start + i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
+      if (mouseMode == 0) trackMouseSelection(i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
     }
     for (let i = renderNotes.length - 1; i >= 0; i--) {
       const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek * 1000)) / ((bpm * 14) / speed)) * 100;
       const t = ((seek * 1000 - renderNotes[i].ms) / renderNotes[i].time) * 100;
-      drawNote(p, renderNotes[i].x, renderNotes[i].y, selectedCheck(0, start + i), renderNotes[i].value, renderNotes[i].direction, t);
+      drawNote(p, renderNotes[i].x, renderNotes[i].y, selectedCheck(0, i), renderNotes[i].value, renderNotes[i].direction, t);
     }
-    start = lowerBound(pattern.bullets, seek * 1000 - bpm * 100);
+    let start = lowerBound(pattern.bullets, seek * 1000 - bpm * 100);
     end = upperBound(pattern.bullets, seek * 1000);
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
