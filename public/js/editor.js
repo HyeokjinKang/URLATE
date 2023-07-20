@@ -775,9 +775,10 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
       const powX = ((((mouseX - x) * canvasContainer.offsetWidth) / 200) * pixelRatio * settings.display.canvasRes) / 100;
       const powY = ((((mouseY - y) * canvasContainer.offsetHeight) / 200) * pixelRatio * settings.display.canvasRes) / 100;
       const p = v1 == 0 ? (((bpm * 14) / speed - (pattern.patterns[i].ms - seek * 1000)) / ((bpm * 14) / speed)) * 100 : 0;
+      const t = ((seek * 1000 - pattern.patterns[i].ms) / pattern.patterns[i].time) * 100;
       switch (v1) {
         case 0:
-          if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= cntCanvas.width / 40 && p <= 100) {
+          if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= cntCanvas.width / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 100)) {
             pointingCntElement = { v1: v1, v2: v2, i: i };
           }
           break;
