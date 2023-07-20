@@ -1033,6 +1033,7 @@ const tmlRender = () => {
       if (mousePosY >= startY && mousePosY <= startY + height) {
         tmlCtx.arc(mouseX, startY + height / 2, w, 0, 2 * Math.PI);
       } else if (mousePosY >= startY + height && mousePosY <= startY + height * (bulletsOverlapNum + 1)) {
+        if (selectedValue > 1) selectedValue = 0;
         let mouseYLocCount = 1 + bulletsOverlapNum - Math.round(Math.round(2 * startY + height * bulletsOverlapNum - mousePosY) / height);
         let y = startY + height * mouseYLocCount + height / 2 + timelineYLoc;
         if (selectedValue == 0) {
@@ -1625,6 +1626,23 @@ const settingsInput = (v, e) => {
         return;
       }
       break;
+    case "Time":
+      if (isNaN(Number(e.value))) {
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value is not number.",
+        });
+      } else if (Number(e.value) < 0) {
+        iziToast.error({
+          title: "Input Error",
+          message: "Input value must not be less than 0.",
+        });
+      } else {
+        pattern.patterns[selectedCntElement.i].time = Number(e.value);
+        patternChanged();
+        return;
+      }
+      break;
     default:
       alert("settingsInput:Error");
   }
@@ -2025,7 +2043,7 @@ const timelineAddElement = () => {
   let mousePosY = mouseY - timelineYLoc;
   if (mouseX > tmlCanvas.width / 10 && mouseX < tmlCanvas.width / 1.01 && mouseY > startY && mouseY < tmlCanvas.height / 1.1) {
     if (mousePosY >= startY && mousePosY <= startY + height) {
-      let newElement = { ms: parseInt(calculatedMs), value: selectedValue, direction: 1, x: 0, y: 0 };
+      let newElement = { ms: parseInt(calculatedMs), value: selectedValue, direction: 1, x: 0, y: 0, time: parseInt((60 / bpm) * 4 * 1000) };
       pattern.patterns.push(newElement);
       pattern.patterns.sort(sortAsTiming);
       patternChanged();
@@ -2137,6 +2155,7 @@ const compClicked = () => {
           ms: parseInt(seek * 1000) + 1,
           value: selectedValue,
           direction: 1,
+          time: parseInt((60 / bpm) * 4 * 1000),
           x: parseInt(magnetToggle ? mouseX - (mouseX % 5) : mouseX),
           y: parseInt(magnetToggle ? mouseY - (mouseY % 5) : mouseY),
         };
@@ -2212,16 +2231,24 @@ const changeSettingsMode = (v1, v2, i) => {
       document.getElementById("triggerInitializeContainer").style.display = "none";
       noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[0].value = pattern.patterns[i].x;
       noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[1].value = pattern.patterns[i].y;
-      noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[2].value = pattern.patterns[i].direction;
-      noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[3].value = pattern.patterns[i].ms.toFixed();
+      noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[2].value = pattern.patterns[i].ms.toFixed();
+      noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[3].value = pattern.patterns[i].direction;
+      noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[4].value = pattern.patterns[i].time;
       switch (v2) {
         case 0:
           document.getElementById("dot").style.color = "#f59b42";
-          noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[2].style.display = "none";
+          noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[3].style.display = "none";
+          noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[4].style.display = "none";
           break;
         case 1:
           document.getElementById("dot").style.color = "#f54e42";
-          noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[2].style.display = "flex";
+          noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[3].style.display = "flex";
+          noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[4].style.display = "none";
+          break;
+        case 2:
+          document.getElementById("dot").style.color = "#573fa6";
+          noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[3].style.display = "none";
+          noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[4].style.display = "flex";
           break;
         default:
           alert("changeSettingsMode:Error");
@@ -3001,11 +3028,8 @@ document.onkeydown = (e) => {
   if (mode == 2) {
     if (e.key == "Alt") {
       e.preventDefault();
-      if (selectedValue == 0) {
-        selectedValue = 1;
-      } else {
-        selectedValue = 0;
-      }
+      selectedValue++;
+      if (selectedValue > 2) selectedValue = 0;
     }
   }
 };
