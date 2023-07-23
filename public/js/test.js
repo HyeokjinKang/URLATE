@@ -945,15 +945,15 @@ const cntRender = () => {
     for (let i = 0; renderNotes.length > i; i++) {
       const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
       if (p >= 50) {
-        trackMouseSelection(start + i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
+        trackMouseSelection(i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
       }
     }
     for (let i = renderNotes.length - 1; i >= 0; i--) {
       const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
       const t = ((seek - renderNotes[i].ms) / renderNotes[i].time) * 100;
       drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, t, i);
-      if (p >= 120 && !destroyedNotes.has(start + i)) {
-        calculateScore("miss", start + i, true);
+      if (p >= 120 && !destroyedNotes.has(i) && (renderNotes[i].value == 2 ? !grabbedNotes.has(i) : true)) {
+        calculateScore("miss", i, true);
         missParticles.push({
           x: renderNotes[i].x,
           y: renderNotes[i].y,
