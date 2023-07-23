@@ -400,25 +400,25 @@ const drawParticle = (n, x, y, j, d) => {
         if (skin.note[n].circle.type == "gradient") {
           let grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
           for (let i = 0; i < skin.note[n].circle.stops.length; i++) {
-            grd.addColorStop(skin.note[n].circle.stops[i].percentage / 100, `#${skin.note[n].circle.stops[i].color}${opacity.padStart(2, "0")}`);
+            grd.addColorStop(skin.note[n].circle.stops[i].percentage / 100, `#${skin.note[n].circle.stops[i].color}${opacity.toString(16).padStart(2, "0")}`);
           }
           ctx.fillStyle = grd;
           ctx.strokeStyle = grd;
         } else if (skin.note[n].circle.type == "color") {
-          ctx.fillStyle = `#${skin.note[n].circle.color}${opacity.padStart(2, "0")}`;
-          ctx.strokeStyle = `#${skin.note[n].circle.color}${opacity.padStart(2, "0")}`;
+          ctx.fillStyle = `#${skin.note[n].circle.color}${opacity.toString(16).padStart(2, "0")}`;
+          ctx.strokeStyle = `#${skin.note[n].circle.color}${opacity.toString(16).padStart(2, "0")}`;
         }
       } else {
         if (skin.note[n].type == "gradient") {
           let grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
           for (let i = 0; i < skin.note[n].stops.length; i++) {
-            grd.addColorStop(skin.note[n].stops[i].percentage / 100, `#${skin.note[n].stops[i].color}${opacity.padStart(2, "0")}`);
+            grd.addColorStop(skin.note[n].stops[i].percentage / 100, `#${skin.note[n].stops[i].color}${opacity.toString(16).padStart(2, "0")}`);
           }
           ctx.fillStyle = grd;
           ctx.strokeStyle = grd;
         } else if (skin.note[n].type == "color") {
-          ctx.fillStyle = `#${skin.note[n].color}${opacity.padStart(2, "0")}`;
-          ctx.strokeStyle = `#${skin.note[n].color}${opacity.padStart(2, "0")}`;
+          ctx.fillStyle = `#${skin.note[n].color}${opacity.toString(16).padStart(2, "0")}`;
+          ctx.strokeStyle = `#${skin.note[n].color}${opacity.toString(16).padStart(2, "0")}`;
         }
       }
       ctx.arc(cx, cy, w, 0, 2 * Math.PI);
