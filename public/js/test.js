@@ -92,6 +92,7 @@ let songData = [];
 let keyInput = [];
 let keyInputMemory = 0;
 let keyInputMemoryMs = 0;
+let keyPressing = {};
 let trackName = "";
 const albumImg = new Image();
 
@@ -1197,7 +1198,7 @@ const compClicked = (isTyped, key, isWheel) => {
   else if (!isWheel) mouseClicked = true;
   mouseClickedMs = Date.now();
   for (let i = 0; i < pointingCntElement.length; i++) {
-    if (pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && (pointingCntElement[i].v2 === 0) == !isWheel) {
+    if ((pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && (pointingCntElement[i].v2 === 0) == !isWheel) || pointingCntElement[i].v2 === 2) {
       if (pointingCntElement[i].v2 == 1 && pattern.patterns[pointingCntElement[i].i].direction != key) return;
       drawParticle(1, pattern.patterns[pointingCntElement[i].i].x, pattern.patterns[pointingCntElement[i].i].y, 0, pointingCntElement[i].v2);
       let date = d;
@@ -1210,6 +1211,7 @@ const compClicked = (isTyped, key, isWheel) => {
       let x = pattern.patterns[pointingCntElement[i].i].x;
       let y = pattern.patterns[pointingCntElement[i].i].y;
       let judge = "Perfect";
+      if (pattern.patterns[pointingCntElement[i].i].value != 1) {
         if (seek < ms + perfectJudge && seek > ms - perfectJudge) {
           judge = "Perfect";
           perfect++;
@@ -1226,6 +1228,11 @@ const compClicked = (isTyped, key, isWheel) => {
           judge = "Miss";
           miss++;
         }
+      }
+      if (pattern.patterns[pointingCntElement[i].i].value == 2) {
+        grabbedNotes.add(pointingCntElement[i].i);
+        keyPressing[key] = pointingCntElement[i].i;
+      }
       calculateScore(judge, pointingCntElement[i].i);
       drawParticle(3, x, y, judge);
       keyInput.push({ judge, key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
@@ -1241,12 +1248,12 @@ const compReleased = () => {
   mouseClickedMs = Date.now();
 };
 
-const calculateScore = (judge, i, isMissed) => {
+const calculateScore = (judge, i, ignoreMs) => {
   judge = judge.toLowerCase();
   scoreMs = Date.now();
   prevScore = displayScore;
   destroyedNotes.add(i);
-  if (!isMissed) {
+  if (!ignoreMs) {
     pattern.patterns[i].ms = song.seek() * 1000 - (offset + sync);
   }
   if (judge == "miss") {
@@ -1465,13 +1472,33 @@ document.onkeydown = (e) => {
 
 document.onkeyup = (e) => {
   e = e || window.event;
+  let date = Date.now();
+  const seek = (date - startDate - (offset + sync)) * rate;
   if (e.key == "Escape") {
     return;
   } else if (e.key == "Shift") {
     shiftDown = false;
   }
   mouseClicked = false;
-  mouseClickedMs = Date.now();
+  mouseClickedMs = date;
+  if (keyPressing.hasOwnProperty(e.key)) {
+    if (pattern.patterns[keyPressing[e.key]].ms + pattern.patterns[keyPressing[e.key]].time - (60000 / bpm / 3) * rate > seek) {
+      pattern.patterns[keyPressing[e.key]].ms = song.seek() * 1000 - pattern.patterns[keyPressing[e.key]].time - (offset + sync);
+      calculateScore("Miss", keyPressing[e.key], true);
+      missParticles.push({
+        x: pattern.patterns[keyPressing[e.key]].x,
+        y: pattern.patterns[keyPressing[e.key]].y,
+        s: Date.now(),
+      });
+      miss++;
+      missPoint.push(song.seek() * 1000);
+    } else {
+      const judge = "Perfect";
+      calculateScore(judge, keyPressing[e.key], true);
+      drawParticle(3, pattern.patterns[keyPressing[e.key]].x, pattern.patterns[keyPressing[e.key]].y, judge);
+    }
+    delete keyPressing[e.key];
+  }
 };
 
 window.addEventListener("resize", () => {
