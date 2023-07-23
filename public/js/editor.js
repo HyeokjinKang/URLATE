@@ -3013,7 +3013,7 @@ document.onkeydown = (e) => {
       tmlScrollUp();
     } else if (e.key == "ArrowDown") {
       tmlScrollDown();
-    } else if (e.key == "Delete") {
+    } else if (e.code == "Delete" || e.code == "Backspace") {
       if (ctrlDown) {
         if (shiftDown) {
           e.preventDefault();
@@ -3062,6 +3062,10 @@ window.onload = () => {
     const shift = document.getElementsByClassName("shift");
     for (let i = 0; i < shift.length; i++) {
       shift[i].innerText = "⇧";
+    }
+    const del = document.getElementsByClassName("del");
+    for (let i = 0; i < del.length; i++) {
+      del[i].innerText = "⌫";
     }
   }
 };
