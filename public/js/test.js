@@ -1204,10 +1204,10 @@ const compClicked = (isTyped, key, isWheel) => {
       let date = d;
       const seek = (date - startDate - (offset + sync)) * rate;
       let ms = pattern.patterns[pointingCntElement[i].i].ms;
-      let perfectJudge = (60000 / bpm / 8) * rate;
-      let greatJudge = (60000 / bpm / 5) * rate;
-      let goodJudge = (60000 / bpm / 3) * rate;
-      let badJudge = (60000 / bpm / 2) * rate;
+      let perfectJudge = (60000 / bpm / 6) * rate;
+      let greatJudge = (60000 / bpm / 4) * rate;
+      let goodJudge = (60000 / bpm / 2) * rate;
+      let badJudge = (60000 / bpm) * rate;
       let x = pattern.patterns[pointingCntElement[i].i].x;
       let y = pattern.patterns[pointingCntElement[i].i].y;
       let judge = "Perfect";
