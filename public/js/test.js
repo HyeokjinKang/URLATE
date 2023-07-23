@@ -1209,23 +1209,23 @@ const compClicked = (isTyped, key, isWheel) => {
       let badJudge = (60000 / bpm / 2) * rate;
       let x = pattern.patterns[pointingCntElement[i].i].x;
       let y = pattern.patterns[pointingCntElement[i].i].y;
-      let judge = "";
-      if (seek < ms + perfectJudge && seek > ms - perfectJudge) {
-        judge = "Perfect";
-        perfect++;
-      } else if (seek < ms + greatJudge && seek > ms - greatJudge) {
-        judge = "Great";
-        great++;
-      } else if (seek > ms - goodJudge && seek < ms) {
-        judge = "Good";
-        good++;
-      } else if ((seek > ms - badJudge && seek < ms) || ms < seek) {
-        judge = "Bad";
-        bad++;
-      } else {
-        judge = "Miss";
-        miss++;
-      }
+      let judge = "Perfect";
+        if (seek < ms + perfectJudge && seek > ms - perfectJudge) {
+          judge = "Perfect";
+          perfect++;
+        } else if (seek < ms + greatJudge && seek > ms - greatJudge) {
+          judge = "Great";
+          great++;
+        } else if (seek > ms - goodJudge && seek < ms) {
+          judge = "Good";
+          good++;
+        } else if ((seek > ms - badJudge && seek < ms) || ms < seek) {
+          judge = "Bad";
+          bad++;
+        } else {
+          judge = "Miss";
+          miss++;
+        }
       calculateScore(judge, pointingCntElement[i].i);
       drawParticle(3, x, y, judge);
       keyInput.push({ judge, key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
