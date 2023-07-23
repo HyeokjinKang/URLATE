@@ -594,7 +594,7 @@ const drawNote = (p, x, y, n, d, t, index) => {
       ctx.beginPath();
       ctx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
       ctx.stroke();
-    } else if (!grabbedNotes.has(i)) {
+    } else if (!grabbedNotes.has(index)) {
       ctx.arc(x, y, w, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
@@ -609,6 +609,11 @@ const drawNote = (p, x, y, n, d, t, index) => {
       ctx.arc(x, y, w, 0, 2 * Math.PI);
       ctx.stroke();
     }
+    ctx.globalAlpha = (0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100;
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.arc(x, y, w, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.globalAlpha = 1;
   }
 };
 
