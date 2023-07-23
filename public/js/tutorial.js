@@ -155,8 +155,8 @@ const initialize = (isFirstCalled) => {
         offset = pattern.information.offset;
         bpm = pattern.information.bpm;
         speed = pattern.information.speed;
-        document.getElementById("scoreDifficultyNum").textContent = "Mode";
-        document.getElementById("scoreDifficultyName").textContent = "Tutorial";
+        document.getElementById("scoreDifficultyNum").textContent = "Tutorial";
+        document.getElementById("scoreDifficultyName").textContent = "Mode";
         document.getElementById("albumDifficulty").textContent = "Tutorial";
         document.getElementById("albumDifficultyNum").textContent = "Mode";
         document.getElementById("artist").textContent = pattern.information.producer;
