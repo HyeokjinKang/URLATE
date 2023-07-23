@@ -899,9 +899,8 @@ const cntRender = () => {
     } else {
       seek = (date - startDate - (offset + sync)) * rate;
     }
-    let start = lowerBound(pattern.triggers, 0);
     let end = upperBound(pattern.triggers, seek + 0.002); //for floating point miss
-    const renderTriggers = pattern.triggers.slice(start, end);
+    const renderTriggers = pattern.triggers.slice(0, end);
     for (let i = 0; i < renderTriggers.length; i++) {
       if (renderTriggers[i].value == 0) {
         if (!destroyedBullets.has(renderTriggers[i].num)) {
@@ -970,7 +969,7 @@ const cntRender = () => {
         drawParticle(4, missParticles[i].x, missParticles[i].y, i);
       }
     }
-    start = lowerBound(pattern.bullets, seek - bpm * 100);
+    let start = lowerBound(pattern.bullets, seek - bpm * 100);
     end = upperBound(pattern.bullets, seek);
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
