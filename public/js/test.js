@@ -1128,11 +1128,16 @@ const calculateResult = () => {
 
 const trackMouseSelection = (i, v1, v2, x, y) => {
   if (song.playing()) {
+    const date = Date.now();
+    const seek = (date - startDate - (offset + sync)) * rate;
     const powX = ((((mouseX - x) * canvas.offsetWidth) / 200) * pixelRatio * settings.display.canvasRes) / 100;
     const powY = ((((mouseY - y) * canvas.offsetHeight) / 200) * pixelRatio * settings.display.canvasRes) / 100;
+    const p = v1 == 0 ? (((bpm * 14) / speed - (pattern.patterns[i].ms - seek)) / ((bpm * 14) / speed)) * 100 : 0;
+    const t = ((seek - pattern.patterns[i].ms) / pattern.patterns[i].time) * 100;
     switch (v1) {
       case 0:
-        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvas.width / 40 + canvas.width / 70) {
+        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvas.width / 40 + canvas.width / 70 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 100)) {
+          pointingCntElement = [];
           pointingCntElement.push({ v1: v1, v2: v2, i: i });
         }
         break;
@@ -1159,11 +1164,6 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
         ctx.fillText(`trackMouseSelection:Undefined element.`, canvas.width / 100, canvas.height / 100);
         console.error(`trackMouseSelection:Undefined element.`);
     }
-    ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
-    ctx.fillStyle = "#fff";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "bottom";
-    ctx.fillText(`trackMouseSelection: ${JSON.stringify(pointingCntElement)}`, canvas.width / 100, canvas.height - canvas.height / 100);
   }
 };
 
