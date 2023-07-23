@@ -24,6 +24,7 @@ let destroyParticles = [];
 let missParticles = [];
 let destroyedBullets = new Set([]);
 let destroyedNotes = new Set([]);
+let grabbedNotes = new Set([]);
 let mouseX = 0,
   mouseY = 0;
 let score = 0,
@@ -91,6 +92,7 @@ let songData = [];
 let keyInput = [];
 let keyInputMemory = 0;
 let keyInputMemoryMs = 0;
+let keyPressing = {};
 const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -448,37 +450,43 @@ const drawParticle = (n, x, y, j, d) => {
   }
 };
 
-const drawNote = (p, x, y, n, d) => {
+const drawNote = (p, x, y, n, d, t, index) => {
+  if (n != 2 && p >= 130) return;
+  else if (n == 2 && t >= 130) return;
   p = Math.max(p, 0);
   x = (canvas.width / 200) * (x + 100);
   y = (canvas.height / 200) * (y + 100);
   n = n == undefined ? 0 : n;
   let w = canvas.width / 40;
-  let opacity = "FF";
-  if (p > 100) {
-    opacity = `${parseInt((130 - p) * 3.333)}`.padStart(2, "0");
+  let opacity = 255;
+  if (n != 2 && p >= 100) {
+    opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
+  } else if (n == 2 && p >= 100 && t >= 100 && grabbedNotes.has(index)) {
+    opacity = Math.max(Math.round((255 / 30) * (130 - t)), 0);
+  } else if (n == 2 && p >= 100 && !grabbedNotes.has(index)) {
+    opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
   }
-  if (opacity <= 0) opacity = "00";
+  opacity = opacity.toString(16).padStart(2, "0");
   if (skin.note[n].type == "gradient") {
     let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
     for (let i = 0; i < skin.note[n].stops.length; i++) {
-      grd.addColorStop(skin.note[n].stops[i].percentage / 100, `#${skin.note[n].stops[i].color}${opacity.toString(16)}`);
+      grd.addColorStop(skin.note[n].stops[i].percentage / 100, `#${skin.note[n].stops[i].color}${opacity}`);
     }
     ctx.fillStyle = grd;
     ctx.strokeStyle = grd;
   } else if (skin.note[n].type == "color") {
-    ctx.fillStyle = `#${skin.note[n].color}${opacity.toString(16)}`;
-    ctx.strokeStyle = `#${skin.note[n].color}${opacity.toString(16)}`;
+    ctx.fillStyle = `#${skin.note[n].color}${opacity}`;
+    ctx.strokeStyle = `#${skin.note[n].color}${opacity}`;
   }
   if (skin.note[n].circle) {
     if (skin.note[n].circle.type == "gradient") {
       let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
       for (let i = 0; i < skin.note[n].circle.stops.length; i++) {
-        grd.addColorStop(skin.note[n].circle.stops[i].percentage / 100, `#${skin.note[n].circle.stops[i].color}${opacity.toString(16)}`);
+        grd.addColorStop(skin.note[n].circle.stops[i].percentage / 100, `#${skin.note[n].circle.stops[i].color}${opacity}`);
       }
       ctx.strokeStyle = grd;
     } else if (skin.note[n].circle.type == "color") {
-      ctx.strokeStyle = `#${skin.note[n].circle.color}${opacity.toString(16)}`;
+      ctx.strokeStyle = `#${skin.note[n].circle.color}${opacity}`;
     }
   }
   ctx.lineWidth = Math.round(canvas.width / 300);
@@ -493,11 +501,11 @@ const drawNote = (p, x, y, n, d) => {
       if (skin.note[n].outline.type == "gradient") {
         let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
         for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity.toString(16)}`);
+          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
         }
         ctx.strokeStyle = grd;
       } else if (skin.note[n].outline.type == "color") {
-        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity.toString(16)}`;
+        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
       }
       ctx.lineWidth = Math.round((canvas.width / 1000) * skin.note[n].outline.width);
       ctx.stroke();
@@ -534,11 +542,11 @@ const drawNote = (p, x, y, n, d) => {
       if (skin.note[n].outline.type == "gradient") {
         let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
         for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity.toString(16)}`);
+          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
         }
         ctx.strokeStyle = grd;
       } else if (skin.note[n].outline.type == "color") {
-        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity.toString(16)}`;
+        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
       }
       ctx.lineWidth = Math.round((canvas.width / 1000) * skin.note[n].outline.width);
       ctx.stroke();
@@ -550,6 +558,47 @@ const drawNote = (p, x, y, n, d) => {
     if (d == 1) ctx.arc(x, y, w, -Math.PI / 5, (Math.PI / 5) * 6);
     else ctx.arc(x, y, w, (-Math.PI / 5) * 6, Math.PI / 5);
     ctx.lineTo(x, y - 1.5 * d * w);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  } else if (n == 2) {
+    ctx.beginPath();
+    if (skin.note[n].outline) {
+      if (skin.note[n].outline.type == "gradient") {
+        let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
+        for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
+          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
+        }
+        ctx.strokeStyle = grd;
+      } else if (skin.note[n].outline.type == "color") {
+        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
+      }
+      ctx.lineWidth = Math.round((canvas.width / 1000) * skin.note[n].outline.width);
+    }
+    if (p <= 100) {
+      ctx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
+      ctx.lineTo(x, y);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
+      ctx.stroke();
+    } else if (!grabbedNotes.has(index)) {
+      ctx.arc(x, y, w, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+    } else if (t <= 100) {
+      ctx.arc(x, y, w, (3 / 2) * Math.PI + (t / 50) * Math.PI, (3 / 2) * Math.PI);
+      ctx.lineTo(x, y);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x, y, w, 0, 2 * Math.PI);
+      ctx.stroke();
+    } else {
+      ctx.arc(x, y, w, 0, 2 * Math.PI);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = (0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100;
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.arc(x, y, w, 0, 2 * Math.PI);
     ctx.fill();
     ctx.globalAlpha = 1;
   }
@@ -837,9 +886,8 @@ const cntRender = () => {
     } else {
       seek = (date - startDate - (offset + sync)) * rate;
     }
-    let start = lowerBound(pattern.triggers, 0);
     let end = upperBound(pattern.triggers, seek);
-    const renderTriggers = pattern.triggers.slice(start, end);
+    const renderTriggers = pattern.triggers.slice(0, end);
     for (let i = 0; i < renderTriggers.length; i++) {
       if (renderTriggers[i].value == 0) {
         if (!destroyedBullets.has(renderTriggers[i].num)) {
@@ -879,20 +927,20 @@ const cntRender = () => {
         destroyParticles[i].n++;
       }
     }
-    start = lowerBound(pattern.patterns, seek - (bpm * 4) / speed);
     end = upperBound(pattern.patterns, seek + (bpm * 14) / speed);
-    const renderNotes = pattern.patterns.slice(start, end);
+    const renderNotes = pattern.patterns.slice(0, end);
     for (let i = 0; renderNotes.length > i; i++) {
       const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
       if (p >= 50) {
-        trackMouseSelection(start + i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
+        trackMouseSelection(i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
       }
     }
     for (let i = renderNotes.length - 1; i >= 0; i--) {
       const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
-      drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction);
-      if (p >= 120 && !destroyedNotes.has(start + i)) {
-        calculateScore("miss", start + i, true);
+      const t = ((seek - renderNotes[i].ms) / renderNotes[i].time) * 100;
+      drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, t, i);
+      if (p >= 120 && !destroyedNotes.has(i) && (renderNotes[i].value == 2 ? !grabbedNotes.has(i) : true)) {
+        calculateScore("miss", i, true);
         missParticles.push({
           x: renderNotes[i].x,
           y: renderNotes[i].y,
@@ -908,7 +956,7 @@ const cntRender = () => {
         drawParticle(4, missParticles[i].x, missParticles[i].y, i);
       }
     }
-    start = lowerBound(pattern.bullets, seek - bpm * 100);
+    let start = lowerBound(pattern.bullets, seek - bpm * 100);
     end = upperBound(pattern.bullets, seek);
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
@@ -1078,11 +1126,16 @@ const calculateResult = () => {
 
 const trackMouseSelection = (i, v1, v2, x, y) => {
   if (song.playing()) {
+    const date = Date.now();
+    const seek = (date - startDate - (offset + sync)) * rate;
     const powX = ((((mouseX - x) * canvas.offsetWidth) / 200) * pixelRatio * settings.display.canvasRes) / 100;
     const powY = ((((mouseY - y) * canvas.offsetHeight) / 200) * pixelRatio * settings.display.canvasRes) / 100;
+    const p = v1 == 0 ? (((bpm * 14) / speed - (pattern.patterns[i].ms - seek)) / ((bpm * 14) / speed)) * 100 : 0;
     switch (v1) {
       case 0:
-        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvas.width / 40 + canvas.width / 70) {
+        const t = ((seek - pattern.patterns[i].ms) / pattern.patterns[i].time) * 100;
+        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvas.width / 40 + canvas.width / 70 && p <= 130) {
+          pointingCntElement = [];
           pointingCntElement.push({ v1: v1, v2: v2, i: i });
         }
         break;
@@ -1131,34 +1184,40 @@ const compClicked = (isTyped, key, isWheel) => {
   else if (!isWheel) mouseClicked = true;
   mouseClickedMs = Date.now();
   for (let i = 0; i < pointingCntElement.length; i++) {
-    if (pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && (pointingCntElement[i].v2 === 0) == !isWheel) {
+    if ((pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && (pointingCntElement[i].v2 === 0) == !isWheel) || pointingCntElement[i].v2 === 2) {
       if (pointingCntElement[i].v2 == 1 && pattern.patterns[pointingCntElement[i].i].direction != key) return;
       drawParticle(1, pattern.patterns[pointingCntElement[i].i].x, pattern.patterns[pointingCntElement[i].i].y, 0, pointingCntElement[i].v2);
       let date = d;
       const seek = (date - startDate - (offset + sync)) * rate;
       let ms = pattern.patterns[pointingCntElement[i].i].ms;
-      let perfectJudge = (60000 / bpm / 8) * rate;
-      let greatJudge = (60000 / bpm / 5) * rate;
-      let goodJudge = (60000 / bpm / 3) * rate;
-      let badJudge = (60000 / bpm / 2) * rate;
+      let perfectJudge = (60000 / bpm / 6) * rate;
+      let greatJudge = (60000 / bpm / 4) * rate;
+      let goodJudge = (60000 / bpm / 2) * rate;
+      let badJudge = (60000 / bpm) * rate;
       let x = pattern.patterns[pointingCntElement[i].i].x;
       let y = pattern.patterns[pointingCntElement[i].i].y;
-      let judge = "";
-      if (seek < ms + perfectJudge && seek > ms - perfectJudge) {
-        judge = "Perfect";
-        perfect++;
-      } else if (seek < ms + greatJudge && seek > ms - greatJudge) {
-        judge = "Great";
-        great++;
-      } else if (seek > ms - goodJudge && seek < ms) {
-        judge = "Good";
-        good++;
-      } else if ((seek > ms - badJudge && seek < ms) || ms < seek) {
-        judge = "Bad";
-        bad++;
-      } else {
-        judge = "Miss";
-        miss++;
+      let judge = "Perfect";
+      if (pattern.patterns[pointingCntElement[i].i].value != 1) {
+        if (seek < ms + perfectJudge && seek > ms - perfectJudge) {
+          judge = "Perfect";
+          perfect++;
+        } else if (seek < ms + greatJudge && seek > ms - greatJudge) {
+          judge = "Great";
+          great++;
+        } else if (seek > ms - goodJudge && seek < ms) {
+          judge = "Good";
+          good++;
+        } else if ((seek > ms - badJudge && seek < ms) || ms < seek) {
+          judge = "Bad";
+          bad++;
+        } else {
+          judge = "Miss";
+          miss++;
+        }
+      }
+      if (pattern.patterns[pointingCntElement[i].i].value == 2) {
+        grabbedNotes.add(pointingCntElement[i].i);
+        keyPressing[key] = pointingCntElement[i].i;
       }
       calculateScore(judge, pointingCntElement[i].i);
       drawParticle(3, x, y, judge);
@@ -1175,12 +1234,12 @@ const compReleased = () => {
   mouseClickedMs = Date.now();
 };
 
-const calculateScore = (judge, i, isMissed) => {
+const calculateScore = (judge, i, ignoreMs) => {
   judge = judge.toLowerCase();
   scoreMs = Date.now();
   prevScore = displayScore;
   destroyedNotes.add(i);
-  if (!isMissed) {
+  if (!ignoreMs) {
     pattern.patterns[i].ms = song.seek() * 1000 - (offset + sync);
   }
   if (judge == "miss") {
@@ -1431,13 +1490,33 @@ document.onkeydown = (e) => {
 
 document.onkeyup = (e) => {
   e = e || window.event;
+  let date = Date.now();
+  const seek = (date - startDate - (offset + sync)) * rate;
   if (e.key == "Escape") {
     return;
   } else if (e.key == "Shift") {
     shiftDown = false;
   }
   mouseClicked = false;
-  mouseClickedMs = Date.now();
+  mouseClickedMs = date;
+  if (keyPressing.hasOwnProperty(e.key)) {
+    if (pattern.patterns[keyPressing[e.key]].ms + pattern.patterns[keyPressing[e.key]].time - (60000 / bpm / 3) * rate > seek) {
+      pattern.patterns[keyPressing[e.key]].ms = song.seek() * 1000 - pattern.patterns[keyPressing[e.key]].time - (offset + sync);
+      calculateScore("Miss", keyPressing[e.key], true);
+      missParticles.push({
+        x: pattern.patterns[keyPressing[e.key]].x,
+        y: pattern.patterns[keyPressing[e.key]].y,
+        s: Date.now(),
+      });
+      miss++;
+      missPoint.push(song.seek() * 1000);
+    } else {
+      const judge = "Perfect";
+      calculateScore(judge, keyPressing[e.key], true);
+      drawParticle(3, pattern.patterns[keyPressing[e.key]].x, pattern.patterns[keyPressing[e.key]].y, judge);
+    }
+    delete keyPressing[e.key];
+  }
 };
 
 window.addEventListener("resize", () => {
