@@ -1350,9 +1350,7 @@ const settingChanged = (e, v) => {
   if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
     volumeMasterValue.textContent = e.value + "%";
-    for (let i = 0; i <= 1; i++) {
-      document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
-    }
+    document.getElementsByClassName("volumeMaster")[0].value = Math.round(settings.sound.volume.master * 100);
     overlayTime = Date.now();
     setTimeout(() => {
       overlayClose("volume");
