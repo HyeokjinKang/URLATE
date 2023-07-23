@@ -594,6 +594,10 @@ const drawNote = (p, x, y, n, d, t, index) => {
       ctx.beginPath();
       ctx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
       ctx.stroke();
+    } else if (!grabbedNotes.has(i)) {
+      ctx.arc(x, y, w, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
     } else if (t <= 100) {
       ctx.arc(x, y, w, (3 / 2) * Math.PI + (t / 50) * Math.PI, (3 / 2) * Math.PI);
       ctx.lineTo(x, y);
