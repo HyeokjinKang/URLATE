@@ -462,37 +462,41 @@ const drawParticle = (n, x, y, j, d) => {
   }
 };
 
-const drawNote = (p, x, y, n, d) => {
+const drawNote = (p, x, y, n, d, t) => {
+  if (n != 2 && p >= 130) return;
+  else if (n == 2 && t >= 130) return;
   p = Math.max(p, 0);
   x = (canvas.width / 200) * (x + 100);
   y = (canvas.height / 200) * (y + 100);
   n = n == undefined ? 0 : n;
   let w = canvas.width / 40;
-  let opacity = "FF";
-  if (p > 100) {
-    opacity = `${parseInt((130 - p) * 3.333)}`.padStart(2, "0");
+  let opacity = 255;
+  if (n != 2 && p >= 100) {
+    opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
+  } else if (n == 2 && p >= 100 && t >= 100) {
+    opacity = Math.max(Math.round((255 / 30) * (130 - t)), 0);
   }
-  if (opacity <= 0) opacity = "00";
+  opacity = opacity.toString(16).padStart(2, "0");
   if (skin.note[n].type == "gradient") {
     let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
     for (let i = 0; i < skin.note[n].stops.length; i++) {
-      grd.addColorStop(skin.note[n].stops[i].percentage / 100, `#${skin.note[n].stops[i].color}${opacity.toString(16)}`);
+      grd.addColorStop(skin.note[n].stops[i].percentage / 100, `#${skin.note[n].stops[i].color}${opacity}`);
     }
     ctx.fillStyle = grd;
     ctx.strokeStyle = grd;
   } else if (skin.note[n].type == "color") {
-    ctx.fillStyle = `#${skin.note[n].color}${opacity.toString(16)}`;
-    ctx.strokeStyle = `#${skin.note[n].color}${opacity.toString(16)}`;
+    ctx.fillStyle = `#${skin.note[n].color}${opacity}`;
+    ctx.strokeStyle = `#${skin.note[n].color}${opacity}`;
   }
   if (skin.note[n].circle) {
     if (skin.note[n].circle.type == "gradient") {
       let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
       for (let i = 0; i < skin.note[n].circle.stops.length; i++) {
-        grd.addColorStop(skin.note[n].circle.stops[i].percentage / 100, `#${skin.note[n].circle.stops[i].color}${opacity.toString(16)}`);
+        grd.addColorStop(skin.note[n].circle.stops[i].percentage / 100, `#${skin.note[n].circle.stops[i].color}${opacity}`);
       }
       ctx.strokeStyle = grd;
     } else if (skin.note[n].circle.type == "color") {
-      ctx.strokeStyle = `#${skin.note[n].circle.color}${opacity.toString(16)}`;
+      ctx.strokeStyle = `#${skin.note[n].circle.color}${opacity}`;
     }
   }
   ctx.lineWidth = Math.round(canvas.width / 300);
@@ -507,11 +511,11 @@ const drawNote = (p, x, y, n, d) => {
       if (skin.note[n].outline.type == "gradient") {
         let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
         for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity.toString(16)}`);
+          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
         }
         ctx.strokeStyle = grd;
       } else if (skin.note[n].outline.type == "color") {
-        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity.toString(16)}`;
+        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
       }
       ctx.lineWidth = Math.round((canvas.width / 1000) * skin.note[n].outline.width);
       ctx.stroke();
@@ -548,11 +552,11 @@ const drawNote = (p, x, y, n, d) => {
       if (skin.note[n].outline.type == "gradient") {
         let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
         for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity.toString(16)}`);
+          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
         }
         ctx.strokeStyle = grd;
       } else if (skin.note[n].outline.type == "color") {
-        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity.toString(16)}`;
+        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
       }
       ctx.lineWidth = Math.round((canvas.width / 1000) * skin.note[n].outline.width);
       ctx.stroke();
@@ -566,6 +570,38 @@ const drawNote = (p, x, y, n, d) => {
     ctx.lineTo(x, y - 1.5 * d * w);
     ctx.fill();
     ctx.globalAlpha = 1;
+  } else if (n == 2) {
+    ctx.beginPath();
+    if (skin.note[n].outline) {
+      if (skin.note[n].outline.type == "gradient") {
+        let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
+        for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
+          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
+        }
+        ctx.strokeStyle = grd;
+      } else if (skin.note[n].outline.type == "color") {
+        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
+      }
+      ctx.lineWidth = Math.round((canvas.width / 1000) * skin.note[n].outline.width);
+    }
+    if (p <= 100) {
+      ctx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
+      ctx.lineTo(x, y);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
+      ctx.stroke();
+    } else if (t <= 100) {
+      ctx.arc(x, y, w, (3 / 2) * Math.PI + (t / 50) * Math.PI, (3 / 2) * Math.PI);
+      ctx.lineTo(x, y);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x, y, w, 0, 2 * Math.PI);
+      ctx.stroke();
+    } else {
+      ctx.arc(x, y, w, 0, 2 * Math.PI);
+      ctx.stroke();
+    }
   }
 };
 
@@ -893,9 +929,8 @@ const cntRender = () => {
         destroyParticles[i].n++;
       }
     }
-    start = lowerBound(pattern.patterns, seek - (bpm * 4) / speed);
     end = upperBound(pattern.patterns, seek + (bpm * 14) / speed);
-    const renderNotes = pattern.patterns.slice(start, end);
+    const renderNotes = pattern.patterns.slice(0, end);
     for (let i = 0; renderNotes.length > i; i++) {
       const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
       if (p >= 50) {
@@ -904,7 +939,8 @@ const cntRender = () => {
     }
     for (let i = renderNotes.length - 1; i >= 0; i--) {
       const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
-      drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction);
+      const t = ((seek - renderNotes[i].ms) / renderNotes[i].time) * 100;
+      drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, t);
       if (p >= 120 && !destroyedNotes.has(start + i)) {
         calculateScore("miss", start + i, true);
         missParticles.push({
@@ -1123,6 +1159,11 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
         ctx.fillText(`trackMouseSelection:Undefined element.`, canvas.width / 100, canvas.height / 100);
         console.error(`trackMouseSelection:Undefined element.`);
     }
+    ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(`trackMouseSelection: ${JSON.stringify(pointingCntElement)}`, canvas.width / 100, canvas.height - canvas.height / 100);
   }
 };
 
