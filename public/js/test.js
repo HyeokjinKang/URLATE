@@ -24,6 +24,7 @@ let destroyParticles = [];
 let missParticles = [];
 let destroyedBullets = new Set([]);
 let destroyedNotes = new Set([]);
+let grabbedNotes = new Set([]);
 let mouseX = 0,
   mouseY = 0;
 let score = 0,
@@ -462,7 +463,7 @@ const drawParticle = (n, x, y, j, d) => {
   }
 };
 
-const drawNote = (p, x, y, n, d, t) => {
+const drawNote = (p, x, y, n, d, t, index) => {
   if (n != 2 && p >= 130) return;
   else if (n == 2 && t >= 130) return;
   p = Math.max(p, 0);
@@ -473,8 +474,10 @@ const drawNote = (p, x, y, n, d, t) => {
   let opacity = 255;
   if (n != 2 && p >= 100) {
     opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
-  } else if (n == 2 && p >= 100 && t >= 100) {
+  } else if (n == 2 && p >= 100 && t >= 100 && grabbedNotes.has(index)) {
     opacity = Math.max(Math.round((255 / 30) * (130 - t)), 0);
+  } else if (n == 2 && p >= 100 && !grabbedNotes.has(index)) {
+    opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
   }
   opacity = opacity.toString(16).padStart(2, "0");
   if (skin.note[n].type == "gradient") {
@@ -940,7 +943,7 @@ const cntRender = () => {
     for (let i = renderNotes.length - 1; i >= 0; i--) {
       const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
       const t = ((seek - renderNotes[i].ms) / renderNotes[i].time) * 100;
-      drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, t);
+      drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, t, i);
       if (p >= 120 && !destroyedNotes.has(start + i)) {
         calculateScore("miss", start + i, true);
         missParticles.push({
