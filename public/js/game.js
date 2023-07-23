@@ -757,10 +757,11 @@ const songSelected = (n, refreshed, seek) => {
   document.getElementsByClassName("songSelectionContainer")[n].classList.add("songSelected");
   selectTitle.textContent = settings.general.detailLang == "original" ? tracks[n].originalName : tracks[n].name;
   CPLTrack.textContent = settings.general.detailLang == "original" ? tracks[n].originalName : tracks[n].name;
-  if (selectTitle.offsetWidth > window.innerWidth / 4) {
-    selectTitle.style.fontSize = "4vh";
-  } else {
-    selectTitle.style.fontSize = "5vh";
+  let fontSize = 5;
+  selectTitle.style.fontSize = `5vh`;
+  while (selectTitle.offsetWidth > window.innerWidth / 4) {
+    selectTitle.style.fontSize = `${fontSize}vh`;
+    fontSize -= 0.5;
   }
   document.getElementById("selectArtist").textContent = tracks[n].producer;
   document.getElementById("selectAlbum").src = `${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.png`;
