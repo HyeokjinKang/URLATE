@@ -590,8 +590,10 @@ const drawNote = (p, x, y, s, n, d, t) => {
 };
 
 const changeNote = () => {
-  pattern.patterns[selectedCntElement.i].value = Number(!pattern.patterns[selectedCntElement.i].value);
+  let n = Number(pattern.patterns[selectedCntElement.i].value);
+  pattern.patterns[selectedCntElement.i].value = n == 2 ? 0 : n + 1;
   pattern.patterns[selectedCntElement.i].direction = 1;
+  pattern.patterns[selectedCntElement.i].time = parseInt((60 / bpm) * 4 * 1000);
   patternChanged();
   selectedCntElement.v2 = pattern.patterns[selectedCntElement.i].value;
   changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
