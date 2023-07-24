@@ -515,7 +515,7 @@ const drawNote = (p, x, y, n, d, t, index) => {
     opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
   } else if (n == 2 && p >= 100 && t >= 100 && (grabbedNotes.has(index) || grabbedNotes.has(`${index}!`))) {
     opacity = Math.max(Math.round((255 / 30) * (130 - t)), 0);
-  } else if (n == 2 && p >= 100 && !(grabbedNotes.has(index) || grabbedNotes.has(`${index}!`))) {
+  } else if (n == 2 && p >= 100 && !grabbedNotes.has(index)) {
     opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
   }
   opacity = opacity.toString(16).padStart(2, "0");
