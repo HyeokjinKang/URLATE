@@ -1209,7 +1209,7 @@ const compClicked = (isTyped, key, isWheel) => {
   else if (!isWheel) mouseClicked = true;
   mouseClickedMs = Date.now();
   for (let i = 0; i < pointingCntElement.length; i++) {
-    if ((pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && (pointingCntElement[i].v2 === 0) == !isWheel) || pointingCntElement[i].v2 === 2) {
+    if (pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && ((pointingCntElement[i].v2 === 0) == !isWheel || pointingCntElement[i].v2 === 2)) {
       if (pointingCntElement[i].v2 == 1 && pattern.patterns[pointingCntElement[i].i].direction != key) return;
       drawParticle(1, pattern.patterns[pointingCntElement[i].i].x, pattern.patterns[pointingCntElement[i].i].y, 0, pointingCntElement[i].v2);
       let date = d;
