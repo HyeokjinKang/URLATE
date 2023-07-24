@@ -939,7 +939,7 @@ const cntRender = () => {
       const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
       const t = ((seek - renderNotes[i].ms) / renderNotes[i].time) * 100;
       drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, t, i);
-      if (p >= 120 && !destroyedNotes.has(i) && (renderNotes[i].value == 2 ? !grabbedNotes.has(i) : true)) {
+      if (p >= 120 && !destroyedNotes.has(i) && (renderNotes[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
         calculateScore("miss", i, true);
         missParticles.push({
           x: renderNotes[i].x,
@@ -949,6 +949,12 @@ const cntRender = () => {
         miss++;
         missPoint.push(song.seek() * 1000);
         keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
+      } else if (t >= 100 && !grabbedNotes.has(`${i}!`) && renderNotes[i].value == 2) {
+        grabbedNotes.add(`${i}!`);
+        grabbedNotes.delete(i);
+        calculateScore("Perfect", i, true);
+        drawParticle(3, renderNotes[i].x, renderNotes[i].y, "Perfect");
+        keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
       }
     }
     for (let i = 0; i < missParticles.length; i++) {
@@ -1498,7 +1504,9 @@ document.onkeyup = (e) => {
   }
   mouseClicked = false;
   mouseClickedMs = date;
-  if (keyPressing.hasOwnProperty(e.key)) {
+  if (keyPressing.hasOwnProperty(e.key) && !grabbedNotes.has(`${keyPressing[e.key]}!`)) {
+    grabbedNotes.delete(keyPressing[e.key]);
+    grabbedNotes.add(`${keyPressing[e.key]}!`);
     if (pattern.patterns[keyPressing[e.key]].ms + pattern.patterns[keyPressing[e.key]].time - (60000 / bpm / 3) * rate > seek) {
       pattern.patterns[keyPressing[e.key]].ms = song.seek() * 1000 - pattern.patterns[keyPressing[e.key]].time - (offset + sync);
       calculateScore("Miss", keyPressing[e.key], true);
@@ -1510,9 +1518,9 @@ document.onkeyup = (e) => {
       miss++;
       missPoint.push(song.seek() * 1000);
     } else {
-      const judge = "Perfect";
-      calculateScore(judge, keyPressing[e.key], true);
-      drawParticle(3, pattern.patterns[keyPressing[e.key]].x, pattern.patterns[keyPressing[e.key]].y, judge);
+      calculateScore("Perfect", keyPressing[e.key], true);
+      drawParticle(3, pattern.patterns[keyPressing[e.key]].x, pattern.patterns[keyPressing[e.key]].y, "Perfect");
+      keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
     }
     delete keyPressing[e.key];
   }
