@@ -26,8 +26,13 @@ strong {
   color: #fff;
 }
 
+p:not(:first-of-type):has(strong) {
+  margin-top: 2em;
+}
+
 p {
-  font-size: 1.6em;
+  font-size: 2em;
+  margin-bottom: 0.5em;
 }
 
 a {
