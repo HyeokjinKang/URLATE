@@ -24,6 +24,7 @@ let pointingCntElement = [{ v1: "", v2: "", i: "" }];
 let circleBulletAngles = [];
 let destroyParticles = [];
 let missParticles = [];
+let perfectParticles = [];
 let destroyedBullets = new Set([]);
 let destroyedNotes = new Set([]);
 let grabbedNotes = new Set([]);
@@ -484,6 +485,20 @@ const drawParticle = (n, x, y, j, d) => {
       ctx.lineWidth = 2;
       ctx.fillText("Miss", cx, newY);
     }
+  } else if (n == 5) {
+    //judge: perfect
+    if (!hide.perfect) {
+      ctx.beginPath();
+      let p = 100 - (perfectParticles[j].s + 300 - Date.now()) / 3;
+      let newY = cy - Math.round(p / 10);
+      ctx.fillStyle = getJudgeStyle("perfect", p, cx, newY);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
+      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.lineWidth = 2;
+      ctx.fillText("Perfect", cx, newY);
+    }
   }
 };
 
@@ -498,9 +513,9 @@ const drawNote = (p, x, y, n, d, t, index) => {
   let opacity = 255;
   if (n != 2 && p >= 100) {
     opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
-  } else if (n == 2 && p >= 100 && t >= 100 && grabbedNotes.has(index)) {
+  } else if (n == 2 && p >= 100 && t >= 100 && (grabbedNotes.has(index) || grabbedNotes.has(`${index}!`))) {
     opacity = Math.max(Math.round((255 / 30) * (130 - t)), 0);
-  } else if (n == 2 && p >= 100 && !grabbedNotes.has(index)) {
+  } else if (n == 2 && p >= 100 && !(grabbedNotes.has(index) || grabbedNotes.has(`${index}!`))) {
     opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
   }
   opacity = opacity.toString(16).padStart(2, "0");
@@ -987,12 +1002,17 @@ const cntRender = () => {
         missPoint.push(song.seek() * 1000);
         record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "miss", seek]);
         keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
-      } else if (t >= 100 && !grabbedNotes.has(`${i}!`) && renderNotes[i].value == 2) {
+      } else if (t >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && renderNotes[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
+        perfectParticles.push({ x: renderNotes[i].x, y: renderNotes[i].y, s: Date.now() });
         calculateScore("Perfect", i, true);
-        drawParticle(3, renderNotes[i].x, renderNotes[i].y, "Perfect");
         keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
+      }
+    }
+    for (let i = 0; i < perfectParticles.length; i++) {
+      if (perfectParticles[i].s + 300 > Date.now()) {
+        drawParticle(5, perfectParticles[i].x, perfectParticles[i].y, i);
       }
     }
     for (let i = 0; i < missParticles.length; i++) {
@@ -1543,7 +1563,7 @@ document.onkeyup = (e) => {
   }
   mouseClicked = false;
   mouseClickedMs = date;
-  if (keyPressing.hasOwnProperty(e.key) && !grabbedNotes.has(`${keyPressing[e.key]}!`)) {
+  if (keyPressing.hasOwnProperty(e.key) && grabbedNotes.has(keyPressing[e.key]) && !grabbedNotes.has(`${keyPressing[e.key]}!`)) {
     grabbedNotes.delete(keyPressing[e.key]);
     grabbedNotes.add(`${keyPressing[e.key]}!`);
     if (pattern.patterns[keyPressing[e.key]].ms + pattern.patterns[keyPressing[e.key]].time - (60000 / bpm / 3) * rate > seek) {
@@ -1557,8 +1577,8 @@ document.onkeyup = (e) => {
       miss++;
       missPoint.push(song.seek() * 1000);
     } else {
+      perfectParticles.push({ x: pattern.patterns[keyPressing[e.key]].x, y: pattern.patterns[keyPressing[e.key]].y, s: Date.now() });
       calculateScore("Perfect", keyPressing[e.key], true);
-      drawParticle(3, pattern.patterns[keyPressing[e.key]].x, pattern.patterns[keyPressing[e.key]].y, "Perfect");
       keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
     }
     delete keyPressing[e.key];
