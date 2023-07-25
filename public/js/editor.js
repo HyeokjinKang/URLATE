@@ -353,7 +353,8 @@ const songSelected = (isLoaded, withoutSong) => {
   settingsPropertiesTextbox[6].value = pattern.information.offset;
   settingsPropertiesTextbox[7].value = pattern.background.boxColor;
   lottieInitBox.value = pattern.background.type;
-  canvasBackground.style.filter = `grayscale(30%) opacity(20%)`;
+  if (denySkin) canvasBackground.style.filter = `grayscale(30%) opacity(20%)`;
+  else canvasBackground.style.filter = `brightness(30%)`;
   metronomeLimit = pattern.information.tempo ? pattern.information.tempo : 4;
   bpm = pattern.information.bpm;
   offset = pattern.information.offset;
@@ -479,6 +480,7 @@ const drawNote = (p, x, y, s, n, d, t) => {
         cntCtx.strokeStyle = grd;
       } else if (skin.note[n].type == "color") {
         cntCtx.fillStyle = `#${skin.note[n].color}${opacity}`;
+        cntCtx.strokeStyle = `#${skin.note[n].color}${opacity}`;
       }
       if (skin.note[n].circle) {
         if (skin.note[n].circle.type == "gradient") {
