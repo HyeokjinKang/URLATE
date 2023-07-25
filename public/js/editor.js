@@ -693,7 +693,8 @@ const drawParticle = (n, x, y, j) => {
     let w = destroyParticles[j].w;
     for (let i = 0; i < 3; i++) {
       cntCtx.beginPath();
-      cntCtx.fillStyle = "#222";
+      if (denySkin) cntCtx.fillStyle = "#222";
+      else cntCtx.fillStyle = "#fff";
       cntCtx.arc(cx + (n * destroyParticles[j].d[i][0]) / 2, cy + (n * destroyParticles[j].d[i][1]) / 2, w, 0, 2 * Math.PI);
       cntCtx.fill();
     }
@@ -1221,7 +1222,8 @@ const cntRender = () => {
       } else if (renderTriggers[i].value == 5) {
         if (renderTriggers[i].ms - 1 <= seek * 1000 && renderTriggers[i].ms + renderTriggers[i].time > seek * 1000) {
           cntCtx.beginPath();
-          cntCtx.fillStyle = "#111";
+          if (denySkin) cntCtx.fillStyle = "#111";
+          else cntCtx.fillStyle = "#fff";
           cntCtx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Metropolis, Pretendard Variable`;
           if (renderTriggers[i].size.indexOf("vh") != -1)
             cntCtx.font = `${renderTriggers[i].weight} ${(cntCanvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Metropolis, Pretendard Variable`;
