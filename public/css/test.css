@@ -797,6 +797,6 @@ body {
 }
 
 .medal.hide {
-  transform: translateX(2vw) translateY(2vh) rotate(30deg);
+  transform: translateX(1vw) translateY(2vh) rotate(50deg);
   opacity: 0 !important;
 }
