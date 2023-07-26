@@ -784,3 +784,19 @@ body {
 #arrow {
   height: 5vh;
 }
+
+.medal {
+  pointer-events: none;
+  cursor: none;
+  opacity: 0;
+  position: fixed;
+  top: calc(5vh - 0.4vw);
+  right: calc(8vw - 6.5vh);
+  height: 2.5vh;
+  transition-duration: 1s;
+}
+
+.medal.hide {
+  transform: translateX(2vw) translateY(2vh) rotate(30deg);
+  opacity: 0 !important;
+}

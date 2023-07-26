@@ -162,7 +162,7 @@
   "adult_alert": "미성년자는 법정대리인의 동의가 있어야 게임 플레이가 가능합니다. 법정대리인의 휴대폰으로 인증을 진행해주세요.",
   "adult_retry_alert": "법정대리인의 인증이 필요합니다. 성인명의 휴대폰으로 재시도해주세요.",
   "shutdowned_alert": "만 16세 미만의 미성년자는 0시부터 6시까지 게임 이용이 제한됩니다.",
-  "medal_description": "게임 플레이를 통해 얻을 수 있는 메달입니다. 차례대로 높은 정확도(perfect 또는 great 10개 미만), PERFECT 플레이(miss 또는 bullet 0개), 클리어시 획득 가능합니다.",
+  "medal_description": "게임 플레이를 통해 얻을 수 있는 메달입니다. 차례대로 AP(All Perfect), FC(Full Combo), 클리어를 의미합니다.",
   "retry_tutorial": "튜토리얼 다시 시작",
   "move": "이동",
   "sort_as_name": "이름순",

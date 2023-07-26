@@ -172,7 +172,7 @@
   "adult_alert": "Minors must have the consent of their legal representative to play the game. Please proceed with the authentication using the mobile phone of the legal representative.",
   "person_alert": "You already have another account. URLATE sets the usage rule to use one account per person.",
   "adult_retry_alert": "Authorization of legal representative is required. Please try again with an adult mobile phone number.",
-  "medal_description": "Medals earned through gameplay. In turn, you can obtain high accuracy (PERFECT or less than 10 greats), PERFECT play (0 miss or bullet), and clearing.",
+  "medal_description": "Medals that can be obtained through gameplay. In order, AP (All Perfect), FC (Full Combo), and Clear.",
   "retry_tutorial": "Retry tutorial",
   "move": "Move",
   "sort_as_name": "Name",

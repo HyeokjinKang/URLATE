@@ -98,6 +98,7 @@ let keyInputMemory = 0;
 let keyInputMemoryMs = 0;
 let keyPressing = {};
 let trackName = "";
+let medal = 1;
 const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1243,6 +1244,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
             bullet++;
             missPoint.push(song.seek() * 1000);
             combo = 0;
+            medalCheck(medal);
             callBulletDestroy(i);
             colorOverlayContainer.classList.add("show");
             setTimeout(() => {
@@ -1343,6 +1345,7 @@ const calculateScore = (judge, i, ignoreMs) => {
     pattern.patterns[i].ms = song.seek() * 1000 - (offset + sync);
   }
   if (judge == "miss") {
+    medalCheck(medal);
     combo = 0;
     return;
   }
@@ -1355,13 +1358,17 @@ const calculateScore = (judge, i, ignoreMs) => {
   const rateCalc = rate * 0.5 + 0.5;
   if (judge == "perfect") {
     score += Math.round((basicScore + combo * 5) * rateCalc);
-  } else if (judge == "great") {
-    score += Math.round((basicScore * 0.5 + combo * 5) * rateCalc);
-  } else if (judge == "good") {
-    score += Math.round((basicScore * 0.2 + combo * 3) * rateCalc);
   } else {
-    combo = 0;
-    score += Math.round(basicScore * 0.05 * rateCalc);
+    medalCheck(1 - medal);
+    if (judge == "great") {
+      score += Math.round((basicScore * 0.5 + combo * 5) * rateCalc);
+    } else if (judge == "good") {
+      score += Math.round((basicScore * 0.2 + combo * 3) * rateCalc);
+    } else {
+      combo = 0;
+      medalCheck(medal);
+      score += Math.round(basicScore * 0.05 * rateCalc);
+    }
   }
   if (combo % comboCount == 0 && combo != 0) {
     comboAlertMs = Date.now();
@@ -1383,6 +1390,9 @@ const doneLoading = () => {
     cntRender();
     document.getElementById("componentCanvas").style.opacity = "1";
     document.getElementById("loadingContainer").style.opacity = "0";
+    document.querySelectorAll(".medal").forEach((e) => {
+      e.style.opacity = "1";
+    });
     setTimeout(() => {
       document.getElementById("loadingContainer").style.display = "none";
       document.getElementById("componentCanvas").style.transitionDuration = "0s";
@@ -1519,6 +1529,13 @@ const globalScrollEvent = (e) => {
   }
 };
 
+const medalCheck = (n) => {
+  for (let i = 0; i <= n; i++) {
+    document.getElementsByClassName("medal")[medal].classList.add("hide");
+    medal--;
+  }
+};
+
 document.onkeydown = (e) => {
   e = e || window.event;
   if (e.key == "Shift") {
@@ -1567,6 +1584,7 @@ document.onkeyup = (e) => {
     grabbedNotes.delete(keyPressing[e.key]);
     grabbedNotes.add(`${keyPressing[e.key]}!`);
     if (pattern.patterns[keyPressing[e.key]].ms + pattern.patterns[keyPressing[e.key]].time - (60000 / bpm / 3) * rate > seek) {
+      medalCheck(medal);
       pattern.patterns[keyPressing[e.key]].ms = song.seek() * 1000 - pattern.patterns[keyPressing[e.key]].time - (offset + sync);
       calculateScore("Miss", keyPressing[e.key], true);
       missParticles.push({
