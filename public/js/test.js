@@ -1550,4 +1550,19 @@ window.addEventListener("resize", () => {
   initialize(false);
 });
 
+window.addEventListener("blur", () => {
+  if (menuAllowed) {
+    if (menuContainer.style.display == "none") {
+      if (song.playing()) pauseDate = Date.now();
+      isPaused = true;
+      floatingResumeContainer.style.opacity = 0;
+      floatingResumeContainer.style.display = "none";
+      isMenuOpened = true;
+      menuContainer.style.display = "flex";
+      song.pause();
+      lottieAnim.pause();
+    }
+  }
+});
+
 window.addEventListener("wheel", globalScrollEvent);
