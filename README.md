@@ -1,7 +1,7 @@
 ## URLATE-v3l-frontend
 
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/HyeokjinKang/urlate-v3l-frontend/main?label=updated)
-![Snyk Vulnerabilities for GitHub Repo](https://img.shields.io/snyk/vulnerabilities/github/HyeokjinKang/urlate-v3l-frontend)
+![GitHub Issues](https://badgen.net/github/issues/HyeokjinKang/URLATE-v3l-frontend)
 [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
 [cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
