@@ -1355,9 +1355,9 @@ input[type="number"] {
 }
 
 .medals {
-  width: 5vh;
-  opacity: 0.1;
-  margin-right: 0.5vw;
+  width: 1.6vw;
+  opacity: 0.5;
+  margin-right: 0.8vw;
 }
 
 #selectContainerRight {
