@@ -1,65 +1,85 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable-jp-dynamic-subset.css");
+@import url("https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700&display=swap");
 
 body {
-  background: rgb(48, 50, 67);
-  color: #ccc;
-  font-family: "Pretendard JP Variable", arial, cursive;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  letter-spacing: -0.5px;
+  font-family: "Montserrat", "Pretendard JP Variable", system-ui, -apple-system, arial;
+  background-color: white;
+  margin: 3vh 3vw;
+  padding: 0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 h1 {
-  color: #fff;
-  margin-bottom: 0px;
-}
-
-h3 {
-  margin-top: 0px;
-  color: #fff;
-  font-weight: 500;
-}
-
-small {
-  font-size: 0.6em;
-  font-weight: 400;
-}
-
-strong {
-  color: #fff;
-}
-
-p:not(:first-of-type):has(strong) {
-  margin-top: 2em;
-}
-
-p {
   font-size: 2em;
+}
+
+span:not(:first-of-type) {
+  display: inline-block;
+  margin-top: 0.2em;
+}
+
+div {
   margin-bottom: 0.5em;
 }
 
-a {
-  text-decoration: none;
-  color: #82cce2;
+div + span {
+  margin-top: 0 !important;
 }
 
-i {
-  color: #aaa;
+strong {
+  font-weight: 600;
 }
 
-table {
-  border-collapse: collapse;
-}
-
-th,
 td {
-  padding: 5px;
-  margin: 0px;
-  border: 1px solid rgb(103, 103, 114);
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
-.descriptions {
-  font-size: 1.1em;
+tr > td:first-of-type {
+  font-size: 1.3em;
+  font-weight: 700;
+  padding-right: 1em;
+}
+
+a {
+  color: #000;
+  text-decoration: none;
+}
+
+.copyright {
+  font-size: 1em;
+  color: #555;
+  font-style: italic;
+}
+
+.title {
+  margin-top: 1em !important;
+  margin-bottom: 0.5em !important;
+  font-weight: 800;
+  font-size: 1.5em;
+  background-color: #000;
+  color: #fff;
+  padding: 1px 5px;
+}
+
+.link::after {
+  margin-right: 0.5em;
+  margin-left: 2px;
+  content: url("/images/parts/icons/link.svg");
+  width: 0.1em;
 }
 
 .badgeIcon {
-  height: 10vh;
+  height: 5em;
   margin-right: 1vw;
 }

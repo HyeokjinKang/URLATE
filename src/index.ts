@@ -133,7 +133,7 @@ app.get("/accessDenined", (req, res) => {
 });
 
 app.get("/info", (req, res) => {
-  res.render("information");
+  res.render("info");
 });
 
 app.get("/privacy", (req, res) => {
