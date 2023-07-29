@@ -88,6 +88,7 @@ let disableText = false;
 let lottieAnim;
 let arrowAnim;
 
+let intro1load = 0;
 let intro1skipped = 0;
 
 let intro2anim;
@@ -161,6 +162,14 @@ const lottieResize = () => {
       path: "lottie/arrow.json",
     });
   }
+};
+
+const intro1loaded = () => {
+  if (intro1load == 1) {
+    document.getElementById("pressAnywhere").textContent = pressAnywhere;
+    document.getElementById("warningContainer").onclick = warningSkip;
+  }
+  intro1load++;
 };
 
 const initialize = () => {
