@@ -799,22 +799,22 @@ const drawKeyInput = () => {
     let color = "#FFF";
     switch (judge) {
       case "Perfect":
-        color = "#37E7E7";
+        color = "#57BEEB";
         break;
       case "Great":
-        color = "#89DB57";
+        color = "#73DFD2";
         break;
       case "Good":
-        color = "#EEE063";
+        color = "#CCE97C";
         break;
       case "Bad":
-        color = "#E8AF5B";
+        color = "#EDC77D";
         break;
       case "Miss":
         color = "#F96C5A";
         break;
       case "Bullet":
-        color = "#C4A0E8";
+        color = "#E8A0A0";
         break;
       case "Empty":
         color = "#ffffff00";
