@@ -1465,6 +1465,7 @@ const resume = () => {
 };
 
 const retry = () => {
+  if (isResultShowing) localStorage.setItem("retry", score);
   location.reload();
 };
 
