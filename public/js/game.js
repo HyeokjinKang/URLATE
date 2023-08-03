@@ -709,6 +709,7 @@ const songSelected = (n, refreshed, seek) => {
       localStorage.difficultySelection = difficultySelection;
       localStorage.difficulty = JSON.parse(tracks[songSelection].difficulty)[difficultySelection];
       localStorage.songName = tracks[songSelection].fileName;
+      localStorage.record = trackRecords[songSelection][difficultySelection].record;
       window.location.href = `${url}/play`;
     } else {
       display = 14;

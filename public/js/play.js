@@ -99,6 +99,7 @@ let keyInputMemoryMs = 0;
 let keyPressing = {};
 let trackName = "";
 let medal = 1;
+let newRecordTime = 0;
 const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1089,6 +1090,27 @@ const cntRender = () => {
 
   drawKeyInput();
 
+  //new record
+  if (newRecordTime != 0) {
+    let p1 = easeOutQuad(Math.min(1, (Date.now() - newRecordTime) / 500));
+    let p2 = easeOutQuad(Math.min(1, Math.max(0, (Date.now() - newRecordTime - 300) / 500)));
+    ctx.beginPath();
+    ctx.fillStyle = "#ffffff";
+    ctx.rect(canvas.width * 0.85, canvas.height * 0.2, canvas.width * 0.15, canvas.height * 0.06);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.fillStyle = "#000000";
+    ctx.font = `italic 600 ${canvas.height / 40}px Montserrat, Pretendard Variable`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText("NEW RECORD!", canvas.width * 0.87, canvas.height * 0.23);
+    ctx.beginPath();
+    ctx.clearRect(canvas.width * 0.85 - 1, canvas.height * 0.2 - 1, canvas.width * 0.15 - canvas.width * 0.145 * p2 + 1, canvas.height * 0.06 + 2);
+    ctx.fillStyle = "#35C692";
+    ctx.rect(canvas.width - canvas.width * 0.15 * p1, canvas.height * 0.2, canvas.width * 0.15 * p1 - canvas.width * 0.145 * p2, canvas.height * 0.06);
+    ctx.fill();
+  }
+
   //fps counter
   if (frameCounter) {
     frameArray.push(1000 / (Date.now() - frameCounterMs));
@@ -1347,32 +1369,37 @@ const calculateScore = (judge, i, ignoreMs) => {
   if (judge == "miss") {
     medalCheck(medal);
     combo = 0;
-    return;
-  }
-  tick.play();
-  combo++;
-  if (maxCombo < combo) {
-    maxCombo = combo;
-  }
-  let basicScore = 100000000 / patternLength;
-  const rateCalc = rate * 0.5 + 0.5;
-  if (judge == "perfect") {
-    score += Math.round((basicScore + combo * 5) * rateCalc);
   } else {
-    medalCheck(1 - medal);
-    if (judge == "great") {
-      score += Math.round((basicScore * 0.5 + combo * 5) * rateCalc);
-    } else if (judge == "good") {
-      score += Math.round((basicScore * 0.2 + combo * 3) * rateCalc);
+    tick.play();
+    combo++;
+    if (maxCombo < combo) {
+      maxCombo = combo;
+    }
+    let basicScore = 100000000 / patternLength;
+    const rateCalc = rate * 0.5 + 0.5;
+    if (judge == "perfect") {
+      score += Math.round((basicScore + combo * 5) * rateCalc);
     } else {
-      combo = 0;
-      medalCheck(medal);
-      score += Math.round(basicScore * 0.05 * rateCalc);
+      medalCheck(1 - medal);
+      if (judge == "great") {
+        score += Math.round((basicScore * 0.5 + combo * 5) * rateCalc);
+      } else if (judge == "good") {
+        score += Math.round((basicScore * 0.2 + combo * 3) * rateCalc);
+      } else {
+        combo = 0;
+        medalCheck(medal);
+        score += Math.round(basicScore * 0.05 * rateCalc);
+      }
+    }
+    if (combo % comboCount == 0 && combo != 0) {
+      comboAlertMs = Date.now();
+      comboAlertCount = combo;
     }
   }
-  if (combo % comboCount == 0 && combo != 0) {
-    comboAlertMs = Date.now();
-    comboAlertCount = combo;
+  if (i == patternLength - 1) {
+    if (localStorage.record < score) {
+      newRecordTime = Date.now();
+    }
   }
 };
 
