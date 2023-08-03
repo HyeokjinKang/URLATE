@@ -1094,6 +1094,10 @@ const cntRender = () => {
   if (newRecordTime != 0) {
     let p1 = easeOutQuad(Math.min(1, (Date.now() - newRecordTime) / 500));
     let p2 = easeOutQuad(Math.min(1, Math.max(0, (Date.now() - newRecordTime - 300) / 500)));
+    if (newRecordTime + 5000 < Date.now()) {
+      if (newRecordTime + 10000 < Date.now()) newRecordTime = 0;
+      else ctx.globalAlpha = 1 - (Date.now() - newRecordTime - 5000) / 5000;
+    }
     ctx.beginPath();
     ctx.fillStyle = "#ffffff";
     ctx.rect(canvas.width * 0.85, canvas.height * 0.2, canvas.width * 0.15, canvas.height * 0.06);
@@ -1109,6 +1113,7 @@ const cntRender = () => {
     ctx.fillStyle = "#35C692";
     ctx.rect(canvas.width - canvas.width * 0.15 * p1, canvas.height * 0.2, canvas.width * 0.15 * p1 - canvas.width * 0.145 * p2, canvas.height * 0.06);
     ctx.fill();
+    ctx.globalAlpha = 1;
   }
 
   //fps counter
