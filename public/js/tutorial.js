@@ -1284,7 +1284,7 @@ const calculateScore = (judge, i, ignoreMs) => {
   if (judge == "perfect") {
     score += Math.round((basicScore + combo * 5) * rateCalc);
   } else {
-    medalCheck(1 - medal);
+    medalCheck(medal - 1);
     if (judge == "great") {
       score += Math.round((basicScore * 0.5 + combo * 5) * rateCalc);
     } else if (judge == "good") {
