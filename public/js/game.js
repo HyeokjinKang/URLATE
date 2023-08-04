@@ -775,7 +775,7 @@ const songSelected = (n, refreshed, seek) => {
   document.getElementById("selectBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.png")`;
   setTimeout(
     () => {
-      let underLimit = window.innerHeight * 0.08 * n + window.innerHeight * 0.09;
+      let underLimit = window.innerHeight * 0.09 * (n + 1);
       underLimit = parseInt(underLimit);
       if (selectSongContainer.offsetHeight + selectSongContainer.scrollTop < underLimit) {
         selectSongContainer.scrollTop = underLimit - selectSongContainer.offsetHeight;
