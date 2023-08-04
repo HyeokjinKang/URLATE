@@ -28,6 +28,7 @@ const timelinePlayController = document.getElementById("timelinePlayController")
 let settings,
   tracks,
   bpm = 130,
+  bpmsync = 0,
   speed = 2,
   offset = 0,
   sync = 0,
@@ -357,6 +358,7 @@ const songSelected = (isLoaded, withoutSong) => {
   else canvasBackground.style.filter = `brightness(30%)`;
   metronomeLimit = pattern.information.tempo ? pattern.information.tempo : 4;
   bpm = pattern.information.bpm;
+  bpmsync = 0;
   offset = pattern.information.offset;
   speed = pattern.information.speed;
   document.getElementById("percentage").innerText = "100%";
@@ -978,7 +980,7 @@ const tmlRender = () => {
     tmlCtx.textAlign = "center";
     tmlCtx.textBaseline = "bottom";
     tmlCtx.fillStyle = "#777";
-    for (let t = baseMs - (renderStart % baseMs) - baseMs; t <= renderEnd + baseMs; t += baseMs) {
+    for (let t = -1 * (renderStart % baseMs) + bpmsync; t <= bpmsync + renderEnd + baseMs; t += baseMs) {
       if ((renderStart + t) / 1000 < song._duration && (renderStart + t) / 1000 >= 0) {
         const tmlMinutes = Math.floor((renderStart + t) / 60000),
           tmlSeconds = (renderStart + t) / 1000 - tmlMinutes * 60;
@@ -1213,6 +1215,7 @@ const cntRender = () => {
       } else if (renderTriggers[i].value == 2) {
         bpmCount++;
         bpm = renderTriggers[i].bpm;
+        bpmsync = Math.round(renderTriggers[i].ms % (60000 / bpm));
       } else if (renderTriggers[i].value == 3) {
         opacityCount++;
         cntCanvas.style.filter = `opacity(${renderTriggers[i].opacity * 100}%)`;
@@ -1251,6 +1254,7 @@ const cntRender = () => {
     }
     if (!bpmCount) {
       bpm = pattern.information.bpm;
+      bpmsync = 0;
     }
     if (!speedCount) {
       speed = pattern.information.speed;
