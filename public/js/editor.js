@@ -2015,6 +2015,7 @@ const timelineFollowMouse = (v1, v2, i) => {
 };
 
 const tmlClicked = () => {
+  if (isNaN(Number(song.seek()))) return iziToast.error({ title: "Wait..", message: "Song is not loaded." });
   if (mode == 0) {
     timelineFollowMouse();
   } else if (mode == 1) {
@@ -2124,6 +2125,7 @@ const timelineAddElement = () => {
 };
 
 const compClicked = () => {
+  if (isNaN(Number(song.seek()))) return iziToast.error({ title: "Wait..", message: "Song is not loaded." });
   if (mode == 0) {
     elementFollowMouse();
   } else if (mode == 1) {
