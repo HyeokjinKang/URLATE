@@ -1020,6 +1020,10 @@ const gameLoaded = () => {
   Howler.masterGain.connect(analyser);
   dataArray = new Uint8Array(analyser.frequencyBinCount);
   animationLooper();
+  tracks.forEach((e) => {
+    const img = new Image();
+    img.src = `${cdn}/albums/${settings.display.albumRes}/${e.fileName}.png`;
+  });
 };
 
 Pace.on("done", () => {
