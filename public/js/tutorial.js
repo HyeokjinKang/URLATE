@@ -93,6 +93,8 @@ let songData = [];
 let keyInput = [];
 let keyInputMemory = 0;
 let keyInputMemoryMs = 0;
+let effectMs = 0;
+let effectNum = -1;
 let keyPressing = {};
 let medal = 1;
 const albumImg = new Image();
@@ -725,6 +727,16 @@ const drawBullet = (n, x, y, a) => {
   }
 };
 
+const destroyAll = (ms) => {
+  const end = upperBound(pattern.bullets, ms);
+  const renderBullets = pattern.bullets.slice(0, end);
+  for (let j = 0; renderBullets.length > j; j++) {
+    if (!destroyedBullets.has(j)) {
+      callBulletDestroy(j);
+    }
+  }
+};
+
 const callBulletDestroy = (j) => {
   let date = Date.now();
   const seek = (date - startDate - (offset + sync)) * rate;
@@ -910,13 +922,7 @@ const cntRender = () => {
           callBulletDestroy(renderTriggers[i].num);
         }
       } else if (renderTriggers[i].value == 1) {
-        end = upperBound(pattern.bullets, renderTriggers[i].ms);
-        const renderBullets = pattern.bullets.slice(0, end);
-        for (let j = 0; renderBullets.length > j; j++) {
-          if (!destroyedBullets.has(j)) {
-            callBulletDestroy(j);
-          }
-        }
+        destroyAll(renderTriggers[i].ms);
       } else if (renderTriggers[i].value == 2) {
         bpm = renderTriggers[i].bpm;
       } else if (renderTriggers[i].value == 3) {
@@ -1049,6 +1055,8 @@ const cntRender = () => {
 
   drawKeyInput();
 
+  if (effectMs != 0 && effectNum != -1) drawFinalEffect(effectNum);
+
   //fps counter
   if (frameCounter) {
     frameArray.push(1000 / (Date.now() - frameCounterMs));
@@ -1071,6 +1079,89 @@ const cntRender = () => {
   }
   drawCursor();
   requestAnimationFrame(cntRender);
+};
+
+const drawFinalEffect = (i) => {
+  const duration = 2000;
+  ctx.beginPath();
+  const text = i == 0 ? "ALL PERFECT" : "FULL COMBO";
+  const p = easeOutQuart(Math.min(1, (Date.now() - effectMs) / duration));
+  const alpha = Math.max(0, Math.min((Date.now() - effectMs) / 200, Math.min(1, (effectMs + duration - 500 - Date.now()) / 500)));
+  ctx.globalAlpha = alpha;
+  let effectStartX = (-1 * canvas.width) / 5;
+  let effectFinalX = -1 * (canvas.width / 20);
+  let effectX = effectStartX + (effectFinalX - effectStartX) * p;
+  let effectY = -1 * (canvas.height / 20);
+  ctx.font = `800 ${canvas.height / 5}px Montserrat`;
+  let grd = ctx.createLinearGradient(effectX, effectY, effectX, effectY + canvas.height / 5);
+  grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
+  grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
+  ctx.fillStyle = grd;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.fillText(text, effectX, effectY);
+
+  ctx.beginPath();
+  effectStartX = canvas.width + canvas.width / 5;
+  effectFinalX = canvas.width + canvas.width / 20;
+  effectX = effectStartX + (effectFinalX - effectStartX) * p;
+  effectY = canvas.height + canvas.height / 20;
+  grd = ctx.createLinearGradient(effectX, effectY - canvas.height / 5, effectX, effectY);
+  grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
+  grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
+  ctx.fillStyle = grd;
+  ctx.textAlign = "right";
+  ctx.textBaseline = "bottom";
+  ctx.fillText(text, effectX, effectY);
+  ctx.globalAlpha = 1;
+
+  ctx.beginPath();
+  let mainTextX = canvas.width / 2;
+  let mainTextY = canvas.height / 2;
+  let mainTextSizeStart = canvas.height / 5;
+  let mainTextSizeFinal = canvas.height / 7;
+  let outlineTextSizeStart = canvas.height / 4;
+  let outlineTextSizeFinal = canvas.height / 5;
+  let mainTextSize = mainTextSizeStart + (mainTextSizeFinal - mainTextSizeStart) * p;
+  let outlineTextSize = outlineTextSizeStart + (outlineTextSizeFinal - outlineTextSizeStart) * p;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.lineJoin = "round";
+  if (i == 0) {
+    grd = ctx.createLinearGradient(mainTextX, mainTextY - outlineTextSize / 2, mainTextX, mainTextY + outlineTextSize / 2);
+    grd.addColorStop(0, `rgba(245, 129, 255, ${alpha / 3})`);
+    grd.addColorStop(0.5, `rgba(119, 182, 244, ${alpha / 3})`);
+    grd.addColorStop(1, `rgba(67, 221, 166, ${alpha / 3})`);
+    ctx.strokeStyle = grd;
+  } else if (i == 1) {
+    ctx.strokeStyle = `rgba(240, 194, 29, ${alpha / 3})`;
+  }
+  ctx.font = `800 ${outlineTextSize}px Montserrat`;
+  ctx.lineWidth = canvas.height / 200;
+  ctx.strokeText(text, mainTextX, mainTextY);
+  ctx.globalCompositeOperation = "destination-out";
+  ctx.fillStyle = `rgb(255, 255, 255)`;
+  ctx.fillText(text, mainTextX, mainTextY);
+  ctx.globalCompositeOperation = "source-over";
+  if (i == 0) {
+    grd = ctx.createLinearGradient(mainTextX, mainTextY - mainTextSize / 2, mainTextX, mainTextY + mainTextSize / 2);
+    grd.addColorStop(0, `rgba(245, 129, 255, ${alpha})`);
+    grd.addColorStop(0.5, `rgba(119, 182, 244, ${alpha})`);
+    grd.addColorStop(1, `rgba(67, 221, 166, ${alpha})`);
+    ctx.strokeStyle = grd;
+  } else if (i == 1) {
+    ctx.strokeStyle = `rgba(240, 194, 29, ${alpha})`;
+  }
+  ctx.font = `800 ${mainTextSize}px Montserrat`;
+  ctx.lineWidth = canvas.height / 100;
+  ctx.strokeText(text, mainTextX, mainTextY);
+  ctx.globalCompositeOperation = "destination-out";
+  ctx.fillStyle = `rgb(255, 255, 255)`;
+  ctx.fillText(text, mainTextX, mainTextY);
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+  ctx.fillText(text, mainTextX, mainTextY);
+  if (p == 1) effectMs = 0;
 };
 
 const trackMousePos = () => {
@@ -1300,6 +1391,15 @@ const calculateScore = (judge, i, ignoreMs) => {
     comboAlertCount = combo;
   }
 };
+if (i == patternLength - 1) {
+  destroyAll();
+  effectMs = Date.now();
+  if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
+    effectNum = 0;
+  } else if (bad == 0 && miss == 0 && bullet == 0) {
+    effectNum = 1;
+  }
+}
 
 Pace.on("done", () => {
   if (paceLoaded) return;
