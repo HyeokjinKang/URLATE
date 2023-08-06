@@ -2396,19 +2396,21 @@ const test = () => {
     title: "Caution",
     message: need2Save,
   });
-  save();
-  let trackSettingsForm = settingsPropertiesTextbox;
-  pattern.information = {
-    version: "1.0",
-    track: trackSettingsForm[0].value,
-    producer: trackSettingsForm[1].value,
-    author: trackSettingsForm[2].value,
-    bpm: bpm,
-    speed: speed,
-    offset: offset,
-  };
-  localStorage.pattern = JSON.stringify(pattern);
-  window.location.href = `${url}/test`;
+  setTimeout(() => {
+    save();
+    let trackSettingsForm = settingsPropertiesTextbox;
+    pattern.information = {
+      version: "1.0",
+      track: trackSettingsForm[0].value,
+      producer: trackSettingsForm[1].value,
+      author: trackSettingsForm[2].value,
+      bpm: bpm,
+      speed: speed,
+      offset: offset,
+    };
+    localStorage.pattern = JSON.stringify(pattern);
+    window.location.href = `${url}/test`;
+  }, 500);
   ctrlDown = false;
 };
 
