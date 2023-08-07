@@ -68,7 +68,8 @@ let copied = false,
   copiedTime = 0;
 let gridToggle = true,
   magnetToggle = true,
-  metronomeToggle = false;
+  metronomeToggle = false,
+  circleToggle = true;
 let scrollTimer = 0;
 
 let lottieAnim = {
@@ -1175,6 +1176,21 @@ const cntRender = () => {
         cntCtx.strokeStyle = "#bbbbbb20";
         cntCtx.moveTo(x2, 0);
         cntCtx.lineTo(x2, cntCanvas.height);
+        cntCtx.stroke();
+      }
+    }
+    if (circleToggle && selectedCntElement.v1 === 0) {
+      cntCtx.strokeStyle = "#88888850";
+      cntCtx.lineWidth = 2;
+      for (let i = 1; i <= 10; i++) {
+        cntCtx.beginPath();
+        cntCtx.arc(
+          (cntCanvas.width / 200) * (pattern.patterns[selectedCntElement.i].x + 100),
+          (cntCanvas.height / 200) * (pattern.patterns[selectedCntElement.i].y + 100),
+          (cntCanvas.width / 10) * i,
+          0,
+          2 * Math.PI
+        );
         cntCtx.stroke();
       }
     }
