@@ -59,22 +59,12 @@ body {
 }
 
 #footerRight {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  align-items: flex-end;
+  text-align: right;
   position: fixed;
   font-size: 0.8em;
   color: #aaa;
   right: 2vh;
   bottom: 2vh;
-}
-
-#allContainer {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: flex-end;
 }
 
 .link {
