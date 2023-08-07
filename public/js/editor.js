@@ -2150,13 +2150,27 @@ const compClicked = () => {
           }
         }
       } else {
+        let newX = magnetToggle ? mouseX - (mouseX % 5) : mouseX;
+        let newY = magnetToggle ? mouseY - (mouseY % 5) : mouseY;
+        if (circleToggle && selectedCntElement.v1 === 0) {
+          const radius = cntCanvas.width / 10;
+          const noteX = (cntCanvas.width / 200) * (pattern.patterns[selectedCntElement.i].x + 100);
+          const noteY = (cntCanvas.height / 200) * (pattern.patterns[selectedCntElement.i].y + 100);
+          const difX = noteX - (cntCanvas.width / 200) * (mouseX + 100);
+          const difY = noteY - (cntCanvas.height / 200) * (mouseY + 100);
+          const distance = Math.sqrt(difX * difX + difY * difY) + radius / 2;
+          const angle = calcAngleDegrees(difX, difY) + 180;
+          const newDistance = distance - (distance % radius);
+          newX = ((noteX + newDistance * getCos(angle)) / cntCanvas.width) * 200 - 100;
+          newY = ((noteY + newDistance * getSin(angle)) / cntCanvas.height) * 200 - 100;
+        }
         let newElement = {
           ms: parseInt(seek * 1000) + 1,
           value: selectedValue,
           direction: 1,
           time: parseInt((60 / bpm) * 4 * 1000),
-          x: parseInt(magnetToggle ? mouseX - (mouseX % 5) : mouseX),
-          y: parseInt(magnetToggle ? mouseY - (mouseY % 5) : mouseY),
+          x: parseInt(newX),
+          y: parseInt(newY),
         };
         pattern.patterns.push(newElement);
         pattern.patterns.sort(sortAsTiming);
