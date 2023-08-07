@@ -69,7 +69,7 @@ let copied = false,
 let gridToggle = true,
   magnetToggle = true,
   metronomeToggle = false,
-  circleToggle = true;
+  circleToggle = false;
 let scrollTimer = 0;
 
 let lottieAnim = {
