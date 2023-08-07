@@ -3010,6 +3010,8 @@ document.onkeydown = (e) => {
     } else if (e.code == "KeyC") {
       if (ctrlDown) {
         elementCopy();
+      } else {
+        toggleCircle();
       }
     } else if (e.code == "KeyV") {
       if (ctrlDown) {
