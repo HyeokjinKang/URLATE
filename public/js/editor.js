@@ -68,7 +68,6 @@ let copied = false,
   copiedTime = 0;
 let gridToggle = true,
   magnetToggle = true,
-  explainToggle = true,
   metronomeToggle = false;
 let scrollTimer = 0;
 
@@ -450,16 +449,14 @@ const drawNote = (p, x, y, s, n, d, t) => {
   opacity = opacity.toString(16).padStart(2, "0");
   if (s == true) {
     cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
-    if (explainToggle) {
-      cntCtx.beginPath();
-      cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard Variable`;
-      cntCtx.fillStyle = "#000";
-      cntCtx.strokeStyle = "#fff";
-      cntCtx.textAlign = "center";
-      cntCtx.textBaseline = "bottom";
-      cntCtx.strokeText(`(X: ${originX}, Y: ${originY})`, x, y - 1.5 * w);
-      cntCtx.fillText(`(X: ${originX}, Y: ${originY})`, x, y - 1.5 * w);
-    }
+    cntCtx.beginPath();
+    cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard Variable`;
+    cntCtx.fillStyle = "#000";
+    cntCtx.strokeStyle = "#fff";
+    cntCtx.textAlign = "center";
+    cntCtx.textBaseline = "bottom";
+    cntCtx.strokeText(`(X: ${originX}, Y: ${originY})`, x, y - 1.5 * w);
+    cntCtx.fillText(`(X: ${originX}, Y: ${originY})`, x, y - 1.5 * w);
     cntCtx.fillStyle = `#ebd534${opacity}`;
     cntCtx.strokeStyle = `#ebd534${opacity}`;
   } else {
@@ -606,19 +603,17 @@ const drawBullet = (n, x, y, a, s, l, d) => {
   y = (cntCanvas.height / 200) * (y + 100);
   let w = cntCanvas.width / 80;
   if (s == true) {
-    if (explainToggle) {
-      cntCtx.beginPath();
-      cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard Variable`;
-      cntCtx.fillStyle = "#000";
-      cntCtx.strokeStyle = "#fff";
-      cntCtx.textAlign = d == "L" ? "left" : "right";
-      cntCtx.textBaseline = "bottom";
-      cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
-      cntCtx.strokeText(`(Loc: ${l})`, x, y - 1.5 * w - window.innerHeight / 40);
-      cntCtx.strokeText(`(Angle: ${d == "L" ? a : a - 180})`, x, y - 1.5 * w);
-      cntCtx.fillText(`(Loc: ${l})`, x, y - 1.5 * w - window.innerHeight / 40);
-      cntCtx.fillText(`(Angle: ${d == "L" ? a : a - 180})`, x, y - 1.5 * w);
-    }
+    cntCtx.beginPath();
+    cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard Variable`;
+    cntCtx.fillStyle = "#000";
+    cntCtx.strokeStyle = "#fff";
+    cntCtx.textAlign = d == "L" ? "left" : "right";
+    cntCtx.textBaseline = "bottom";
+    cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
+    cntCtx.strokeText(`(Loc: ${l})`, x, y - 1.5 * w - window.innerHeight / 40);
+    cntCtx.strokeText(`(Angle: ${d == "L" ? a : a - 180})`, x, y - 1.5 * w);
+    cntCtx.fillText(`(Loc: ${l})`, x, y - 1.5 * w - window.innerHeight / 40);
+    cntCtx.fillText(`(Angle: ${d == "L" ? a : a - 180})`, x, y - 1.5 * w);
     cntCtx.fillStyle = `#ebd534`;
     cntCtx.strokeStyle = `#ebd534`;
   } else {
@@ -1385,40 +1380,6 @@ const save = () => {
   a.download = `${songName.innerText}.json`;
   localStorage.pattern = JSON.stringify(pattern);
   a.click();
-};
-
-const deleteAll = () => {
-  if (confirm(deleteSure)) {
-    song.stop();
-    lottieAnim.stop();
-    changeSettingsMode(-1);
-    if (isSettingsOpened) toggleSettings();
-    selectedCntElement = { v1: "", v2: "", i: "" };
-    copySelection = { element: -1, start: -1, end: -1, ms: 0 };
-    pattern = {
-      information: {
-        version: "1.0",
-        track: "",
-        producer: "",
-        author: "",
-        bpm: "",
-        speed: "",
-        offset: "",
-      },
-      background: {
-        lottie: {},
-        type: 0,
-        boxColor: "FFFFFF",
-      },
-      patterns: [],
-      bullets: [],
-      triggers: [],
-    };
-    songSelected();
-    patternHistory = [];
-  }
-  ctrlDown = false;
-  shiftDown = false;
 };
 
 const settingsInput = (v, e) => {
@@ -2896,27 +2857,21 @@ const changeTempo = (e) => {
 };
 
 const toggleMetronome = () => {
-  if (metronomeToggle) document.getElementsByClassName("menuIcon")[8].classList.remove("menuSelected");
-  else document.getElementsByClassName("menuIcon")[8].classList.add("menuSelected");
+  if (metronomeToggle) document.getElementsByClassName("menuIcon")[9].classList.remove("menuSelected");
+  else document.getElementsByClassName("menuIcon")[9].classList.add("menuSelected");
   metronomeToggle = !metronomeToggle;
 };
 
 const toggleGrid = () => {
-  if (gridToggle) document.getElementsByClassName("menuIcon")[9].classList.remove("menuSelected");
-  else document.getElementsByClassName("menuIcon")[9].classList.add("menuSelected");
+  if (gridToggle) document.getElementsByClassName("menuIcon")[8].classList.remove("menuSelected");
+  else document.getElementsByClassName("menuIcon")[8].classList.add("menuSelected");
   gridToggle = !gridToggle;
 };
 
 const toggleMagnet = () => {
-  if (magnetToggle) document.getElementsByClassName("menuIcon")[10].classList.remove("menuSelected");
-  else document.getElementsByClassName("menuIcon")[10].classList.add("menuSelected");
+  if (magnetToggle) document.getElementsByClassName("menuIcon")[7].classList.remove("menuSelected");
+  else document.getElementsByClassName("menuIcon")[7].classList.add("menuSelected");
   magnetToggle = !magnetToggle;
-};
-
-const toggleExplain = () => {
-  if (explainToggle) document.getElementsByClassName("menuIcon")[11].classList.remove("menuSelected");
-  else document.getElementsByClassName("menuIcon")[11].classList.add("menuSelected");
-  explainToggle = !explainToggle;
 };
 
 document.getElementById("timelineContainer").addEventListener("wheel", scrollEvent);
@@ -2934,7 +2889,7 @@ document.onkeyup = (e) => {
     ctrlDown = false;
   } else if (e.key == "Shift") {
     shiftDown = false;
-  } else if (e.key == "F1") {
+  } else if (e.code == "Slash") {
     hideHelp();
   }
 };
@@ -2960,53 +2915,37 @@ document.onkeydown = (e) => {
     ctrlDown = true;
   } else if (e.key == "Shift") {
     shiftDown = true;
-  } else if (e.code == "KeyS") {
-    if (ctrlDown) {
+  } else if (ctrlDown) {
+    if (e.code == "KeyS") {
       e.preventDefault();
       ctrlDown = false;
       save();
-    }
-  } else if (e.code == "KeyZ") {
-    if (ctrlDown) {
+    } else if (e.code == "KeyZ") {
       if (shiftDown) {
         patternRedo();
       } else {
         patternUndo();
       }
-    }
-  } else if (e.code == "KeyP") {
-    if (ctrlDown) {
+    } else if (e.code == "KeyP") {
       e.preventDefault();
       ctrlDown = false;
       test();
     }
-  } else if (e.key == "F1") {
-    e.preventDefault();
-    showHelp();
-  } else if (e.key == "F2") {
-    e.preventDefault();
-    toggleGrid();
-  } else if (e.key == "F3") {
-    e.preventDefault();
-    toggleMagnet();
   }
   if (!isTextboxFocused) {
     if (e.code == "Space") {
       songPlayPause();
     } else if (e.key == "1") {
       if (document.getElementsByClassName("iziToast-overlay").length == 0) {
-        e.preventDefault();
         changeMode(0);
       }
       return;
     } else if (e.key == "2") {
       if (document.getElementsByClassName("iziToast-overlay").length == 0) {
-        e.preventDefault();
         changeMode(1);
       }
     } else if (e.key == "3") {
       if (document.getElementsByClassName("iziToast-overlay").length == 0) {
-        e.preventDefault();
         changeMode(2);
       }
     } else if (e.key == "ArrowLeft") {
@@ -3018,13 +2957,6 @@ document.onkeydown = (e) => {
     } else if (e.key == "ArrowDown") {
       tmlScrollDown();
     } else if (e.code == "Delete" || e.code == "Backspace") {
-      if (ctrlDown) {
-        if (shiftDown) {
-          e.preventDefault();
-          deleteAll();
-          return;
-        }
-      }
       deleteElement();
     } else if (e.code == "KeyC") {
       if (ctrlDown) {
@@ -3034,6 +2966,14 @@ document.onkeydown = (e) => {
       if (ctrlDown) {
         elementPaste();
       }
+    } else if (e.code == "Slash") {
+      showHelp();
+    } else if (e.code == "KeyG") {
+      toggleGrid();
+    } else if (e.code == "KeyT") {
+      toggleMagnet();
+    } else if (e.code == "KeyB") {
+      toggleMetronome();
     }
   }
   if (mode == 2) {

@@ -615,7 +615,7 @@ body {
   display: flex;
   width: 100%;
   height: 6vh;
-  font-size: 3vh;
+  font-size: 2.3vh;
   color: #444;
 }
 
@@ -625,6 +625,7 @@ body {
 }
 
 .helpDescription {
+  text-align: left;
   width: 50%;
   font-weight: 400;
 }
@@ -643,8 +644,8 @@ body {
 kbd {
   font-family: "Metropolis", "Pretendard JP Variable", "나눔바른고딕", arial;
   font-style: italic;
-  border: 2px solid #555;
-  padding: 4px 14px 4px 8px;
+  border: 1.5px solid #555;
+  padding: 2px 10px 2px 6px;
   border-radius: 5px;
 }
 

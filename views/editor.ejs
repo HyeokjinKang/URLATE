@@ -45,11 +45,11 @@
       <div id="helpContainer" class="metropolis">
         <div id="helpBox">
           <div id="helpTitleContainer">
-            <span id="helpTitle">HELP</span>
+            <span id="helpTitle">Shortcuts</span>
           </div>
           <div class="helpBoxSpliter">
             <div class="helpKeyContainer">
-              <span class="helpKey"><kbd>F1</kbd></span>
+              <span class="helpKey"><kbd>?</kbd></span>
               <span class="helpDescription">Help</span>
             </div>
             <div class="helpKeyContainer">
@@ -91,12 +91,16 @@
           </div>
           <div class="helpBoxSpliter">
             <div class="helpKeyContainer">
-              <span class="helpKey"><kbd>F2</kbd></span>
+              <span class="helpKey"><kbd>T</kbd></span>
+              <span class="helpDescription">Toggle Magnet</span>
+            </div>
+            <div class="helpKeyContainer">
+              <span class="helpKey"><kbd>G</kbd></span>
               <span class="helpDescription">Toggle Grid</span>
             </div>
             <div class="helpKeyContainer">
-              <span class="helpKey"><kbd>F3</kbd></span>
-              <span class="helpDescription">Toggle Magnet</span>
+              <span class="helpKey"><kbd>B</kbd></span>
+              <span class="helpDescription">Toggle Metronome</span>
             </div>
             <div class="helpKeyContainer">
               <span class="helpKey"><kbd>Space</kbd></span>
@@ -107,19 +111,11 @@
               <span class="helpDescription">Stop</span>
             </div>
             <div class="helpKeyContainer">
-              <span class="helpKey"><kbd class="noItalic">←</kbd> <kbd class="noItalic">→</kbd></span>
+              <span class="helpKey"><kbd class="noItalic">←</kbd> <kbd class="noItalic">→</kbd> or <span class="helpMotion">Scroll</span></span>
               <span class="helpDescription">Seek Horizontally</span>
             </div>
             <div class="helpKeyContainer">
-              <span class="helpKey"><kbd class="noItalic">↑</kbd> <kbd class="noItalic">↓</kbd></span>
-              <span class="helpDescription">Seek Vertically</span>
-            </div>
-            <div class="helpKeyContainer">
-              <span class="helpKey"><span class="helpMotion">Scroll</span></span>
-              <span class="helpDescription">Seek Horizontally</span>
-            </div>
-            <div class="helpKeyContainer">
-              <span class="helpKey"><kbd class="shift">Shift</kbd> + <span class="helpMotion">Scroll</span></span>
+              <span class="helpKey"><kbd class="noItalic">↑</kbd> <kbd class="noItalic">↓</kbd> or <kbd class="shift">Shift</kbd> + <span class="helpMotion">Scroll</span></span>
               <span class="helpDescription">Seek Vertically</span>
             </div>
             <div class="helpKeyContainer">
@@ -129,10 +125,6 @@
             <div class="helpKeyContainer">
               <span class="helpKey"><kbd class="ctrl">Ctrl</kbd> + <kbd>P</kbd></span>
               <span class="helpDescription">Test</span>
-            </div>
-            <div class="helpKeyContainer">
-              <span class="helpKey"><kbd class="ctrl">Ctrl</kbd> + <kbd class="shift">Shift</kbd> + <kbd>Del</kbd></span>
-              <span class="helpDescription">Delete All</span>
             </div>
           </div>
         </div>
@@ -157,12 +149,10 @@
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
             <img src="https://img.icons8.com/ios-glyphs/48/000000/play.png" class="menuIcon clickable" onclick="test()" />
             <img src="https://img.icons8.com/ios-glyphs/48/000000/save.png" class="menuIcon clickable" onclick="save()" />
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/delete.png" class="menuIcon clickable" onclick="deleteAll()" />
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/metronome.png" class="menuIcon clickable" onclick="toggleMetronome()" />
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/grid.png" class="menuIcon clickable menuSelected" onclick="toggleGrid()" />
             <img src="https://img.icons8.com/ios-glyphs/48/000000/magnet.png" class="menuIcon clickable menuSelected" onclick="toggleMagnet()" />
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/coordinate-system.png" class="menuIcon clickable menuSelected" onclick="toggleExplain()" />
+            <img src="https://img.icons8.com/ios-glyphs/48/000000/grid.png" class="menuIcon clickable menuSelected" onclick="toggleGrid()" />
+            <img src="https://img.icons8.com/ios-glyphs/48/000000/metronome.png" class="menuIcon clickable" onclick="toggleMetronome()" />
           </div>
           <div id="toolContainer">
             <img src="https://img.icons8.com/ios-glyphs/48/000000/copy.png" class="toolIcon clickable" onclick="elementCopy()" />
