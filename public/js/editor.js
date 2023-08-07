@@ -1277,7 +1277,20 @@ const cntRender = () => {
         p[1] = (mouseX - 80) / 20;
       }
       if (p[0] == 0 && p[1] == 0) {
-        drawNote(100, magnetToggle ? mouseX - (mouseX % 5) : mouseX, magnetToggle ? mouseY - (mouseY % 5) : mouseY, true, selectedValue, 1, 0);
+        if (circleToggle && selectedCntElement.v1 === 0) {
+          const radius = cntCanvas.width / 10;
+          const noteX = (cntCanvas.width / 200) * (pattern.patterns[selectedCntElement.i].x + 100);
+          const noteY = (cntCanvas.height / 200) * (pattern.patterns[selectedCntElement.i].y + 100);
+          const difX = noteX - (cntCanvas.width / 200) * (mouseX + 100);
+          const difY = noteY - (cntCanvas.height / 200) * (mouseY + 100);
+          const distance = Math.sqrt(difX * difX + difY * difY) + radius / 2;
+          const angle = calcAngleDegrees(difX, difY) + 180;
+          const newDistance = distance - (distance % radius);
+          const newX = ((noteX + newDistance * getCos(angle)) / cntCanvas.width) * 200 - 100;
+          const newY = ((noteY + newDistance * getSin(angle)) / cntCanvas.height) * 200 - 100;
+          drawNote(100, Math.round(newX), Math.round(newY), true, selectedValue, 1, 0);
+        } else if (magnetToggle) drawNote(100, mouseX - (mouseX % 5), mouseY - (mouseY % 5), true, selectedValue, 1, 0);
+        else drawNote(100, mouseX, mouseY, true, selectedValue, 1, 0);
       } else {
         if (selectedValue > 1) selectedValue = 0;
         if (p[1] == 0) {
@@ -2870,6 +2883,12 @@ const changeTempo = (e) => {
     metronomeLimit = Number(e.value);
   }
   pattern.information.tempo = Number(e.value);
+};
+
+const toggleCircle = () => {
+  if (circleToggle) document.getElementsByClassName("menuIcon")[10].classList.remove("menuSelected");
+  else document.getElementsByClassName("menuIcon")[10].classList.add("menuSelected");
+  circleToggle = !circleToggle;
 };
 
 const toggleMetronome = () => {
