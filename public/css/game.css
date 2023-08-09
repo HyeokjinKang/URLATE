@@ -317,16 +317,13 @@ p {
 }
 
 #headerLeft {
+  margin-left: 5vw;
   height: 100%;
   width: 50vw;
   display: flex;
   text-align: left;
   align-items: center;
   justify-content: flex-start;
-  background-image: url("/images/parts/elements/namespace_pure.png");
-  background-repeat: no-repeat;
-  background-position: left center;
-  background-size: 19vw auto;
 }
 
 #headerRight {
@@ -340,10 +337,31 @@ p {
 }
 
 #name {
-  color: white;
-  padding-left: 5vw;
-  font-size: 3vh;
-  margin-top: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #000;
+  font-size: 2.5vh;
+  opacity: 0;
+  transition-duration: 0.5s;
+  transition-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+#name:hover {
+  padding-left: 0.5vw;
+  opacity: 1;
+}
+
+#profilePic:hover ~ #name {
+  padding-left: 0.5vw;
+  opacity: 1;
+}
+
+#profilePic {
+  cursor: pointer;
+  height: 5vh;
+  border-radius: 5vh;
+  border: 1px solid #ddd;
+  box-shadow: 0 0 1vw rgba(20, 20, 20, 0.1);
 }
 
 #line {

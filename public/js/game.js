@@ -54,6 +54,7 @@ let storeSong;
 let display = -1;
 let userid;
 let username = "";
+let picture;
 let analyser, dataArray;
 let canvas = document.getElementById("renderer");
 let ctx = canvas.getContext("2d");
@@ -506,6 +507,8 @@ document.addEventListener("DOMContentLoaded", () => {
               username = data.nickname;
               userid = data.userid;
               tutorial = data.tutorial;
+              picture = data.picture;
+              document.getElementById("profilePic").src = picture;
               document.getElementById("name").textContent = username;
               document.getElementById("optionName").textContent = username;
               if (lang == "ko") {
