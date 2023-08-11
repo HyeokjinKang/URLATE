@@ -11,7 +11,7 @@
     "build": "tsc",
     "auto-build": "tsc-watch",
     "start": "supervisor dist/index.js",
-    "obfuscate": "javascript-obfuscator public/js/ --output public/js/ --debug-protection true --disable-console-output true --domain-lock 'urlate.coupy.dev' --domain-lock-redirect-url 'urlate.coupy.dev' --numbers-to-expressions true --self-defending true"
+    "obfuscate": "javascript-obfuscator public/js/ --output public/js/ --debug-protection false --disable-console-output false --domain-lock 'urlate.coupy.dev' --domain-lock-redirect-url 'urlate.coupy.dev' --numbers-to-expressions true --self-defending true"
   },
   "author": "Team Croissant",
   "license": "MIT",
