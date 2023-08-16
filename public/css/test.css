@@ -323,7 +323,7 @@ body {
 
 #scoreDecorations {
   pointer-events: none;
-  background-image: url("/images/backgrounds/decorations.png");
+  background-image: url("/images/backgrounds/decorations.webp");
   position: fixed;
   top: 0;
   left: 0;

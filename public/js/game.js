@@ -593,9 +593,9 @@ const tracksUpdate = () => {
                   ${settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name}
                   ${
                     tracks[i].type == 1
-                      ? "<img src='/images/parts/graphicIcons/track_advanced.png' class='songSelectionIcon'>"
+                      ? "<img src='/images/parts/graphicIcons/track_advanced.webp' class='songSelectionIcon'>"
                       : tracks[i].type == 2
-                      ? "<img src='/images/parts/graphicIcons/track_dlc.png' class='songSelectionIcon'>"
+                      ? "<img src='/images/parts/graphicIcons/track_dlc.webp' class='songSelectionIcon'>"
                       : ""
                   }
                 </div>
@@ -768,14 +768,14 @@ const songSelected = (n, refreshed, seek) => {
     fontSize -= 0.5;
   }
   document.getElementById("selectArtist").textContent = tracks[n].producer;
-  document.getElementById("selectAlbum").src = `${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.png`;
-  document.getElementById("CPLAlbum").src = `${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.png`;
+  document.getElementById("selectAlbum").src = `${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.webp`;
+  document.getElementById("CPLAlbum").src = `${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.webp`;
   if (isOfficial) {
     for (let i = 0; i <= 2; i++) {
       document.getElementsByClassName("difficultyNumber")[i].textContent = JSON.parse(tracks[n].difficulty)[i];
     }
   }
-  document.getElementById("selectBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.png")`;
+  document.getElementById("selectBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.webp")`;
   setTimeout(
     () => {
       let underLimit = window.innerHeight * 0.09 * (n + 1);
@@ -1025,7 +1025,7 @@ const gameLoaded = () => {
   animationLooper();
   tracks.forEach((e) => {
     const img = new Image();
-    img.src = `${cdn}/albums/${settings.display.albumRes}/${e.fileName}.png`;
+    img.src = `${cdn}/albums/${settings.display.albumRes}/${e.fileName}.webp`;
   });
 };
 

@@ -168,11 +168,11 @@ const initialize = (isFirstCalled) => {
         document.getElementById("authorNamespace").textContent = pattern.information.author;
         document.getElementById("scoreTitle").textContent = "Tutorial";
         document.getElementById("title").textContent = "Tutorial";
-        document.getElementById("albumContainer").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
-        document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
-        document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
-        document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
-        albumImg.src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.png`;
+        document.getElementById("albumContainer").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
+        document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
+        document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
+        document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
+        albumImg.src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.webp`;
         if (pattern.background.type) {
           lottieLoad();
         }
@@ -251,11 +251,11 @@ const lottieSet = () => {
   switch (pattern.background.type) {
     case 0: //Image
       canvasBackground.getElementsByTagName("canvas")[0].style.display = "none";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
+      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
       break;
     case 1: //Image & BGA
       canvasBackground.getElementsByTagName("canvas")[0].style.display = "initial";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.png")`;
+      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
       break;
     case 2: //BGA
       canvasBackground.getElementsByTagName("canvas")[0].style.display = "initial";
@@ -1199,8 +1199,8 @@ const calculateResult = () => {
   } else {
     rank = "F";
   }
-  rankImg.src = `/images/parts/elements/${rank}.png`;
-  document.getElementById("scoreInfoRank").style.setProperty("--background", `url('/images/parts/elements/${rank}back.png')`);
+  rankImg.src = `/images/parts/elements/${rank}.webp`;
+  document.getElementById("scoreInfoRank").style.setProperty("--background", `url('/images/parts/elements/${rank}back.webp')`);
   setTimeout(() => {
     document.getElementById("componentCanvas").style.opacity = "0";
   }, 500);

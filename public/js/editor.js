@@ -355,7 +355,7 @@ const songSelected = (isLoaded, withoutSong) => {
   document.getElementById("percentage").innerText = "100%";
   rate = 1;
   let background = new URLSearchParams(window.location.search).get("background");
-  if (background !== "0") canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[songSelectBox.selectedIndex].fileName}.png")`;
+  if (background !== "0") canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[songSelectBox.selectedIndex].fileName}.webp")`;
   document.getElementById("songSelectionContainer").style.display = "none";
   document.getElementById("initialScreenContainer").style.display = "none";
   document.getElementById("editorMainContainer").style.display = "initial";
@@ -2854,11 +2854,11 @@ const lottieSet = () => {
   switch (lottieInitBox.value) {
     case "0": //Image
       canvasBackground.getElementsByTagName("svg")[0].style.display = "none";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[songSelectBox.selectedIndex].fileName}.png")`;
+      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[songSelectBox.selectedIndex].fileName}.webp")`;
       break;
     case "1": //Image & BGA
       canvasBackground.getElementsByTagName("svg")[0].style.display = "initial";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[songSelectBox.selectedIndex].fileName}.png")`;
+      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[songSelectBox.selectedIndex].fileName}.webp")`;
       break;
     case "2": //BGA
       canvasBackground.getElementsByTagName("svg")[0].style.display = "initial";

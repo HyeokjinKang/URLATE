@@ -11,7 +11,7 @@
 body {
   background-size: cover;
   background-position: center;
-  background-image: url("/images/backgrounds/main.png");
+  background-image: url("/images/backgrounds/main.webp");
   user-select: none;
   margin: 0;
   padding: 0;
@@ -231,7 +231,7 @@ p {
   justify-content: center;
   width: 100vw;
   height: 100vh;
-  background-image: url("/images/backgrounds/loading.png");
+  background-image: url("/images/backgrounds/loading.webp");
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
@@ -379,7 +379,7 @@ p {
   opacity: 0;
   width: 100vw;
   height: 100vh;
-  background-image: url("/images/backgrounds/track.png");
+  background-image: url("/images/backgrounds/track.webp");
   background-repeat: no-repeat;
   overflow-x: hidden;
   overflow-y: hidden;
@@ -454,7 +454,7 @@ p {
 #infoContainer {
   color: #333;
   background-color: #fff;
-  background-image: url("/images/backgrounds/option_decorations.png");
+  background-image: url("/images/backgrounds/option_decorations.webp");
   background-position: center bottom;
   background-size: cover;
   background-attachment: fixed;
@@ -568,32 +568,32 @@ p {
 
 .tumblbug1 {
   height: 5vw;
-  background-image: url("/images/credits/tumblbug_1.png");
+  background-image: url("/images/credits/tumblbug_1.webp");
 }
 
 .tumblbug2 {
   height: 5vw;
-  background-image: url("/images/credits/tumblbug_2.png");
+  background-image: url("/images/credits/tumblbug_2.webp");
 }
 
 .tumblbug3 {
   height: 5vw;
-  background-image: url("/images/credits/tumblbug_3.png");
+  background-image: url("/images/credits/tumblbug_3.webp");
 }
 
 .tumblbug4 {
   height: 5vw;
-  background-image: url("/images/credits/tumblbug_4.png");
+  background-image: url("/images/credits/tumblbug_4.webp");
 }
 
 .tumblbug5 {
   height: 5vw;
-  background-image: url("/images/credits/tumblbug_5.png");
+  background-image: url("/images/credits/tumblbug_5.webp");
 }
 
 .tumblbug6 {
   height: 5vw;
-  background-image: url("/images/credits/tumblbug_6.png");
+  background-image: url("/images/credits/tumblbug_6.webp");
 }
 
 .profileHover:hover {
@@ -601,11 +601,11 @@ p {
 }
 
 #profileCoupy {
-  background-image: url("/images/credits/coupy.png");
+  background-image: url("/images/credits/coupy.webp");
 }
 
 #profileAlta {
-  background-image: url("/images/credits/altari.png");
+  background-image: url("/images/credits/altari.webp");
 }
 
 #profileShd {
@@ -613,51 +613,23 @@ p {
 }
 
 #profileGreenstar {
-  background-image: url("/images/credits/greenstar.png");
+  background-image: url("/images/credits/greenstar.webp");
 }
 
 #profileRanol {
-  background-image: url("/images/credits/ranol.png");
+  background-image: url("/images/credits/ranol.webp");
 }
 
 #profileKiwi {
   background-image: url("/images/credits/kiwiyou.jpg");
 }
 
-#profilePine {
-  background-image: url("/images/credits/pine.png");
-}
-
-#profileSkylight {
-  background-image: url("/images/credits/lightqp.png");
-}
-
-#profileJoon {
-  background-image: url("/images/credits/joon.png");
-}
-
 #profileHanu {
-  background-image: url("/images/credits/hanukoon.png");
+  background-image: url("/images/credits/hanukoon.webp");
 }
 
 #profileGeoplex {
-  background-image: url("/images/credits/geoplex.png");
-}
-
-#profileDanu {
-  background-image: url("/images/credits/danuel.jpg");
-}
-
-#profileViktor {
-  background-image: url("/images/credits/viktor.png");
-}
-
-#profileSaw {
-  background-image: url("/images/credits/saw.png");
-}
-
-#profileBasix {
-  background-image: url("/images/credits/basix.png");
+  background-image: url("/images/credits/geoplex.webp");
 }
 
 #infoProfileContainer {
@@ -833,7 +805,7 @@ p {
   align-items: flex-start;
   justify-content: center;
   background-color: #fff;
-  background-image: url("/images/backgrounds/advanced_decorations.png");
+  background-image: url("/images/backgrounds/advanced_decorations.webp");
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
@@ -864,7 +836,7 @@ p {
 
 #optionContainer {
   background-color: #fff;
-  background-image: url("/images/backgrounds/option_decorations.png");
+  background-image: url("/images/backgrounds/option_decorations.webp");
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
@@ -1660,7 +1632,7 @@ input[type="number"] {
   opacity: 0;
   z-index: 101;
   background-color: #fff;
-  background-image: url("/images/backgrounds/option_decorations.png");
+  background-image: url("/images/backgrounds/option_decorations.webp");
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
@@ -2288,7 +2260,7 @@ input[type="number"] {
 }
 
 #animContainer {
-  background-image: url("/images/backgrounds/main.png");
+  background-image: url("/images/backgrounds/main.webp");
   z-index: 0;
   pointer-events: none;
   display: flex;
