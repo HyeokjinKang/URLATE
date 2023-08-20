@@ -1064,6 +1064,15 @@
             <span class="profileMedalText">0</span>
           </div>
         </div>
+        <div class="profileContents">
+          <div class="profileContentsTitle">
+            <img src="/images/parts/icons/recent.svg" class="profileContentsTitleIcon" />
+            <span class="profileContentsTitleText"><%= __('recent') %></span>
+          </div>
+          <div id="profileRecentPlay">
+            <span class="nothingHere"><%= __('nothing_here') %></span>
+          </div>
+        </div>
       </div>
     </div>
     <div class="overlayContainer" id="overlayLoadingContainer">
@@ -1104,6 +1113,7 @@
       const notAvailable1 = "<%= __('not_available_1') %>";
       const notAvailable2 = "<%= __('not_available_2') %>";
       const alias = "<%= __('alias') %>".split(",");
+      const rating = "<%= __('rating') %>";
       if (lang == "en") document.body.style.letterSpacing = "-0.3px";
       let intro1load = 0;
       const intro1loaded = () => {

@@ -1364,6 +1364,7 @@ const profileUpdate = async (uid) => {
     if (recentPlay.length == 0) {
       document.getElementsByClassName("profileStatValue")[5].textContent = "-";
     } else {
+      document.getElementById("profileRecentPlay").innerHTML = "";
       fetch(`${api}/record/${recentPlay[0]}`, {
         method: "GET",
         credentials: "include",
@@ -1375,6 +1376,36 @@ const profileUpdate = async (uid) => {
             document.getElementsByClassName("profileStatValue")[5].textContent = `${recentDate.toLocaleDateString()}`;
           }
         });
+      for (let i = 0; i < recentPlay.length; i++) {
+        fetch(`${api}/record/${recentPlay[i]}`, {
+          method: "GET",
+          credentials: "include",
+        })
+          .then((res) => res.json())
+          .then((res) => {
+            if (res.result == "success") {
+              const data = res.results[0];
+              const song = tracks.find((e) => e.name == data.name);
+              const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
+              document.getElementById("profileRecentPlay").innerHTML += `<div class="recentPlayContainer">
+              <div class="recentPlayContainerLeft">
+                <span class="recentPlayDifficulty">${["EZ", "MID", "HARD"][data.difficulty]} ${difficulty}</span>
+                <img src="https://urlate-cdn.coupy.dev/albums/50/${song.fileName}.webp" class="recentPlayAlbum" />
+                <div class="recentPlayTitleContainer">
+                  <span class="recentPlayTitle">${settings.general.detailLang == "original" ? song.originalName : song.name}</span>
+                  <span class="recentPlayProducer">${song.producer}</span>
+                </div>
+              </div>
+              <div class="recentPlayContainerRight">
+                <span class="recentPlayDetail">${data.judge}</span>
+                <span class="recentPlayDetail">${numberWithCommas(Number(data.record))}</span>
+                <span class="recentPlayDetail">${Number(data.accuracy).toFixed(2)}%</span>
+                <span class="recentPlayRate">${rating} +${data.isBest ? (Math.round((Number(data.record) / 100000000) * Number(data.accuracy) * difficulty) / 100).toFixed(2) : "0.02"}</span>
+              </div>
+            </div>`;
+            }
+          });
+      }
     }
     document.getElementsByClassName("profileMedalText")[0].textContent = profile.ap;
     document.getElementsByClassName("profileMedalText")[1].textContent = profile.fc;

@@ -2868,6 +2868,7 @@ del {
 
 .profileContentsContainer {
   display: flex;
+  flex-direction: column;
   box-sizing: border-box;
   margin-left: 5vw;
   margin-right: 5vw;
@@ -2972,6 +2973,7 @@ del {
 }
 
 .profileStatValue {
+  letter-spacing: 0px;
   text-align: right;
 }
 
@@ -2984,7 +2986,7 @@ del {
 }
 
 .profileMedals {
-  height: 2.5vh;
+  height: 2vh;
   margin-right: 0.2vw;
 }
 
@@ -2993,4 +2995,105 @@ del {
   font-weight: 500;
   font-size: 1.5vh;
   margin-right: 0.5vw;
+}
+
+#profileRecentPlay {
+  margin-top: 1vh;
+  width: 100%;
+}
+
+.recentPlayContainer::before {
+  z-index: -1;
+  top: 0;
+  left: 0;
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 1px solid transparent;
+  background-image: linear-gradient(#000, #000), linear-gradient(60deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.4) 10%, rgba(255, 255, 255, 0.4) 90%, rgba(255, 255, 255, 1) 100%);
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+  border-radius: 5px;
+  box-sizing: border-box;
+  mix-blend-mode: color-dodge;
+}
+
+.recentPlayContainer:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.recentPlayContainer {
+  letter-spacing: 0px;
+  font-size: 1.8vh;
+  margin-top: 1vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 5px;
+  padding: 1vh 2vw;
+  box-sizing: border-box;
+  color: white;
+  width: 100%;
+  transition-duration: 0.3s;
+}
+
+.recentPlayContainerLeft {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.recentPlayContainerRight {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.recentPlayDifficulty {
+  font-weight: 600;
+  width: 9vh;
+  text-align: left;
+}
+
+.recentPlayTitleContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.recentPlayAlbum {
+  height: 5vh;
+  margin-right: 10px;
+}
+
+.recentPlayTitle {
+  font-size: 2vh;
+  font-weight: 600;
+}
+
+.recentPlayProducer {
+  margin-top: 2px;
+  font-size: 1.5vh;
+}
+
+.recentPlayDetail {
+  margin-left: 1vw;
+}
+
+.recentPlayRate {
+  letter-spacing: -0.5px;
+  margin-left: 1vw;
+  font-weight: 600;
+}
+
+.nothingHere {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.5vh;
 }
