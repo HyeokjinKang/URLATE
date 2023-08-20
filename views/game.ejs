@@ -1027,6 +1027,15 @@
         <p class="infoText"><%= __('info16') %></p>
       </div>
     </div>
+    <div id="profileContainer" class="containers metropolis">
+      <div id="profileImageContainer"></div>
+      <img src="https://img.icons8.com/windows/32/ffffff/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+      <div id="profileNameContainer">
+        <img src="" id="profileImage" />
+        <span id="profileName"></span>
+        <span id="profileBio"></span>
+      </div>
+    </div>
     <div class="overlayContainer" id="overlayLoadingContainer">
       <span class="overlayContainerText"><%= __('loading') %></span>
       <br />
@@ -1063,6 +1072,7 @@
       const speed = "<%= __('speed') %>";
       const notAvailable1 = "<%= __('not_available_1') %>";
       const notAvailable2 = "<%= __('not_available_2') %>";
+      const alias = "<%= __('alias') %>".split(",");
       if (lang == "en") document.body.style.letterSpacing = "-0.3px";
       let intro1load = 0;
       const intro1loaded = () => {

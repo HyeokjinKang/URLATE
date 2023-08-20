@@ -1,4 +1,4 @@
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable-jp-dynamic-subset.css");
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable-jp.css");
 @import url("metropolis.css");
 
 @-moz-document url-prefix() {
@@ -342,17 +342,20 @@ p {
   color: #000;
   font-size: 2.5vh;
   opacity: 0;
+  transition-delay: 0.5s;
   transition-duration: 0.5s;
   transition-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 #name:hover {
-  padding-left: 0.5vw;
+  transition-delay: 0s;
+  padding-left: 1vw;
   opacity: 1;
 }
 
 #profilePic:hover ~ #name {
-  padding-left: 0.5vw;
+  transition-delay: 0s;
+  padding-left: 1vw;
   opacity: 1;
 }
 
@@ -360,7 +363,7 @@ p {
   cursor: pointer;
   height: 5vh;
   border-radius: 5vh;
-  border: 1px solid #ddd;
+  border: 2px solid white;
   box-shadow: 0 0 1vw rgba(20, 20, 20, 0.1);
 }
 
@@ -2195,9 +2198,9 @@ input[type="number"] {
   z-index: 300;
 }
 
-.overlayLoadingContainerText {
+.overlayContainerText {
   color: white;
-  font-size: 3vh;
+  font-size: 2vh;
   font-weight: 500;
 }
 
@@ -2818,4 +2821,52 @@ del {
   line-height: 2;
   font-size: 2vh;
   font-weight: 500;
+}
+
+#profileContainer {
+  background-color: black;
+}
+
+#profileImageContainer {
+  z-index: -1;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  filter: blur(10px);
+  opacity: 0.5;
+  transform: scale(1.05);
+}
+
+#profileNameContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  padding-left: 5vw;
+  margin-top: 5vh;
+  margin-bottom: 5vh;
+}
+
+#profileName {
+  color: white;
+  font-weight: 600;
+  font-size: 2.5vh;
+  margin-left: 1vw;
+}
+
+#profileImage {
+  border-radius: 6vh;
+  height: 5vh;
+  border: 2px solid #fffa;
+}
+
+#profileBio {
+  color: white;
+  margin-left: 0.5vw;
 }

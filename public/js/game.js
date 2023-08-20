@@ -986,6 +986,10 @@ const gameLoaded = () => {
     //dev purpose
     menuSelected(3);
     themeSong.play();
+  } else if (iniMode == 3) {
+    //dev purpose
+    profileScreen();
+    themeSong.play();
   } else if (display == 0 && songSelection == -1) {
     themeSong.play();
   }
@@ -1063,6 +1067,15 @@ const optionScreen = () => {
   lottieAnim.pause();
   document.getElementById("optionContainer").style.display = "block";
   document.getElementById("optionContainer").classList.add("fadeIn");
+};
+
+const profileScreen = () => {
+  display = 15;
+  lottieAnim.pause();
+  document.getElementById("profileContainer").style.display = "block";
+  document.getElementById("profileContainer").classList.add("fadeIn");
+  loadingOverlayShow();
+  profileUpdate(userid);
 };
 
 const displayClose = () => {
@@ -1244,6 +1257,14 @@ const displayClose = () => {
         document.getElementById("CPLContainer").style.display = "none";
       }, 500);
       return;
+    } else if (display == 15) {
+      //PROFILE
+      document.getElementById("profileContainer").classList.remove("fadeIn");
+      document.getElementById("profileContainer").classList.add("fadeOut");
+      setTimeout(() => {
+        document.getElementById("profileContainer").classList.remove("fadeOut");
+        document.getElementById("profileContainer").style.display = "none";
+      }, 500);
     }
     lottieAnim.play();
     display = 0;
@@ -1316,6 +1337,29 @@ const menuSelected = (n) => {
     document.getElementById("storeContainer").classList.add("fadeIn");
     display = 8;
   }
+};
+
+const profileUpdate = async (uid) => {
+  const res = await fetch(`${api}/profile/${uid}`, {
+    method: "GET",
+    credentials: "include",
+  });
+  let profile = await res.json();
+  if (profile.result == "success") {
+    profile = profile.user;
+    document.getElementById("profileImageContainer").style.backgroundImage = `url("${profile.background}")`;
+    document.getElementById("profileImage").src = profile.picture;
+    document.getElementById("profileName").textContent = profile.nickname;
+    document.getElementById("profileBio").textContent = `| ${alias[profile.alias]}`;
+    const containers = document.getElementsByClassName("profileContentsContainer");
+    for (e of containers) {
+      e.getElementsByClassName("profileContentsBackground")[0].style.height = e.getElementsByClassName("profileContents")[0].clientHeight + "px";
+    }
+  } else {
+    alert(`Error occured.\n${profile.error}`);
+    console.error(`Error occured.\n${profile.error}`);
+  }
+  loadingOverlayHide();
 };
 
 const fadeRate = (track, start, end, duration, time) => {
