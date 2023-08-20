@@ -46,8 +46,8 @@
     </div>
     <div id="header">
       <div id="headerLeft">
-        <img src="" id="profilePic" />
-        <span id="name" class="metropolis">USERNAME</span>
+        <img src="" id="profilePic" onclick="profileScreen()" />
+        <span id="name" class="metropolis" onclick="profileScreen()">USERNAME</span>
       </div>
       <div id="headerRight">
         <img src="https://img.icons8.com/windows/64/000000/info.png" class="icon clickable" onclick="infoScreen()" />
@@ -1035,6 +1035,29 @@
         <span id="profileName"></span>
         <span id="profileBio"></span>
       </div>
+      <div class="profileContentsContainer">
+        <div class="profileContentsBackground"></div>
+        <div class="profileContents">
+          <div class="profileContentsTitle">
+            <img src="/images/parts/icons/rate.svg" class="profileContentsTitleIcon" />
+            <span class="profileContentsTitleText"><%= __('rating') %></span>
+          </div>
+          <div id="profileRank">#0</div>
+          <div id="profileRow">
+            <div id="profileChart">
+              <canvas id="rankChart"></canvas>
+            </div>
+            <div id="profileStat">
+              <div class="profileStatElements"><span class="profileStatTitle"><%= __('rating') %></span><span class="profileStatValue"></span></div>
+              <div class="profileStatElements"><span class="profileStatTitle"><%= __('score_sum') %></span><span class="profileStatValue"></span></div>
+              <div class="profileStatElements"><span class="profileStatTitle"><%= __('average_accuracy') %></span><span class="profileStatValue"></span></div>
+              <div class="profileStatElements"><span class="profileStatTitle"><%= __('playtime') %></span><span class="profileStatValue"></span></div>
+              <div class="profileStatElements"><span class="profileStatTitle"><%= __('number_of_1th') %></span><span class="profileStatValue"></span></div>
+              <div class="profileStatElements"><span class="profileStatTitle"><%= __('last_played') %></span><span class="profileStatValue"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="overlayContainer" id="overlayLoadingContainer">
       <span class="overlayContainerText"><%= __('loading') %></span>
@@ -1055,6 +1078,7 @@
     <div id="animContainer" class="widthAnim"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.2/howler.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       const cdn = "<%= cdn %>";
       const url = "<%= url %>";

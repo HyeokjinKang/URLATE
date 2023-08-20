@@ -2866,6 +2866,108 @@ del {
   border: 2px solid #fffa;
 }
 
+.profileContentsContainer {
+  display: flex;
+  box-sizing: border-box;
+  margin-left: 5vw;
+  margin-right: 5vw;
+  margin-top: 2vh;
+}
+
+.profileContentsBackground {
+  width: 100%;
+  backdrop-filter: blur(20px) contrast(0.9) brightness(0.9);
+  border: 1px solid transparent;
+  background-image: linear-gradient(#444, #444), linear-gradient(60deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.4) 10%, rgba(255, 255, 255, 0.4) 90%, rgba(255, 255, 255, 1) 100%);
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  mix-blend-mode: color-dodge;
+  transition: 0.3s;
+}
+
+.profileContents:hover {
+  backdrop-filter: brightness(0.9);
+}
+
+.profileContents {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  border-radius: 5px;
+  padding: 2vh 3vw;
+  box-sizing: border-box;
+  color: white;
+  position: absolute;
+  width: 90vw;
+  transition-duration: 0.3s;
+}
+
+.profileContentsTitle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.profileContentsTitleIcon {
+  height: 2vh;
+  margin-right: 4px;
+}
+
+.profileContentsTitleText {
+  font-size: 1.8vh;
+}
+
+#profileRank {
+  margin-top: 8px;
+  font-size: 3vh;
+  font-weight: 700;
+}
+
+#profileRow {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+#profileChart {
+  box-sizing: border-box;
+  width: 85%;
+  padding-right: 1vw;
+}
+
+#profileStat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  width: 15%;
+}
+
+.profileStatElements {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.5vh;
+  font-weight: 300;
+  margin: 3px 0;
+}
+
+.profileStatElements:nth-child(1) {
+  font-weight: 600;
+}
+
 #profileBio {
   color: white;
   margin-left: 0.5vw;

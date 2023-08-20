@@ -124,6 +124,8 @@ let offsetSong = new Howl({
 
 let scrollTimer = 0;
 
+let chartVar;
+
 const lottieResize = () => {
   let widthWidth = window.innerWidth;
   let heightWidth = (window.innerHeight / 9) * 16;
@@ -1351,6 +1353,76 @@ const profileUpdate = async (uid) => {
     document.getElementById("profileImage").src = profile.picture;
     document.getElementById("profileName").textContent = profile.nickname;
     document.getElementById("profileBio").textContent = `| ${alias[profile.alias]}`;
+    document.getElementById("profileRank").textContent = `#${numberWithCommas(Number(profile.rank))}`;
+    document.getElementById("profileChart").style.height = document.getElementById("profileStat").clientHeight + "px";
+    document.getElementsByClassName("profileStatValue")[0].textContent = Number(profile.rating).toFixed(2);
+    document.getElementsByClassName("profileStatValue")[1].textContent = numberWithCommas(Number(profile.scoreSum));
+    document.getElementsByClassName("profileStatValue")[2].textContent = `${Number(profile.accuracy).toFixed(2)}%`;
+    document.getElementsByClassName("profileStatValue")[3].textContent = profile.playtime;
+    document.getElementsByClassName("profileStatValue")[4].textContent = profile["1thNum"];
+    //recentplay
+    let recentPlay = JSON.parse(profile.recentPlay);
+    if (recentPlay.length == 0) {
+      document.getElementsByClassName("profileStatValue")[5].textContent = "-";
+    } else {
+      //TODO
+    }
+    let labels = [];
+    let date = Date.now();
+    let rankHistory = JSON.parse(profile.rankHistory);
+    for (let i = 0; i <= rankHistory.length; i++) {
+      let day = new Date(date - 86400000 * i);
+      if (rankHistory.length == 0) labels.push(`${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate() + 1}`.padStart(2, "0")}`);
+      labels.push(`${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate() + 1}`.padStart(2, "0")}`);
+    }
+    labels.reverse();
+    let data = [...rankHistory, profile.rank];
+    if (rankHistory.length == 0) data.push(profile.rank);
+    const chart = document.getElementById("rankChart");
+    const chartCtx = chart.getContext("2d");
+    let gradientFill = chartCtx.createLinearGradient(0, 0, 0, document.getElementById("profileChart").clientHeight);
+    gradientFill.addColorStop(0, "rgba(255, 255, 255, 0.5)");
+    gradientFill.addColorStop(1, "rgba(255, 255, 255, 0)");
+    if (chartVar) chartVar.destroy();
+    chartVar = new Chart(chart, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            data: data,
+            borderColor: "#ffffff",
+            pointRadius: 0,
+            borderWidth: 2,
+            tension: 0.1,
+            fill: "start",
+            backgroundColor: gradientFill,
+          },
+        ],
+      },
+      options: {
+        maintainAspectRatio: false,
+        interaction: {
+          intersect: false,
+          axis: "x",
+          mode: "nearest",
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+        scales: {
+          x: {
+            display: false,
+          },
+          y: {
+            display: false,
+            reverse: true,
+          },
+        },
+      },
+    });
     const containers = document.getElementsByClassName("profileContentsContainer");
     for (e of containers) {
       e.getElementsByClassName("profileContentsBackground")[0].style.height = e.getElementsByClassName("profileContents")[0].clientHeight + "px";
