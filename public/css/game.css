@@ -2871,31 +2871,30 @@ del {
   box-sizing: border-box;
   margin-left: 5vw;
   margin-right: 5vw;
-  margin-top: 2vh;
 }
 
-.profileContentsBackground {
+.profileContents::before {
+  z-index: -1;
+  top: 0;
+  left: 0;
+  content: "";
+  position: absolute;
   width: 100%;
+  height: 100%;
   backdrop-filter: blur(20px) contrast(0.9) brightness(0.9);
   border: 1px solid transparent;
   background-image: linear-gradient(#444, #444), linear-gradient(60deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.4) 10%, rgba(255, 255, 255, 0.4) 90%, rgba(255, 255, 255, 1) 100%);
   background-origin: border-box;
   background-clip: content-box, border-box;
   border-radius: 5px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
   box-sizing: border-box;
   mix-blend-mode: color-dodge;
-  transition: 0.3s;
-}
-
-.profileContents:hover {
-  backdrop-filter: brightness(0.9);
 }
 
 .profileContents {
+  margin-top: 2vh;
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -2904,7 +2903,6 @@ del {
   padding: 2vh 3vw;
   box-sizing: border-box;
   color: white;
-  position: absolute;
   width: 90vw;
   transition-duration: 0.3s;
 }
@@ -2971,4 +2969,28 @@ del {
 #profileBio {
   color: white;
   margin-left: 0.5vw;
+}
+
+.profileStatValue {
+  text-align: right;
+}
+
+#medalContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: -2.5vh;
+}
+
+.profileMedals {
+  height: 2.5vh;
+  margin-right: 0.2vw;
+}
+
+.profileMedalText {
+  color: white;
+  font-weight: 500;
+  font-size: 1.5vh;
+  margin-right: 0.5vw;
 }

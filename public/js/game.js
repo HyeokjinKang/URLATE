@@ -1360,13 +1360,25 @@ const profileUpdate = async (uid) => {
     document.getElementsByClassName("profileStatValue")[2].textContent = `${Number(profile.accuracy).toFixed(2)}%`;
     document.getElementsByClassName("profileStatValue")[3].textContent = profile.playtime;
     document.getElementsByClassName("profileStatValue")[4].textContent = profile["1thNum"];
-    //recentplay
     let recentPlay = JSON.parse(profile.recentPlay);
     if (recentPlay.length == 0) {
       document.getElementsByClassName("profileStatValue")[5].textContent = "-";
     } else {
-      //TODO
+      fetch(`${api}/record/${recentPlay[0]}`, {
+        method: "GET",
+        credentials: "include",
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          if (res.result == "success") {
+            const recentDate = new Date(res.results[0].date);
+            document.getElementsByClassName("profileStatValue")[5].textContent = `${recentDate.toLocaleDateString()}`;
+          }
+        });
     }
+    document.getElementsByClassName("profileMedalText")[0].textContent = profile.ap;
+    document.getElementsByClassName("profileMedalText")[1].textContent = profile.fc;
+    document.getElementsByClassName("profileMedalText")[2].textContent = profile.clear;
     let labels = [];
     let date = Date.now();
     let rankHistory = JSON.parse(profile.rankHistory);
@@ -1423,10 +1435,6 @@ const profileUpdate = async (uid) => {
         },
       },
     });
-    const containers = document.getElementsByClassName("profileContentsContainer");
-    for (e of containers) {
-      e.getElementsByClassName("profileContentsBackground")[0].style.height = e.getElementsByClassName("profileContents")[0].clientHeight + "px";
-    }
   } else {
     alert(`Error occured.\n${profile.error}`);
     console.error(`Error occured.\n${profile.error}`);
