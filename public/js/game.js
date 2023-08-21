@@ -1378,7 +1378,7 @@ const profileUpdate = async (uid) => {
           }
         });
       for (let i = 0; i < recentPlay.length; i++) {
-        fetch(`${api}/record/${recentPlay[i]}`, {
+        await fetch(`${api}/record/${recentPlay[i]}`, {
           method: "GET",
           credentials: "include",
         })
