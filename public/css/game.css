@@ -1,4 +1,4 @@
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable-jp-dynamic-subset.css");
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable-jp.css");
 @import url("metropolis.css");
 
 @-moz-document url-prefix() {
@@ -342,17 +342,20 @@ p {
   color: #000;
   font-size: 2.5vh;
   opacity: 0;
+  transition-delay: 0.5s;
   transition-duration: 0.5s;
   transition-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 #name:hover {
-  padding-left: 0.5vw;
+  transition-delay: 0s;
+  padding-left: 1vw;
   opacity: 1;
 }
 
 #profilePic:hover ~ #name {
-  padding-left: 0.5vw;
+  transition-delay: 0s;
+  padding-left: 1vw;
   opacity: 1;
 }
 
@@ -360,7 +363,7 @@ p {
   cursor: pointer;
   height: 5vh;
   border-radius: 5vh;
-  border: 1px solid #ddd;
+  border: 2px solid white;
   box-shadow: 0 0 1vw rgba(20, 20, 20, 0.1);
 }
 
@@ -2195,9 +2198,9 @@ input[type="number"] {
   z-index: 300;
 }
 
-.overlayLoadingContainerText {
+.overlayContainerText {
   color: white;
-  font-size: 3vh;
+  font-size: 2vh;
   font-weight: 500;
 }
 
@@ -2818,4 +2821,280 @@ del {
   line-height: 2;
   font-size: 2vh;
   font-weight: 500;
+}
+
+#profileContainer {
+  background-color: black;
+}
+
+#profileImageContainer {
+  z-index: -1;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  filter: blur(10px);
+  opacity: 0.5;
+  transform: scale(1.05);
+}
+
+#profileNameContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  padding-left: 5vw;
+  margin-top: 5vh;
+  margin-bottom: 5vh;
+}
+
+#profileName {
+  color: white;
+  font-weight: 600;
+  font-size: 2.5vh;
+  margin-left: 1vw;
+}
+
+#profileImage {
+  border-radius: 6vh;
+  height: 5vh;
+  border: 2px solid #fffa;
+}
+
+.profileContentsContainer {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  margin-left: 5vw;
+  margin-right: 5vw;
+}
+
+.profileContents::before {
+  z-index: -1;
+  top: 0;
+  left: 0;
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(20px) contrast(0.9) brightness(0.9);
+  border: 1px solid transparent;
+  background-image: linear-gradient(#444, #444), linear-gradient(60deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.4) 10%, rgba(255, 255, 255, 0.4) 90%, rgba(255, 255, 255, 1) 100%);
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+  border-radius: 5px;
+  box-sizing: border-box;
+  mix-blend-mode: color-dodge;
+}
+
+.profileContents {
+  margin-top: 2vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  border-radius: 5px;
+  padding: 2vh 3vw;
+  box-sizing: border-box;
+  color: white;
+  width: 90vw;
+  transition-duration: 0.3s;
+}
+
+.profileContentsTitle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.profileContentsTitleIcon {
+  height: 2vh;
+  margin-right: 4px;
+}
+
+.profileContentsTitleText {
+  font-size: 1.8vh;
+}
+
+#profileRank {
+  margin-top: 8px;
+  font-size: 3vh;
+  font-weight: 700;
+}
+
+#profileRow {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+#profileChart {
+  box-sizing: border-box;
+  width: 85%;
+  padding-right: 1vw;
+}
+
+#profileStat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  width: 15%;
+}
+
+.profileStatElements {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.5vh;
+  font-weight: 300;
+  margin: 3px 0;
+}
+
+.profileStatElements:nth-child(1) {
+  font-weight: 600;
+}
+
+#profileBio {
+  color: white;
+  margin-left: 0.5vw;
+  font-size: 1.7vh;
+}
+
+.profileStatValue {
+  letter-spacing: 0px;
+  text-align: right;
+}
+
+#medalContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: -2.5vh;
+}
+
+.profileMedals {
+  height: 2vh;
+  margin-right: 0.2vw;
+}
+
+.profileMedalText {
+  color: white;
+  font-weight: 500;
+  font-size: 1.5vh;
+  margin-right: 0.5vw;
+}
+
+#profileRecentPlay {
+  margin-top: 1vh;
+  width: 100%;
+}
+
+.recentPlayContainer::before {
+  z-index: -1;
+  top: 0;
+  left: 0;
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 1px solid transparent;
+  background-image: linear-gradient(#000, #000), linear-gradient(60deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.2) 80%, rgba(255, 255, 255, 0.6) 100%);
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+  border-radius: 5px;
+  box-sizing: border-box;
+  mix-blend-mode: color-dodge;
+}
+
+.recentPlayContainer:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.recentPlayContainer {
+  letter-spacing: 0px;
+  font-size: 1.8vh;
+  margin-top: 1vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 5px;
+  padding: 1vh 2vw;
+  box-sizing: border-box;
+  color: white;
+  width: 100%;
+  transition-duration: 0.3s;
+}
+
+.recentPlayContainerLeft {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.recentPlayContainerRight {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.recentPlayDifficulty {
+  font-weight: 600;
+  width: 9vh;
+  text-align: left;
+}
+
+.recentPlayTitleContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.recentPlayAlbum {
+  height: 5vh;
+  margin-right: 10px;
+}
+
+.recentPlayTitle {
+  font-size: 2vh;
+  font-weight: 600;
+}
+
+.recentPlayProducer {
+  margin-top: 2px;
+  font-size: 1.5vh;
+}
+
+.recentPlayDetail {
+  margin-left: 1vw;
+}
+
+.recentPlayRate {
+  letter-spacing: -0.5px;
+  margin-left: 1vw;
+  font-weight: 600;
+}
+
+.nothingHere {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.5vh;
 }

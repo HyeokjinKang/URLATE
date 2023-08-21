@@ -124,6 +124,8 @@ let offsetSong = new Howl({
 
 let scrollTimer = 0;
 
+let chartVar;
+
 const lottieResize = () => {
   let widthWidth = window.innerWidth;
   let heightWidth = (window.innerHeight / 9) * 16;
@@ -986,6 +988,10 @@ const gameLoaded = () => {
     //dev purpose
     menuSelected(3);
     themeSong.play();
+  } else if (iniMode == 3) {
+    //dev purpose
+    profileScreen();
+    themeSong.play();
   } else if (display == 0 && songSelection == -1) {
     themeSong.play();
   }
@@ -1063,6 +1069,15 @@ const optionScreen = () => {
   lottieAnim.pause();
   document.getElementById("optionContainer").style.display = "block";
   document.getElementById("optionContainer").classList.add("fadeIn");
+};
+
+const profileScreen = () => {
+  display = 15;
+  lottieAnim.pause();
+  document.getElementById("profileContainer").style.display = "block";
+  document.getElementById("profileContainer").classList.add("fadeIn");
+  loadingOverlayShow();
+  profileUpdate(userid);
 };
 
 const displayClose = () => {
@@ -1244,6 +1259,14 @@ const displayClose = () => {
         document.getElementById("CPLContainer").style.display = "none";
       }, 500);
       return;
+    } else if (display == 15) {
+      //PROFILE
+      document.getElementById("profileContainer").classList.remove("fadeIn");
+      document.getElementById("profileContainer").classList.add("fadeOut");
+      setTimeout(() => {
+        document.getElementById("profileContainer").classList.remove("fadeOut");
+        document.getElementById("profileContainer").style.display = "none";
+      }, 500);
     }
     lottieAnim.play();
     display = 0;
@@ -1316,6 +1339,138 @@ const menuSelected = (n) => {
     document.getElementById("storeContainer").classList.add("fadeIn");
     display = 8;
   }
+};
+
+const profileUpdate = async (uid) => {
+  const res = await fetch(`${api}/profile/${uid}`, {
+    method: "GET",
+    credentials: "include",
+  });
+  let profile = await res.json();
+  if (profile.result == "success") {
+    let rank = Number(profile.rank);
+    profile = profile.user;
+    document.getElementById("profileImageContainer").style.backgroundImage = `url("${profile.background}")`;
+    document.getElementById("profileImage").src = profile.picture;
+    document.getElementById("profileName").textContent = profile.nickname;
+    document.getElementById("profileBio").textContent = `| ${alias[profile.alias]}`;
+    document.getElementById("profileRank").textContent = `#${numberWithCommas(rank)}`;
+    document.getElementById("profileChart").style.height = document.getElementById("profileStat").clientHeight + "px";
+    document.getElementsByClassName("profileStatValue")[0].textContent = (Number(profile.rating) / 100).toFixed(2);
+    document.getElementsByClassName("profileStatValue")[1].textContent = numberWithCommas(Number(profile.scoreSum));
+    document.getElementsByClassName("profileStatValue")[2].textContent = `${Number(profile.accuracy).toFixed(2)}%`;
+    document.getElementsByClassName("profileStatValue")[3].textContent = profile.playtime;
+    document.getElementsByClassName("profileStatValue")[4].textContent = profile["1stNum"];
+    let recentPlay = JSON.parse(profile.recentPlay);
+    if (recentPlay.length == 0) {
+      document.getElementsByClassName("profileStatValue")[5].textContent = "-";
+    } else {
+      document.getElementById("profileRecentPlay").innerHTML = "";
+      fetch(`${api}/record/${recentPlay[0]}`, {
+        method: "GET",
+        credentials: "include",
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          if (res.result == "success") {
+            const recentDate = new Date(res.results[0].date);
+            document.getElementsByClassName("profileStatValue")[5].textContent = `${recentDate.toLocaleDateString()}`;
+          }
+        });
+      for (let i = 0; i < recentPlay.length; i++) {
+        fetch(`${api}/record/${recentPlay[i]}`, {
+          method: "GET",
+          credentials: "include",
+        })
+          .then((res) => res.json())
+          .then((res) => {
+            if (res.result == "success") {
+              const data = res.results[0];
+              const song = tracks.find((e) => e.name == data.name);
+              const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
+              document.getElementById("profileRecentPlay").innerHTML += `<div class="recentPlayContainer">
+              <div class="recentPlayContainerLeft">
+                <span class="recentPlayDifficulty">${["EZ", "MID", "HARD"][data.difficulty]} ${difficulty}</span>
+                <img src="https://urlate-cdn.coupy.dev/albums/50/${song.fileName}.webp" class="recentPlayAlbum" />
+                <div class="recentPlayTitleContainer">
+                  <span class="recentPlayTitle">${settings.general.detailLang == "original" ? song.originalName : song.name}</span>
+                  <span class="recentPlayProducer">${song.producer}</span>
+                </div>
+              </div>
+              <div class="recentPlayContainerRight">
+                <span class="recentPlayDetail">${data.judge}</span>
+                <span class="recentPlayDetail">${numberWithCommas(Number(data.record))}</span>
+                <span class="recentPlayDetail">${Number(data.accuracy).toFixed(2)}%</span>
+                <span class="recentPlayRate">${rating} ${data.isBest ? `+${(Math.round((Number(data.record) / 100000000) * Number(data.accuracy) * difficulty) / 100).toFixed(2)}` : "-"}</span>
+              </div>
+            </div>`;
+            }
+          });
+      }
+    }
+    document.getElementsByClassName("profileMedalText")[0].textContent = profile.ap;
+    document.getElementsByClassName("profileMedalText")[1].textContent = profile.fc;
+    document.getElementsByClassName("profileMedalText")[2].textContent = profile.clear;
+    let labels = [];
+    let date = Date.now();
+    let rankHistory = JSON.parse(profile.rankHistory);
+    for (let i = 0; i <= rankHistory.length; i++) {
+      let day = new Date(date - 86400000 * i);
+      if (rankHistory.length == 0) labels.push(`${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate() + 1}`.padStart(2, "0")}`);
+      labels.push(`${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate() + 1}`.padStart(2, "0")}`);
+    }
+    let data = [rank, ...rankHistory];
+    if (rankHistory.length == 0) data.push(rank);
+    const chart = document.getElementById("rankChart");
+    const chartCtx = chart.getContext("2d");
+    let gradientFill = chartCtx.createLinearGradient(0, 0, 0, document.getElementById("profileChart").clientHeight);
+    gradientFill.addColorStop(0, "rgba(255, 255, 255, 0.5)");
+    gradientFill.addColorStop(1, "rgba(255, 255, 255, 0)");
+    if (chartVar) chartVar.destroy();
+    chartVar = new Chart(chart, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            data: data,
+            borderColor: "#ffffff",
+            pointRadius: 0,
+            borderWidth: 2,
+            tension: 0.1,
+            fill: "start",
+            backgroundColor: gradientFill,
+          },
+        ],
+      },
+      options: {
+        maintainAspectRatio: false,
+        interaction: {
+          intersect: false,
+          axis: "x",
+          mode: "nearest",
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+        scales: {
+          x: {
+            display: false,
+          },
+          y: {
+            display: false,
+            reverse: true,
+          },
+        },
+      },
+    });
+  } else {
+    alert(`Error occured.\n${profile.error}`);
+    console.error(`Error occured.\n${profile.error}`);
+  }
+  loadingOverlayHide();
 };
 
 const fadeRate = (track, start, end, duration, time) => {

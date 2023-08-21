@@ -46,8 +46,8 @@
     </div>
     <div id="header">
       <div id="headerLeft">
-        <img src="" id="profilePic" />
-        <span id="name" class="metropolis">USERNAME</span>
+        <img src="" id="profilePic" onclick="profileScreen()" />
+        <span id="name" class="metropolis" onclick="profileScreen()">USERNAME</span>
       </div>
       <div id="headerRight">
         <img src="https://img.icons8.com/windows/64/000000/info.png" class="icon clickable" onclick="infoScreen()" />
@@ -277,7 +277,7 @@
       <img src="/images/logos/URLATE_NO_CIRCLE.webp" id="infoLogo" />
       <br />
       <span id="license">
-        <span id="licenseMain">URLATE is under the MIT license.</span>
+        <span id="licenseMain">URLATE is under the CC-BY-NC-SA 4.0 license.</span>
         <br /><br />
         Copyright notices for resources included in the game are located at <a href="https://urlate.coupy.dev/info" target="_blank" class="link">urlate.coupy.dev/info</a>.
         <br />
@@ -745,7 +745,6 @@
           <span class="profileText">뜨로리</span>
         </div>
       </div>
-      <div id="infoLineContainer"><div id="infoLine"></div></div>
     </div>
     <div id="optionContainer" class="containers">
       <div id="offsetContiner" class="containers">
@@ -1027,6 +1026,54 @@
         <p class="infoText"><%= __('info16') %></p>
       </div>
     </div>
+    <div id="profileContainer" class="containers metropolis">
+      <div id="profileImageContainer"></div>
+      <img src="https://img.icons8.com/windows/32/ffffff/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+      <div id="profileNameContainer">
+        <img src="" id="profileImage" />
+        <span id="profileName"></span>
+        <span id="profileBio"></span>
+      </div>
+      <div class="profileContentsContainer">
+        <div class="profileContents">
+          <div class="profileContentsTitle">
+            <img src="/images/parts/icons/rate.svg" class="profileContentsTitleIcon" />
+            <span class="profileContentsTitleText"><%= __('rating') %></span>
+          </div>
+          <div id="profileRank">#0</div>
+          <div id="profileRow">
+            <div id="profileChart">
+              <canvas id="rankChart"></canvas>
+            </div>
+            <div id="profileStat">
+              <div class="profileStatElements"><span class="profileStatTitle"><%= __('rating') %></span><span class="profileStatValue"></span></div>
+              <div class="profileStatElements"><span class="profileStatTitle"><%= __('score_sum') %></span><span class="profileStatValue"></span></div>
+              <div class="profileStatElements"><span class="profileStatTitle"><%= __('average_accuracy') %></span><span class="profileStatValue"></span></div>
+              <div class="profileStatElements"><span class="profileStatTitle"><%= __('playtime') %></span><span class="profileStatValue"></span></div>
+              <div class="profileStatElements"><span class="profileStatTitle"><%= __('number_of_1th') %></span><span class="profileStatValue"></span></div>
+              <div class="profileStatElements"><span class="profileStatTitle"><%= __('last_played') %></span><span class="profileStatValue"></span></div>
+            </div>
+          </div>
+          <div id="medalContainer">
+            <img src="/images/parts/icons/AP.svg" class="profileMedals" />
+            <span class="profileMedalText">0</span>
+            <img src="/images/parts/icons/FC.svg" class="profileMedals" />
+            <span class="profileMedalText">0</span>
+            <img src="/images/parts/icons/CLEAR.svg" class="profileMedals" />
+            <span class="profileMedalText">0</span>
+          </div>
+        </div>
+        <div class="profileContents">
+          <div class="profileContentsTitle">
+            <img src="/images/parts/icons/recent.svg" class="profileContentsTitleIcon" />
+            <span class="profileContentsTitleText"><%= __('recent') %></span>
+          </div>
+          <div id="profileRecentPlay">
+            <span class="nothingHere"><%= __('nothing_here') %></span>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="overlayContainer" id="overlayLoadingContainer">
       <span class="overlayContainerText"><%= __('loading') %></span>
       <br />
@@ -1046,6 +1093,7 @@
     <div id="animContainer" class="widthAnim"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.2/howler.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       const cdn = "<%= cdn %>";
       const url = "<%= url %>";
@@ -1063,6 +1111,8 @@
       const speed = "<%= __('speed') %>";
       const notAvailable1 = "<%= __('not_available_1') %>";
       const notAvailable2 = "<%= __('not_available_2') %>";
+      const alias = "<%= __('alias') %>".split(",");
+      const rating = "<%= __('rating') %>";
       if (lang == "en") document.body.style.letterSpacing = "-0.3px";
       let intro1load = 0;
       const intro1loaded = () => {

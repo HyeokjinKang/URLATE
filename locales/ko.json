@@ -205,5 +205,14 @@
   "not_available_1": "이 난이도는 아직 패턴이 없습니다 :(",
   "not_available_2": "빠른 시일 내에 패턴을 개발하려 노력중이니 조금만 기다려주세요..!",
   "menu_volume": "음량은 Shift + 마우스휠로 조정할 수 있습니다.",
-  "rangeCopyAlert": "복사할 요소를 선택하세요."
+  "rangeCopyAlert": "복사할 요소를 선택하세요.",
+  "rating": "레이팅",
+  "score_sum": "점수 합산",
+  "average_accuracy": "평균 정확도",
+  "playtime": "플레이 횟수",
+  "number_of_1th": "1등을 기록한 횟수",
+  "last_played": "마지막 플레이",
+  "alias": "뉴비,Geoplex 팬,Greenstar 팬,mkhito 팬,Neko Hacker 팬,fusq 팬,Yunomi 팬,Synthion 팬,Kunaru 팬,Sakuzyo 팬",
+  "recent": "최근 플레이",
+  "nothing_here": "여긴.. 아무것도 없네요 ;-;"
 }
