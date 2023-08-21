@@ -1348,18 +1348,19 @@ const profileUpdate = async (uid) => {
   });
   let profile = await res.json();
   if (profile.result == "success") {
+    let rank = Number(profile.rank);
     profile = profile.user;
     document.getElementById("profileImageContainer").style.backgroundImage = `url("${profile.background}")`;
     document.getElementById("profileImage").src = profile.picture;
     document.getElementById("profileName").textContent = profile.nickname;
     document.getElementById("profileBio").textContent = `| ${alias[profile.alias]}`;
-    document.getElementById("profileRank").textContent = `#${numberWithCommas(Number(profile.rank))}`;
+    document.getElementById("profileRank").textContent = `#${numberWithCommas(rank)}`;
     document.getElementById("profileChart").style.height = document.getElementById("profileStat").clientHeight + "px";
-    document.getElementsByClassName("profileStatValue")[0].textContent = Number(profile.rating).toFixed(2);
+    document.getElementsByClassName("profileStatValue")[0].textContent = (Number(profile.rating) / 100).toFixed(2);
     document.getElementsByClassName("profileStatValue")[1].textContent = numberWithCommas(Number(profile.scoreSum));
     document.getElementsByClassName("profileStatValue")[2].textContent = `${Number(profile.accuracy).toFixed(2)}%`;
     document.getElementsByClassName("profileStatValue")[3].textContent = profile.playtime;
-    document.getElementsByClassName("profileStatValue")[4].textContent = profile["1thNum"];
+    document.getElementsByClassName("profileStatValue")[4].textContent = profile["1stNum"];
     let recentPlay = JSON.parse(profile.recentPlay);
     if (recentPlay.length == 0) {
       document.getElementsByClassName("profileStatValue")[5].textContent = "-";
@@ -1400,7 +1401,7 @@ const profileUpdate = async (uid) => {
                 <span class="recentPlayDetail">${data.judge}</span>
                 <span class="recentPlayDetail">${numberWithCommas(Number(data.record))}</span>
                 <span class="recentPlayDetail">${Number(data.accuracy).toFixed(2)}%</span>
-                <span class="recentPlayRate">${rating} +${data.isBest ? (Math.round((Number(data.record) / 100000000) * Number(data.accuracy) * difficulty) / 100).toFixed(2) : "0.02"}</span>
+                <span class="recentPlayRate">${rating} ${data.isBest ? `+${(Math.round((Number(data.record) / 100000000) * Number(data.accuracy) * difficulty) / 100).toFixed(2)}` : "-"}</span>
               </div>
             </div>`;
             }
@@ -1418,9 +1419,8 @@ const profileUpdate = async (uid) => {
       if (rankHistory.length == 0) labels.push(`${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate() + 1}`.padStart(2, "0")}`);
       labels.push(`${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate() + 1}`.padStart(2, "0")}`);
     }
-    labels.reverse();
-    let data = [...rankHistory, profile.rank];
-    if (rankHistory.length == 0) data.push(profile.rank);
+    let data = [rank, ...rankHistory];
+    if (rankHistory.length == 0) data.push(rank);
     const chart = document.getElementById("rankChart");
     const chartCtx = chart.getContext("2d");
     let gradientFill = chartCtx.createLinearGradient(0, 0, 0, document.getElementById("profileChart").clientHeight);

@@ -1312,7 +1312,8 @@ const calculateResult = () => {
     credentials: "include",
     body: JSON.stringify({
       name: trackName,
-      difficulty: Number(localStorage.difficultySelection) + 1,
+      difficultySelection: Number(localStorage.difficultySelection) + 1,
+      difficulty: localStorage.difficulty,
       userid,
       userName,
       rank,
