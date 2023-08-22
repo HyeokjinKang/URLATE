@@ -1419,7 +1419,8 @@ const profileUpdate = async (uid) => {
       if (rankHistory.length == 0) labels.push(`${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate() + 1}`.padStart(2, "0")}`);
       labels.push(`${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate() + 1}`.padStart(2, "0")}`);
     }
-    let data = [rank, ...rankHistory];
+    labels.reverse();
+    let data = [...rankHistory, rank];
     if (rankHistory.length == 0) data.push(rank);
     const chart = document.getElementById("rankChart");
     const chartCtx = chart.getContext("2d");
