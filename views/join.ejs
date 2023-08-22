@@ -2,7 +2,7 @@
 <html lang="<%= __('lang') %>">
   <head>
     <meta charset="UTF-8" />
-    <link rel="stylesheet" href="/css/join.css" />
+    <link rel="stylesheet" href="/css/join.css?v=<%= ver %>" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <title><%= __('join_title') %></title>
   </head>
@@ -21,6 +21,6 @@
       const lang = "<%= __('lang') %>";
       if (lang == "en") document.body.style.letterSpacing = "-0.3px";
     </script>
-    <script src="/js/join.js"></script>
+    <script src="/js/join.js?v=<%= ver %>"></script>
   </body>
 </html>

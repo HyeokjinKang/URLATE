@@ -19,6 +19,7 @@ app.get("/", (req, res) => {
   res.render("index", {
     url: config.project.url,
     api: config.project.api,
+    ver: process.env.npm_package_version,
     community: config.project.community,
     mirai: config.project.mirai,
   });
@@ -34,58 +35,8 @@ app.get("/ko", function (req, res) {
   res.redirect("/");
 });
 
-app.get("/acc", (req, res) => {
-  res.render("account", { api: config.project.api, url: config.project.url });
-});
-
 app.get("/join", (req, res) => {
-  res.render("join", { api: config.project.api, url: config.project.url });
-});
-
-app.get("/authentication", (req, res) => {
-  res.render("authentication", {
-    api: config.project.api,
-    url: config.project.url,
-  });
-});
-
-app.get("/authentication/success", (req, res) => {
-  res.render("authenticationSuccess", {
-    api: config.project.api,
-    url: config.project.url,
-  });
-});
-
-app.get("/authentication/failed", (req, res) => {
-  res.render("authenticationFailed", {
-    url: config.project.url,
-  });
-});
-
-app.post("/authentication/failed", (req, res) => {
-  res.render("authenticationFailed", {
-    url: config.project.url,
-  });
-});
-
-app.get("/advanced/canceled", (req, res) => {
-  res.render("subscriptionCanceled", {
-    url: config.project.url,
-  });
-});
-
-app.get("/authorize", (req, res) => {
-  if (req.query.status == "fail") {
-    res.render("authorizeFail", {
-      url: config.project.url,
-      api: config.project.api,
-    });
-  } else {
-    res.render("authorize", {
-      url: config.project.url,
-      api: config.project.api,
-    });
-  }
+  res.render("join", { api: config.project.api, ver: process.env.npm_package_version, url: config.project.url });
 });
 
 app.get("/game", async (req, res) => {
@@ -93,6 +44,7 @@ app.get("/game", async (req, res) => {
     cdn: config.project.cdn,
     url: config.project.url,
     api: config.project.api,
+    ver: process.env.npm_package_version,
   });
 });
 
@@ -101,6 +53,7 @@ app.get("/editor", async (req, res) => {
     cdn: config.project.cdn,
     url: config.project.url,
     api: config.project.api,
+    ver: process.env.npm_package_version,
   });
 });
 
@@ -109,6 +62,7 @@ app.get("/test", async (req, res) => {
     cdn: config.project.cdn,
     url: config.project.url,
     api: config.project.api,
+    ver: process.env.npm_package_version,
   });
 });
 
@@ -117,6 +71,7 @@ app.get("/play", async (req, res) => {
     cdn: config.project.cdn,
     url: config.project.url,
     api: config.project.api,
+    ver: process.env.npm_package_version,
   });
 });
 
@@ -125,6 +80,7 @@ app.get("/tutorial", async (req, res) => {
     cdn: config.project.cdn,
     url: config.project.url,
     api: config.project.api,
+    ver: process.env.npm_package_version,
   });
 });
 
@@ -140,20 +96,7 @@ app.get("/privacy", (req, res) => {
   res.render("privacy");
 });
 
-app.get("/storePurchased", (req, res) => {
-  res.render("storePurchased", { url: config.project.url });
-});
-
-app.get("/storeDenied", (req, res) => {
-  if (req.query.error == "undefined") {
-    req.query.error = "Payment information verification error";
-  }
-  res.render("storeDenied", {
-    error: req.query.error,
-    url: config.project.url,
-  });
-});
-
 app.listen(config.project.port, () => {
+  signale.info(`URLATE-v3l-frontend is running on version ${process.env.npm_package_version}.`);
   signale.success(`HTTP Server running at port ${config.project.port}.`);
 });
