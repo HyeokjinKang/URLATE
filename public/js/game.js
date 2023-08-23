@@ -1416,8 +1416,8 @@ const profileUpdate = async (uid) => {
     let rankHistory = JSON.parse(profile.rankHistory);
     for (let i = 0; i <= rankHistory.length; i++) {
       let day = new Date(date - 86400000 * i);
-      if (rankHistory.length == 0) labels.push(`${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate() + 1}`.padStart(2, "0")}`);
-      labels.push(`${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate() + 1}`.padStart(2, "0")}`);
+      if (rankHistory.length == 0) labels.push(`${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate()}`.padStart(2, "0")}`);
+      labels.push(`${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate()}`.padStart(2, "0")}`);
     }
     labels.reverse();
     let data = [...rankHistory, rank];
