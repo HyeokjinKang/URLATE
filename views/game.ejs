@@ -6,6 +6,16 @@
     <link rel="stylesheet" href="/css/game.css?v=<%= ver %>" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
+    <script>
+      let intro1load = 0;
+      const intro1loaded = () => {
+        if (intro1load == 1) {
+          document.getElementById("pressAnywhere").textContent = pressAnywhere;
+          document.getElementById("warningContainer").onclick = warningSkip;
+        }
+        intro1load++;
+      };
+    </script>
   </head>
   <body oncontextmenu="return false">
     <div id="footer">
@@ -1114,14 +1124,6 @@
       const alias = "<%= __('alias') %>".split(",");
       const rating = "<%= __('rating') %>";
       if (lang == "en") document.body.style.letterSpacing = "-0.3px";
-      let intro1load = 0;
-      const intro1loaded = () => {
-        if (intro1load == 1) {
-          document.getElementById("pressAnywhere").textContent = pressAnywhere;
-          document.getElementById("warningContainer").onclick = warningSkip;
-        }
-        intro1load++;
-      };
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.5/lottie.js"></script>
     <script src="/js/game.js?v=<%= ver %>"></script>
