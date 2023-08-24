@@ -3003,7 +3003,12 @@ del {
   width: 100%;
 }
 
-.recentPlayContainer::before {
+#profileBestPlay {
+  margin-top: 1vh;
+  width: 100%;
+}
+
+.playContainer::before {
   z-index: -1;
   top: 0;
   left: 0;
@@ -3020,11 +3025,11 @@ del {
   mix-blend-mode: color-dodge;
 }
 
-.recentPlayContainer:hover {
+.playContainer:hover {
   background-color: rgba(0, 0, 0, 0.1);
 }
 
-.recentPlayContainer {
+.playContainer {
   letter-spacing: 0px;
   font-size: 1.8vh;
   margin-top: 1vh;
@@ -3042,53 +3047,53 @@ del {
   transition-duration: 0.3s;
 }
 
-.recentPlayContainerLeft {
+.playContainerLeft {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
 }
 
-.recentPlayContainerRight {
+.playContainerRight {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-end;
 }
 
-.recentPlayDifficulty {
+.playDifficulty {
   font-weight: 600;
   width: 9vh;
   text-align: left;
 }
 
-.recentPlayTitleContainer {
+.playTitleContainer {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
 }
 
-.recentPlayAlbum {
+.playAlbum {
   height: 5vh;
   margin-right: 10px;
 }
 
-.recentPlayTitle {
+.playTitle {
   font-size: 2vh;
   font-weight: 600;
 }
 
-.recentPlayProducer {
+.playProducer {
   margin-top: 2px;
   font-size: 1.5vh;
 }
 
-.recentPlayDetail {
+.playDetail {
   margin-left: 1vw;
 }
 
-.recentPlayRate {
+.playRate {
   letter-spacing: -0.5px;
   margin-left: 1vw;
   font-weight: 600;
