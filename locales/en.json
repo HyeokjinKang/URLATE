@@ -108,7 +108,6 @@
   "sound_volume_tip": "You can quickly adjust the volume by using Shift + Scroll in the game.",
   "currency": "$",
   "added_to_bag": "Added to bag",
-  "nothing_here": "Nothing here,/how about checking out the / or /skins/?",
   "loading": "loading",
   "purchase": "Purchase",
   "purchase_success": "Purchase success.",
@@ -219,5 +218,15 @@
   "info16": "Adding new features through browser extensions or contributions through PR/Issue through GitHub repositories are always welcome, so please take a lot of interest.",
   "menu_volume": "Volume can be adjusted with Shift + mouse wheel.",
   "purchasing_1": "purchasing_1",
-  "purchasing_2": "purchasing_2"
+  "purchasing_2": "purchasing_2",
+  "rating": "Rating",
+  "score_sum": "Total Score",
+  "average_accuracy": "Avg. Accuracy",
+  "playtime": "Playtime",
+  "number_of_1th": "1st",
+  "last_played": "Last Played",
+  "alias": "Newbie,Geoplex Fan,Greenstar Fan,mkhito Fan,Neko Hacker Fan,fusq Fan,Yunomi Fan,Synthion Fan,Kunaru Fan,Sakuzyo Fan",
+  "recent": "Recent Played",
+  "nothing_here": "Nothing here I think ;-;",
+  "bestplay": "Best Play"
 }
