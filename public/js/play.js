@@ -1497,7 +1497,7 @@ const calculateScore = (judge, i, ignoreMs) => {
     if (localStorage.record < score) {
       newRecordTime = Date.now();
     }
-    destroyAll();
+    destroyAll(pattern.bullets[pattern.bullets.length - 1].ms);
     effectMs = Date.now();
     if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
       effectNum = 0;
@@ -1533,7 +1533,7 @@ const doneLoading = () => {
       lottieAnim.play();
       menuAllowed = true;
       startDate = Date.now();
-    }, 4000);
+    }, 2000);
   }, 1000);
 };
 
