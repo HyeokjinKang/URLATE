@@ -1,9 +1,9 @@
 {
   "repository": {
     "type": "git",
-    "url": "https://github.com/Team-Croissant/URLATE-frontend"
+    "url": "https://github.com/HyeokjinKang/URLATE-v3l-frontend"
   },
-  "name": "urlate-frontend",
+  "name": "urlate-v3l-frontend",
   "version": "1.0.0",
   "description": "Avoid & Get on the tempo, URLATE",
   "main": "src/",
@@ -14,7 +14,7 @@
     "obfuscate": "javascript-obfuscator public/js/ --output public/js/ --debug-protection false --disable-console-output true --domain-lock 'urlate.coupy.dev' --domain-lock-redirect-url 'urlate.coupy.dev' --numbers-to-expressions true --self-defending true"
   },
   "author": "Team Croissant",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "dependencies": {
     "cookie-parser": "^1.4.4",
     "ejs": "^3.1.7",
