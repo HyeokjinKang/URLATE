@@ -19,9 +19,7 @@ app.get("/", (req, res) => {
   res.render("index", {
     url: config.project.url,
     api: config.project.api,
-    ver: process.env.npm_package_version,
-    community: config.project.community,
-    mirai: config.project.mirai,
+    ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
   });
 });
 
@@ -36,7 +34,7 @@ app.get("/ko", function (req, res) {
 });
 
 app.get("/join", (req, res) => {
-  res.render("join", { api: config.project.api, ver: process.env.npm_package_version, url: config.project.url });
+  res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version, url: config.project.url });
 });
 
 app.get("/game", async (req, res) => {
@@ -44,7 +42,7 @@ app.get("/game", async (req, res) => {
     cdn: config.project.cdn,
     url: config.project.url,
     api: config.project.api,
-    ver: process.env.npm_package_version,
+    ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
   });
 });
 
@@ -53,7 +51,7 @@ app.get("/editor", async (req, res) => {
     cdn: config.project.cdn,
     url: config.project.url,
     api: config.project.api,
-    ver: process.env.npm_package_version,
+    ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
   });
 });
 
@@ -62,7 +60,7 @@ app.get("/test", async (req, res) => {
     cdn: config.project.cdn,
     url: config.project.url,
     api: config.project.api,
-    ver: process.env.npm_package_version,
+    ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
   });
 });
 
@@ -71,7 +69,7 @@ app.get("/play", async (req, res) => {
     cdn: config.project.cdn,
     url: config.project.url,
     api: config.project.api,
-    ver: process.env.npm_package_version,
+    ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
   });
 });
 
@@ -80,7 +78,7 @@ app.get("/tutorial", async (req, res) => {
     cdn: config.project.cdn,
     url: config.project.url,
     api: config.project.api,
-    ver: process.env.npm_package_version,
+    ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
   });
 });
 
@@ -97,6 +95,6 @@ app.get("/privacy", (req, res) => {
 });
 
 app.listen(config.project.port, () => {
-  signale.info(`URLATE-v3l-frontend is running on version ${process.env.npm_package_version}.`);
+  signale.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : process.env.npm_package_version}.`);
   signale.success(`HTTP Server running at port ${config.project.port}.`);
 });
