@@ -1290,7 +1290,8 @@ const compClicked = (isTyped, key, isWheel) => {
   let d = Date.now();
   if (!song.playing() && isPaused) {
     isPaused = false;
-    startDate = startDate + d - pauseDate;
+    if (startDate != 0) startDate = startDate + d - pauseDate;
+    else startDate = Date.now();
     floatingResumeContainer.style.opacity = 0;
     setTimeout(() => {
       floatingResumeContainer.style.display = "none";
@@ -1421,13 +1422,15 @@ const doneLoading = () => {
     setTimeout(() => {
       document.getElementById("loadingContainer").style.display = "none";
       document.getElementById("componentCanvas").style.transitionDuration = "0s";
+      menuAllowed = true;
     }, 1000);
     setTimeout(() => {
-      song.play();
-      lottieAnim.play();
-      menuAllowed = true;
-      startDate = Date.now();
-    }, 4000);
+      if (!isPaused && startDate == 0) {
+        song.play();
+        lottieAnim.play();
+        startDate = Date.now();
+      }
+    }, 2000);
   }, 1000);
 };
 
