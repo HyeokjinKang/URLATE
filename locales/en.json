@@ -228,5 +228,6 @@
   "alias": "Newbie,Geoplex Fan,Greenstar Fan,mkhito Fan,Neko Hacker Fan,fusq Fan,Yunomi Fan,Synthion Fan,Kunaru Fan,Sakuzyo Fan",
   "recent": "Recent Played",
   "nothing_here": "Nothing here I think ;-;",
-  "bestplay": "Best Play"
+  "bestplay": "Best Play",
+  "rangeCopyAlert": "Please select the element to copy."
 }
