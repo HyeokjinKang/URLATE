@@ -1033,12 +1033,11 @@ const cntRender = () => {
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
       if (!destroyedBullets.has(start + i)) {
-        const p = ((seek - renderBullets[i].ms) / ((bpm * 40) / speed / renderBullets[i].speed)) * 100;
+        const p = ((seek * 1000 - renderBullets[i].ms) / ((bpm * 40) / speed / renderBullets[i].speed)) * 100; // 0~200
         const left = renderBullets[i].direction == "L";
-        let x = (left ? -1 : 1) * (100 - p);
-        let y = 0;
+        let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
         if (renderBullets[i].value == 0) {
-          y = renderBullets[i].location + p * getTan(renderBullets[i].angle) * (left ? 1 : -1);
+          let y = renderBullets[i].location + (left ? 1 : -1) * getSin(renderBullets[i].angle) * p;
           trackMouseSelection(start + i, 1, renderBullets[i].value, x, y);
           drawBullet(renderBullets[i].value, x, y, renderBullets[i].angle + (left ? 0 : 180));
         } else {
@@ -1050,7 +1049,7 @@ const cntRender = () => {
             if (70 < circleBulletAngles[start + i] && circleBulletAngles[start + i] > 0) circleBulletAngles[start + i] = 70;
             else if (0 > circleBulletAngles[start + i] && circleBulletAngles[start + i] < -70) circleBulletAngles[start + i] = -70;
           }
-          y = renderBullets[i].location + p * getTan(circleBulletAngles[start + i]) * (left ? 1 : -1);
+          let y = renderBullets[i].location + (left ? 1 : -1) * getSin(circleBulletAngles[start + i]) * p;
           trackMouseSelection(start + i, 1, renderBullets[i].value, x, y);
           drawBullet(renderBullets[i].value, x, y, "");
         }
