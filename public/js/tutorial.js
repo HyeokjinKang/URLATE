@@ -1391,16 +1391,16 @@ const calculateScore = (judge, i, ignoreMs) => {
     comboAlertMs = Date.now();
     comboAlertCount = combo;
   }
-};
-if (i == patternLength - 1) {
-  destroyAll();
-  effectMs = Date.now();
-  if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
-    effectNum = 0;
-  } else if (bad == 0 && miss == 0 && bullet == 0) {
-    effectNum = 1;
+  if (i == patternLength - 1) {
+    destroyAll();
+    effectMs = Date.now();
+    if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
+      effectNum = 0;
+    } else if (bad == 0 && miss == 0 && bullet == 0) {
+      effectNum = 1;
+    }
   }
-}
+};
 
 Pace.on("done", () => {
   if (paceLoaded) return;
