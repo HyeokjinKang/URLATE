@@ -461,7 +461,7 @@ const drawParticle = (n, x, y, j, d) => {
         let newY = y - 2 * Math.round(p / 10);
         ctx.fillStyle = getJudgeStyle(j.toLowerCase(), p, cx, newY);
         ctx.strokeStyle = `rgba(0, 0, 0, ${1 - p / 100})`;
-        ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
+        ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.lineWidth = 2;
@@ -483,7 +483,7 @@ const drawParticle = (n, x, y, j, d) => {
       let newY = cy - Math.round(p / 10);
       ctx.fillStyle = getJudgeStyle("miss", p);
       ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
-      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
+      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.lineWidth = 2;
@@ -497,7 +497,7 @@ const drawParticle = (n, x, y, j, d) => {
       let newY = cy - Math.round(p / 10);
       ctx.fillStyle = getJudgeStyle("perfect", p, cx, newY);
       ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
-      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
+      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.lineWidth = 2;
@@ -756,7 +756,7 @@ const drawBullet = (n, x, y, a) => {
       if (skin.bullet.outline) ctx.stroke();
       break;
     default:
-      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
+      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
       ctx.fillStyle = "#F55";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
@@ -824,7 +824,7 @@ const drawKeyInput = () => {
     alpha = 1 - (Date.now() - keyInput[keyInput.length - 1].time - 3000) / 1000;
     if (alpha <= 0) return;
   }
-  ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
+  ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
   ctx.fillStyle = "#FFF";
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
@@ -887,7 +887,7 @@ const drawKeyInput = () => {
     ctx.stroke();
     ctx.beginPath();
     ctx.fillStyle = "#fff";
-    ctx.font = `600 5vh Montserrat, Pretendard Variable`;
+    ctx.font = `600 5vh Montserrat, Pretendard JP Variable`;
     ctx.textBaseline = "top";
     ctx.textAlign = "center";
     ctx.fillText(
@@ -925,7 +925,7 @@ const cntRender = () => {
       }
       fontSize = (canvas.height / 100) * (30 - (comboAlertMs + 900 - Date.now()) / 90);
       ctx.beginPath();
-      ctx.font = `700 ${fontSize}px Montserrat, Pretendard Variable`;
+      ctx.font = `700 ${fontSize}px Montserrat, Pretendard JP Variable`;
       ctx.fillStyle = `rgba(200,200,200,${comboOpacity})`;
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
@@ -971,9 +971,9 @@ const cntRender = () => {
         if (renderTriggers[i].ms - 1 <= seek && renderTriggers[i].ms + renderTriggers[i].time > seek && disableText == "false") {
           ctx.beginPath();
           ctx.fillStyle = "#fff";
-          ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Montserrat, Pretendard Variable`;
+          ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Montserrat, Pretendard JP Variable`;
           if (renderTriggers[i].size.indexOf("vh") != -1)
-            ctx.font = `${renderTriggers[i].weight} ${(canvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Montserrat, Pretendard Variable`;
+            ctx.font = `${renderTriggers[i].weight} ${(canvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Montserrat, Pretendard JP Variable`;
           ctx.textAlign = renderTriggers[i].align;
           ctx.textBaseline = renderTriggers[i].valign;
           ctx.fillText(renderTriggers[i].text, (canvas.width / 200) * (renderTriggers[i].x + 100), (canvas.height / 200) * (renderTriggers[i].y + 100));
@@ -1058,7 +1058,7 @@ const cntRender = () => {
     }
   } catch (e) {
     if (e) {
-      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
+      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
       ctx.fillStyle = "#F55";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
@@ -1084,12 +1084,12 @@ const cntRender = () => {
     displayScore = score;
   }
   ctx.beginPath();
-  ctx.font = `700 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
+  ctx.font = `700 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
   ctx.fillStyle = "#fff";
   ctx.textAlign = "right";
   ctx.textBaseline = "top";
   ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05);
-  ctx.font = `${canvas.height / 40}px Montserrat, Pretendard Variable`;
+  ctx.font = `${canvas.height / 40}px Montserrat, Pretendard JP Variable`;
   ctx.fillStyle = "#fff";
   ctx.fillText(`${combo}x`, canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05 + canvas.height / 25);
   drawCursor();
@@ -1112,7 +1112,7 @@ const cntRender = () => {
     ctx.fill();
     ctx.beginPath();
     ctx.fillStyle = "#000000";
-    ctx.font = `italic 600 ${canvas.height / 40}px Montserrat, Pretendard Variable`;
+    ctx.font = `italic 600 ${canvas.height / 40}px Montserrat, Pretendard JP Variable`;
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     ctx.fillText("NEW RECORD!", canvas.width * 0.87, canvas.height * 0.23);
@@ -1302,7 +1302,7 @@ const calculateResult = () => {
   }
   if (missPoint.length == 0) {
     missCtx.fillStyle = "#FFF";
-    missCtx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
+    missCtx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
     missCtx.textAlign = "right";
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
@@ -1375,7 +1375,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
         }
         break;
       default:
-        ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
+        ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
         ctx.fillStyle = "#F55";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
