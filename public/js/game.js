@@ -1949,7 +1949,7 @@ const scrollEvent = (e) => {
     let delta = 0;
     if (e.deltaY != 0) delta = Math.max(-1, Math.min(1, e.deltaY));
     else delta = Math.max(-1, Math.min(1, e.deltaX));
-    if (settings.input.wheelReverse) delta *= -1;
+    if (!settings.input.wheelReverse) delta *= -1;
     if (shiftDown) {
       if (delta == 1) {
         //UP
