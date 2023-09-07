@@ -635,6 +635,10 @@ p {
   background-image: url("/images/credits/geoplex.webp");
 }
 
+#profileAlkmerlin {
+  background-image: url("/images/credits/alkmerlin.webp");
+}
+
 #infoProfileContainer {
   overflow-y: hidden;
   z-index: 101;
