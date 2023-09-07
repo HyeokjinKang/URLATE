@@ -30,6 +30,8 @@ let destroyedNotes = new Set([]);
 let grabbedNotes = new Set([]);
 let mouseX = 0,
   mouseY = 0;
+let rawX = 0,
+  rawY = 0;
 let score = 0,
   combo = 0,
   displayScore = 0,
@@ -824,10 +826,6 @@ const drawKeyInput = () => {
     alpha = 1 - (Date.now() - keyInput[keyInput.length - 1].time - 3000) / 1000;
     if (alpha <= 0) return;
   }
-  ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
-  ctx.fillStyle = "#FFF";
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
   let text = "";
   for (let i = 0; i < keyInput.length; i++) {
     text += keyInput[i].key;
@@ -887,7 +885,7 @@ const drawKeyInput = () => {
     ctx.stroke();
     ctx.beginPath();
     ctx.fillStyle = "#fff";
-    ctx.font = `600 5vh Montserrat, Pretendard JP Variable`;
+    ctx.font = `600 ${canvas.height / 40}px Montserrat, Pretendard JP Variable`;
     ctx.textBaseline = "top";
     ctx.textAlign = "center";
     ctx.fillText(
@@ -901,6 +899,10 @@ const drawKeyInput = () => {
 };
 
 const cntRender = () => {
+  let mouseCalcX = ((rawX / canvas.offsetWidth) * 200 - 100) * sens;
+  let mouseCalcY = ((rawY / canvas.offsetHeight) * 200 - 100) * sens;
+  mouseX = mouseCalcX >= 100 ? 100 : mouseCalcX <= -100 ? -100 : mouseCalcX;
+  mouseY = mouseCalcY >= 100 ? 100 : mouseCalcY <= -100 ? -100 : mouseCalcY;
   eraseCnt();
   if (window.devicePixelRatio != pixelRatio) {
     pixelRatio = window.devicePixelRatio;
@@ -1231,11 +1233,9 @@ const drawFinalEffect = (i) => {
   if (p == 1) effectMs = 0;
 };
 
-const trackMousePos = () => {
-  let x = (event.clientX / canvas.offsetWidth) * 200 - 100;
-  let y = (event.clientY / canvas.offsetHeight) * 200 - 100;
-  mouseX = x * sens >= 100 ? 100 : x * sens <= -100 ? -100 : x * sens;
-  mouseY = y * sens >= 100 ? 100 : y * sens <= -100 ? -100 : y * sens;
+const trackMousePos = (e) => {
+  rawX = e.clientX;
+  rawY = e.clientY;
 };
 
 const calculateResult = () => {
@@ -1758,3 +1758,4 @@ window.addEventListener("blur", () => {
 });
 
 window.addEventListener("wheel", globalScrollEvent);
+document.getElementById("componentCanvas").addEventListener("pointermove", trackMousePos);
