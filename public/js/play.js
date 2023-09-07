@@ -30,6 +30,8 @@ let destroyedNotes = new Set([]);
 let grabbedNotes = new Set([]);
 let mouseX = 0,
   mouseY = 0;
+let rawX = 0,
+  rawY = 0;
 let score = 0,
   combo = 0,
   displayScore = 0,
@@ -901,6 +903,11 @@ const drawKeyInput = () => {
 };
 
 const cntRender = () => {
+  let mouseCalcX = ((rawX / canvas.offsetWidth) * 200 - 100) * sens;
+  let mouseCalcY = ((rawY / canvas.offsetHeight) * 200 - 100) * sens;
+  //TODO
+  mouseX = mouseCalcX >= 100 ? 100 : mouseCalcX <= -100 ? -100 : mouseCalcX;
+  mouseY = mouseCalcY >= 100 ? 100 : mouseCalcY <= -100 ? -100 : mouseCalcY;
   eraseCnt();
   if (window.devicePixelRatio != pixelRatio) {
     pixelRatio = window.devicePixelRatio;
@@ -1231,11 +1238,9 @@ const drawFinalEffect = (i) => {
   if (p == 1) effectMs = 0;
 };
 
-const trackMousePos = () => {
-  let x = (event.clientX / canvas.offsetWidth) * 200 - 100;
-  let y = (event.clientY / canvas.offsetHeight) * 200 - 100;
-  mouseX = x * sens >= 100 ? 100 : x * sens <= -100 ? -100 : x * sens;
-  mouseY = y * sens >= 100 ? 100 : y * sens <= -100 ? -100 : y * sens;
+const trackMousePos = (e) => {
+  rawX = e.clientX;
+  rawY = e.clientY;
 };
 
 const calculateResult = () => {
@@ -1758,3 +1763,4 @@ window.addEventListener("blur", () => {
 });
 
 window.addEventListener("wheel", globalScrollEvent);
+document.getElementById("componentCanvas").addEventListener("pointermove", trackMousePos);
