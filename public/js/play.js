@@ -901,7 +901,6 @@ const drawKeyInput = () => {
 const cntRender = () => {
   let mouseCalcX = ((rawX / canvas.offsetWidth) * 200 - 100) * sens;
   let mouseCalcY = ((rawY / canvas.offsetHeight) * 200 - 100) * sens;
-  //TODO
   mouseX = mouseCalcX >= 100 ? 100 : mouseCalcX <= -100 ? -100 : mouseCalcX;
   mouseY = mouseCalcY >= 100 ? 100 : mouseCalcY <= -100 ? -100 : mouseCalcY;
   eraseCnt();
