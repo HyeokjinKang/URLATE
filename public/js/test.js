@@ -861,7 +861,7 @@ const drawKeyInput = () => {
     ctx.stroke();
     ctx.beginPath();
     ctx.fillStyle = "#fff";
-    ctx.font = `600 5vh Montserrat, Pretendard JP Variable`;
+    ctx.font = `600 ${canvas.height / 40}px Montserrat, Pretendard JP Variable`;
     ctx.textBaseline = "top";
     ctx.textAlign = "center";
     ctx.fillText(
