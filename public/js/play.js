@@ -826,10 +826,6 @@ const drawKeyInput = () => {
     alpha = 1 - (Date.now() - keyInput[keyInput.length - 1].time - 3000) / 1000;
     if (alpha <= 0) return;
   }
-  ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
-  ctx.fillStyle = "#FFF";
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
   let text = "";
   for (let i = 0; i < keyInput.length; i++) {
     text += keyInput[i].key;
@@ -889,7 +885,7 @@ const drawKeyInput = () => {
     ctx.stroke();
     ctx.beginPath();
     ctx.fillStyle = "#fff";
-    ctx.font = `600 5vh Montserrat, Pretendard JP Variable`;
+    ctx.font = `600 ${canvas.height / 40}px Montserrat, Pretendard JP Variable`;
     ctx.textBaseline = "top";
     ctx.textAlign = "center";
     ctx.fillText(
