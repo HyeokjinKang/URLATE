@@ -113,13 +113,22 @@ let copySelection = { element: -1, start: -1, end: -1, ms: 0 };
 
 let metronome = 1;
 let metronomeLimit = 4;
-const beep = new Howl({
-  src: `/sounds/beep2.ogg`,
-  format: ["ogg"],
-  volume: 0.5,
-  autoplay: false,
-  loop: false,
-});
+const beep = [
+  new Howl({
+    src: `/sounds/beep1.ogg`,
+    format: ["ogg"],
+    volume: 0.5,
+    autoplay: false,
+    loop: false,
+  }),
+  new Howl({
+    src: `/sounds/beep2.ogg`,
+    format: ["ogg"],
+    volume: 0.5,
+    autoplay: false,
+    loop: false,
+  }),
+];
 
 const sortAsTiming = (a, b) => {
   if (a.ms == b.ms) return 0;
@@ -1139,7 +1148,8 @@ const cntRender = () => {
   if (metronomeToggle) {
     if (song.playing()) {
       if (Math.ceil(((song.seek() * 1000) / (60000 / bpm)) % metronomeLimit) == metronome) {
-        beep.play();
+        if (metronome == 1) beep[0].play();
+        else beep[1].play();
         if (metronome == metronomeLimit) metronome = 1;
         else metronome++;
       }
