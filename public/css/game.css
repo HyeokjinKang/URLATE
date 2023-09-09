@@ -518,14 +518,6 @@ p {
   height: 10vw;
 }
 
-.tumblbugContainer {
-  margin-top: 4.5vh;
-  margin-bottom: 4.5vh;
-  margin-left: 20vw;
-  width: 60vw;
-  height: 5vw;
-}
-
 .profile {
   display: flex;
   align-items: center;
@@ -559,44 +551,11 @@ p {
   transition-duration: 0.1s;
 }
 
-.profileText {
-  font-size: 3vh;
-  font-weight: 600;
-}
-
-.profileTextSmall {
-  font-size: 2vh;
-  font-weight: 600;
-}
-
-.tumblbug1 {
-  height: 5vw;
-  background-image: url("/images/credits/tumblbug_1.webp");
-}
-
-.tumblbug2 {
-  height: 5vw;
-  background-image: url("/images/credits/tumblbug_2.webp");
-}
-
-.tumblbug3 {
-  height: 5vw;
-  background-image: url("/images/credits/tumblbug_3.webp");
-}
-
-.tumblbug4 {
-  height: 5vw;
-  background-image: url("/images/credits/tumblbug_4.webp");
-}
-
-.tumblbug5 {
-  height: 5vw;
-  background-image: url("/images/credits/tumblbug_5.webp");
-}
-
-.tumblbug6 {
-  height: 5vw;
-  background-image: url("/images/credits/tumblbug_6.webp");
+#tumblbug {
+  box-sizing: border-box;
+  padding: 4.5vh 15vw;
+  width: 100%;
+  filter: drop-shadow(0 0 2vh rgba(70, 70, 70, 0.1));
 }
 
 .profileHover:hover {
