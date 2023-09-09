@@ -1461,7 +1461,7 @@ const profileUpdate = async (uid) => {
             borderColor: "#ffffff",
             pointRadius: 0,
             borderWidth: 2,
-            tension: 0.5,
+            tension: 0,
             fill: "start",
             backgroundColor: gradientFill,
           },
