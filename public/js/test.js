@@ -23,6 +23,7 @@ let circleBulletAngles = [];
 let destroyParticles = [];
 let missParticles = [];
 let perfectParticles = [];
+let createdBullets = new Set([]);
 let destroyedBullets = new Set([]);
 let destroyedNotes = new Set([]);
 let grabbedNotes = new Set([]);
@@ -350,25 +351,25 @@ const drawParticle = (n, x, y, j, d) => {
   let cy = (canvas.height / 200) * (y + 100);
   if (n == 0) {
     //Destroy
-    const raf = (n, w) => {
-      for (let i = 0; i < 3; i++) {
-        ctx.beginPath();
-        if (skin.bullet.type == "gradient") {
-          let grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
-          for (let i = 0; i < skin.bullet.stops.length; i++) {
-            grd.addColorStop(skin.bullet.stops[i].percentage / 100, `#${skin.bullet.stops[i].color}`);
-          }
-          ctx.fillStyle = grd;
-          ctx.strokeStyle = grd;
-        } else if (skin.bullet.type == "color") {
-          ctx.fillStyle = `#${skin.bullet.color}`;
-          ctx.strokeStyle = `#${skin.bullet.color}`;
+    const w = (canvas.width / 1000) * destroyParticles[j].w * (1 - (Date.now() - destroyParticles[j].ms) / 250);
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      if (skin.bullet.type == "gradient") {
+        let grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
+        for (let i = 0; i < skin.bullet.stops.length; i++) {
+          grd.addColorStop(skin.bullet.stops[i].percentage / 100, `#${skin.bullet.stops[i].color}`);
         }
-        ctx.arc(cx + n * destroyParticles[j].d[i][0], cy + n * destroyParticles[j].d[i][1], w, 0, 2 * Math.PI);
-        ctx.fill();
+        ctx.fillStyle = grd;
+        ctx.strokeStyle = grd;
+      } else if (skin.bullet.type == "color") {
+        ctx.fillStyle = `#${skin.bullet.color}`;
+        ctx.strokeStyle = `#${skin.bullet.color}`;
       }
-    };
-    raf(destroyParticles[j].n, destroyParticles[j].w);
+      const step = destroyParticles[j].n * (canvas.width / 10000);
+      ctx.arc(cx + step * destroyParticles[j].d[i][0], cy + step * destroyParticles[j].d[i][1], w, 0, 2 * Math.PI);
+      ctx.fill();
+      destroyParticles[j].n += destroyParticles[j].step;
+    }
   } else if (n == 1) {
     //Click Note
     const raf = (w, s, n) => {
@@ -784,6 +785,7 @@ const callBulletDestroy = (j) => {
     y: y,
     w: 5,
     n: 1,
+    step: 2,
     d: randomDirection,
     ms: Date.now(),
   });
@@ -959,10 +961,8 @@ const cntRender = () => {
       }
     }
     for (let i = 0; i < destroyParticles.length; i++) {
-      if (destroyParticles[i].w > 0) {
+      if (destroyParticles[i].ms + 250 > Date.now()) {
         drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
-        destroyParticles[i].w = 10 - (Date.now() - destroyParticles[i].ms) / 25;
-        destroyParticles[i].n++;
       }
     }
     end = upperBound(pattern.patterns, seek + (bpm * 14) / speed);
@@ -1010,6 +1010,24 @@ const cntRender = () => {
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
       if (!destroyedBullets.has(start + i)) {
+        if (!createdBullets.has(start + i)) {
+          createdBullets.add(start + i);
+          let randomDirection = [];
+          for (let i = 0; i < 3; i++) {
+            let rx = Math.floor(Math.random() * 4) - 2;
+            let ry = Math.floor(Math.random() * 4) - 2;
+            randomDirection[i] = [rx, ry];
+          }
+          destroyParticles.push({
+            x: renderBullets[i].direction == "L" ? -100 : 100,
+            y: renderBullets[i].location,
+            w: 10,
+            n: 1,
+            step: 4,
+            d: randomDirection,
+            ms: Date.now(),
+          });
+        }
         const p = ((seek - renderBullets[i].ms) / ((bpm * 40) / speed / renderBullets[i].speed)) * 100;
         const left = renderBullets[i].direction == "L";
         let x = (left ? -1 : 1) * (100 - p);
@@ -1020,13 +1038,6 @@ const cntRender = () => {
           drawBullet(renderBullets[i].value, x, y, renderBullets[i].angle + (left ? 0 : 180));
         } else {
           if (!circleBulletAngles[start + i]) circleBulletAngles[start + i] = calcAngleDegrees((left ? -100 : 100) - mouseX, renderBullets[i].location - mouseY);
-          if (left) {
-            if (110 > circleBulletAngles[start + i] && circleBulletAngles[start + i] > 0) circleBulletAngles[start + i] = 110;
-            else if (0 > circleBulletAngles[start + i] && circleBulletAngles[start + i] > -110) circleBulletAngles[start + i] = -110;
-          } else {
-            if (70 < circleBulletAngles[start + i] && circleBulletAngles[start + i] > 0) circleBulletAngles[start + i] = 70;
-            else if (0 > circleBulletAngles[start + i] && circleBulletAngles[start + i] < -70) circleBulletAngles[start + i] = -70;
-          }
           y = renderBullets[i].location + p * getTan(circleBulletAngles[start + i]) * (left ? 1 : -1);
           trackMouseSelection(start + i, 1, renderBullets[i].value, x, y);
           drawBullet(renderBullets[i].value, x, y, "");
