@@ -50,7 +50,7 @@ const codeInput = document.getElementById("codeInput");
 const CPLTrack = document.getElementById("CPLTrack");
 
 let settings = [];
-let storeSong;
+let profileSong;
 let display = -1;
 let userid;
 let username = "";
@@ -251,15 +251,15 @@ const settingApply = () => {
     offsetButtonText.textContent = offset + "ms";
   }
   initialize();
-  storeSong = new Howl({
+  profileSong = new Howl({
     src: [`${cdn}/tracks/128kbps/store.ogg`],
     format: ["ogg"],
     autoplay: false,
     loop: true,
     onload: () => {
       loaded++;
-      storeSong.volume(0);
-      storeSong.rate(1.5818181818);
+      profileSong.volume(0);
+      profileSong.rate(1.5818181818);
       if (loaded == 4) {
         loaded = -1;
         gameLoaded();
@@ -996,8 +996,8 @@ const gameLoaded = () => {
     themeSong.play();
   }
   setTimeout(() => {
-    storeSong.rate(1.5818181818);
-    storeSong.play();
+    profileSong.rate(1.5818181818);
+    profileSong.play();
   }, 1400);
   document.getElementById("menuContainer").style.display = "flex";
   document.getElementById("loadingContainer").classList.add("fadeOut");
@@ -1057,6 +1057,31 @@ Pace.on("done", () => {
   }
 });
 
+const playProfileSong = () => {
+  if (!themeSong.playing()) {
+    songs[songSelection].fade(1, 0, 300);
+    fadeRate(songs[songSelection], 1, 0.632183908, 300, Date.now());
+  } else {
+    themeSong.fade(1, 0, 300);
+    fadeRate(themeSong, 1, 0.632183908, 300, Date.now());
+  }
+  profileSong.fade(0, 1, 300);
+  fadeRate(profileSong, 1.5818181818, 1, 300, Date.now());
+};
+
+const stopProfileSong = () => {
+  if (songSelection != -1) {
+    if (!songs[songSelection].playing()) songs[songSelection].play();
+    songs[songSelection].fade(0, 1, 300);
+    fadeRate(songs[songSelection], 0.632183908, 1, 300, new Date().getTime());
+  } else {
+    themeSong.fade(0, 1, 300);
+    fadeRate(themeSong, 0.632183908, 1, 300, new Date().getTime());
+  }
+  profileSong.fade(1, 0, 300);
+  fadeRate(profileSong, 1, 1.5818181818, 300, new Date().getTime());
+};
+
 const infoScreen = () => {
   display = 4;
   lottieAnim.pause();
@@ -1073,6 +1098,7 @@ const optionScreen = () => {
 
 const profileScreen = () => {
   display = 15;
+  playProfileSong();
   lottieAnim.pause();
   document.getElementById("profileContainer").style.display = "block";
   document.getElementById("profileContainer").classList.add("fadeIn");
@@ -1179,16 +1205,6 @@ const displayClose = () => {
       //STORE
       document.getElementById("storeContainer").classList.remove("fadeIn");
       document.getElementById("storeContainer").classList.add("fadeOut");
-      if (songSelection != -1) {
-        if (!songs[songSelection].playing()) songs[songSelection].play();
-        songs[songSelection].fade(0, 1, 300);
-        fadeRate(songs[songSelection], 0.632183908, 1, 300, new Date().getTime());
-      } else {
-        themeSong.fade(0, 1, 300);
-        fadeRate(themeSong, 0.632183908, 1, 300, new Date().getTime());
-      }
-      storeSong.fade(1, 0, 300);
-      fadeRate(storeSong, 1, 1.5818181818, 300, new Date().getTime());
       setTimeout(() => {
         document.getElementById("storeContainer").classList.remove("fadeOut");
         document.getElementById("storeContainer").style.display = "none";
@@ -1261,6 +1277,7 @@ const displayClose = () => {
       return;
     } else if (display == 15) {
       //PROFILE
+      stopProfileSong();
       document.getElementById("profileContainer").classList.remove("fadeIn");
       document.getElementById("profileContainer").classList.add("fadeOut");
       setTimeout(() => {
@@ -1326,15 +1343,6 @@ const menuSelected = (n) => {
     document.getElementById("advancedContainer").classList.add("fadeIn");
   } else if (n == 3) {
     //store
-    if (!themeSong.playing()) {
-      songs[songSelection].fade(1, 0, 300);
-      fadeRate(songs[songSelection], 1, 0.632183908, 300, new Date().getTime());
-    } else {
-      themeSong.fade(1, 0, 300);
-      fadeRate(themeSong, 1, 0.632183908, 300, new Date().getTime());
-    }
-    storeSong.fade(0, 1, 300);
-    fadeRate(storeSong, 1.5818181818, 1, 300, new Date().getTime());
     document.getElementById("storeContainer").style.display = "flex";
     document.getElementById("storeContainer").classList.add("fadeIn");
     display = 8;
@@ -1498,7 +1506,7 @@ const profileUpdate = async (uid) => {
 };
 
 const fadeRate = (track, start, end, duration, time) => {
-  let p = (new Date().getTime() - time) / duration;
+  let p = (Date.now() - time) / duration;
   if (p >= 1) {
     track.rate(end);
     return;
@@ -1529,7 +1537,7 @@ const settingChanged = (e, v) => {
     for (let i = 0; i <= 1; i++) {
       document.getElementsByClassName("volumeMasterValue")[i].textContent = Math.round(e.value) + "%";
     }
-    overlayTime = new Date().getTime();
+    overlayTime = Date.now();
     setTimeout(() => {
       overlayClose("volume");
     }, 1500);
@@ -1826,7 +1834,7 @@ const offsetButtonUp = () => {
 
 const overlayClose = (s) => {
   if (s == "volume") {
-    if (overlayTime + 1400 <= new Date().getTime()) {
+    if (overlayTime + 1400 <= Date.now()) {
       volumeOverlay.classList.remove("overlayOpen");
     }
   }
@@ -1973,7 +1981,7 @@ const scrollEvent = (e) => {
       Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
       intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
       volumeOverlay.classList.add("overlayOpen");
-      overlayTime = new Date().getTime();
+      overlayTime = Date.now();
       setTimeout(() => {
         overlayClose("volume");
       }, 1500);

@@ -1140,21 +1140,18 @@ const cntRender = () => {
   //fps counter
   if (frameCounter) {
     frameArray.push(1000 / (Date.now() - frameCounterMs));
-    if (frameArray.length == 20) {
+    if (frameArray.length == 10) {
       fps =
         frameArray.reduce((sum, current) => {
           return sum + current;
-        }, 0) / 20;
+        }, 0) / 10;
       frameArray = [];
     }
-    // ctx.font = "2.5vh Heebo";
-    // ctx.fillStyle = "#555";
-    // ctx.textBaseline = "bottom";
-    // ctx.fillText(
-    //   fps.toFixed(),
-    //   canvas.width / 2,
-    //   canvas.height - canvas.height / 70
-    // );
+    ctx.font = `500 ${canvas.height / 50}px Montserrat`;
+    ctx.fillStyle = "#fff";
+    ctx.textBaseline = "bottom";
+    ctx.textAlign = "right";
+    ctx.fillText(fps.toFixed(), canvas.width - canvas.width / 100, canvas.height - canvas.height / 70);
     frameCounterMs = Date.now();
   }
   drawCursor();
