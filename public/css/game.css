@@ -518,14 +518,6 @@ p {
   height: 10vw;
 }
 
-.tumblbugContainer {
-  margin-top: 4.5vh;
-  margin-bottom: 4.5vh;
-  margin-left: 20vw;
-  width: 60vw;
-  height: 5vw;
-}
-
 .profile {
   display: flex;
   align-items: center;
@@ -559,44 +551,11 @@ p {
   transition-duration: 0.1s;
 }
 
-.profileText {
-  font-size: 3vh;
-  font-weight: 600;
-}
-
-.profileTextSmall {
-  font-size: 2vh;
-  font-weight: 600;
-}
-
-.tumblbug1 {
-  height: 5vw;
-  background-image: url("/images/credits/tumblbug_1.webp");
-}
-
-.tumblbug2 {
-  height: 5vw;
-  background-image: url("/images/credits/tumblbug_2.webp");
-}
-
-.tumblbug3 {
-  height: 5vw;
-  background-image: url("/images/credits/tumblbug_3.webp");
-}
-
-.tumblbug4 {
-  height: 5vw;
-  background-image: url("/images/credits/tumblbug_4.webp");
-}
-
-.tumblbug5 {
-  height: 5vw;
-  background-image: url("/images/credits/tumblbug_5.webp");
-}
-
-.tumblbug6 {
-  height: 5vw;
-  background-image: url("/images/credits/tumblbug_6.webp");
+#tumblbug {
+  box-sizing: border-box;
+  padding: 4.5vh 15vw;
+  width: 100%;
+  filter: drop-shadow(0 0 2vh rgba(70, 70, 70, 0.1));
 }
 
 .profileHover:hover {
@@ -633,6 +592,10 @@ p {
 
 #profileGeoplex {
   background-image: url("/images/credits/geoplex.webp");
+}
+
+#profileAlkmerlin {
+  background-image: url("/images/credits/alkmerlin.webp");
 }
 
 #infoProfileContainer {
@@ -2882,14 +2845,14 @@ del {
   position: absolute;
   width: 100%;
   height: 100%;
-  backdrop-filter: blur(20px) contrast(0.9) brightness(0.9);
+  backdrop-filter: blur(20px) saturate(1.1) brightness(0.95);
   border: 1px solid transparent;
-  background-image: linear-gradient(#444, #444), linear-gradient(60deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.4) 10%, rgba(255, 255, 255, 0.4) 90%, rgba(255, 255, 255, 1) 100%);
+  background-image: linear-gradient(#222, #111), linear-gradient(60deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 10%, rgba(255, 255, 255, 0.4) 90%, rgba(255, 255, 255, 0.8) 100%);
   background-origin: border-box;
   background-clip: content-box, border-box;
   border-radius: 5px;
   box-sizing: border-box;
-  mix-blend-mode: color-dodge;
+  mix-blend-mode: plus-lighter;
 }
 
 .profileContents {
@@ -3017,12 +2980,12 @@ del {
   width: 100%;
   height: 100%;
   border: 1px solid transparent;
-  background-image: linear-gradient(#000, #000), linear-gradient(60deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.2) 80%, rgba(255, 255, 255, 0.6) 100%);
+  background-image: linear-gradient(#111, #000), linear-gradient(60deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.2) 80%, rgba(255, 255, 255, 0.6) 100%);
   background-origin: border-box;
   background-clip: content-box, border-box;
   border-radius: 5px;
   box-sizing: border-box;
-  mix-blend-mode: color-dodge;
+  mix-blend-mode: plus-lighter;
 }
 
 .playContainer:hover {

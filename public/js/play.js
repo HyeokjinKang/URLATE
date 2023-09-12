@@ -25,11 +25,14 @@ let circleBulletAngles = [];
 let destroyParticles = [];
 let missParticles = [];
 let perfectParticles = [];
+let createdBullets = new Set([]);
 let destroyedBullets = new Set([]);
 let destroyedNotes = new Set([]);
 let grabbedNotes = new Set([]);
 let mouseX = 0,
   mouseY = 0;
+let rawX = 0,
+  rawY = 0;
 let score = 0,
   combo = 0,
   displayScore = 0,
@@ -372,25 +375,25 @@ const drawParticle = (n, x, y, j, d) => {
   let cy = (canvas.height / 200) * (y + 100);
   if (n == 0) {
     //Destroy
-    const raf = (n, w) => {
-      for (let i = 0; i < 3; i++) {
-        ctx.beginPath();
-        if (skin.bullet.type == "gradient") {
-          let grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
-          for (let i = 0; i < skin.bullet.stops.length; i++) {
-            grd.addColorStop(skin.bullet.stops[i].percentage / 100, `#${skin.bullet.stops[i].color}`);
-          }
-          ctx.fillStyle = grd;
-          ctx.strokeStyle = grd;
-        } else if (skin.bullet.type == "color") {
-          ctx.fillStyle = `#${skin.bullet.color}`;
-          ctx.strokeStyle = `#${skin.bullet.color}`;
+    const w = (canvas.width / 1000) * destroyParticles[j].w * (1 - (Date.now() - destroyParticles[j].ms) / 250);
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      if (skin.bullet.type == "gradient") {
+        let grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
+        for (let i = 0; i < skin.bullet.stops.length; i++) {
+          grd.addColorStop(skin.bullet.stops[i].percentage / 100, `#${skin.bullet.stops[i].color}`);
         }
-        ctx.arc(cx + n * destroyParticles[j].d[i][0], cy + n * destroyParticles[j].d[i][1], w, 0, 2 * Math.PI);
-        ctx.fill();
+        ctx.fillStyle = grd;
+        ctx.strokeStyle = grd;
+      } else if (skin.bullet.type == "color") {
+        ctx.fillStyle = `#${skin.bullet.color}`;
+        ctx.strokeStyle = `#${skin.bullet.color}`;
       }
-    };
-    raf(destroyParticles[j].n, destroyParticles[j].w);
+      const step = destroyParticles[j].n * (canvas.width / 10000);
+      ctx.arc(cx + step * destroyParticles[j].d[i][0], cy + step * destroyParticles[j].d[i][1], w, 0, 2 * Math.PI);
+      ctx.fill();
+      destroyParticles[j].n += destroyParticles[j].step;
+    }
   } else if (n == 1) {
     //Click Note
     const raf = (w, s, n) => {
@@ -461,7 +464,7 @@ const drawParticle = (n, x, y, j, d) => {
         let newY = y - 2 * Math.round(p / 10);
         ctx.fillStyle = getJudgeStyle(j.toLowerCase(), p, cx, newY);
         ctx.strokeStyle = `rgba(0, 0, 0, ${1 - p / 100})`;
-        ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
+        ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.lineWidth = 2;
@@ -483,7 +486,7 @@ const drawParticle = (n, x, y, j, d) => {
       let newY = cy - Math.round(p / 10);
       ctx.fillStyle = getJudgeStyle("miss", p);
       ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
-      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
+      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.lineWidth = 2;
@@ -497,7 +500,7 @@ const drawParticle = (n, x, y, j, d) => {
       let newY = cy - Math.round(p / 10);
       ctx.fillStyle = getJudgeStyle("perfect", p, cx, newY);
       ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
-      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
+      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.lineWidth = 2;
@@ -756,7 +759,7 @@ const drawBullet = (n, x, y, a) => {
       if (skin.bullet.outline) ctx.stroke();
       break;
     default:
-      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
+      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
       ctx.fillStyle = "#F55";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
@@ -806,6 +809,7 @@ const callBulletDestroy = (j) => {
     y: y,
     w: 5,
     n: 1,
+    step: 2,
     d: randomDirection,
     ms: Date.now(),
   });
@@ -824,10 +828,6 @@ const drawKeyInput = () => {
     alpha = 1 - (Date.now() - keyInput[keyInput.length - 1].time - 3000) / 1000;
     if (alpha <= 0) return;
   }
-  ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
-  ctx.fillStyle = "#FFF";
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
   let text = "";
   for (let i = 0; i < keyInput.length; i++) {
     text += keyInput[i].key;
@@ -887,7 +887,7 @@ const drawKeyInput = () => {
     ctx.stroke();
     ctx.beginPath();
     ctx.fillStyle = "#fff";
-    ctx.font = `600 5vh Montserrat, Pretendard Variable`;
+    ctx.font = `600 ${canvas.height / 40}px Montserrat, Pretendard JP Variable`;
     ctx.textBaseline = "top";
     ctx.textAlign = "center";
     ctx.fillText(
@@ -901,6 +901,10 @@ const drawKeyInput = () => {
 };
 
 const cntRender = () => {
+  let mouseCalcX = ((rawX / canvas.offsetWidth) * 200 - 100) * sens;
+  let mouseCalcY = ((rawY / canvas.offsetHeight) * 200 - 100) * sens;
+  mouseX = mouseCalcX >= 100 ? 100 : mouseCalcX <= -100 ? -100 : mouseCalcX;
+  mouseY = mouseCalcY >= 100 ? 100 : mouseCalcY <= -100 ? -100 : mouseCalcY;
   eraseCnt();
   if (window.devicePixelRatio != pixelRatio) {
     pixelRatio = window.devicePixelRatio;
@@ -925,7 +929,7 @@ const cntRender = () => {
       }
       fontSize = (canvas.height / 100) * (30 - (comboAlertMs + 900 - Date.now()) / 90);
       ctx.beginPath();
-      ctx.font = `700 ${fontSize}px Montserrat, Pretendard Variable`;
+      ctx.font = `700 ${fontSize}px Montserrat, Pretendard JP Variable`;
       ctx.fillStyle = `rgba(200,200,200,${comboOpacity})`;
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
@@ -971,9 +975,9 @@ const cntRender = () => {
         if (renderTriggers[i].ms - 1 <= seek && renderTriggers[i].ms + renderTriggers[i].time > seek && disableText == "false") {
           ctx.beginPath();
           ctx.fillStyle = "#fff";
-          ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Montserrat, Pretendard Variable`;
+          ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Montserrat, Pretendard JP Variable`;
           if (renderTriggers[i].size.indexOf("vh") != -1)
-            ctx.font = `${renderTriggers[i].weight} ${(canvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Montserrat, Pretendard Variable`;
+            ctx.font = `${renderTriggers[i].weight} ${(canvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Montserrat, Pretendard JP Variable`;
           ctx.textAlign = renderTriggers[i].align;
           ctx.textBaseline = renderTriggers[i].valign;
           ctx.fillText(renderTriggers[i].text, (canvas.width / 200) * (renderTriggers[i].x + 100), (canvas.height / 200) * (renderTriggers[i].y + 100));
@@ -981,10 +985,8 @@ const cntRender = () => {
       }
     }
     for (let i = 0; i < destroyParticles.length; i++) {
-      if (destroyParticles[i].w > 0) {
+      if (destroyParticles[i].ms + 250 > Date.now()) {
         drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
-        destroyParticles[i].w = 10 - (Date.now() - destroyParticles[i].ms) / 25;
-        destroyParticles[i].n++;
       }
     }
     end = upperBound(pattern.patterns, seek + (bpm * 14) / speed);
@@ -1033,7 +1035,25 @@ const cntRender = () => {
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
       if (!destroyedBullets.has(start + i)) {
-        const p = ((seek * 1000 - renderBullets[i].ms) / ((bpm * 40) / speed / renderBullets[i].speed)) * 100; // 0~200
+        if (!createdBullets.has(start + i)) {
+          createdBullets.add(start + i);
+          let randomDirection = [];
+          for (let i = 0; i < 3; i++) {
+            let rx = Math.floor(Math.random() * 4) - 2;
+            let ry = Math.floor(Math.random() * 4) - 2;
+            randomDirection[i] = [rx, ry];
+          }
+          destroyParticles.push({
+            x: renderBullets[i].direction == "L" ? -100 : 100,
+            y: renderBullets[i].location,
+            w: 10,
+            n: 1,
+            step: 4,
+            d: randomDirection,
+            ms: Date.now(),
+          });
+        }
+        const p = ((seek - renderBullets[i].ms) / ((bpm * 40) / speed / renderBullets[i].speed)) * 100;
         const left = renderBullets[i].direction == "L";
         let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
         if (renderBullets[i].value == 0) {
@@ -1042,14 +1062,7 @@ const cntRender = () => {
           drawBullet(renderBullets[i].value, x, y, renderBullets[i].angle + (left ? 0 : 180));
         } else {
           if (!circleBulletAngles[start + i]) circleBulletAngles[start + i] = calcAngleDegrees((left ? -100 : 100) - mouseX, renderBullets[i].location - mouseY);
-          if (left) {
-            if (110 > circleBulletAngles[start + i] && circleBulletAngles[start + i] > 0) circleBulletAngles[start + i] = 110;
-            else if (0 > circleBulletAngles[start + i] && circleBulletAngles[start + i] > -110) circleBulletAngles[start + i] = -110;
-          } else {
-            if (70 < circleBulletAngles[start + i] && circleBulletAngles[start + i] > 0) circleBulletAngles[start + i] = 70;
-            else if (0 > circleBulletAngles[start + i] && circleBulletAngles[start + i] < -70) circleBulletAngles[start + i] = -70;
-          }
-          let y = renderBullets[i].location + (left ? 1 : -1) * getSin(circleBulletAngles[start + i]) * p;
+          y = renderBullets[i].location + p * getTan(circleBulletAngles[start + i]) * (left ? 1 : -1);
           trackMouseSelection(start + i, 1, renderBullets[i].value, x, y);
           drawBullet(renderBullets[i].value, x, y, "");
         }
@@ -1057,7 +1070,7 @@ const cntRender = () => {
     }
   } catch (e) {
     if (e) {
-      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
+      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
       ctx.fillStyle = "#F55";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
@@ -1083,12 +1096,12 @@ const cntRender = () => {
     displayScore = score;
   }
   ctx.beginPath();
-  ctx.font = `700 ${canvas.height / 25}px Montserrat, Pretendard Variable`;
+  ctx.font = `700 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
   ctx.fillStyle = "#fff";
   ctx.textAlign = "right";
   ctx.textBaseline = "top";
   ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05);
-  ctx.font = `${canvas.height / 40}px Montserrat, Pretendard Variable`;
+  ctx.font = `${canvas.height / 40}px Montserrat, Pretendard JP Variable`;
   ctx.fillStyle = "#fff";
   ctx.fillText(`${combo}x`, canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05 + canvas.height / 25);
   drawCursor();
@@ -1111,7 +1124,7 @@ const cntRender = () => {
     ctx.fill();
     ctx.beginPath();
     ctx.fillStyle = "#000000";
-    ctx.font = `italic 600 ${canvas.height / 40}px Montserrat, Pretendard Variable`;
+    ctx.font = `italic 600 ${canvas.height / 40}px Montserrat, Pretendard JP Variable`;
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     ctx.fillText("NEW RECORD!", canvas.width * 0.87, canvas.height * 0.23);
@@ -1126,21 +1139,18 @@ const cntRender = () => {
   //fps counter
   if (frameCounter) {
     frameArray.push(1000 / (Date.now() - frameCounterMs));
-    if (frameArray.length == 20) {
+    if (frameArray.length == 10) {
       fps =
         frameArray.reduce((sum, current) => {
           return sum + current;
-        }, 0) / 20;
+        }, 0) / 10;
       frameArray = [];
     }
-    // ctx.font = "2.5vh Heebo";
-    // ctx.fillStyle = "#555";
-    // ctx.textBaseline = "bottom";
-    // ctx.fillText(
-    //   fps.toFixed(),
-    //   canvas.width / 2,
-    //   canvas.height - canvas.height / 70
-    // );
+    ctx.font = `500 ${canvas.height / 50}px Montserrat`;
+    ctx.fillStyle = "#fff";
+    ctx.textBaseline = "bottom";
+    ctx.textAlign = "right";
+    ctx.fillText(fps.toFixed(), canvas.width - canvas.width / 100, canvas.height - canvas.height / 70);
     frameCounterMs = Date.now();
   }
   drawCursor();
@@ -1230,11 +1240,9 @@ const drawFinalEffect = (i) => {
   if (p == 1) effectMs = 0;
 };
 
-const trackMousePos = () => {
-  let x = (event.clientX / canvas.offsetWidth) * 200 - 100;
-  let y = (event.clientY / canvas.offsetHeight) * 200 - 100;
-  mouseX = x * sens >= 100 ? 100 : x * sens <= -100 ? -100 : x * sens;
-  mouseY = y * sens >= 100 ? 100 : y * sens <= -100 ? -100 : y * sens;
+const trackMousePos = (e) => {
+  rawX = e.clientX;
+  rawY = e.clientY;
 };
 
 const calculateResult = () => {
@@ -1301,7 +1309,7 @@ const calculateResult = () => {
   }
   if (missPoint.length == 0) {
     missCtx.fillStyle = "#FFF";
-    missCtx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
+    missCtx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
     missCtx.textAlign = "right";
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
@@ -1374,7 +1382,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
         }
         break;
       default:
-        ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard Variable`;
+        ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
         ctx.fillStyle = "#F55";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
@@ -1606,7 +1614,7 @@ const globalScrollEvent = (e) => {
     let delta = 0;
     if (e.deltaY != 0) delta = Math.max(-1, Math.min(1, e.deltaY));
     else delta = Math.max(-1, Math.min(1, e.deltaX));
-    if (settings.input.wheelReverse) delta *= -1;
+    if (!settings.input.wheelReverse) delta *= -1;
     if (shiftDown) {
       if (delta == 1) {
         //UP
@@ -1757,3 +1765,4 @@ window.addEventListener("blur", () => {
 });
 
 window.addEventListener("wheel", globalScrollEvent);
+document.getElementById("componentCanvas").addEventListener("pointermove", trackMousePos);

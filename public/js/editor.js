@@ -106,6 +106,8 @@ let selectedCntElement = { v1: "", v2: "", i: "" };
 let circleBulletAngles = [];
 let destroyedBullets = new Set([]);
 let prevDestroyedBullets = new Set([]);
+let createdBullets = new Set([]);
+let prevCreatedBullets = new Set([]);
 let destroyedSeeks = new Set([]);
 let prevDestroyedSeeks = new Set([]);
 
@@ -113,13 +115,22 @@ let copySelection = { element: -1, start: -1, end: -1, ms: 0 };
 
 let metronome = 1;
 let metronomeLimit = 4;
-const beep = new Howl({
-  src: `/sounds/beep2.ogg`,
-  format: ["ogg"],
-  volume: 0.5,
-  autoplay: false,
-  loop: false,
-});
+const beep = [
+  new Howl({
+    src: `/sounds/beep1.ogg`,
+    format: ["ogg"],
+    volume: 0.5,
+    autoplay: false,
+    loop: false,
+  }),
+  new Howl({
+    src: `/sounds/beep2.ogg`,
+    format: ["ogg"],
+    volume: 0.5,
+    autoplay: false,
+    loop: false,
+  }),
+];
 
 const sortAsTiming = (a, b) => {
   if (a.ms == b.ms) return 0;
@@ -339,11 +350,10 @@ const songSelected = (isLoaded, withoutSong) => {
   settingsPropertiesTextbox[0].value = pattern.information.track;
   settingsPropertiesTextbox[1].value = pattern.information.producer;
   settingsPropertiesTextbox[2].value = pattern.information.author;
-  settingsPropertiesTextbox[3].value = pattern.information.tempo ? pattern.information.tempo : 4;
-  settingsPropertiesTextbox[4].value = pattern.information.bpm;
-  settingsPropertiesTextbox[5].value = pattern.information.speed;
-  settingsPropertiesTextbox[6].value = pattern.information.offset;
-  settingsPropertiesTextbox[7].value = pattern.background.boxColor;
+  settingsPropertiesTextbox[3].value = pattern.information.bpm;
+  settingsPropertiesTextbox[4].value = pattern.information.speed;
+  settingsPropertiesTextbox[5].value = pattern.information.offset;
+  settingsPropertiesTextbox[6].value = pattern.background.boxColor;
   lottieInitBox.value = pattern.background.type;
   if (denySkin) canvasBackground.style.filter = `grayscale(30%) opacity(20%)`;
   else canvasBackground.style.filter = `brightness(30%)`;
@@ -356,6 +366,7 @@ const songSelected = (isLoaded, withoutSong) => {
   rate = 1;
   let background = new URLSearchParams(window.location.search).get("background");
   if (background !== "0") canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[songSelectBox.selectedIndex].fileName}.webp")`;
+  else if (!denySkin) canvasBackground.style.backgroundColor = `black`;
   document.getElementById("songSelectionContainer").style.display = "none";
   document.getElementById("initialScreenContainer").style.display = "none";
   document.getElementById("editorMainContainer").style.display = "initial";
@@ -451,7 +462,7 @@ const drawNote = (p, x, y, s, n, d, t) => {
   if (s == true) {
     cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
     cntCtx.beginPath();
-    cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard Variable`;
+    cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard JP Variable`;
     cntCtx.fillStyle = "#000";
     cntCtx.strokeStyle = "#fff";
     cntCtx.textAlign = "center";
@@ -605,7 +616,7 @@ const drawBullet = (n, x, y, a, s, l, d) => {
   let w = cntCanvas.width / 80;
   if (s == true) {
     cntCtx.beginPath();
-    cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard Variable`;
+    cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard JP Variable`;
     cntCtx.fillStyle = "#000";
     cntCtx.strokeStyle = "#fff";
     cntCtx.textAlign = d == "L" ? "left" : "right";
@@ -665,7 +676,7 @@ const drawBullet = (n, x, y, a, s, l, d) => {
       if (skin.bullet.outline && !denySkin) cntCtx.stroke();
       break;
     default:
-      cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard Variable`;
+      cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard JP Variable`;
       cntCtx.fillStyle = "#F55";
       cntCtx.textAlign = "left";
       cntCtx.textBaseline = "top";
@@ -789,7 +800,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
           }
           break;
         default:
-          cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard Variable`;
+          cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard JP Variable`;
           cntCtx.fillStyle = "#F55";
           cntCtx.textAlign = "left";
           cntCtx.textBaseline = "top";
@@ -940,7 +951,7 @@ const tmlRender = () => {
     tmlCtx.fillStyle = "#111";
     tmlCtx.textAlign = "left";
     tmlCtx.textBaseline = "middle";
-    tmlCtx.font = `${tmlCanvas.height / 14}px Metropolis, Pretendard Variable`;
+    tmlCtx.font = `${tmlCanvas.height / 14}px Metropolis, Pretendard JP Variable`;
     tmlCtx.fillText("Note", startX * 1.2 + height / 6, startY + timelineYLoc + height / 1.8);
     let i = 1;
     for (i; i <= bulletsOverlapNum; i++) {
@@ -963,7 +974,7 @@ const tmlRender = () => {
     tmlCtx.fillStyle = "#FFF";
     tmlCtx.fillRect(0, endY, endX, tmlCanvas.height - endY);
     tmlCtx.fillRect(0, 0, endX, startY);
-    tmlCtx.font = `${tmlCanvas.height / 16}px Metropolis, Pretendard Variable`;
+    tmlCtx.font = `${tmlCanvas.height / 16}px Metropolis, Pretendard JP Variable`;
     tmlCtx.textAlign = "center";
     tmlCtx.textBaseline = "bottom";
     tmlCtx.fillStyle = "#777";
@@ -1018,7 +1029,7 @@ const tmlRender = () => {
     tmlCtx.lineTo(lineX, startY);
     tmlCtx.stroke();
   } catch (e) {
-    tmlCtx.font = `500 ${tmlCanvas.height / 15}px Metropolis, Pretendard Variable`;
+    tmlCtx.font = `500 ${tmlCanvas.height / 15}px Metropolis, Pretendard JP Variable`;
     tmlCtx.fillStyle = "#F55";
     tmlCtx.textAlign = "left";
     tmlCtx.textBaseline = "top";
@@ -1058,7 +1069,7 @@ const tmlRender = () => {
       tmlCtx.fill();
     }
   }
-  tmlCtx.font = `500 ${tmlCanvas.height / 15}px Metropolis, Pretendard Variable`;
+  tmlCtx.font = `500 ${tmlCanvas.height / 15}px Metropolis, Pretendard JP Variable`;
   tmlCtx.fillStyle = "#555";
   tmlCtx.textAlign = "right";
   tmlCtx.textBaseline = "top";
@@ -1139,7 +1150,8 @@ const cntRender = () => {
   if (metronomeToggle) {
     if (song.playing()) {
       if (Math.ceil(((song.seek() * 1000) / (60000 / bpm)) % metronomeLimit) == metronome) {
-        beep.play();
+        if (metronome == 1) beep[0].play();
+        else beep[1].play();
         if (metronome == metronomeLimit) metronome = 1;
         else metronome++;
       }
@@ -1155,6 +1167,7 @@ const cntRender = () => {
     let end = upperBound(pattern.triggers, seek * 1000 + 2); //2 for floating point miss
     const renderTriggers = pattern.triggers.slice(0, end);
     eraseCnt();
+    createdBullets.clear();
     destroyedBullets.clear();
     destroyedSeeks.clear();
     let bpmCount = 0,
@@ -1228,9 +1241,9 @@ const cntRender = () => {
           cntCtx.beginPath();
           if (denySkin) cntCtx.fillStyle = "#111";
           else cntCtx.fillStyle = "#fff";
-          cntCtx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Metropolis, Pretendard Variable`;
+          cntCtx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Metropolis, Pretendard JP Variable`;
           if (renderTriggers[i].size.indexOf("vh") != -1)
-            cntCtx.font = `${renderTriggers[i].weight} ${(cntCanvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Metropolis, Pretendard Variable`;
+            cntCtx.font = `${renderTriggers[i].weight} ${(cntCanvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Metropolis, Pretendard JP Variable`;
           cntCtx.textAlign = renderTriggers[i].align;
           cntCtx.textBaseline = renderTriggers[i].valign;
           cntCtx.fillText(renderTriggers[i].text, (cntCanvas.width / 200) * (renderTriggers[i].x + 100), (cntCanvas.height / 200) * (renderTriggers[i].y + 100));
@@ -1313,7 +1326,24 @@ const cntRender = () => {
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
       if (!destroyedBullets.has(start + i)) {
-        const p = ((seek * 1000 - renderBullets[i].ms) / ((bpm * 40) / speed / renderBullets[i].speed)) * 100; // 0~200
+        createdBullets.add(start + i);
+        if (!prevCreatedBullets.has(start + i)) {
+          let randomDirection = [];
+          for (let i = 0; i < 3; i++) {
+            let rx = Math.floor(Math.random() * 4) - 2;
+            let ry = Math.floor(Math.random() * 4) - 2;
+            randomDirection[i] = [rx, ry];
+          }
+          destroyParticles.push({
+            x: renderBullets[i].direction == "L" ? -100 : 100,
+            y: renderBullets[i].location,
+            w: 10,
+            n: 2,
+            d: randomDirection,
+            ms: Date.now(),
+          });
+        }
+        const p = ((seek * 1000 - renderBullets[i].ms) / ((bpm * 40) / speed / renderBullets[i].speed)) * 100;
         const left = renderBullets[i].direction == "L";
         let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
         if (renderBullets[i].value == 0) {
@@ -1322,19 +1352,13 @@ const cntRender = () => {
           drawBullet(renderBullets[i].value, x, y, renderBullets[i].angle + (left ? 0 : 180), selectedCheck(1, start + i), renderBullets[i].location, renderBullets[i].direction);
         } else {
           if (!circleBulletAngles[start + i]) circleBulletAngles[start + i] = calcAngleDegrees((left ? -100 : 100) - mouseX, renderBullets[i].location - mouseY);
-          if (left) {
-            if (110 > circleBulletAngles[start + i] && circleBulletAngles[start + i] > 0) circleBulletAngles[start + i] = 110;
-            else if (0 > circleBulletAngles[start + i] && circleBulletAngles[start + i] > -110) circleBulletAngles[start + i] = -110;
-          } else {
-            if (70 < circleBulletAngles[start + i] && circleBulletAngles[start + i] > 0) circleBulletAngles[start + i] = 70;
-            else if (0 > circleBulletAngles[start + i] && circleBulletAngles[start + i] < -70) circleBulletAngles[start + i] = -70;
-          }
-          let y = renderBullets[i].location + (left ? 1 : -1) * getSin(circleBulletAngles[start + i]) * p;
+          y = renderBullets[i].location + p * getTan(circleBulletAngles[start + i]) * (left ? 1 : -1);
           if (mouseMode == 0) trackMouseSelection(start + i, 1, renderBullets[i].value, x, y);
           drawBullet(renderBullets[i].value, x, y, "", selectedCheck(1, start + i), renderBullets[i].location, renderBullets[i].direction);
         }
       }
     }
+    prevCreatedBullets = new Set(createdBullets);
     if (mode == 2 && mouseMode == -1) {
       cntCtx.fillStyle = "rgba(0,0,0,0.5)";
       cntCtx.fillRect(0, 0, cntCanvas.width, cntCanvas.height);
@@ -1348,7 +1372,7 @@ const cntRender = () => {
       cntCtx.moveTo(cntCanvas.width / 2 - 15, cntCanvas.height / 2 - 15);
       cntCtx.lineTo(cntCanvas.width / 2 + 15, cntCanvas.height / 2 - 15);
       cntCtx.stroke();
-      cntCtx.font = `500 ${cntCanvas.height / 25}px Metropolis, Pretendard Variable`;
+      cntCtx.font = `500 ${cntCanvas.height / 25}px Metropolis, Pretendard JP Variable`;
       cntCtx.textAlign = "center";
       cntCtx.textBaseline = "top";
       cntCtx.fillText("Click to add Trigger", cntCanvas.width / 2, cntCanvas.height / 2 + 10);
@@ -1360,7 +1384,7 @@ const cntRender = () => {
     }
   } catch (e) {
     if (e) {
-      cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard Variable`;
+      cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard JP Variable`;
       cntCtx.fillStyle = "#F55";
       cntCtx.textAlign = "left";
       cntCtx.textBaseline = "top";
@@ -2758,7 +2782,7 @@ const globalScrollEvent = (e) => {
     let delta = 0;
     if (e.deltaY != 0) delta = Math.max(-1, Math.min(1, e.deltaY));
     else delta = Math.max(-1, Math.min(1, e.deltaX));
-    if (settings.input.wheelReverse) delta *= -1;
+    if (!settings.input.wheelReverse) delta *= -1;
     if (shiftDown && mouseMode != 1) {
       if (delta == 1) {
         //UP
