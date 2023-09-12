@@ -350,11 +350,10 @@ const songSelected = (isLoaded, withoutSong) => {
   settingsPropertiesTextbox[0].value = pattern.information.track;
   settingsPropertiesTextbox[1].value = pattern.information.producer;
   settingsPropertiesTextbox[2].value = pattern.information.author;
-  settingsPropertiesTextbox[3].value = pattern.information.tempo ? pattern.information.tempo : 4;
-  settingsPropertiesTextbox[4].value = pattern.information.bpm;
-  settingsPropertiesTextbox[5].value = pattern.information.speed;
-  settingsPropertiesTextbox[6].value = pattern.information.offset;
-  settingsPropertiesTextbox[7].value = pattern.background.boxColor;
+  settingsPropertiesTextbox[3].value = pattern.information.bpm;
+  settingsPropertiesTextbox[4].value = pattern.information.speed;
+  settingsPropertiesTextbox[5].value = pattern.information.offset;
+  settingsPropertiesTextbox[6].value = pattern.background.boxColor;
   lottieInitBox.value = pattern.background.type;
   if (denySkin) canvasBackground.style.filter = `grayscale(30%) opacity(20%)`;
   else canvasBackground.style.filter = `brightness(30%)`;
