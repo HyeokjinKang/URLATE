@@ -471,9 +471,9 @@ const drawParticle = (n, x, y, j, d) => {
   }
 };
 
-const drawNote = (p, x, y, n, d, t, index) => {
+const drawNote = (p, x, y, n, d, t, index, f) => {
   if (n != 2 && p >= 130) return;
-  else if (n == 2 && t >= 130) return;
+  else if (n == 2 && f >= 130) return;
   p = Math.max(p, 0);
   x = (canvas.width / 200) * (x + 100);
   y = (canvas.height / 200) * (y + 100);
@@ -483,7 +483,7 @@ const drawNote = (p, x, y, n, d, t, index) => {
   if (n != 2 && p >= 100) {
     opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
   } else if (n == 2 && p >= 100 && t >= 100 && (grabbedNotes.has(index) || grabbedNotes.has(`${index}!`))) {
-    opacity = Math.max(Math.round((255 / 30) * (130 - t)), 0);
+    opacity = Math.max(Math.round((255 / 30) * (130 - f)), 0);
   } else if (n == 2 && p >= 100 && !grabbedNotes.has(index)) {
     opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
   }
@@ -962,7 +962,8 @@ const cntRender = () => {
     for (let i = renderNotes.length - 1; i >= 0; i--) {
       const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
       const t = ((seek - renderNotes[i].ms) / renderNotes[i].time) * 100;
-      drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, t, i);
+      const f = (((bpm * 14) / speed - (renderNotes[i].ms + renderNotes[i].time - seek * 1000)) / ((bpm * 14) / speed)) * 100;
+      drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, t, i, f);
       if (p >= 120 && !destroyedNotes.has(i) && (renderNotes[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
         calculateScore("miss", i, true);
         missParticles.push({
