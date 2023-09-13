@@ -1372,6 +1372,7 @@ const profileUpdate = async (uid) => {
     let recentPlay = JSON.parse(profile.recentPlay);
     if (recentPlay.length == 0) {
       document.getElementsByClassName("profileStatValue")[5].textContent = "-";
+      document.getElementById("profileRecentPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
     } else {
       document.getElementById("profileRecentPlay").innerHTML = "";
       for (let i = 0; i < recentPlay.length; i++) {
@@ -1417,6 +1418,7 @@ const profileUpdate = async (uid) => {
     if (bestRecords.result == "success") {
       document.getElementById("profileBestPlay").innerHTML = "";
       bestRecords = bestRecords.results;
+      if (bestRecords.length == 0) document.getElementById("profileBestPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
       for (let i = 0; i < bestRecords.length; i++) {
         const data = bestRecords[i];
         const song = tracks.find((e) => e.name == data.name);

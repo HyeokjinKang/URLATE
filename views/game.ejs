@@ -663,18 +663,14 @@
             <img src="/images/parts/icons/star.svg" class="profileContentsTitleIcon" />
             <span class="profileContentsTitleText"><%= __('bestplay') %></span>
           </div>
-          <div id="profileBestPlay">
-            <span class="nothingHere"><%= __('nothing_here') %></span>
-          </div>
+          <div id="profileBestPlay"></div>
         </div>
         <div class="profileContents">
           <div class="profileContentsTitle">
             <img src="/images/parts/icons/recent.svg" class="profileContentsTitleIcon" />
             <span class="profileContentsTitleText"><%= __('recent') %></span>
           </div>
-          <div id="profileRecentPlay">
-            <span class="nothingHere"><%= __('nothing_here') %></span>
-          </div>
+          <div id="profileRecentPlay"></div>
         </div>
       </div>
     </div>
@@ -717,6 +713,7 @@
       const notAvailable2 = "<%= __('not_available_2') %>";
       const alias = "<%= __('alias') %>".split(",");
       const rating = "<%= __('rating') %>";
+      const nothingHere = "<%= __('nothing_here') %>";
       if (lang == "en") document.body.style.letterSpacing = "-0.3px";
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.5/lottie.js"></script>
