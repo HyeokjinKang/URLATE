@@ -420,6 +420,11 @@ p {
 
 .clickable {
   cursor: pointer;
+  transition-duration: 0.3s;
+}
+
+.clickable.opacity:hover {
+  opacity: 0.7;
 }
 
 .closeBtn {
@@ -714,11 +719,11 @@ p {
   width: auto;
 }
 
-.fadeIn {
-  animation: fadeIn 0.3s ease-in-out forwards;
+.fadeInAnim {
+  animation: fadeInAnim 0.3s ease-in-out forwards;
 }
 
-@keyframes fadeIn {
+@keyframes fadeInAnim {
   0% {
     opacity: 0;
   }
@@ -727,11 +732,11 @@ p {
   }
 }
 
-.fadeOut {
-  animation: fadeOut 0.3s ease-in-out forwards;
+.fadeOutAnim {
+  animation: fadeOutAnim 0.3s ease-in-out forwards;
 }
 
-@keyframes fadeOut {
+@keyframes fadeOutAnim {
   0% {
     opacity: 1;
   }
@@ -740,11 +745,11 @@ p {
   }
 }
 
-.shortFadeIn {
-  animation: shortFadeIn 0.2s linear forwards;
+.shortfadeInAnim {
+  animation: shortfadeInAnim 0.2s linear forwards;
 }
 
-@keyframes shortFadeIn {
+@keyframes shortfadeInAnim {
   0% {
     opacity: 0;
   }
@@ -753,11 +758,11 @@ p {
   }
 }
 
-.shortFadeOut {
-  animation: shortFadeOut 0.2s linear forwards;
+.shortfadeOutAnim {
+  animation: shortfadeOutAnim 0.2s linear forwards;
 }
 
-@keyframes shortFadeOut {
+@keyframes shortfadeOutAnim {
   0% {
     opacity: 1;
   }
@@ -2826,6 +2831,8 @@ del {
 #profileImage {
   border-radius: 6vh;
   height: 5vh;
+  width: 5vh;
+  object-fit: cover;
   border: 2px solid #fffa;
 }
 
@@ -3065,4 +3072,24 @@ del {
 .nothingHere {
   color: rgba(255, 255, 255, 0.5);
   font-size: 1.5vh;
+}
+
+#profileDescription {
+  text-align: right;
+  z-index: 200;
+  position: fixed;
+  top: 6.7vh;
+  right: calc(5vw + 3.5vh);
+  font-size: 1.6vh;
+  line-height: 100%;
+  color: #ffffffaa;
+  font-weight: 400;
+}
+
+.iziToast-theme-dark > .iziToast-body > .iziToast-inputs > select {
+  color: white !important;
+}
+
+.iziToast-theme-dark > .iziToast-body > .iziToast-inputs > input {
+  color: white !important;
 }
