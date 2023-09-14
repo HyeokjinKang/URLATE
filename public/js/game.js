@@ -82,6 +82,8 @@ let skinData = [];
 let songData = [];
 let loading = false;
 let tutorial = false;
+let aliasNum;
+let ownedAlias;
 
 let rate = 1;
 let disableText = false;
@@ -1358,6 +1360,8 @@ const profileUpdate = async (uid) => {
   if (profile.result == "success") {
     let rank = Number(profile.rank);
     profile = profile.user;
+    aliasNum = profile.alias;
+    ownedAlias = new Set(JSON.parse(profile.ownedAlias));
     document.getElementById("profileImageContainer").style.backgroundImage = `url("${profile.background}")`;
     document.getElementById("profileImage").src = profile.picture;
     document.getElementById("profileName").textContent = profile.nickname;
@@ -1948,6 +1952,192 @@ const tracksToggle = () => {
     tracksUpdate();
     songSelected(songSelection, true);
   }
+};
+
+const changeProfile = (e) => {
+  switch (e) {
+    case "alias":
+      let element = "";
+      let options = "";
+      for (let i = 0; i < alias.length; i++) {
+        if (ownedAlias.has(i)) options += `<option value="${i}"${i == aliasNum ? " selected" : ""}>${alias[i]}</option>`;
+      }
+      iziToast.show({
+        overlay: true,
+        displayMode: "once",
+        theme: "dark",
+        id: "inputs",
+        zindex: 999,
+        timeout: 20000,
+        title: "Select alias",
+        progressBarColor: "#999",
+        message: "",
+        position: "center",
+        drag: false,
+        inputs: [
+          [
+            `<select>${options}</select>`,
+            "change",
+            (instance, toast, input, e) => {
+              element = input.value;
+            },
+          ],
+        ],
+        buttons: [
+          [
+            "<button><b>OK</b></button>",
+            async (instance, toast) => {
+              loadingOverlayShow();
+              instance.hide({ transitionOut: "fadeOut" }, toast, "confirm");
+              if (element !== "" && ownedAlias.has(Number(element))) {
+                await fetch(`${api}/profile/alias`, {
+                  method: "PUT",
+                  credentials: "include",
+                  body: JSON.stringify({
+                    value: element,
+                  }),
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                })
+                  .then((res) => res.json())
+                  .then((data) => {
+                    if (data.result != "success") {
+                      alert(`Error occured.\n${data.error}`);
+                    }
+                  })
+                  .catch((error) => {
+                    alert(`Error occured.\n${error}`);
+                    console.error(`Error occured.\n${error}`);
+                  });
+              }
+              aliasNum = Number(element);
+              document.getElementById("profileBio").textContent = `| ${alias[aliasNum]}`;
+              loadingOverlayHide();
+            },
+            true,
+          ],
+        ],
+      });
+      break;
+    case "picture":
+      iziToast.show({
+        overlay: true,
+        timeout: 20000,
+        zindex: 999,
+        theme: "dark",
+        title: "What do you want to change?",
+        position: "center",
+        progressBarColor: "#999",
+        buttons: [
+          [
+            "<button>Profile</button>",
+            (instance, toast) => {
+              instance.hide({ transitionOut: "fadeOut" }, toast, "picture");
+            },
+          ],
+          [
+            "<button>Background</button>",
+            (instance, toast) => {
+              instance.hide({ transitionOut: "fadeOut" }, toast, "background");
+            },
+          ],
+        ],
+        onClosing: (instance, toast, closedBy) => {
+          if (closedBy != "button") {
+            let url = "";
+            iziToast.show({
+              overlay: true,
+              timeout: 20000,
+              zindex: 999,
+              theme: "dark",
+              title: "Enter url of picture.",
+              position: "center",
+              progressBarColor: "#999",
+              inputs: [
+                [
+                  '<input type="text" id="urlInput" />',
+                  "change",
+                  (instance, toast, input, e) => {
+                    url = input.value;
+                  },
+                  true,
+                ],
+              ],
+              buttons: [
+                [
+                  "<button><b>OK</b></button>",
+                  async (instance, toast) => {
+                    loadingOverlayShow();
+                    instance.hide({ transitionOut: "fadeOut" }, toast, "confirm");
+                    url = document.getElementById("urlInput").value;
+                    if (url != "" && validURL(url)) {
+                      if (await validImage(url)) {
+                        await fetch(`${api}/profile/${closedBy}`, {
+                          method: "PUT",
+                          credentials: "include",
+                          body: JSON.stringify({
+                            value: url,
+                          }),
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                        })
+                          .then((res) => res.json())
+                          .then((data) => {
+                            if (data.result != "success") {
+                              alert(`Error occured.\n${data.error}`);
+                            } else {
+                              if (closedBy == "background") document.getElementById("profileImageContainer").style.backgroundImage = `url("${url}")`;
+                              else document.getElementById("profileImage").src = url;
+                            }
+                          })
+                          .catch((error) => {
+                            alert(`Error occured.\n${error}`);
+                            console.error(`Error occured.\n${error}`);
+                          });
+                      } else {
+                        iziToast.error({
+                          title: "Invalid image",
+                          message: "Please enter valid image URL.",
+                        });
+                      }
+                    } else {
+                      if (url == "") {
+                        iziToast.error({
+                          title: "Empty URL",
+                          message: "Please enter valid URL.",
+                        });
+                      } else {
+                        iziToast.error({
+                          title: "Invalid URL",
+                          message: "Please enter valid URL.",
+                        });
+                      }
+                    }
+                    loadingOverlayHide();
+                  },
+                ],
+              ],
+            });
+          }
+        },
+      });
+      break;
+  }
+};
+const validURL = (str) => {
+  const pattern = /((?:(?:http?|https?|ftp)[s]*:\/\/)?[a-z0-9-%\/\&=?\.]+\.[a-z]{2,4}\/?([^\s<>\#%"\,\{\}\\|\\\^\[\]`]+)?)/gi;
+  return !!pattern.test(str);
+};
+
+const validImage = (url) => {
+  const img = new Image();
+  img.src = url;
+  return new Promise((resolve) => {
+    img.onerror = () => resolve(false);
+    img.onload = () => resolve(true);
+  });
 };
 
 const scrollEvent = (e) => {

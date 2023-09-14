@@ -420,6 +420,11 @@ p {
 
 .clickable {
   cursor: pointer;
+  transition-duration: 0.3s;
+}
+
+.clickable.opacity:hover {
+  opacity: 0.7;
 }
 
 .closeBtn {
@@ -2826,6 +2831,8 @@ del {
 #profileImage {
   border-radius: 6vh;
   height: 5vh;
+  width: 5vh;
+  object-fit: cover;
   border: 2px solid #fffa;
 }
 
@@ -3065,4 +3072,24 @@ del {
 .nothingHere {
   color: rgba(255, 255, 255, 0.5);
   font-size: 1.5vh;
+}
+
+#profileDescription {
+  text-align: right;
+  z-index: 200;
+  position: fixed;
+  top: 6.7vh;
+  right: calc(5vw + 3.5vh);
+  font-size: 1.6vh;
+  line-height: 100%;
+  color: #ffffffaa;
+  font-weight: 400;
+}
+
+.iziToast-theme-dark > .iziToast-body > .iziToast-inputs > select {
+  color: white !important;
+}
+
+.iziToast-theme-dark > .iziToast-body > .iziToast-inputs > input {
+  color: white !important;
 }

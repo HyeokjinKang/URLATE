@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>URLATE Client</title>
+    <link rel="stylesheet" href="/css/iziToast.min.css" />
     <link rel="stylesheet" href="/css/game.css?v=<%= ver %>" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
@@ -622,12 +623,13 @@
       </div>
     </div>
     <div id="profileContainer" class="containers metropolis">
-      <div id="profileImageContainer"></div>
+      <span id="profileDescription"><%= __('profile_description') %></span>
       <img src="https://img.icons8.com/windows/32/ffffff/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+      <div id="profileImageContainer"></div>
       <div id="profileNameContainer">
-        <img src="" id="profileImage" />
+        <img src="" id="profileImage" class="clickable opacity" onclick="changeProfile('picture')" />
         <span id="profileName"></span>
-        <span id="profileBio"></span>
+        <span id="profileBio" class="clickable opacity" onclick="changeProfile('alias')"></span>
       </div>
       <div class="profileContentsContainer">
         <div class="profileContents">
@@ -717,6 +719,7 @@
       if (lang == "en") document.body.style.letterSpacing = "-0.3px";
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.5/lottie.js"></script>
+    <script src="/js/iziToast.min.js"></script>
     <script src="/js/game.js?v=<%= ver %>"></script>
   </body>
 </html>
