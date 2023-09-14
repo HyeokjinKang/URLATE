@@ -714,11 +714,11 @@ p {
   width: auto;
 }
 
-.fadeIn {
-  animation: fadeIn 0.3s ease-in-out forwards;
+.fadeInAnim {
+  animation: fadeInAnim 0.3s ease-in-out forwards;
 }
 
-@keyframes fadeIn {
+@keyframes fadeInAnim {
   0% {
     opacity: 0;
   }
@@ -727,11 +727,11 @@ p {
   }
 }
 
-.fadeOut {
-  animation: fadeOut 0.3s ease-in-out forwards;
+.fadeOutAnim {
+  animation: fadeOutAnim 0.3s ease-in-out forwards;
 }
 
-@keyframes fadeOut {
+@keyframes fadeOutAnim {
   0% {
     opacity: 1;
   }
@@ -740,11 +740,11 @@ p {
   }
 }
 
-.shortFadeIn {
-  animation: shortFadeIn 0.2s linear forwards;
+.shortfadeInAnim {
+  animation: shortfadeInAnim 0.2s linear forwards;
 }
 
-@keyframes shortFadeIn {
+@keyframes shortfadeInAnim {
   0% {
     opacity: 0;
   }
@@ -753,11 +753,11 @@ p {
   }
 }
 
-.shortFadeOut {
-  animation: shortFadeOut 0.2s linear forwards;
+.shortfadeOutAnim {
+  animation: shortfadeOutAnim 0.2s linear forwards;
 }
 
-@keyframes shortFadeOut {
+@keyframes shortfadeOutAnim {
   0% {
     opacity: 1;
   }

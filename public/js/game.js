@@ -338,10 +338,10 @@ const sortAsBPM = (a, b) => {
 
 const tutorialSkip = () => {
   if (confirm(confirmExit)) {
-    document.getElementById("tutorialInformation").classList.remove("fadeIn");
-    document.getElementById("tutorialInformation").classList.add("fadeOut");
+    document.getElementById("tutorialInformation").classList.remove("fadeInAnim");
+    document.getElementById("tutorialInformation").classList.add("fadeOutAnim");
     setTimeout(() => {
-      document.getElementById("tutorialInformation").classList.remove("fadeOut");
+      document.getElementById("tutorialInformation").classList.remove("fadeOutAnim");
       document.getElementById("tutorialInformation").style.display = "none";
     }, 500);
     fetch(`${api}/tutorial`, {
@@ -719,7 +719,7 @@ const songSelected = (n, refreshed, seek) => {
     } else {
       display = 14;
       document.getElementById("CPLContainer").style.display = "flex";
-      document.getElementById("CPLContainer").classList.add("fadeIn");
+      document.getElementById("CPLContainer").classList.add("fadeInAnim");
     }
     loadingHide();
     return;
@@ -1000,13 +1000,13 @@ const gameLoaded = () => {
     profileSong.play();
   }, 1400);
   document.getElementById("menuContainer").style.display = "flex";
-  document.getElementById("loadingContainer").classList.add("fadeOut");
+  document.getElementById("loadingContainer").classList.add("fadeOutAnim");
   localStorage.clear("songName");
   localStorage.clear("difficulty");
   setTimeout(() => {
     if (tutorial >= 3) {
       document.getElementById("tutorialInformation").style.display = "flex";
-      document.getElementById("tutorialInformation").classList.add("fadeIn");
+      document.getElementById("tutorialInformation").classList.add("fadeInAnim");
     }
   }, 300);
   setTimeout(() => {
@@ -1015,15 +1015,15 @@ const gameLoaded = () => {
     document.getElementById("urlateText").style.fontSize = "1.5vh";
     document.getElementById("urlateText").style.marginBottom = "0";
     document.getElementById("songName").style.fontSize = "3vh";
-    document.getElementById("header").classList.add("fadeIn");
+    document.getElementById("header").classList.add("fadeInAnim");
     setTimeout(() => {
       let backIcons = document.getElementsByClassName("backIcon");
       for (let i = 0; i < backIcons.length; i++) {
         backIcons[i].classList.add("show");
       }
-      document.getElementById("songName").classList.add("fadeIn");
+      document.getElementById("songName").classList.add("fadeInAnim");
     });
-    document.getElementById("footerLeft").classList.add("fadeIn");
+    document.getElementById("footerLeft").classList.add("fadeInAnim");
   }, 500);
   analyser = Howler.ctx.createAnalyser();
   Howler.masterGain.connect(analyser);
@@ -1086,14 +1086,14 @@ const infoScreen = () => {
   display = 4;
   lottieAnim.pause();
   document.getElementById("infoContainer").style.display = "block";
-  document.getElementById("infoContainer").classList.add("fadeIn");
+  document.getElementById("infoContainer").classList.add("fadeInAnim");
 };
 
 const optionScreen = () => {
   display = 2;
   lottieAnim.pause();
   document.getElementById("optionContainer").style.display = "block";
-  document.getElementById("optionContainer").classList.add("fadeIn");
+  document.getElementById("optionContainer").classList.add("fadeInAnim");
 };
 
 const profileScreen = () => {
@@ -1101,7 +1101,7 @@ const profileScreen = () => {
   playProfileSong();
   lottieAnim.pause();
   document.getElementById("profileContainer").style.display = "block";
-  document.getElementById("profileContainer").classList.add("fadeIn");
+  document.getElementById("profileContainer").classList.add("fadeInAnim");
   loadingOverlayShow();
   profileUpdate(userid);
 };
@@ -1110,10 +1110,10 @@ const displayClose = () => {
   if (!loading) {
     if (display == 1) {
       //PLAY
-      document.getElementById("selectContainer").classList.remove("fadeIn");
-      document.getElementById("selectContainer").classList.add("fadeOut");
+      document.getElementById("selectContainer").classList.remove("fadeInAnim");
+      document.getElementById("selectContainer").classList.add("fadeOutAnim");
       setTimeout(() => {
-        document.getElementById("selectContainer").classList.remove("fadeOut");
+        document.getElementById("selectContainer").classList.remove("fadeOutAnim");
         document.getElementById("selectContainer").style.display = "none";
       }, 500);
     } else if (display == 2) {
@@ -1141,34 +1141,34 @@ const displayClose = () => {
           alert(`Error occured.\n${error}`);
           console.error(`Error occured.\n${error}`);
         });
-      document.getElementById("optionContainer").classList.remove("fadeIn");
-      document.getElementById("optionContainer").classList.add("fadeOut");
+      document.getElementById("optionContainer").classList.remove("fadeInAnim");
+      document.getElementById("optionContainer").classList.add("fadeOutAnim");
       setTimeout(() => {
-        document.getElementById("optionContainer").classList.remove("fadeOut");
+        document.getElementById("optionContainer").classList.remove("fadeOutAnim");
         document.getElementById("optionContainer").style.display = "none";
       }, 500);
     } else if (display == 3) {
       //ADVANCED
-      document.getElementById("advancedContainer").classList.remove("fadeIn");
-      document.getElementById("advancedContainer").classList.add("fadeOut");
+      document.getElementById("advancedContainer").classList.remove("fadeInAnim");
+      document.getElementById("advancedContainer").classList.add("fadeOutAnim");
       setTimeout(() => {
-        document.getElementById("advancedContainer").classList.remove("fadeOut");
+        document.getElementById("advancedContainer").classList.remove("fadeOutAnim");
         document.getElementById("advancedContainer").style.display = "none";
       }, 500);
     } else if (display == 4) {
       //Info
-      document.getElementById("infoContainer").classList.remove("fadeIn");
-      document.getElementById("infoContainer").classList.add("fadeOut");
+      document.getElementById("infoContainer").classList.remove("fadeInAnim");
+      document.getElementById("infoContainer").classList.add("fadeOutAnim");
       setTimeout(() => {
-        document.getElementById("infoContainer").classList.remove("fadeOut");
+        document.getElementById("infoContainer").classList.remove("fadeOutAnim");
         document.getElementById("infoContainer").style.display = "none";
       }, 500);
     } else if (display == 5) {
       //Info Profile
-      document.getElementById("infoProfileContainer").classList.remove("fadeIn");
-      document.getElementById("infoProfileContainer").classList.add("fadeOut");
+      document.getElementById("infoProfileContainer").classList.remove("fadeInAnim");
+      document.getElementById("infoProfileContainer").classList.add("fadeOutAnim");
       setTimeout(() => {
-        document.getElementById("infoProfileContainer").classList.remove("fadeOut");
+        document.getElementById("infoProfileContainer").classList.remove("fadeOutAnim");
         document.getElementById("infoProfileContainer").style.display = "none";
       }, 500);
       display = 4;
@@ -1184,8 +1184,8 @@ const displayClose = () => {
     } else if (display == 7) {
       //OPTION Offset
       offsetButton.textContent = offset + "ms";
-      document.getElementById("offsetContiner").classList.remove("fadeIn");
-      document.getElementById("offsetContiner").classList.add("fadeOut");
+      document.getElementById("offsetContiner").classList.remove("fadeInAnim");
+      document.getElementById("offsetContiner").classList.add("fadeOutAnim");
       if (songSelection != -1) {
         if (!songs[songSelection].playing()) songs[songSelection].play();
         songs[songSelection].fade(0, 1, 500);
@@ -1195,7 +1195,7 @@ const displayClose = () => {
       }
       offsetSong.fade(1, 0, 500);
       setTimeout(() => {
-        document.getElementById("offsetContiner").classList.remove("fadeOut");
+        document.getElementById("offsetContiner").classList.remove("fadeOutAnim");
         document.getElementById("offsetContiner").style.display = "none";
         offsetSong.stop();
       }, 500);
@@ -1203,28 +1203,28 @@ const displayClose = () => {
       return;
     } else if (display == 8) {
       //STORE
-      document.getElementById("storeContainer").classList.remove("fadeIn");
-      document.getElementById("storeContainer").classList.add("fadeOut");
+      document.getElementById("storeContainer").classList.remove("fadeInAnim");
+      document.getElementById("storeContainer").classList.add("fadeOutAnim");
       setTimeout(() => {
-        document.getElementById("storeContainer").classList.remove("fadeOut");
+        document.getElementById("storeContainer").classList.remove("fadeOutAnim");
         document.getElementById("storeContainer").style.display = "none";
       }, 500);
     } else if (display == 9) {
       //DLC info
-      document.getElementById("storeDLCInfo").classList.remove("fadeIn");
-      document.getElementById("storeDLCInfo").classList.add("fadeOut");
+      document.getElementById("storeDLCInfo").classList.remove("fadeInAnim");
+      document.getElementById("storeDLCInfo").classList.add("fadeOutAnim");
       setTimeout(() => {
-        document.getElementById("storeDLCInfo").classList.remove("fadeOut");
+        document.getElementById("storeDLCInfo").classList.remove("fadeOutAnim");
         document.getElementById("storeDLCInfo").style.display = "none";
       }, 500);
       display = 8;
       return;
     } else if (display == 10) {
       //Skin info
-      document.getElementById("storeSkinInfo").classList.remove("fadeIn");
-      document.getElementById("storeSkinInfo").classList.add("fadeOut");
+      document.getElementById("storeSkinInfo").classList.remove("fadeInAnim");
+      document.getElementById("storeSkinInfo").classList.add("fadeOutAnim");
       setTimeout(() => {
-        document.getElementById("storeSkinInfo").classList.remove("fadeOut");
+        document.getElementById("storeSkinInfo").classList.remove("fadeOutAnim");
         document.getElementById("storeSkinInfo").style.display = "none";
       }, 500);
       display = 8;
@@ -1244,10 +1244,10 @@ const displayClose = () => {
     } else if (display == 13) {
       //store tutorial
       tutorial--;
-      document.getElementById("storeTutorialContainer").classList.remove("fadeIn");
-      document.getElementById("storeTutorialContainer").classList.add("fadeOut");
+      document.getElementById("storeTutorialContainer").classList.remove("fadeInAnim");
+      document.getElementById("storeTutorialContainer").classList.add("fadeOutAnim");
       setTimeout(() => {
-        document.getElementById("storeTutorialContainer").classList.remove("fadeOut");
+        document.getElementById("storeTutorialContainer").classList.remove("fadeOutAnim");
         document.getElementById("storeTutorialContainer").style.display = "none";
       }, 500);
       display = 8;
@@ -1268,20 +1268,20 @@ const displayClose = () => {
       return;
     } else if (display == 14) {
       display = 1;
-      document.getElementById("CPLContainer").classList.remove("fadeIn");
-      document.getElementById("CPLContainer").classList.add("fadeOut");
+      document.getElementById("CPLContainer").classList.remove("fadeInAnim");
+      document.getElementById("CPLContainer").classList.add("fadeOutAnim");
       setTimeout(() => {
-        document.getElementById("CPLContainer").classList.remove("fadeOut");
+        document.getElementById("CPLContainer").classList.remove("fadeOutAnim");
         document.getElementById("CPLContainer").style.display = "none";
       }, 500);
       return;
     } else if (display == 15) {
       //PROFILE
       stopProfileSong();
-      document.getElementById("profileContainer").classList.remove("fadeIn");
-      document.getElementById("profileContainer").classList.add("fadeOut");
+      document.getElementById("profileContainer").classList.remove("fadeInAnim");
+      document.getElementById("profileContainer").classList.add("fadeOutAnim");
       setTimeout(() => {
-        document.getElementById("profileContainer").classList.remove("fadeOut");
+        document.getElementById("profileContainer").classList.remove("fadeOutAnim");
         document.getElementById("profileContainer").style.display = "none";
       }, 500);
     }
@@ -1330,7 +1330,7 @@ const menuSelected = (n) => {
       }
     }
     document.getElementById("selectContainer").style.display = "flex";
-    document.getElementById("selectContainer").classList.add("fadeIn");
+    document.getElementById("selectContainer").classList.add("fadeInAnim");
     document.getElementsByClassName("tracksSelection")[Number(isOfficial)].classList.remove("selected");
     document.getElementsByClassName("tracksSelection")[Number(!isOfficial)].classList.add("selected");
   } else if (n == 1) {
@@ -1340,11 +1340,11 @@ const menuSelected = (n) => {
     //advanced
     display = 3;
     document.getElementById("advancedContainer").style.display = "block";
-    document.getElementById("advancedContainer").classList.add("fadeIn");
+    document.getElementById("advancedContainer").classList.add("fadeInAnim");
   } else if (n == 3) {
     //store
     document.getElementById("storeContainer").style.display = "flex";
-    document.getElementById("storeContainer").classList.add("fadeIn");
+    document.getElementById("storeContainer").classList.add("fadeInAnim");
     display = 8;
   }
 };
@@ -1591,7 +1591,7 @@ const settingChanged = (e, v) => {
 const showProfile = (name) => {
   loadingShow();
   document.getElementById("infoProfileContainer").style.display = "flex";
-  document.getElementById("infoProfileContainer").classList.add("fadeIn");
+  document.getElementById("infoProfileContainer").classList.add("fadeInAnim");
   fetch(`${api}/teamProfile/${name}`, {
     method: "GET",
     credentials: "include",
@@ -1719,7 +1719,7 @@ const showRank = () => {
 const offsetSetting = () => {
   display = 7;
   document.getElementById("offsetContiner").style.display = "flex";
-  document.getElementById("offsetContiner").classList.add("fadeIn");
+  document.getElementById("offsetContiner").classList.add("fadeInAnim");
   if (!themeSong.playing()) {
     songs[songSelection].fade(1, 0, 500);
     setTimeout(() => {
