@@ -976,7 +976,7 @@ const cntRender = () => {
     for (let i = renderNotes.length - 1; i >= 0; i--) {
       const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
       const t = ((seek - renderNotes[i].ms) / renderNotes[i].time) * 100;
-      const f = (((bpm * 14) / speed - (renderNotes[i].ms + renderNotes[i].time - seek * 1000)) / ((bpm * 14) / speed)) * 100;
+      const f = (((bpm * 14) / speed - (renderNotes[i].ms + renderNotes[i].time - seek)) / ((bpm * 14) / speed)) * 100;
       drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, t, i, f);
       if (p >= 120 && !destroyedNotes.has(i) && (renderNotes[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
         calculateScore("miss", i, true);
