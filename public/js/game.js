@@ -1343,11 +1343,35 @@ const menuSelected = (n) => {
     display = 3;
     document.getElementById("advancedContainer").style.display = "block";
     document.getElementById("advancedContainer").classList.add("fadeInAnim");
+    rankUpdate();
   } else if (n == 3) {
     //store
     document.getElementById("storeContainer").style.display = "flex";
     document.getElementById("storeContainer").classList.add("fadeInAnim");
     display = 8;
+  }
+};
+
+const rankUpdate = async () => {
+  const res = await fetch(`${api}/ranking/DESC/50`, {
+    method: "GET",
+    credentials: "include",
+  });
+  const data = await res.json();
+  if (data.result == "success") {
+    document.getElementById("rankTableBody").innerHTML = "";
+    data.results.forEach((e, i) => {
+      document.getElementById("rankTableBody").innerHTML += `<tr>
+      <td>${i + 1}</td>
+      <td>
+        <img src="${e.picture}" class="rankProfile" />
+        ${e.nickname}
+      </td>
+      <td>${Number(e.accuracy).toFixed(2)}%</td>
+      <td>${numberWithCommas(Number(e.scoreSum))}</td>
+      <td>${Number(e.rating / 100).toFixed(2)}</td>
+      </tr>`;
+    });
   }
 };
 
