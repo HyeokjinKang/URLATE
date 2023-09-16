@@ -80,7 +80,7 @@
       </div>
     </div>
     <div id="menuContainer">
-      <div id="menuMain" class="menuSelector clickable" onclick="menuSelected(0)">
+      <div class="menuSelector clickable" onclick="menuSelected(0)">
         <div class="fadeIconContainer">
           <img src="/images/parts/graphicIcons/play.webp" class="mainIcon" />
           <img src="/images/parts/graphicIcons/play_selected.webp" class="fadeIcon" />
@@ -88,7 +88,7 @@
         <span class="menuTitle"><%= __('play_title') %></span>
         <span class="light menuSubtitle"><%= __('play_subtitle') %></span>
       </div>
-      <div id="menuEditor" class="menuSelector clickable" onclick="menuSelected(1)">
+      <div class="menuSelector clickable" onclick="menuSelected(1)">
         <div class="fadeIconContainer">
           <img src="/images/parts/graphicIcons/editor.webp" class="mainIcon" />
           <img src="/images/parts/graphicIcons/editor_selected.webp" class="fadeIcon" />
@@ -96,7 +96,15 @@
         <span class="menuTitle"><%= __('editor_title') %></span>
         <span class="light menuSubtitle"><%= __('editor_subtitle') %></span>
       </div>
-      <div id="menuStore" class="menuSelector clickable" onclick="menuSelected(3)">
+      <div class="menuSelector clickable" onclick="menuSelected(2)">
+        <div class="fadeIconContainer">
+          <img src="/images/parts/graphicIcons/rank.webp" class="mainIcon" />
+          <img src="/images/parts/graphicIcons/rank_selected.webp" class="fadeIcon" />
+        </div>
+        <span class="menuTitle"><%= __('rank_title') %></span>
+        <span class="light menuSubtitle"><%= __('rank_subtitle') %></span>
+      </div>
+      <div class="menuSelector clickable" onclick="menuSelected(3)">
         <div class="fadeIconContainer">
           <img src="/images/parts/graphicIcons/info.webp" class="mainIcon" />
           <img src="/images/parts/graphicIcons/info_selected.webp" class="fadeIcon" />
@@ -268,7 +276,19 @@
     </div>
     <div id="advancedContainer" class="containers">
       <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
-      <!-- ADVANCED -->
+      <h1 id="rankTitle"><%= __('rank_title') %></h1>
+      <table id="rankTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th><%= __('profile') %></th>
+            <th><%= __('average_accuracy') %></th>
+            <th><%= __('score_sum') %></th>
+            <th><%= __('rating') %></th>
+          </tr>
+        </thead>
+        <tbody id="rankTableBody"></tbody>
+      </table>
     </div>
     <div id="infoContainer" class="containers metropolis">
       <div id="infoProfileContainer" class="containers">
@@ -627,9 +647,9 @@
       <img src="https://img.icons8.com/windows/32/ffffff/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
       <div id="profileImageContainer"></div>
       <div id="profileNameContainer">
-        <img src="" id="profileImage" class="clickable opacity" onclick="changeProfile('picture')" />
+        <img src="" id="profileImage" class="editable opacity" onclick="changeProfile('picture')" />
         <span id="profileName"></span>
-        <span id="profileBio" class="clickable opacity" onclick="changeProfile('alias')"></span>
+        <span id="profileBio" class="editable opacity" onclick="changeProfile('alias')"></span>
       </div>
       <div class="profileContentsContainer">
         <div class="profileContents">

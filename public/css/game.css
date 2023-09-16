@@ -363,7 +363,7 @@ p {
   cursor: pointer;
   height: 5vh;
   border-radius: 5vh;
-  border: 2px solid white;
+  border: 2px solid black;
   box-shadow: 0 0 1vw rgba(20, 20, 20, 0.1);
 }
 
@@ -3092,4 +3092,81 @@ del {
 
 .iziToast-theme-dark > .iziToast-body > .iziToast-inputs > input {
   color: white !important;
+}
+
+#rankTitle {
+  margin-top: 4vh;
+  margin-bottom: 5vh;
+  font-weight: 750;
+  color: #404040;
+  font-size: 5vh;
+}
+
+#rankTable {
+  border-collapse: collapse;
+  margin-left: 10vw;
+  width: 80vw;
+  font-size: 2vh;
+}
+
+#rankTable > thead {
+  word-break: keep-all;
+  height: 6vh;
+  border-bottom: 1px solid black;
+}
+
+#rankTable > thead th {
+  font-weight: 600;
+}
+
+#rankTable > tbody td {
+  border-bottom: 1px solid #dddddd;
+  font-weight: 400;
+}
+
+#rankTable > thead th:nth-child(1),
+#rankTable > tbody td:nth-child(1) {
+  font-weight: 700;
+  padding-left: 2vw;
+  text-align: left;
+}
+
+#rankTable > thead th:nth-child(2) {
+  padding-left: 2vw;
+  width: 100%;
+  text-align: left;
+}
+
+#rankTable > tbody td:nth-child(2) {
+  padding-left: 2vw;
+  width: 100%;
+  text-align: left;
+}
+
+#rankTable > thead th:not(:nth-child(1)):not(:nth-child(2)),
+#rankTable > tbody td:not(:nth-child(1)):not(:nth-child(2)) {
+  text-align: right;
+  padding-right: 2vw;
+  white-space: nowrap;
+}
+
+#rankTable > tbody td:last-child {
+  font-weight: 700;
+}
+
+.rankProfile {
+  height: 4vh;
+  border-radius: 4vh;
+  margin-right: 0.5em;
+  border: 1px solid #00000050;
+}
+
+.rankProfileContainer {
+  cursor: pointer;
+  width: fit-content;
+  height: 6vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
 }

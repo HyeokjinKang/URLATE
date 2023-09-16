@@ -1098,14 +1098,15 @@ const optionScreen = () => {
   document.getElementById("optionContainer").classList.add("fadeInAnim");
 };
 
-const profileScreen = () => {
-  display = 15;
+const profileScreen = (uid) => {
+  if (uid) display = 16;
+  else display = 15;
   playProfileSong();
   lottieAnim.pause();
   document.getElementById("profileContainer").style.display = "block";
   document.getElementById("profileContainer").classList.add("fadeInAnim");
   loadingOverlayShow();
-  profileUpdate(userid);
+  profileUpdate(uid ? uid : userid, uid == undefined);
 };
 
 const displayClose = () => {
@@ -1277,7 +1278,7 @@ const displayClose = () => {
         document.getElementById("CPLContainer").style.display = "none";
       }, 500);
       return;
-    } else if (display == 15) {
+    } else if (display == 15 || display == 16) {
       //PROFILE
       stopProfileSong();
       document.getElementById("profileContainer").classList.remove("fadeInAnim");
@@ -1288,7 +1289,8 @@ const displayClose = () => {
       }, 500);
     }
     lottieAnim.play();
-    display = 0;
+    if (display == 15) display = 0;
+    else display = 3;
   }
 };
 
@@ -1343,6 +1345,7 @@ const menuSelected = (n) => {
     display = 3;
     document.getElementById("advancedContainer").style.display = "block";
     document.getElementById("advancedContainer").classList.add("fadeInAnim");
+    rankUpdate();
   } else if (n == 3) {
     //store
     document.getElementById("storeContainer").style.display = "flex";
@@ -1351,7 +1354,32 @@ const menuSelected = (n) => {
   }
 };
 
-const profileUpdate = async (uid) => {
+const rankUpdate = async () => {
+  const res = await fetch(`${api}/ranking/DESC/50`, {
+    method: "GET",
+    credentials: "include",
+  });
+  const data = await res.json();
+  if (data.result == "success") {
+    document.getElementById("rankTableBody").innerHTML = "";
+    data.results.forEach((e, i) => {
+      document.getElementById("rankTableBody").innerHTML += `<tr>
+      <td>${i + 1}</td>
+      <td>
+        <div class="rankProfileContainer" onclick="profileScreen('${e.userid}')">
+          <img src="${e.picture}" class="rankProfile" />
+          ${e.nickname}
+        </div>
+      </td>
+      <td>${Number(e.accuracy).toFixed(2)}%</td>
+      <td>${numberWithCommas(Number(e.scoreSum))}</td>
+      <td>${Number(e.rating / 100).toFixed(2)}</td>
+      </tr>`;
+    });
+  }
+};
+
+const profileUpdate = async (uid, isMe) => {
   const res = await fetch(`${api}/profile/${uid}`, {
     method: "GET",
     credentials: "include",
@@ -1360,8 +1388,20 @@ const profileUpdate = async (uid) => {
   if (profile.result == "success") {
     let rank = Number(profile.rank);
     profile = profile.user;
-    aliasNum = profile.alias;
-    ownedAlias = new Set(JSON.parse(profile.ownedAlias));
+    const editable = document.getElementsByClassName("editable");
+    if (isMe) {
+      aliasNum = profile.alias;
+      ownedAlias = new Set(JSON.parse(profile.ownedAlias));
+      for (let i = 0; i < editable.length; i++) {
+        editable[i].classList.add("clickable");
+      }
+      document.getElementById("profileDescription").style.opacity = "1";
+    } else {
+      for (let i = 0; i < editable.length; i++) {
+        editable[i].classList.remove("clickable");
+      }
+      document.getElementById("profileDescription").style.opacity = "0";
+    }
     document.getElementById("profileImageContainer").style.backgroundImage = `url("${profile.background}")`;
     document.getElementById("profileImage").src = profile.picture;
     document.getElementById("profileName").textContent = profile.nickname;
@@ -1414,7 +1454,7 @@ const profileUpdate = async (uid) => {
           });
       }
     }
-    let bestRecords = await fetch(`${api}/bestRecords/${username}`, {
+    let bestRecords = await fetch(`${api}/bestRecords/${profile.nickname}`, {
       method: "GET",
       credentials: "include",
     });
