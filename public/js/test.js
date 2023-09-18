@@ -439,9 +439,9 @@ const drawParticle = (n, x, y, j, d) => {
     if (!hide[j.toLowerCase()]) {
       const raf = (y, s) => {
         ctx.beginPath();
-        let p = Math.min((Date.now() - s) / 700, 1);
-        let newY = y - (canvas.height / 20) * easeOutQuad(p);
-        ctx.fillStyle = getJudgeStyle(j.toLowerCase(), easeOutQuad(p), cx, newY);
+        let p = Math.min(easeOutQuad((Date.now() - s) / 700), 1);
+        let newY = y - (canvas.height / 20) * p;
+        ctx.fillStyle = getJudgeStyle(j.toLowerCase(), p, cx, newY);
         ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -458,9 +458,9 @@ const drawParticle = (n, x, y, j, d) => {
     //judge:miss
     if (!hide.miss) {
       ctx.beginPath();
-      let p = Math.min((Date.now() - missParticles[j].s) / 700, 1);
-      let newY = cy - (canvas.height / 20) * easeOutQuad(p);
-      ctx.fillStyle = getJudgeStyle("miss", easeOutQuad(p));
+      let p = Math.min(easeOutQuad((Date.now() - missParticles[j].s) / 700), 1);
+      let newY = cy - (canvas.height / 20) * p;
+      ctx.fillStyle = getJudgeStyle("miss", p);
       ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -470,9 +470,9 @@ const drawParticle = (n, x, y, j, d) => {
     //judge: perfect
     if (!hide.perfect) {
       ctx.beginPath();
-      let p = Math.min((Date.now() - perfectParticles[j].s) / 700, 1);
-      let newY = cy - (canvas.height / 20) * easeOutQuad(p);
-      ctx.fillStyle = getJudgeStyle("perfect", easeOutQuad(p), cx, newY);
+      let p = Math.min(easeOutQuad((Date.now() - perfectParticles[j].s) / 700), 1);
+      let newY = cy - (canvas.height / 20) * p;
+      ctx.fillStyle = getJudgeStyle("perfect", p, cx, newY);
       ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
