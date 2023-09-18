@@ -920,14 +920,14 @@ const cntRender = () => {
     if (comboAlert) {
       let comboOpacity = 0;
       let fontSize = 20;
-      if (comboAlertMs + 300 > Date.now()) {
-        comboOpacity = 1 - (comboAlertMs + 300 - Date.now()) / 300;
-      } else if (comboAlertMs + 300 <= Date.now() && comboAlertMs + 600 > Date.now()) {
-        comboOpacity = 1;
-      } else if (comboAlertMs + 600 <= Date.now() && comboAlertMs + 900 > Date.now()) {
-        comboOpacity = (comboAlertMs + 900 - Date.now()) / 900;
+      if (comboAlertMs + 400 > Date.now()) {
+        comboOpacity = (Date.now() - comboAlertMs) / 1200;
+      } else if (comboAlertMs + 400 <= Date.now() && comboAlertMs + 600 > Date.now()) {
+        comboOpacity = 0.33;
+      } else if (comboAlertMs + 600 <= Date.now() && comboAlertMs + 1000 > Date.now()) {
+        comboOpacity = (comboAlertMs + 1000 - Date.now()) / 1200;
       }
-      fontSize = (canvas.height / 100) * (30 - (comboAlertMs + 900 - Date.now()) / 90);
+      fontSize = (canvas.height / 5) * easeOutSine((Date.now() - comboAlertMs) / 1000);
       ctx.beginPath();
       ctx.font = `700 ${fontSize}px Montserrat, Pretendard JP Variable`;
       ctx.fillStyle = `rgba(200,200,200,${comboOpacity})`;
