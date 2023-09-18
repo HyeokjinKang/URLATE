@@ -1733,6 +1733,7 @@ document.onkeyup = (e) => {
       });
       miss++;
       missPoint.push(song.seek() * 1000);
+      keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
     } else {
       perfectParticles.push({ x: pattern.patterns[keyPressing[e.key]].x, y: pattern.patterns[keyPressing[e.key]].y, s: Date.now() });
       calculateScore("Perfect", keyPressing[e.key], true);
