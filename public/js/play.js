@@ -332,13 +332,16 @@ const eraseCnt = () => {
 };
 
 const getJudgeStyle = (j, p, x, y) => {
-  p = parseInt(p);
+  p *= 100;
   if (p <= 0) p = 0;
   p = `${p}`.padStart(2, "0");
   if (p <= 0) p = 0;
   if (!judgeSkin) {
     if (j == "miss") {
-      return `rgba(237, 78, 50, ${1 - p / 100})`;
+      let grd = ctx.createLinearGradient(x - 50, y - 20, x + 50, y + 20);
+      grd.addColorStop(0, `rgba(237, 78, 50, ${1 - p / 100})`);
+      grd.addColorStop(1, `rgba(248, 175, 67, ${1 - p / 100})`);
+      return grd;
     } else if (j == "perfect") {
       let grd = ctx.createLinearGradient(x - 50, y - 20, x + 50, y + 20);
       grd.addColorStop(0, `rgba(87, 209, 71, ${1 - p / 100})`);
@@ -460,15 +463,12 @@ const drawParticle = (n, x, y, j, d) => {
     if (!hide[j.toLowerCase()]) {
       const raf = (y, s) => {
         ctx.beginPath();
-        let p = 100 - (s + 300 - Date.now()) / 3;
-        let newY = y - 2 * Math.round(p / 10);
-        ctx.fillStyle = getJudgeStyle(j.toLowerCase(), p, cx, newY);
-        ctx.strokeStyle = `rgba(0, 0, 0, ${1 - p / 100})`;
+        let p = Math.min((Date.now() - s) / 700, 1);
+        let newY = y - (canvas.height / 20) * easeOutQuad(p);
+        ctx.fillStyle = getJudgeStyle(j.toLowerCase(), easeOutQuad(p), cx, newY);
         ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.lineWidth = 2;
-        // ctx.strokeText(j, cx, newY);
         ctx.fillText(j, cx, newY);
         if (p < 100) {
           requestAnimationFrame(() => {
@@ -482,28 +482,24 @@ const drawParticle = (n, x, y, j, d) => {
     //judge:miss
     if (!hide.miss) {
       ctx.beginPath();
-      let p = 100 - (missParticles[j].s + 300 - Date.now()) / 3;
-      let newY = cy - Math.round(p / 10);
-      ctx.fillStyle = getJudgeStyle("miss", p);
-      ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
+      let p = Math.min((Date.now() - missParticles[j].s) / 700, 1);
+      let newY = cy - (canvas.height / 20) * easeOutQuad(p);
+      ctx.fillStyle = getJudgeStyle("miss", easeOutQuad(p));
       ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.lineWidth = 2;
       ctx.fillText("Miss", cx, newY);
     }
   } else if (n == 5) {
     //judge: perfect
     if (!hide.perfect) {
       ctx.beginPath();
-      let p = 100 - (perfectParticles[j].s + 300 - Date.now()) / 3;
-      let newY = cy - Math.round(p / 10);
-      ctx.fillStyle = getJudgeStyle("perfect", p, cx, newY);
-      ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
+      let p = Math.min((Date.now() - perfectParticles[j].s) / 700, 1);
+      let newY = cy - (canvas.height / 20) * easeOutQuad(p);
+      ctx.fillStyle = getJudgeStyle("perfect", easeOutQuad(p), cx, newY);
       ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.lineWidth = 2;
       ctx.fillText("Perfect", cx, newY);
     }
   }
@@ -1021,12 +1017,12 @@ const cntRender = () => {
       }
     }
     for (let i = 0; i < perfectParticles.length; i++) {
-      if (perfectParticles[i].s + 300 > Date.now()) {
+      if (perfectParticles[i].s + 700 > Date.now()) {
         drawParticle(5, perfectParticles[i].x, perfectParticles[i].y, i);
       }
     }
     for (let i = 0; i < missParticles.length; i++) {
-      if (missParticles[i].s + 300 > Date.now()) {
+      if (missParticles[i].s + 700 > Date.now()) {
         drawParticle(4, missParticles[i].x, missParticles[i].y, i);
       }
     }
