@@ -464,14 +464,14 @@ const drawParticle = (n, x, y, j, d) => {
     if (!hide[j.toLowerCase()]) {
       const raf = (y, s) => {
         ctx.beginPath();
-        let p = Math.min(easeOutQuad((Date.now() - s) / 700), 1);
+        let p = easeOutQuad((Date.now() - s) / 700);
         let newY = y - (canvas.height / 20) * p;
         ctx.fillStyle = getJudgeStyle(j.toLowerCase(), p, cx, newY);
         ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(j, cx, newY);
-        if (p < 100) {
+        if (Date.now() - s <= 700) {
           requestAnimationFrame(() => {
             raf(cy, s);
           });
@@ -483,7 +483,7 @@ const drawParticle = (n, x, y, j, d) => {
     //judge:miss
     if (!hide.miss) {
       ctx.beginPath();
-      let p = Math.min(easeOutQuad((Date.now() - missParticles[j].s) / 700), 1);
+      let p = easeOutQuad((Date.now() - missParticles[j].s) / 700);
       let newY = cy - (canvas.height / 20) * p;
       ctx.fillStyle = getJudgeStyle("miss", p);
       ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
@@ -495,7 +495,7 @@ const drawParticle = (n, x, y, j, d) => {
     //judge: perfect
     if (!hide.perfect) {
       ctx.beginPath();
-      let p = Math.min(easeOutQuad((Date.now() - perfectParticles[j].s) / 700), 1);
+      let p = easeOutQuad((Date.now() - perfectParticles[j].s) / 700);
       let newY = cy - (canvas.height / 20) * p;
       ctx.fillStyle = getJudgeStyle("perfect", p, cx, newY);
       ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
