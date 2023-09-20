@@ -62,6 +62,7 @@ let comboAlert = false,
   comboCount = 50;
 let comboAlertMs = 0,
   comboAlertCount = 0;
+let comboAnimationMs = 0;
 let hide = {},
   frameCounter;
 let load = 0;
@@ -1057,7 +1058,8 @@ const cntRender = () => {
   ctx.textAlign = "right";
   ctx.textBaseline = "top";
   ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05);
-  ctx.font = `${canvas.height / 40}px Montserrat, Pretendard JP Variable`;
+  const comboAnimation = Math.max(0, 1 - easeOutQuart(Math.min(Date.now() - comboAnimationMs, 500) / 500));
+  ctx.font = `${400 * (1 + comboAnimation * 0.5)} ${(canvas.height / 40) * (1 + comboAnimation)}px Montserrat, Pretendard JP Variable`;
   ctx.fillStyle = "#fff";
   ctx.fillText(`${combo}x`, canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05 + canvas.height / 25);
   drawCursor();
@@ -1372,6 +1374,7 @@ const calculateScore = (judge, i, ignoreMs) => {
   }
   tick.play();
   combo++;
+  comboAnimationMs = Date.now();
   if (maxCombo < combo) {
     maxCombo = combo;
   }
