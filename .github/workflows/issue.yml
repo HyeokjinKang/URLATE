@@ -10,9 +10,18 @@ permissions:
 
 jobs:
   comment:
+    if: github.event.issue.user.login != "HyeokjinKang"
     runs-on: self-hosted
     steps:
-      - uses: actions/github-script@v6
+      - name: Debug
+        shell: bash
+        run: |
+          echo "USERNAME: $GH_NAME"
+        env:
+          GH_NAME: ${{ github.event.issue.user.login }}
+
+      - name: Comment
+        uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
