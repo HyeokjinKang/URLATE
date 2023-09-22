@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   comment:
-    if: github.event.issue.user.login != "HyeokjinKang"
+    if: github.event.issue.user.login != 'HyeokjinKang'
     runs-on: self-hosted
     steps:
       - name: Debug
