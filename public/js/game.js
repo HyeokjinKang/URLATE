@@ -1447,7 +1447,7 @@ const profileUpdate = async (uid, isMe) => {
                 <span class="playDetail">${data.judge}</span>
                 <span class="playDetail">${numberWithCommas(Number(data.record))}</span>
                 <span class="playDetail">${Number(data.accuracy).toFixed(2)}%</span>
-                <span class="playRate">${rating} ${data.rating == 0 ? "-" : `+${Number(data.rating / 100).toFixed(2)}`}</span>
+                <span class="playRate">${rating} +${Number(data.rating / 100).toFixed(2)}</span>
               </div>
             </div>`;
             }
