@@ -3156,6 +3156,8 @@ del {
 
 .rankProfile {
   height: 4vh;
+  width: 4vh;
+  object-fit: cover;
   border-radius: 4vh;
   margin-right: 0.5em;
   border: 1px solid #00000050;
