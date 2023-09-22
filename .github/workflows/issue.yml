@@ -20,5 +20,10 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '👋 Thanks for reporting!\nTesting comment bot now..'
+              body: `Hello, thank you for your interest and comments on URLATE LITE.\n
+              What you said will be referred to in improving the game.\n
+              Please continue to show a lot of interest in the project!\n\n
+              안녕하세요, URLATE LITE에 관심 가져주시고 의견을 남겨주셔서 감사합니다.\n
+              말씀해주신 내용은 게임 개선에 참고될 예정입니다.\n
+              앞으로도 프로젝트에 많은 관심 부탁드립니다!`
             })
