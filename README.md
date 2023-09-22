@@ -5,6 +5,7 @@
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/HyeokjinKang/urlate-v3l-frontend/main?label=updated)
 ![GitHub Issues](https://badgen.net/github/issues/HyeokjinKang/URLATE-v3l-frontend)
 ![GitHub License](https://img.shields.io/github/license/HyeokjinKang/URLATE-v3l-frontend)
+[![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/HyeokjinKang)
 
 URLATE is a open-source rhythm game built with web technologies.  
 It does not support Safari, but it is compatible with Firefox and Blink based browsers such as Chrome, Edge, and Opera.
@@ -94,3 +95,5 @@ Tumblbug supporters will be rewarded with a special badge in the game.
 ## Support
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/coupy)
+
+[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/HyeokjinKang)
