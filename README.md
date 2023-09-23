@@ -27,7 +27,7 @@ If you need to refer to the past commit history, please refer to the repository 
 ## Try it out
 
 You can play the latest version of URLATE at [urlate.coupy.dev](https://urlate.coupy.dev/).  
-There's an development version of URLATE at [urlate-dev.coupy.dev](https://urlate-dev.coupy.dev/), but it's not recommended to play it because it's not stable, and it may not be playable.
+There's an development version of URLATE at [dev.urlate.coupy.dev](https://dev.urlate.coupy.dev/), but it's not recommended to play it because it's not stable, and it may not be playable.
 
 ## How to play
 
@@ -69,7 +69,7 @@ The to-do list of URLATE is managed in [GitHub Projects](https://github.com/user
 
 ## Documentation
 
-If you want to know the internal structure of URLATE, or if you are interested in developing new features, creating external extensions, etc., you can refer to the [official document](https://urlate-docs.coupy.dev/).
+If you want to know the internal structure of URLATE, or if you are interested in developing new features, creating external extensions, etc., you can refer to the [official document](https://docs.urlate.coupy.dev/).
 
 ## License
 
