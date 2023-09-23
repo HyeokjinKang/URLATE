@@ -1,53 +1,53 @@
 @font-face {
   font-family: "Metropolis";
   font-weight: 400;
-  src: local("Metropolis Regular"), url("https://urlate-cdn.coupy.dev/fonts/Metropolis-Regular.woff") format("woff");
+  src: local("Metropolis Regular"), url("https://cdn.urlate.coupy.dev/fonts/Metropolis-Regular.woff") format("woff");
 }
 
 @font-face {
   font-family: "Metropolis";
   font-weight: 200;
-  src: local("Metropolis Extra Light"), url("https://urlate-cdn.coupy.dev/fonts/Metropolis-ExtraLight.woff") format("woff");
+  src: local("Metropolis Extra Light"), url("https://cdn.urlate.coupy.dev/fonts/Metropolis-ExtraLight.woff") format("woff");
 }
 
 @font-face {
   font-family: "Metropolis";
   font-weight: 300;
-  src: local("Metropolis Light"), url("https://urlate-cdn.coupy.dev/fonts/Metropolis-Light.woff") format("woff");
+  src: local("Metropolis Light"), url("https://cdn.urlate.coupy.dev/fonts/Metropolis-Light.woff") format("woff");
 }
 
 @font-face {
   font-family: "Metropolis";
   font-weight: 100;
-  src: local("Metropolis Thin"), url("https://urlate-cdn.coupy.dev/fonts/Metropolis-Thin.woff") format("woff");
+  src: local("Metropolis Thin"), url("https://cdn.urlate.coupy.dev/fonts/Metropolis-Thin.woff") format("woff");
 }
 
 @font-face {
   font-family: "Metropolis";
   font-weight: 500;
-  src: local("Metropolis Medium"), url("https://urlate-cdn.coupy.dev/fonts/Metropolis-Medium.woff") format("woff");
+  src: local("Metropolis Medium"), url("https://cdn.urlate.coupy.dev/fonts/Metropolis-Medium.woff") format("woff");
 }
 
 @font-face {
   font-family: "Metropolis";
   font-weight: 600;
-  src: local("Metropolis Semi Bold"), url("https://urlate-cdn.coupy.dev/fonts/Metropolis-SemiBold.woff") format("woff");
+  src: local("Metropolis Semi Bold"), url("https://cdn.urlate.coupy.dev/fonts/Metropolis-SemiBold.woff") format("woff");
 }
 
 @font-face {
   font-family: "Metropolis";
   font-weight: 700;
-  src: local("Metropolis Bold"), url("https://urlate-cdn.coupy.dev/fonts/Metropolis-Bold.woff") format("woff");
+  src: local("Metropolis Bold"), url("https://cdn.urlate.coupy.dev/fonts/Metropolis-Bold.woff") format("woff");
 }
 
 @font-face {
   font-family: "Metropolis";
   font-weight: 800;
-  src: local("Metropolis Extra Bold"), url("https://urlate-cdn.coupy.dev/fonts/Metropolis-ExtraBold.woff") format("woff");
+  src: local("Metropolis Extra Bold"), url("https://cdn.urlate.coupy.dev/fonts/Metropolis-ExtraBold.woff") format("woff");
 }
 
 @font-face {
   font-family: "Metropolis";
   font-weight: 900;
-  src: local("Metropolis Black"), url("https://urlate-cdn.coupy.dev/fonts/Metropolis-Black.woff") format("woff");
+  src: local("Metropolis Black"), url("https://cdn.urlate.coupy.dev/fonts/Metropolis-Black.woff") format("woff");
 }
