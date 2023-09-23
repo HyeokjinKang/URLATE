@@ -1,0 +1,33 @@
+name: Issue comment
+
+on:
+  issues:
+    types:
+      - opened
+
+permissions:
+  issues: write
+
+jobs:
+  comment:
+    if: github.event.issue.user.login != 'HyeokjinKang'
+    runs-on: self-hosted
+    steps:
+      - name: Comment
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Hello, thank you for your interest and comments on URLATE LITE.   
+              What you said will be referred to in improving the game.   
+              Please continue to show a lot of interest in the project!
+
+              
+              안녕하세요, URLATE LITE에 관심 가져주시고 의견을 남겨주셔서 감사합니다.   
+              말씀해주신 내용은 게임 개선에 참고될 예정입니다.   
+              앞으로도 프로젝트에 많은 관심 부탁드립니다!`
+            })

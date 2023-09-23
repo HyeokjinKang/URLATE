@@ -363,7 +363,7 @@ p {
   cursor: pointer;
   height: 5vh;
   border-radius: 5vh;
-  border: 2px solid white;
+  border: 2px solid black;
   box-shadow: 0 0 1vw rgba(20, 20, 20, 0.1);
 }
 
@@ -420,6 +420,11 @@ p {
 
 .clickable {
   cursor: pointer;
+  transition-duration: 0.3s;
+}
+
+.clickable.opacity:hover {
+  opacity: 0.7;
 }
 
 .closeBtn {
@@ -714,11 +719,11 @@ p {
   width: auto;
 }
 
-.fadeIn {
-  animation: fadeIn 0.3s ease-in-out forwards;
+.fadeInAnim {
+  animation: fadeInAnim 0.3s ease-in-out forwards;
 }
 
-@keyframes fadeIn {
+@keyframes fadeInAnim {
   0% {
     opacity: 0;
   }
@@ -727,11 +732,11 @@ p {
   }
 }
 
-.fadeOut {
-  animation: fadeOut 0.3s ease-in-out forwards;
+.fadeOutAnim {
+  animation: fadeOutAnim 0.3s ease-in-out forwards;
 }
 
-@keyframes fadeOut {
+@keyframes fadeOutAnim {
   0% {
     opacity: 1;
   }
@@ -740,11 +745,11 @@ p {
   }
 }
 
-.shortFadeIn {
-  animation: shortFadeIn 0.2s linear forwards;
+.shortfadeInAnim {
+  animation: shortfadeInAnim 0.2s linear forwards;
 }
 
-@keyframes shortFadeIn {
+@keyframes shortfadeInAnim {
   0% {
     opacity: 0;
   }
@@ -753,11 +758,11 @@ p {
   }
 }
 
-.shortFadeOut {
-  animation: shortFadeOut 0.2s linear forwards;
+.shortfadeOutAnim {
+  animation: shortfadeOutAnim 0.2s linear forwards;
 }
 
-@keyframes shortFadeOut {
+@keyframes shortfadeOutAnim {
   0% {
     opacity: 1;
   }
@@ -2826,6 +2831,8 @@ del {
 #profileImage {
   border-radius: 6vh;
   height: 5vh;
+  width: 5vh;
+  object-fit: cover;
   border: 2px solid #fffa;
 }
 
@@ -3065,4 +3072,103 @@ del {
 .nothingHere {
   color: rgba(255, 255, 255, 0.5);
   font-size: 1.5vh;
+}
+
+#profileDescription {
+  text-align: right;
+  z-index: 200;
+  position: fixed;
+  top: 6.7vh;
+  right: calc(5vw + 3.5vh);
+  font-size: 1.6vh;
+  line-height: 100%;
+  color: #ffffffaa;
+  font-weight: 400;
+}
+
+.iziToast-theme-dark > .iziToast-body > .iziToast-inputs > select {
+  color: white !important;
+}
+
+.iziToast-theme-dark > .iziToast-body > .iziToast-inputs > input {
+  color: white !important;
+}
+
+#rankTitle {
+  margin-top: 4vh;
+  margin-bottom: 5vh;
+  font-weight: 750;
+  color: #404040;
+  font-size: 5vh;
+}
+
+#rankTable {
+  border-collapse: collapse;
+  margin-left: 10vw;
+  width: 80vw;
+  font-size: 2vh;
+}
+
+#rankTable > thead {
+  word-break: keep-all;
+  height: 6vh;
+  border-bottom: 1px solid black;
+}
+
+#rankTable > thead th {
+  font-weight: 600;
+}
+
+#rankTable > tbody td {
+  border-bottom: 1px solid #dddddd;
+  font-weight: 400;
+}
+
+#rankTable > thead th:nth-child(1),
+#rankTable > tbody td:nth-child(1) {
+  font-weight: 700;
+  padding-left: 2vw;
+  text-align: left;
+}
+
+#rankTable > thead th:nth-child(2) {
+  padding-left: 2vw;
+  width: 100%;
+  text-align: left;
+}
+
+#rankTable > tbody td:nth-child(2) {
+  padding-left: 2vw;
+  width: 100%;
+  text-align: left;
+}
+
+#rankTable > thead th:not(:nth-child(1)):not(:nth-child(2)),
+#rankTable > tbody td:not(:nth-child(1)):not(:nth-child(2)) {
+  text-align: right;
+  padding-right: 2vw;
+  white-space: nowrap;
+}
+
+#rankTable > tbody td:last-child {
+  font-weight: 700;
+}
+
+.rankProfile {
+  height: 4vh;
+  width: 4vh;
+  object-fit: cover;
+  border-radius: 4vh;
+  margin-right: 0.5em;
+  border: 1px solid #00000050;
+}
+
+.rankProfileContainer {
+  cursor: pointer;
+  width: fit-content;
+  height: 6vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
 }

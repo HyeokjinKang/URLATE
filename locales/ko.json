@@ -19,8 +19,6 @@
   "play_subtitle": "PLAY",
   "editor_title": "에디터",
   "editor_subtitle": "EDITOR",
-  "advanced_title": "멤버십",
-  "advanced_subtitle": "ADVANCED",
   "support": "후원하기!",
   "login_failed": "로그인 실패!",
   "login_error": "로그인 에러!",
@@ -215,5 +213,9 @@
   "alias": "뉴비,Geoplex 팬,Greenstar 팬,mkhito 팬,Neko Hacker 팬,fusq 팬,Yunomi 팬,Synthion 팬,Kunaru 팬,Sakuzyo 팬",
   "recent": "최근 플레이",
   "nothing_here": "여긴.. 아무것도 없네요 ;-;",
-  "bestplay": "최고 기록"
+  "bestplay": "최고 기록",
+  "profile_description": "각 부분을 클릭하면 프로필 수정이 가능합니다.",
+  "rank_title": "랭킹",
+  "rank_subtitle": "RANKING",
+  "profile": "프로필"
 }

@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>URLATE Client</title>
+    <link rel="stylesheet" href="/css/iziToast.min.css" />
     <link rel="stylesheet" href="/css/game.css?v=<%= ver %>" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
@@ -79,7 +80,7 @@
       </div>
     </div>
     <div id="menuContainer">
-      <div id="menuMain" class="menuSelector clickable" onclick="menuSelected(0)">
+      <div class="menuSelector clickable" onclick="menuSelected(0)">
         <div class="fadeIconContainer">
           <img src="/images/parts/graphicIcons/play.webp" class="mainIcon" />
           <img src="/images/parts/graphicIcons/play_selected.webp" class="fadeIcon" />
@@ -87,7 +88,7 @@
         <span class="menuTitle"><%= __('play_title') %></span>
         <span class="light menuSubtitle"><%= __('play_subtitle') %></span>
       </div>
-      <div id="menuEditor" class="menuSelector clickable" onclick="menuSelected(1)">
+      <div class="menuSelector clickable" onclick="menuSelected(1)">
         <div class="fadeIconContainer">
           <img src="/images/parts/graphicIcons/editor.webp" class="mainIcon" />
           <img src="/images/parts/graphicIcons/editor_selected.webp" class="fadeIcon" />
@@ -95,7 +96,15 @@
         <span class="menuTitle"><%= __('editor_title') %></span>
         <span class="light menuSubtitle"><%= __('editor_subtitle') %></span>
       </div>
-      <div id="menuStore" class="menuSelector clickable" onclick="menuSelected(3)">
+      <div class="menuSelector clickable" onclick="menuSelected(2)">
+        <div class="fadeIconContainer">
+          <img src="/images/parts/graphicIcons/rank.webp" class="mainIcon" />
+          <img src="/images/parts/graphicIcons/rank_selected.webp" class="fadeIcon" />
+        </div>
+        <span class="menuTitle"><%= __('rank_title') %></span>
+        <span class="light menuSubtitle"><%= __('rank_subtitle') %></span>
+      </div>
+      <div class="menuSelector clickable" onclick="menuSelected(3)">
         <div class="fadeIconContainer">
           <img src="/images/parts/graphicIcons/info.webp" class="mainIcon" />
           <img src="/images/parts/graphicIcons/info_selected.webp" class="fadeIcon" />
@@ -267,7 +276,19 @@
     </div>
     <div id="advancedContainer" class="containers">
       <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
-      <!-- ADVANCED -->
+      <h1 id="rankTitle"><%= __('rank_title') %></h1>
+      <table id="rankTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th><%= __('profile') %></th>
+            <th><%= __('average_accuracy') %></th>
+            <th><%= __('score_sum') %></th>
+            <th><%= __('rating') %></th>
+          </tr>
+        </thead>
+        <tbody id="rankTableBody"></tbody>
+      </table>
     </div>
     <div id="infoContainer" class="containers metropolis">
       <div id="infoProfileContainer" class="containers">
@@ -622,12 +643,13 @@
       </div>
     </div>
     <div id="profileContainer" class="containers metropolis">
-      <div id="profileImageContainer"></div>
+      <span id="profileDescription"><%= __('profile_description') %></span>
       <img src="https://img.icons8.com/windows/32/ffffff/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+      <div id="profileImageContainer"></div>
       <div id="profileNameContainer">
-        <img src="" id="profileImage" />
+        <img src="" id="profileImage" class="editable opacity" onclick="changeProfile('picture')" />
         <span id="profileName"></span>
-        <span id="profileBio"></span>
+        <span id="profileBio" class="editable opacity" onclick="changeProfile('alias')"></span>
       </div>
       <div class="profileContentsContainer">
         <div class="profileContents">
@@ -663,18 +685,14 @@
             <img src="/images/parts/icons/star.svg" class="profileContentsTitleIcon" />
             <span class="profileContentsTitleText"><%= __('bestplay') %></span>
           </div>
-          <div id="profileBestPlay">
-            <span class="nothingHere"><%= __('nothing_here') %></span>
-          </div>
+          <div id="profileBestPlay"></div>
         </div>
         <div class="profileContents">
           <div class="profileContentsTitle">
             <img src="/images/parts/icons/recent.svg" class="profileContentsTitleIcon" />
             <span class="profileContentsTitleText"><%= __('recent') %></span>
           </div>
-          <div id="profileRecentPlay">
-            <span class="nothingHere"><%= __('nothing_here') %></span>
-          </div>
+          <div id="profileRecentPlay"></div>
         </div>
       </div>
     </div>
@@ -717,9 +735,11 @@
       const notAvailable2 = "<%= __('not_available_2') %>";
       const alias = "<%= __('alias') %>".split(",");
       const rating = "<%= __('rating') %>";
+      const nothingHere = "<%= __('nothing_here') %>";
       if (lang == "en") document.body.style.letterSpacing = "-0.3px";
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.5/lottie.js"></script>
+    <script src="/js/iziToast.min.js"></script>
     <script src="/js/game.js?v=<%= ver %>"></script>
   </body>
 </html>

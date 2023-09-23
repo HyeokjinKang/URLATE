@@ -229,5 +229,9 @@
   "recent": "Recent Played",
   "nothing_here": "Nothing here I think ;-;",
   "bestplay": "Best Play",
-  "rangeCopyAlert": "Please select the element to copy."
+  "rangeCopyAlert": "Please select the element to copy.",
+  "profile_description": "You can modify your profile by clicking on each part.",
+  "rank_title": "RANKING",
+  "rank_subtitle": "랭킹",
+  "profile": "profile"
 }

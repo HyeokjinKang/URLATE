@@ -62,6 +62,7 @@ let comboAlert = false,
   comboCount = 50;
 let comboAlertMs = 0,
   comboAlertCount = 0;
+let comboAnimationMs = 0;
 let hide = {},
   frameCounter;
 let load = 0;
@@ -308,13 +309,16 @@ const eraseCnt = () => {
 };
 
 const getJudgeStyle = (j, p, x, y) => {
-  p = parseInt(p);
+  p *= 100;
   if (p <= 0) p = 0;
   p = `${p}`.padStart(2, "0");
   if (p <= 0) p = 0;
   if (!judgeSkin) {
     if (j == "miss") {
-      return `rgba(237, 78, 50, ${1 - p / 100})`;
+      let grd = ctx.createLinearGradient(x - 50, y - 20, x + 50, y + 20);
+      grd.addColorStop(0, `rgba(237, 78, 50, ${1 - p / 100})`);
+      grd.addColorStop(1, `rgba(248, 175, 67, ${1 - p / 100})`);
+      return grd;
     } else if (j == "perfect") {
       let grd = ctx.createLinearGradient(x - 50, y - 20, x + 50, y + 20);
       grd.addColorStop(0, `rgba(87, 209, 71, ${1 - p / 100})`);
@@ -436,17 +440,14 @@ const drawParticle = (n, x, y, j, d) => {
     if (!hide[j.toLowerCase()]) {
       const raf = (y, s) => {
         ctx.beginPath();
-        let p = 100 - (s + 300 - Date.now()) / 3;
-        let newY = y - 2 * Math.round(p / 10);
+        let p = easeOutQuad((Date.now() - s) / 700);
+        let newY = y - (canvas.height / 20) * p;
         ctx.fillStyle = getJudgeStyle(j.toLowerCase(), p, cx, newY);
-        ctx.strokeStyle = `rgba(0, 0, 0, ${1 - p / 100})`;
         ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.lineWidth = 2;
-        // ctx.strokeText(j, cx, newY);
         ctx.fillText(j, cx, newY);
-        if (p < 100) {
+        if (Date.now() - s <= 700) {
           requestAnimationFrame(() => {
             raf(cy, s);
           });
@@ -458,28 +459,24 @@ const drawParticle = (n, x, y, j, d) => {
     //judge:miss
     if (!hide.miss) {
       ctx.beginPath();
-      let p = 100 - (missParticles[j].s + 300 - Date.now()) / 3;
-      let newY = cy - Math.round(p / 10);
+      let p = easeOutQuad((Date.now() - missParticles[j].s) / 700);
+      let newY = cy - (canvas.height / 20) * p;
       ctx.fillStyle = getJudgeStyle("miss", p);
-      ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
       ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.lineWidth = 2;
       ctx.fillText("Miss", cx, newY);
     }
   } else if (n == 5) {
     //judge: perfect
     if (!hide.perfect) {
       ctx.beginPath();
-      let p = 100 - (perfectParticles[j].s + 300 - Date.now()) / 3;
-      let newY = cy - Math.round(p / 10);
+      let p = easeOutQuad((Date.now() - perfectParticles[j].s) / 700);
+      let newY = cy - (canvas.height / 20) * p;
       ctx.fillStyle = getJudgeStyle("perfect", p, cx, newY);
-      ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p / 100})`;
       ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.lineWidth = 2;
       ctx.fillText("Perfect", cx, newY);
     }
   }
@@ -896,14 +893,14 @@ const cntRender = () => {
     if (comboAlert) {
       let comboOpacity = 0;
       let fontSize = 20;
-      if (comboAlertMs + 300 > Date.now()) {
-        comboOpacity = 1 - (comboAlertMs + 300 - Date.now()) / 300;
-      } else if (comboAlertMs + 300 <= Date.now() && comboAlertMs + 600 > Date.now()) {
-        comboOpacity = 1;
-      } else if (comboAlertMs + 600 <= Date.now() && comboAlertMs + 900 > Date.now()) {
-        comboOpacity = (comboAlertMs + 900 - Date.now()) / 900;
+      if (comboAlertMs + 400 > Date.now()) {
+        comboOpacity = (Date.now() - comboAlertMs) / 1200;
+      } else if (comboAlertMs + 400 <= Date.now() && comboAlertMs + 600 > Date.now()) {
+        comboOpacity = 0.33;
+      } else if (comboAlertMs + 600 <= Date.now() && comboAlertMs + 1000 > Date.now()) {
+        comboOpacity = (comboAlertMs + 1000 - Date.now()) / 1200;
       }
-      fontSize = (canvas.height / 100) * (30 - (comboAlertMs + 900 - Date.now()) / 90);
+      fontSize = (canvas.height / 5) * easeOutSine((Date.now() - comboAlertMs) / 1000);
       ctx.beginPath();
       ctx.font = `700 ${fontSize}px Montserrat, Pretendard JP Variable`;
       ctx.fillStyle = `rgba(200,200,200,${comboOpacity})`;
@@ -998,12 +995,12 @@ const cntRender = () => {
       }
     }
     for (let i = 0; i < perfectParticles.length; i++) {
-      if (perfectParticles[i].s + 300 > Date.now()) {
+      if (perfectParticles[i].s + 700 > Date.now()) {
         drawParticle(5, perfectParticles[i].x, perfectParticles[i].y, i);
       }
     }
     for (let i = 0; i < missParticles.length; i++) {
-      if (missParticles[i].s + 300 > Date.now()) {
+      if (missParticles[i].s + 700 > Date.now()) {
         drawParticle(4, missParticles[i].x, missParticles[i].y, i);
       }
     }
@@ -1076,7 +1073,8 @@ const cntRender = () => {
   ctx.textAlign = "right";
   ctx.textBaseline = "top";
   ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05);
-  ctx.font = `${canvas.height / 40}px Montserrat, Pretendard JP Variable`;
+  const comboAnimation = Math.max(0, 1 - easeOutQuart(Math.min(Date.now() - comboAnimationMs, 500) / 500));
+  ctx.font = `${400 * (1 + comboAnimation * 0.5)} ${(canvas.height / 40) * (1 + comboAnimation)}px Montserrat, Pretendard JP Variable`;
   ctx.fillStyle = "#fff";
   ctx.fillText(`${combo}x`, canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05 + canvas.height / 25);
   drawCursor();
@@ -1396,6 +1394,7 @@ const calculateScore = (judge, i, ignoreMs) => {
   }
   tick.play();
   combo++;
+  comboAnimationMs = Date.now();
   if (maxCombo < combo) {
     maxCombo = combo;
   }

@@ -59,4 +59,8 @@ const easeOutQuad = (x) => {
   return 1 - (1 - x) * (1 - x);
 };
 
+const easeOutSine = (x) => {
+  return Math.sin((x * Math.PI) / 2);
+};
+
 const isMac = navigator.userAgentData && navigator.userAgentData.platform ? navigator.userAgentData.platform === "macOS" : /Mac/.test(navigator.platform);
