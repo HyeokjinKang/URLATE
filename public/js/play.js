@@ -1010,6 +1010,7 @@ const cntRender = () => {
           s: Date.now(),
         });
         miss++;
+        shotOverlay();
         missPoint.push(seek);
         record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "miss(hold)", seek]);
         keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
@@ -1374,10 +1375,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
             combo = 0;
             medalCheck(medal);
             callBulletDestroy(i);
-            colorOverlayContainer.classList.add("show");
-            setTimeout(() => {
-              colorOverlayContainer.classList.remove("show");
-            }, 100);
+            shotOverlay();
             record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "bullet", song.seek() * 1000]);
             keyInput.push({ judge: "Bullet", key: "-", time: Date.now() });
           }
@@ -1392,6 +1390,13 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
         console.error(`trackMouseSelection:Undefined element.`);
     }
   }
+};
+
+const showOverlay = () => {
+  colorOverlayContainer.classList.add("show");
+  setTimeout(() => {
+    colorOverlayContainer.classList.remove("show");
+  }, 100);
 };
 
 const compClicked = (isTyped, key, isWheel) => {
@@ -1443,6 +1448,7 @@ const compClicked = (isTyped, key, isWheel) => {
         } else {
           judge = "Miss";
           miss++;
+          shotOverlay();
         }
       }
       if (pattern.patterns[pointingCntElement[i].i].value == 2) {
@@ -1737,6 +1743,7 @@ document.onkeyup = (e) => {
         s: Date.now(),
       });
       miss++;
+      shotOverlay();
       missPoint.push(song.seek() * 1000);
       record.push([record.length, 0, 2, keyPressing[e.key], mouseX, mouseY, "miss(hold)", song.seek() * 1000]);
       keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
