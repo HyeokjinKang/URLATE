@@ -986,7 +986,7 @@ const cntRender = () => {
           s: Date.now(),
         });
         miss++;
-        missPoint.push(song.seek() * 1000);
+        missPoint.push(seek);
         keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
       } else if (t >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && renderNotes[i].value == 2) {
         grabbedNotes.add(`${i}!`);
@@ -1648,6 +1648,7 @@ document.onkeyup = (e) => {
       });
       miss++;
       missPoint.push(song.seek() * 1000);
+      keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
     } else {
       perfectParticles.push({ x: pattern.patterns[keyPressing[e.key]].x, y: pattern.patterns[keyPressing[e.key]].y, s: Date.now() });
       calculateScore("Perfect", keyPressing[e.key], true);

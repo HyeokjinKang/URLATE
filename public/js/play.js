@@ -1010,14 +1010,15 @@ const cntRender = () => {
           s: Date.now(),
         });
         miss++;
-        missPoint.push(song.seek() * 1000);
-        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "miss", seek]);
+        missPoint.push(seek);
+        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "miss(hold)", seek]);
         keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
       } else if (t >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && renderNotes[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
         perfectParticles.push({ x: renderNotes[i].x, y: renderNotes[i].y, s: Date.now() });
         calculateScore("Perfect", i, true);
+        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "perfect(hold)", seek]);
         keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
       }
     }
@@ -1737,10 +1738,13 @@ document.onkeyup = (e) => {
       });
       miss++;
       missPoint.push(song.seek() * 1000);
+      record.push([record.length, 0, 2, keyPressing[e.key], mouseX, mouseY, "miss(hold)", song.seek() * 1000]);
+      keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
     } else {
       perfectParticles.push({ x: pattern.patterns[keyPressing[e.key]].x, y: pattern.patterns[keyPressing[e.key]].y, s: Date.now() });
       calculateScore("Perfect", keyPressing[e.key], true);
       keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
+      record.push([record.length, 0, 2, keyPressing[e.key], mouseX, mouseY, "perfect(hold)", song.seek() * 1000]);
     }
     delete keyPressing[e.key];
   }
