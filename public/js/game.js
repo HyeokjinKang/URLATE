@@ -1470,7 +1470,7 @@ const profileUpdate = async (uid, isMe) => {
         document.getElementById("profileBestPlay").innerHTML += `<div class="playContainer">
         <div class="playContainerLeft">
           <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${difficulty}</span>
-          <img src="https://urlate-cdn.coupy.dev/albums/50/${song.fileName}.webp" class="playAlbum" />
+          <img src="${cdn}/albums/50/${song.fileName}.webp" class="playAlbum" />
           <div class="playTitleContainer">
             <span class="playTitle">${settings.general.detailLang == "original" ? song.originalName : song.name}</span>
             <span class="playProducer">${song.producer}</span>
