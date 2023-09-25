@@ -1441,8 +1441,8 @@ const save = () => {
     track: trackSettingsForm[0].value,
     producer: trackSettingsForm[1].value,
     author: trackSettingsForm[2].value,
-    bpm: bpm,
-    speed: speed,
+    bpm: pattern.information.bpm,
+    speed: pattern.information.speed,
     offset: offset,
   };
   let a = document.createElement("a");
