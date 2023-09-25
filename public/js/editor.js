@@ -28,7 +28,10 @@ const timelinePlayController = document.getElementById("timelinePlayController")
 let settings,
   tracks,
   bpm = 130,
-  bpmsync = 0,
+  bpmsync = {
+    ms: 0,
+    beat: 0,
+  },
   speed = 2,
   offset = 0,
   sync = 0,
@@ -348,7 +351,10 @@ const songSelected = (isLoaded, withoutSong) => {
   if (denySkin) canvasBackground.style.filter = `grayscale(30%) opacity(20%)`;
   else canvasBackground.style.filter = `brightness(30%)`;
   bpm = pattern.information.bpm;
-  bpmsync = 0;
+  bpmsync = {
+    ms: 0,
+    beat: 0,
+  };
   offset = pattern.information.offset;
   speed = pattern.information.speed;
   document.getElementById("percentage").innerText = "100%";
@@ -1132,33 +1138,38 @@ const callBulletDestroy = (j) => {
 };
 
 const cntRender = () => {
-  const seek = song.seek() - (offset + sync) / 1000;
-  const beats = (song.seek() * 1000 - (offset + sync)) / (60000 / bpm);
-  if (window.devicePixelRatio != pixelRatio) {
-    pixelRatio = window.devicePixelRatio;
-    initialize();
-  }
-  if (metronomeToggle) {
-    const intBeat = Math.floor(beats);
-    if (song.playing()) {
-      if (prevBeat != intBeat) {
-        prevBeat = intBeat;
-        beep.play();
-      }
-    } else {
-      prevBeat = intBeat;
-    }
-  }
+  window.requestAnimationFrame(cntRender);
   try {
-    pointingCntElement = { v1: "", v2: "", i: "" };
-    window.requestAnimationFrame(cntRender);
+    // Always maintain the aspect ratio
+    if (window.devicePixelRatio != pixelRatio) {
+      pixelRatio = window.devicePixelRatio;
+      initialize();
+    }
+
+    // Initialize
     eraseCnt();
+    pointingCntElement = { v1: "", v2: "", i: "" };
     createdBullets.clear();
     destroyedBullets.clear();
     destroyedSeeks.clear();
     let bpmCount = 0,
       speedCount = 0,
       opacityCount = 0;
+
+    // Metronome
+    if (metronomeToggle) {
+      const intBeat = Math.floor(beats);
+      if (song.playing()) {
+        if (prevBeat != intBeat) {
+          prevBeat = intBeat;
+          beep.play();
+        }
+      } else {
+        prevBeat = intBeat;
+      }
+    }
+
+    // Grid
     if (gridToggle) {
       for (let i = -100; i <= 100; i += 10) {
         const x1 = (cntCanvas.width / 200) * (i + 100);
@@ -1178,6 +1189,8 @@ const cntRender = () => {
         cntCtx.stroke();
       }
     }
+
+    // Circle Grid
     if (circleToggle && selectedCntElement.v1 === 0) {
       cntCtx.strokeStyle = "#88888850";
       cntCtx.lineWidth = 2;
@@ -1193,6 +1206,12 @@ const cntRender = () => {
         cntCtx.stroke();
       }
     }
+
+    // Calculate seeking position
+    const beats = bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm);
+    console.log(beats);
+
+    // Trigger
     let end = upperBound(pattern.triggers, beats);
     const renderTriggers = pattern.triggers.slice(0, end);
     for (let i = 0; i < renderTriggers.length; i++) {
@@ -1217,7 +1236,8 @@ const cntRender = () => {
       } else if (renderTriggers[i].value == 2) {
         bpmCount++;
         bpm = renderTriggers[i].bpm;
-        bpmsync = Math.round(renderTriggers[i].ms % (60000 / bpm));
+        bpmsync.beat = beats;
+        bpmsync.ms = song.seek() * 1000 - (offset + sync);
       } else if (renderTriggers[i].value == 3) {
         opacityCount++;
         cntCanvas.style.filter = `opacity(${renderTriggers[i].opacity * 100}%)`;
@@ -1225,7 +1245,7 @@ const cntRender = () => {
         speedCount++;
         speed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
-        if (renderTriggers[i].ms - 1 <= seek * 1000 && renderTriggers[i].ms + renderTriggers[i].time > seek * 1000) {
+        if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration) {
           cntCtx.beginPath();
           if (denySkin) cntCtx.fillStyle = "#111";
           else cntCtx.fillStyle = "#fff";
@@ -1236,17 +1256,10 @@ const cntRender = () => {
           cntCtx.textBaseline = renderTriggers[i].valign;
           cntCtx.fillText(renderTriggers[i].text, (cntCanvas.width / 200) * (renderTriggers[i].x + 100), (cntCanvas.height / 200) * (renderTriggers[i].y + 100));
         }
-      } else if (renderTriggers[i].value == 6) {
-        if (!destroyedSeeks.has(renderTriggers[i])) {
-          if (!prevDestroyedSeeks.has(renderTriggers[i])) {
-            if (song.playing()) {
-              song.seek(renderTriggers[i].seek);
-            }
-          }
-          destroyedSeeks.add(renderTriggers[i]);
-        }
       }
     }
+
+    // Destroy Particles
     for (let i = 0; i < destroyParticles.length; i++) {
       if (destroyParticles[i].w > 0) {
         drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
@@ -1254,9 +1267,14 @@ const cntRender = () => {
         destroyParticles[i].n++;
       }
     }
+
+    // Editor only
     if (!bpmCount) {
       bpm = pattern.information.bpm;
-      bpmsync = 0;
+      bpmsync = {
+        ms: 0,
+        beat: 0,
+      };
     }
     if (!speedCount) {
       speed = pattern.information.speed;
@@ -1264,12 +1282,14 @@ const cntRender = () => {
     if (!opacityCount) {
       cntCanvas.style.filter = `opacity(100%)`;
     }
+
+    // Prevent destroy infinite loop
     prevDestroyedBullets = new Set(destroyedBullets);
     for (let i of destroyedSeeks) {
       prevDestroyedSeeks.add(i);
     }
-    end = upperBound(pattern.patterns, seek * 1000 + (bpm * 14) / speed);
-    const renderNotes = pattern.patterns.slice(0, end);
+
+    // Editor only - Note & Bullet location live draw (when mode is "Add")
     if (mode == 2 && mouseMode == 0) {
       let p = [0, 0];
       if (mouseX < -80) {
@@ -1301,17 +1321,23 @@ const cntRender = () => {
         }
       }
     }
+
+    // Note render
+    end = upperBound(pattern.patterns, beats + 5);
+    const renderNotes = pattern.patterns.slice(0, end);
     for (let i = 0; renderNotes.length > i; i++) {
       if (mouseMode == 0) trackMouseSelection(i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
     }
     for (let i = renderNotes.length - 1; i >= 0; i--) {
-      const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek * 1000)) / ((bpm * 14) / speed)) * 100;
-      const t = ((seek * 1000 - renderNotes[i].ms) / renderNotes[i].time) * 100;
-      const f = (((bpm * 14) / speed - (renderNotes[i].ms + renderNotes[i].time - seek * 1000)) / ((bpm * 14) / speed)) * 100;
+      const p = (1 - (renderNotes[i].beat - beats) / (5 / speed)) * 100;
+      const t = ((beats - renderNotes[i].beat) / renderNotes[i].duration) * 100;
+      const f = (1 - (renderNotes[i].beat + renderNotes[i].duration - beats) / (5 / speed)) * 100;
       drawNote(p, renderNotes[i].x, renderNotes[i].y, selectedCheck(0, i), renderNotes[i].value, renderNotes[i].direction, t, f);
     }
-    let start = lowerBound(pattern.bullets, seek * 1000 - bpm * 100);
-    end = upperBound(pattern.bullets, seek * 1000);
+
+    //Bullet render
+    let start = lowerBound(pattern.bullets, beats - 16);
+    end = upperBound(pattern.bullets, beats);
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
       if (!destroyedBullets.has(start + i)) {
@@ -1332,7 +1358,7 @@ const cntRender = () => {
             ms: Date.now(),
           });
         }
-        const p = ((seek * 1000 - renderBullets[i].ms) / ((bpm * 40) / speed / renderBullets[i].speed)) * 100;
+        const p = ((beats - renderBullets[i].beat) / (5 / speed / renderBullets[i].speed)) * 100;
         const left = renderBullets[i].direction == "L";
         let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
         if (renderBullets[i].value == 0) {
@@ -1348,6 +1374,8 @@ const cntRender = () => {
       }
     }
     prevCreatedBullets = new Set(createdBullets);
+
+    // Editor only - Trigger guide text (when mode is "Add")
     if (mode == 2 && mouseMode == -1) {
       cntCtx.fillStyle = "rgba(0,0,0,0.5)";
       cntCtx.fillRect(0, 0, cntCanvas.width, cntCanvas.height);
@@ -1366,6 +1394,8 @@ const cntRender = () => {
       cntCtx.textBaseline = "top";
       cntCtx.fillText("Click to add Trigger", cntCanvas.width / 2, cntCanvas.height / 2 + 10);
     }
+
+    //Cursor
     if (pointingCntElement.i === "") {
       componentView.style.cursor = "";
     } else {
