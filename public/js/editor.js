@@ -113,24 +113,14 @@ let prevDestroyedSeeks = new Set([]);
 
 let copySelection = { element: -1, start: -1, end: -1, ms: 0 };
 
-let metronome = 1;
-let metronomeLimit = 4;
-const beep = [
-  new Howl({
-    src: `/sounds/beep1.ogg`,
-    format: ["ogg"],
-    volume: 0.5,
-    autoplay: false,
-    loop: false,
-  }),
-  new Howl({
-    src: `/sounds/beep2.ogg`,
-    format: ["ogg"],
-    volume: 0.5,
-    autoplay: false,
-    loop: false,
-  }),
-];
+let prevBeat = 1;
+const beep = new Howl({
+  src: `/sounds/beep1.ogg`,
+  format: ["ogg"],
+  volume: 0.5,
+  autoplay: false,
+  loop: false,
+});
 
 const sortAsTiming = (a, b) => {
   if (a.ms == b.ms) return 0;
@@ -357,7 +347,6 @@ const songSelected = (isLoaded, withoutSong) => {
   lottieInitBox.value = pattern.background.type;
   if (denySkin) canvasBackground.style.filter = `grayscale(30%) opacity(20%)`;
   else canvasBackground.style.filter = `brightness(30%)`;
-  metronomeLimit = pattern.information.tempo ? pattern.information.tempo : 4;
   bpm = pattern.information.bpm;
   bpmsync = 0;
   offset = pattern.information.offset;
@@ -1143,29 +1132,26 @@ const callBulletDestroy = (j) => {
 };
 
 const cntRender = () => {
+  const seek = song.seek() - (offset + sync) / 1000;
+  const beats = (song.seek() * 1000 - (offset + sync)) / (60000 / bpm);
   if (window.devicePixelRatio != pixelRatio) {
     pixelRatio = window.devicePixelRatio;
     initialize();
   }
   if (metronomeToggle) {
+    const intBeat = Math.floor(beats);
     if (song.playing()) {
-      if (Math.ceil(((song.seek() * 1000) / (60000 / bpm)) % metronomeLimit) == metronome) {
-        if (metronome == 1) beep[0].play();
-        else beep[1].play();
-        if (metronome == metronomeLimit) metronome = 1;
-        else metronome++;
+      if (prevBeat != intBeat) {
+        prevBeat = intBeat;
+        beep.play();
       }
     } else {
-      metronome = Math.ceil(((song.seek() * 1000) / (60000 / bpm)) % metronomeLimit) + 1;
-      if (metronome == 0 || metronome >= metronomeLimit) metronome = 1;
+      prevBeat = intBeat;
     }
   }
   try {
     pointingCntElement = { v1: "", v2: "", i: "" };
     window.requestAnimationFrame(cntRender);
-    const seek = song.seek() - (offset + sync) / 1000;
-    let end = upperBound(pattern.triggers, seek * 1000 + 2); //2 for floating point miss
-    const renderTriggers = pattern.triggers.slice(0, end);
     eraseCnt();
     createdBullets.clear();
     destroyedBullets.clear();
@@ -1207,6 +1193,8 @@ const cntRender = () => {
         cntCtx.stroke();
       }
     }
+    let end = upperBound(pattern.triggers, beats);
+    const renderTriggers = pattern.triggers.slice(0, end);
     for (let i = 0; i < renderTriggers.length; i++) {
       if (renderTriggers[i].value == 0) {
         if (!destroyedBullets.has(renderTriggers[i].num)) {
@@ -1216,7 +1204,7 @@ const cntRender = () => {
           destroyedBullets.add(renderTriggers[i].num);
         }
       } else if (renderTriggers[i].value == 1) {
-        end = upperBound(pattern.bullets, renderTriggers[i].ms);
+        end = upperBound(pattern.bullets, renderTriggers[i].beat);
         const renderBullets = pattern.bullets.slice(0, end);
         for (let j = 0; renderBullets.length > j; j++) {
           if (!destroyedBullets.has(j)) {
@@ -2902,25 +2890,6 @@ const changeLetterbox = (e) => {
   }
   canvasBackground.style.backgroundColor = `#${e.value}`;
   pattern.background.boxColor = e.value;
-};
-
-const changeTempo = (e) => {
-  if (isNaN(Number(e.value))) {
-    iziToast.error({
-      title: "Input Error",
-      message: "Input value is not number.",
-    });
-    e.value = metronomeLimit;
-  } else if (Number(e.value) < 2) {
-    iziToast.error({
-      title: "Input Error",
-      message: "Input value is too low.",
-    });
-    e.value = metronomeLimit;
-  } else {
-    metronomeLimit = Number(e.value);
-  }
-  pattern.information.tempo = Number(e.value);
 };
 
 const toggleCircle = () => {

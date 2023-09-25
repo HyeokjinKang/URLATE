@@ -28,7 +28,7 @@ const lowerBound = (array, value) => {
   let high = array.length;
   while (low < high) {
     const mid = Math.floor(low + (high - low) / 2);
-    if (value <= array[mid].ms) {
+    if (value <= array[mid].beat) {
       high = mid;
     } else {
       low = mid + 1;
@@ -42,7 +42,7 @@ const upperBound = (array, value) => {
   let high = array.length;
   while (low < high) {
     const mid = Math.floor(low + (high - low) / 2);
-    if (value >= array[mid].ms) {
+    if (value >= array[mid].beat) {
       low = mid + 1;
     } else {
       high = mid;
