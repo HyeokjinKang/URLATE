@@ -261,52 +261,6 @@ const dataLoaded = (event) => {
   reader.readAsText(file);
 };
 
-const analyzeTools = {
-  VectorSubtract: (a, b) => {
-    return [a[0] - b[0], a[1] - b[1]];
-  },
-  VectorInnerProduct: (a, b) => {
-    return [a[0] * b[0] + a[1] * b[1]];
-  },
-  VectorLength: (a) => {
-    return Math.sqrt(a[0] ** 2 + a[1] ** 2);
-  },
-};
-
-const analyze = () => {
-  console.warn("Analyzing patterns..");
-  const bulletLength = pattern.bullets.length;
-  const patternLength = pattern.patterns.length;
-  let duration = song.duration() * ((pattern.information.bpm + 100) / 100 / pattern.information.speed);
-  let result = {};
-  result.originalDuration = song.duration();
-  result.duration = duration;
-  result.bullets = bulletLength;
-  result.patterns = patternLength;
-  result.bulletDensity = Math.round((bulletLength / duration) * 20);
-  result.noteDensity = Math.round((patternLength / duration) * 20);
-  result.weight = 0;
-  for (let i = 0; i < patternLength - 2; i++) {
-    const p = pattern.patterns[i];
-    const q = pattern.patterns[i + 1];
-    const r = pattern.patterns[i + 2];
-    const a = analyzeTools.VectorSubtract([q.x, q.y], [p.x, p.y]);
-    const b = analyzeTools.VectorSubtract([r.x, r.y], [q.x, q.y]);
-    const length = analyzeTools.VectorLength(a) * analyzeTools.VectorLength(b);
-    const gap = ((q.ms - p.ms) * (r.ms - q.ms)) / 10000;
-    let cos = analyzeTools.VectorInnerProduct(a, b) / length;
-    cos = isNaN(cos) ? 0 : cos;
-    const calc = ((1 - Math.abs(cos)) * Math.sqrt(length)) / gap;
-    result.weight += isNaN(calc) ? 0 : calc;
-  }
-  result.weight = result.weight / duration;
-  result.bulletWeight = Math.sqrt(bulletLength) / duration;
-  result.patternWeight = Math.sqrt(patternLength) / duration;
-  result.weightResult = result.weight + result.bulletWeight + result.patternWeight;
-  result.levelGuessed = Math.round(6 * Math.log10(result.weightResult * 2 + 1) + 1);
-  console.table(result);
-};
-
 const songSelected = (isLoaded, withoutSong) => {
   if (!withoutSong) {
     song = new Howl({
@@ -315,7 +269,6 @@ const songSelected = (isLoaded, withoutSong) => {
       autoplay: false,
       loop: false,
       onload: () => {
-        analyze(); //temporary
         Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
       },
     });
