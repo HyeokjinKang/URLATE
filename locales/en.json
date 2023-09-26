@@ -101,7 +101,7 @@
   "offset_description_3": "offset_description_3",
   "offset_sub_description_1": "offset_sub_description_1",
   "reset": "reset",
-  "syncAlert": "The set user offset is greater or less than ±50 ms. The offset timing displayed by the canvas is displayed in blue.",
+  "syncAlert": "The sum of the user offset and pattern sync value is greater than to ±50 ms. The timing that the canvas displays is shown in a blue line.",
   "store_title": "ABOUT",
   "store_subtitle": "정보",
   "return_to_game": "Return to game",
