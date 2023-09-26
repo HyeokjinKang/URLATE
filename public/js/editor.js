@@ -114,7 +114,7 @@ let prevCreatedBullets = new Set([]);
 let destroyedSeeks = new Set([]);
 let prevDestroyedSeeks = new Set([]);
 
-let copySelection = { element: -1, start: -1, end: -1, ms: 0 };
+let copySelection = { element: -1, start: -1, end: -1, beat: 0 };
 
 let prevBeat = 1;
 const beep = new Howl({
@@ -126,8 +126,8 @@ const beep = new Howl({
 });
 
 const sortAsTiming = (a, b) => {
-  if (a.ms == b.ms) return 0;
-  return a.ms > b.ms ? 1 : -1;
+  if (a.beat == b.beat) return 0;
+  return a.beat > b.beat ? 1 : -1;
 };
 
 const settingApply = () => {
@@ -730,14 +730,13 @@ const gotoMain = (isCalledByMain) => {
 const trackMouseSelection = (i, v1, v2, x, y) => {
   if (mode != 2 && mouseMode == 0) {
     if (pointingCntElement.i == "") {
-      //MEMO: this line rejects overlap of tracking
-      const seek = song.seek() - (offset + sync) / 1000;
+      const beats = bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm);
       const powX = ((((mouseX - x) * canvasContainer.offsetWidth) / 200) * pixelRatio * settings.display.canvasRes) / 100;
       const powY = ((((mouseY - y) * canvasContainer.offsetHeight) / 200) * pixelRatio * settings.display.canvasRes) / 100;
-      const p = v1 == 0 ? (((bpm * 14) / speed - (pattern.patterns[i].ms - seek * 1000)) / ((bpm * 14) / speed)) * 100 : 0;
       switch (v1) {
         case 0:
-          const t = ((seek * 1000 - pattern.patterns[i].ms) / pattern.patterns[i].time) * 100;
+          const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
+          const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
           if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= cntCanvas.width / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 100)) {
             pointingCntElement = { v1: v1, v2: v2, i: i };
           }
@@ -780,9 +779,9 @@ const tmlRender = () => {
       endX = tmlCanvas.width / 1.01,
       endY = tmlCanvas.height / 1.1,
       height = tmlCanvas.height / 9;
-    const renderStart = beats - 1 * zoom,
+    const renderStart = beats - zoom,
       renderEnd = beats + 16 * zoom,
-      beatToPx = (endX - tmlStartX) / (renderEnd - renderStart);
+      beatToPx = (endX - tmlStartX) / (17 * zoom); // 17 * zoom is renderEnd - renderStart
 
     //Timeline background
     tmlCtx.beginPath();
@@ -1093,7 +1092,7 @@ const tmlRender = () => {
 
 const callBulletDestroy = (j) => {
   const seek = song.seek() - (offset + sync) / 1000;
-  const p = ((seek * 1000 - pattern.bullets[j].ms) / ((bpm * 40) / speed / pattern.bullets[j].speed)) * 100;
+  const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
   const left = pattern.bullets[j].direction == "L";
   let x = (left ? -1 : 1) * (100 - p);
   let y = 0;
@@ -1511,19 +1510,19 @@ const settingsInput = (v, e) => {
           rangeCopyCancel();
         }
         if (selectedCntElement.v1 == 0) {
-          pattern.patterns[selectedCntElement.i].ms = Number(e.value);
+          pattern.patterns[selectedCntElement.i].beat = Number(e.value);
           changedResult = pattern.patterns[selectedCntElement.i];
           pattern.patterns.sort(sortAsTiming);
           patternChanged();
           targetElements = pattern.patterns;
         } else if (selectedCntElement.v1 == 1) {
-          pattern.bullets[selectedCntElement.i].ms = Number(e.value);
+          pattern.bullets[selectedCntElement.i].beat = Number(e.value);
           changedResult = pattern.bullets[selectedCntElement.i];
           pattern.bullets.sort(sortAsTiming);
           patternChanged();
           targetElements = pattern.bullets;
         } else if (selectedCntElement.v1 == 2) {
-          pattern.triggers[selectedCntElement.i].ms = Number(e.value);
+          pattern.triggers[selectedCntElement.i].beat = Number(e.value);
           changedResult = pattern.triggers[selectedCntElement.i];
           pattern.triggers.sort(sortAsTiming);
           patternChanged();
@@ -1542,11 +1541,11 @@ const settingsInput = (v, e) => {
         }
       }
       if (selectedCntElement.v1 == 0) {
-        e.value = pattern.patterns[selectedCntElement.i].ms;
+        e.value = pattern.patterns[selectedCntElement.i].beat;
       } else if (selectedCntElement.v1 == 1) {
-        e.value = pattern.bullets[selectedCntElement.i].ms;
+        e.value = pattern.bullets[selectedCntElement.i].beat;
       } else {
-        e.value = pattern.triggers[selectedCntElement.i].ms;
+        e.value = pattern.triggers[selectedCntElement.i].beat;
       }
       break;
     case "Side":
@@ -1998,20 +1997,19 @@ const timelineFollowMouse = (v1, v2, i) => {
         i = pointingCntElement.i;
       }
       if (mouseMode == 1 && mouseX > tmlCanvas.width / 10 && mouseX < tmlCanvas.width / 1.01) {
-        let msToPx =
-          (tmlCanvas.width / 1.01 - tmlCanvas.width / 10) / (parseInt(parseInt(song.seek() * 1000) - (60000 / bpm) * zoom + 5000 * zoom) - (parseInt(song.seek() * 1000) - (60000 / bpm) * zoom));
-        let calculatedMs = (mouseX - tmlCanvas.width / 10) / msToPx - (60 / bpm) * 1000 + song.seek() * 1000;
-        const beat = Math.round(60000 / bpm / split);
-        if (calculatedMs <= 0) calculatedMs = 0;
+        const beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
+        const beatToPx = (tmlCanvas.width / 1.01 - tmlCanvas.width / 10) / (17 * zoom);
+        let calculatedBeat = beats + ((mouseX - tmlCanvas.width / 10) / beatToPx) * zoom - 1;
+        if (calculatedBeat <= 0) calculatedBeat = 0;
         switch (v1) {
           case 0:
-            pattern.patterns[i].ms = magnetToggle ? calculatedMs - (calculatedMs % beat) : calculatedMs;
+            pattern.patterns[i].beat = magnetToggle ? Math.round(calculatedBeat * split) / split : calculatedBeat;
             break;
           case 1:
-            pattern.bullets[i].ms = magnetToggle ? calculatedMs - (calculatedMs % beat) : calculatedMs;
+            pattern.bullets[i].beat = magnetToggle ? Math.round(calculatedBeat * split) / split : calculatedBeat;
             break;
           case 2:
-            pattern.triggers[i].ms = magnetToggle ? calculatedMs - (calculatedMs % beat) : calculatedMs;
+            pattern.triggers[i].beat = magnetToggle ? Math.round(calculatedBeat * split) / split : calculatedBeat;
             break;
         }
         lastMovedMs = Date.now();
@@ -2274,7 +2272,7 @@ const changeSettingsMode = (v1, v2, i) => {
       document.getElementById("triggerInitializeContainer").style.display = "none";
       noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[0].value = pattern.patterns[i].x;
       noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[1].value = pattern.patterns[i].y;
-      noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[2].value = pattern.patterns[i].ms.toFixed();
+      noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[2].value = pattern.patterns[i].beat;
       noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[3].value = pattern.patterns[i].direction;
       noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[4].value = pattern.patterns[i].time;
       switch (v2) {
@@ -2304,7 +2302,7 @@ const changeSettingsMode = (v1, v2, i) => {
       document.getElementById("triggerInitializeContainer").style.display = "none";
       bulletSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[0].value = pattern.bullets[i].direction;
       bulletSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[1].value = pattern.bullets[i].location;
-      bulletSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[3].value = pattern.bullets[i].ms.toFixed();
+      bulletSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[3].value = pattern.bullets[i].beat;
       bulletSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[4].value = pattern.bullets[i].speed;
       switch (v2) {
         case 0:
@@ -2342,7 +2340,7 @@ const changeSettingsMode = (v1, v2, i) => {
           properties[j].style.display = "none";
           if (j - start == v2) {
             properties[j].style.display = "block";
-            properties[j].getElementsByClassName("settingsPropertiesTextbox")[0].value = pattern.triggers[i].ms;
+            properties[j].getElementsByClassName("settingsPropertiesTextbox")[0].value = pattern.triggers[i].beat;
           }
         }
         let textBox = properties[v2 + start].getElementsByClassName("settingsPropertiesTextbox");
@@ -2544,7 +2542,8 @@ const elementPaste = () => {
     });
     return;
   }
-  copiedElement.element.ms = song.seek() * 1000;
+  const beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
+  copiedElement.element.beat = beats;
   let searchTarget = "";
   if (copiedElement.v1 == 0) {
     pattern.patterns.push(eval(`(${JSON.stringify(copiedElement.element)})`));
@@ -2629,10 +2628,10 @@ const rangeCopy = () => {
 };
 
 const rangePaste = () => {
-  const seek = Math.floor(song.seek() * 1000);
+  const beats = bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm);
   const start = copySelection.start;
   const end = copySelection.end;
-  const ms = copySelection.ms;
+  const beat = copySelection.beat;
   const element = ["patterns", "bullets", "triggers"][copySelection.element];
   if (end == -1) {
     iziToast.warning({
@@ -2648,7 +2647,7 @@ const rangePaste = () => {
   }
   for (let i = start; i <= end; i++) {
     let copy = JSON.parse(JSON.stringify(pattern[element][i]));
-    copy.ms += seek - ms;
+    copy.beat += beats - beat;
     pattern[element].push(copy);
   }
   pattern[element].sort(sortAsTiming);
@@ -2666,7 +2665,7 @@ const copySelect = () => {
   if (copySelection.end !== -1) return;
   if (copySelection.start === -1) {
     copySelection.start = selectedCntElement.i;
-    copySelection.ms = pattern[["patterns", "bullets", "triggers"][selectedCntElement.v1]][selectedCntElement.i].ms;
+    copySelection.beat = pattern[["patterns", "bullets", "triggers"][selectedCntElement.v1]][selectedCntElement.i].beat;
     iziToast.success({
       title: "Range Copy",
       message: `Copy start from ${["pattern", "bullet", "trigger"][selectedCntElement.v1]}_${selectedCntElement.i}`,
