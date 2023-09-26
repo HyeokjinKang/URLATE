@@ -2317,6 +2317,10 @@ document.onkeyup = (e) => {
 window.addEventListener("resize", initialize);
 window.addEventListener("wheel", scrollEvent);
 
+window.addEventListener("blur", () => {
+  shiftDown = false;
+});
+
 window.onpopstate = () => {
   if (display != 0) {
     displayClose();

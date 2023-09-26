@@ -1761,6 +1761,7 @@ window.addEventListener("resize", () => {
 });
 
 window.addEventListener("blur", () => {
+  shiftDown = false;
   if (menuAllowed) {
     if (menuContainer.style.display == "none") {
       if (song.playing()) pauseDate = Date.now();

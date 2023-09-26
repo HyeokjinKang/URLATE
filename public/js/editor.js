@@ -2990,6 +2990,11 @@ window.addEventListener("beforeunload", (e) => {
   return rusure;
 });
 
+window.addEventListener("blur", () => {
+  shiftDown = false;
+  ctrlDown = false;
+});
+
 document.onkeyup = (e) => {
   e = e || window.event;
   if (isMac ? e.key == "Meta" : e.key == "Control") {
