@@ -1091,7 +1091,7 @@ const tmlRender = () => {
 };
 
 const callBulletDestroy = (j) => {
-  const seek = song.seek() - (offset + sync) / 1000;
+  const beats = bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm);
   const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
   const left = pattern.bullets[j].direction == "L";
   let x = (left ? -1 : 1) * (100 - p);
@@ -2055,7 +2055,8 @@ const tmlClicked = () => {
 
 const copySeek = () => {
   if (mouseX < tmlCanvas.width / 10 && mouseY < tmlCanvas.height / 6) {
-    navigator.clipboard.writeText(song.seek());
+    const beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
+    navigator.clipboard.writeText(beats);
     copied = true;
     copiedTime = new Date();
   }
@@ -2064,23 +2065,26 @@ const copySeek = () => {
 const timelineAddElement = () => {
   let startY = tmlCanvas.height / 6;
   let height = tmlCanvas.height / 9;
-  let msToPx = (tmlCanvas.width / 1.01 - tmlCanvas.width / 10) / (parseInt(parseInt(song.seek() * 1000) - (60000 / bpm) * zoom + 5000 * zoom) - (parseInt(song.seek() * 1000) - (60000 / bpm) * zoom));
-  let calculatedMs = (mouseX - tmlCanvas.width / 10) / msToPx - (60 / bpm) * 1000 + song.seek() * 1000;
+  const beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
+  const beatToPx = (tmlCanvas.width / 1.01 - tmlCanvas.width / 10) / (17 * zoom);
+  let calculatedBeat = beats + ((mouseX - tmlCanvas.width / 10) / beatToPx) * zoom - 1;
+  if (calculatedBeat <= 0) calculatedBeat = 0;
   let mousePosY = mouseY - timelineYLoc;
   if (mouseX > tmlCanvas.width / 10 && mouseX < tmlCanvas.width / 1.01 && mouseY > startY && mouseY < tmlCanvas.height / 1.1) {
     if (mousePosY >= startY && mousePosY <= startY + height) {
-      let newElement = { ms: parseInt(calculatedMs), value: selectedValue, direction: 1, x: 0, y: 0, time: parseInt((60 / bpm) * 4 * 1000) };
+      let newElement = { beat: calculatedBeat, value: selectedValue, direction: 1, x: 0, y: 0, duration: 4 };
       pattern.patterns.push(newElement);
       pattern.patterns.sort(sortAsTiming);
       patternChanged();
       for (let i = 0; i < pattern.patterns.length; i++) {
         if (JSON.stringify(pattern.patterns[i]) == JSON.stringify(newElement)) {
           selectedCntElement = { v1: 0, v2: selectedValue, i: i };
+          break;
         }
       }
     } else if (mousePosY >= startY + height && mousePosY <= startY + height * (bulletsOverlapNum + 1)) {
       let newElement = {
-        ms: parseInt(calculatedMs),
+        beat: calculatedBeat,
         value: selectedValue,
         direction: "L",
         location: 0,
@@ -2093,11 +2097,12 @@ const timelineAddElement = () => {
       for (let i = 0; i < pattern.bullets.length; i++) {
         if (JSON.stringify(pattern.bullets[i]) == JSON.stringify(newElement)) {
           selectedCntElement = { v1: 1, v2: selectedValue, i: i };
+          break;
         }
       }
     } else if (mousePosY >= startY + height * (bulletsOverlapNum + 1) && mousePosY <= startY + height * (bulletsOverlapNum + 1) + height * (triggersOverlapNum + 1)) {
-      pattern.triggers.push({
-        ms: parseInt(calculatedMs),
+      let newElement = {
+        beat: calculatedBeat,
         value: -1,
         num: 0,
         bpm: bpm,
@@ -2106,23 +2111,19 @@ const timelineAddElement = () => {
         align: "center",
         valign: "middle",
         weight: 500,
-        size: "1vh",
-        time: parseInt((60 / bpm) * 1000),
+        size: "3vh",
+        duration: 4,
         x: 0,
         y: 0,
         text: "",
-        seek: 0,
-      });
+      };
+      pattern.triggers.push(newElement);
       pattern.triggers.sort(sortAsTiming);
       patternChanged();
       for (let i = 0; i < pattern.triggers.length; i++) {
-        if (
-          JSON.stringify(pattern.triggers[i]) ==
-          `{"ms":${parseInt(calculatedMs)},"value":-1,"num":0,"bpm":${bpm},"opacity":1,"speed":${speed},"align":"center","valign":"middle","weight":500,"size":"1vh","time":${parseInt(
-            (60 / bpm) * 1000
-          )},"x":0,"y":0,"text":"","seek":0}`
-        ) {
+        if (JSON.stringify(pattern.triggers[i]) == JSON.stringify(newElement)) {
           selectedCntElement = { i: i, v1: 2, v2: -1 };
+          break;
         }
       }
     } else {
@@ -2158,11 +2159,11 @@ const compClicked = () => {
       selectedCntElement = { v1: "", v2: "", i: "" };
     }
   } else if (mode == 2) {
+    const beats = bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm);
     if (mouseMode != -1) {
-      const seek = song.seek();
       if (mouseX < -80 || mouseX > 80) {
         let newElement = {
-          ms: parseInt(seek * 1000),
+          beat: beats,
           value: selectedValue,
           direction: mouseX < -80 ? "L" : "R",
           location: parseInt(magnetToggle ? mouseY - (mouseY % 5) : mouseY),
@@ -2193,10 +2194,10 @@ const compClicked = () => {
           newY = ((noteY + newDistance * getSin(angle)) / cntCanvas.height) * 200 - 100;
         }
         let newElement = {
-          ms: parseInt(seek * 1000) + 1,
+          beat: beats,
           value: selectedValue,
           direction: 1,
-          time: parseInt((60 / bpm) * 4 * 1000),
+          duration: 4,
           x: parseInt(newX),
           y: parseInt(newY),
         };
@@ -2212,8 +2213,8 @@ const compClicked = () => {
       changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
       if (!isSettingsOpened) toggleSettings();
     } else {
-      pattern.triggers.push({
-        ms: song.seek() * 1000,
+      let newElement = {
+        beat: beats,
         value: -1,
         num: 0,
         bpm: bpm,
@@ -2223,20 +2224,15 @@ const compClicked = () => {
         valign: "middle",
         weight: 500,
         size: "1vh",
-        time: parseInt((60 / bpm) * 1000),
+        duration: 4,
         x: 0,
         y: 0,
         text: "",
-        seek: 0,
-      });
+      };
+      pattern.triggers.push(newElement);
       pattern.triggers.sort(sortAsTiming);
       for (let i = 0; i < pattern.triggers.length; i++) {
-        if (
-          JSON.stringify(pattern.triggers[i]) ==
-          `{"ms":${song.seek() * 1000},"value":-1,"num":0,"bpm":${bpm},"opacity":1,"speed":${speed},"align":"center","valign":"middle","weight":500,"size":"1vh","time":${parseInt(
-            (60 / bpm) * 1000
-          )},"x":0,"y":0,"text":"","seek":0}`
-        ) {
+        if (JSON.stringify(pattern.triggers[i]) == JSON.stringify(newElement)) {
           selectedCntElement = { i: i, v1: 2, v2: -1 };
           patternChanged();
           changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
@@ -2274,7 +2270,7 @@ const changeSettingsMode = (v1, v2, i) => {
       noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[1].value = pattern.patterns[i].y;
       noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[2].value = pattern.patterns[i].beat;
       noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[3].value = pattern.patterns[i].direction;
-      noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[4].value = pattern.patterns[i].time;
+      noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[4].value = pattern.patterns[i].duration;
       switch (v2) {
         case 0:
           document.getElementById("dot").style.color = "#f59b42";
@@ -2367,14 +2363,10 @@ const changeSettingsMode = (v1, v2, i) => {
             textBox[2].value = pattern.triggers[i].align;
             textBox[3].value = pattern.triggers[i].weight;
             textBox[4].value = pattern.triggers[i].size;
-            textBox[5].value = pattern.triggers[i].time;
+            textBox[5].value = pattern.triggers[i].duration;
             textBox[6].value = pattern.triggers[i].x;
             textBox[7].value = pattern.triggers[i].y;
             textBox[8].value = pattern.triggers[i].text;
-            break;
-          case 6:
-            //Seek
-            textBox[1].value = pattern.triggers[i].seek;
             break;
         }
       }
