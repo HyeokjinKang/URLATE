@@ -817,30 +817,32 @@ const selectedCheck = (n, i) => {
 };
 
 const tmlRender = () => {
-  eraseTml();
-  const tmlStartX = tmlCanvas.width / 10,
-    startX = tmlCanvas.width / 80,
-    startY = tmlCanvas.height / 6,
-    endX = tmlCanvas.width / 1.01,
-    endY = tmlCanvas.height / 1.1,
-    height = tmlCanvas.height / 9;
-  const seek = song.seek(),
-    minutes = Math.floor(seek / 60),
-    seconds = seek - minutes * 60;
-  const renderStart = parseInt(seek * 1000) - (60000 / bpm) * zoom,
-    renderEnd = parseInt(renderStart + 5000 * zoom),
-    msToPx = (endX - tmlStartX) / (renderEnd - renderStart);
   try {
-    let baseMs = (60 / bpm) * 1000;
+    //Initialize
+    eraseTml();
+    const beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
+    const tmlStartX = tmlCanvas.width / 10, //timeline(element view) start X
+      startX = tmlCanvas.width / 80,
+      startY = tmlCanvas.height / 6,
+      endX = tmlCanvas.width / 1.01,
+      endY = tmlCanvas.height / 1.1,
+      height = tmlCanvas.height / 9;
+    const renderStart = beats - 1 * zoom,
+      renderEnd = beats + 16 * zoom,
+      beatToPx = (endX - tmlStartX) / (renderEnd - renderStart);
+
+    //Timeline background
     tmlCtx.beginPath();
     tmlCtx.fillStyle = "#F3F3F3";
     tmlCtx.fillRect(tmlStartX, startY, endX - tmlStartX, endY - startY);
     let start = lowerBound(pattern.patterns, renderStart);
     let end = upperBound(pattern.patterns, renderEnd);
+
+    //Timeline notes
     const renderNotes = pattern.patterns.slice(start, end);
     for (let j = 0; j < renderNotes.length; j++) {
       tmlCtx.beginPath();
-      let x = tmlStartX + parseInt((renderNotes[j].ms - renderStart) * msToPx);
+      let x = tmlStartX + (renderNotes[j].beat - renderStart) * beatToPx;
       let y = startY + timelineYLoc + height / 2;
       if (mouseMode == 1) trackMouseSelection(start + j, 0, renderNotes[j].value, x, y);
       if (selectedCheck(0, start + j)) {
@@ -851,29 +853,34 @@ const tmlRender = () => {
       tmlCtx.arc(x, y, height / 3, 0, 2 * Math.PI);
       tmlCtx.fill();
     }
+
+    //Timeline bullets
     start = lowerBound(pattern.bullets, renderStart);
     end = upperBound(pattern.bullets, renderEnd);
     const renderBullets = pattern.bullets.slice(start, end);
+    //Calculate overlap number
     bulletsOverlapNum = 1;
     let bulletsOverlap = {};
     for (let i = 0; i < renderBullets.length; i++) {
+      let overlapIndex = parseInt(renderBullets[i].beat * 2);
       let count = 0;
-      if (bulletsOverlap[parseInt(renderBullets[i].ms / 100)]) {
-        bulletsOverlap[parseInt(renderBullets[i].ms / 100)]++;
+      if (bulletsOverlap[overlapIndex]) {
+        bulletsOverlap[overlapIndex]++;
       } else {
-        bulletsOverlap[parseInt(renderBullets[i].ms / 100)] = 1;
+        bulletsOverlap[overlapIndex] = 1;
       }
       for (let j = 0; j < renderBullets.length; j++) {
-        if (parseInt(renderBullets[i].ms / 100) == parseInt(renderBullets[j].ms / 100)) {
+        if (overlapIndex == parseInt(renderBullets[j].beat * 2)) {
           count++;
         }
       }
       if (bulletsOverlapNum < count) bulletsOverlapNum = count;
     }
+    //Draw bullets
     for (let j = 0; j < renderBullets.length; j++) {
       tmlCtx.beginPath();
-      let x = tmlStartX + parseInt((renderBullets[j].ms - renderStart) * msToPx);
-      let y = startY + timelineYLoc + height * bulletsOverlap[parseInt(renderBullets[j].ms / 100)] + height / 2;
+      let x = tmlStartX + parseInt((renderBullets[j].beat - renderStart) * beatToPx);
+      let y = startY + timelineYLoc + height * bulletsOverlap[parseInt(renderBullets[j].beat * 2)] + height / 2;
       let w = height / 3;
       if (mouseMode == 1) trackMouseSelection(start + j, 1, renderBullets[j].value, x, y);
       if (selectedCheck(1, start + j)) {
@@ -890,32 +897,37 @@ const tmlRender = () => {
       } else if (renderBullets[j].value == 1) {
         tmlCtx.arc(x, y, w, 0, 2 * Math.PI);
       }
-      bulletsOverlap[parseInt(renderBullets[j].ms / 100)]--;
+      bulletsOverlap[parseInt(renderBullets[j].beat * 2)]--;
       tmlCtx.fill();
     }
+
+    //Timeline triggers
     start = lowerBound(pattern.triggers, renderStart);
     end = upperBound(pattern.triggers, renderEnd);
     const renderTriggers = pattern.triggers.slice(start, end);
+    //Calculate overlap number
     triggersOverlapNum = 2;
     let triggersOverlap = {};
     for (let i = 0; i < renderTriggers.length; i++) {
+      let overlapIndex = parseInt(renderTriggers[i].beat * 2);
       let count = 0;
-      if (triggersOverlap[parseInt(renderTriggers[i].ms / 100)]) {
-        triggersOverlap[parseInt(renderTriggers[i].ms / 100)]++;
+      if (triggersOverlap[overlapIndex]) {
+        triggersOverlap[overlapIndex]++;
       } else {
-        triggersOverlap[parseInt(renderTriggers[i].ms / 100)] = 1;
+        triggersOverlap[overlapIndex] = 1;
       }
       for (let j = 0; j < renderTriggers.length; j++) {
-        if (parseInt(renderTriggers[i].ms / 100) == parseInt(renderTriggers[j].ms / 100)) {
+        if (overlapIndex == parseInt(renderTriggers[j].beat * 2)) {
           count++;
         }
       }
       if (triggersOverlapNum < count + 1) triggersOverlapNum = count + 1;
     }
+    //Draw triggers
     for (let j = 0; j < renderTriggers.length; j++) {
       tmlCtx.beginPath();
-      let x = tmlStartX + parseInt((renderTriggers[j].ms - renderStart) * msToPx);
-      let y = startY + timelineYLoc + height * (bulletsOverlapNum + triggersOverlap[parseInt(renderTriggers[j].ms / 100)]) + height / 2;
+      let x = tmlStartX + parseInt((renderTriggers[j].beat - renderStart) * beatToPx);
+      let y = startY + timelineYLoc + height * (bulletsOverlapNum + triggersOverlap[parseInt(renderTriggers[j].beat * 2)]) + height / 2;
       let w = height / 3;
       if (mouseMode == 1) trackMouseSelection(start + j, 2, renderTriggers[j].value, x, y);
       if (selectedCheck(2, start + j)) {
@@ -927,18 +939,15 @@ const tmlRender = () => {
       tmlCtx.lineTo(x + w / 1.1, y);
       tmlCtx.lineTo(x - w / 1.1, y + w);
       tmlCtx.lineTo(x - w / 1.1, y - w);
-      triggersOverlap[parseInt(renderTriggers[j].ms / 100)]--;
+      triggersOverlap[parseInt(renderTriggers[j].beat * 2)]--;
       tmlCtx.fill();
     }
-    tmlCtx.beginPath();
-    tmlCtx.fillStyle = "#2f91ed";
-    tmlCtx.strokeStyle = "#2f91ed";
-    let offsetLineX = tmlStartX + parseInt((seek * 1000 - sync - renderStart) * msToPx);
-    tmlCtx.moveTo(offsetLineX, endY);
-    tmlCtx.lineTo(offsetLineX, startY);
-    tmlCtx.stroke();
+
+    //Cover the overflowed
     tmlCtx.fillStyle = "#FFF";
     tmlCtx.fillRect(0, 0, tmlStartX, endY);
+
+    //Timeline elements text(Notes, Bullets, Triggers)
     tmlCtx.beginPath();
     tmlCtx.fillStyle = "#fbaf34";
     tmlCtx.arc(startX, startY + height / 2 + timelineYLoc, height / 6, 0, 2 * Math.PI);
@@ -965,6 +974,8 @@ const tmlRender = () => {
       tmlCtx.fillStyle = "#111";
       tmlCtx.fillText("Trigger", startX * 1.2 + height / 6, startY + timelineYLoc + height * i + height / 1.8);
     }
+
+    //Timeline time line + text
     timelineElementNum = i;
     tmlCtx.fillStyle = "#FFF";
     tmlCtx.fillRect(0, endY, endX, tmlCanvas.height - endY);
@@ -973,13 +984,12 @@ const tmlRender = () => {
     tmlCtx.textAlign = "center";
     tmlCtx.textBaseline = "bottom";
     tmlCtx.fillStyle = "#777";
-    for (let t = -1 * (renderStart % baseMs) + bpmsync; t <= bpmsync + renderEnd + baseMs; t += baseMs) {
-      if ((renderStart + t) / 1000 < song._duration && (renderStart + t) / 1000 >= 0) {
-        const tmlMinutes = Math.floor((renderStart + t) / 60000),
-          tmlSeconds = (renderStart + t) / 1000 - tmlMinutes * 60;
-        tmlCtx.fillText(`${String(tmlMinutes).padStart(1, "0")}:${tmlSeconds.toFixed(2).padStart(5, "0")}`, tmlStartX + t * msToPx, startY / 1.3);
+    for (let t = -1 * beats; t <= renderEnd; t += 1) {
+      if ((renderStart + t) / 1000 >= 0) {
+        tmlCtx.fillText(beats + t - 1, tmlStartX + t * beatToPx, startY / 1.3);
         for (let i = 0; i < split; i++) {
           tmlCtx.beginPath();
+          let strokeX = tmlStartX + t * beatToPx + (beatToPx / split) * i;
           let strokeY;
           if (i == 0) {
             tmlCtx.strokeStyle = "#555";
@@ -988,14 +998,18 @@ const tmlRender = () => {
             tmlCtx.strokeStyle = "#999";
             strokeY = startY - 5;
           }
-          tmlCtx.moveTo(tmlStartX + t * msToPx + ((baseMs * msToPx) / split) * i, startY);
-          tmlCtx.lineTo(tmlStartX + t * msToPx + ((baseMs * msToPx) / split) * i, strokeY);
+          tmlCtx.moveTo(strokeX, startY);
+          tmlCtx.lineTo(strokeX, strokeY);
           tmlCtx.stroke();
         }
       }
     }
+
+    //Cover the overflowed
     tmlCtx.fillStyle = "#FFF";
     tmlCtx.fillRect(0, 0, tmlStartX, startY);
+
+    //Timeline time text
     tmlCtx.fillStyle = "#2f91ed";
     tmlCtx.font = `${tmlCanvas.height / 11}px Heebo`;
     tmlCtx.textBaseline = "middle";
@@ -1011,18 +1025,109 @@ const tmlRender = () => {
       tmlCtx.textAlign = "left";
       timeStartX = startX;
     }
-    if (isNaN(minutes)) {
+    if (isNaN(beats)) {
       tmlCtx.fillText("Wait..", timeStartX, startY / 1.7);
     } else {
+      const seek = song.seek(),
+        minutes = Math.floor(seek / 60),
+        seconds = seek - minutes * 60;
       tmlCtx.fillText(`${String(minutes).padStart(1, "0")}:${seconds.toFixed(2).padStart(5, "0")}`, timeStartX, startY / 1.7);
     }
+
+    //Timeline offset playhead
+    tmlCtx.beginPath();
+    tmlCtx.fillStyle = "#2f91ed";
+    tmlCtx.strokeStyle = "#2f91ed";
+    const offsetLineX = tmlStartX + (beats - renderStart - (offset + sync) / (60000 / bpm)) * beatToPx;
+    tmlCtx.moveTo(offsetLineX, endY);
+    tmlCtx.lineTo(offsetLineX, startY);
+    tmlCtx.stroke();
+
+    //Timeline playhead
     tmlCtx.beginPath();
     tmlCtx.fillStyle = "#ed5b45";
     tmlCtx.strokeStyle = "#ed5b45";
-    let lineX = tmlStartX + (baseMs * (endX - tmlStartX)) / 5000;
+    let lineX = tmlStartX + beatToPx * zoom;
     tmlCtx.moveTo(lineX, endY);
     tmlCtx.lineTo(lineX, startY);
     tmlCtx.stroke();
+
+    //Add mode yellow preview
+    if (mode == 2 && mouseMode == 1) {
+      if (mouseX > tmlStartX && mouseX < endX && mouseY > startY && mouseY < endY) {
+        let height = tmlCanvas.height / 9;
+        let w = height / 3;
+        let mousePosY = mouseY - timelineYLoc;
+        tmlCtx.beginPath();
+        tmlCtx.fillStyle = "#ebd534";
+        if (mousePosY >= startY && mousePosY <= startY + height) {
+          tmlCtx.arc(mouseX, startY + height / 2, w, 0, 2 * Math.PI);
+        } else if (mousePosY >= startY + height && mousePosY <= startY + height * (bulletsOverlapNum + 1)) {
+          if (selectedValue > 1) selectedValue = 0;
+          let mouseYLocCount = 1 + bulletsOverlapNum - Math.round(Math.round(2 * startY + height * bulletsOverlapNum - mousePosY) / height);
+          let y = startY + height * mouseYLocCount + height / 2 + timelineYLoc;
+          if (selectedValue == 0) {
+            tmlCtx.moveTo(mouseX - w, y);
+            tmlCtx.lineTo(mouseX, y + w);
+            tmlCtx.lineTo(mouseX + w, y);
+            tmlCtx.lineTo(mouseX, y - w);
+            tmlCtx.lineTo(mouseX - w, y);
+          } else if (selectedValue == 1) {
+            tmlCtx.arc(mouseX, y, w, 0, 2 * Math.PI);
+          }
+        } else if (mousePosY >= startY + height * (bulletsOverlapNum + 1) && mousePosY <= startY + height * (bulletsOverlapNum + 1) + height * (triggersOverlapNum - 1)) {
+          let mouseYLocCount = -(1 - Math.round((mousePosY - height - height * (bulletsOverlapNum + 1)) / height));
+          let y = startY + height * (bulletsOverlapNum + 1) + height * mouseYLocCount + height / 2 + timelineYLoc;
+          tmlCtx.moveTo(mouseX - w / 1.1, y - w);
+          tmlCtx.lineTo(mouseX + w / 1.1, y);
+          tmlCtx.lineTo(mouseX - w / 1.1, y + w);
+          tmlCtx.lineTo(mouseX - w / 1.1, y - w);
+        }
+        tmlCtx.fill();
+      }
+    }
+
+    //Sync alert text
+    tmlCtx.font = `500 ${tmlCanvas.height / 15}px Metropolis, Pretendard JP Variable`;
+    tmlCtx.fillStyle = "#555";
+    tmlCtx.textAlign = "right";
+    tmlCtx.textBaseline = "top";
+    if (tmlCanvas.width / tmlCanvas.height >= 4.9) {
+      if (sync + offset >= 50 || sync + offset <= -50) {
+        tmlCtx.fillText(syncAlert, endX, endY + 5);
+      }
+    }
+
+    //Key indicator(or copied text)
+    tmlCtx.textAlign = "left";
+    let msg = timeAlert;
+    if (copied) {
+      msg = copiedText;
+    } else if (shiftDown) {
+      msg = "Shift : ON";
+      if (ctrlDown) {
+        msg += `, ${isMac ? "Cmd" : "Ctrl"} : ON`;
+      }
+      tmlCtx.fillStyle = "#F55";
+    } else if (ctrlDown) {
+      msg = `${isMac ? "Cmd" : "Ctrl"} : ON`;
+      tmlCtx.fillStyle = "#F55";
+    }
+    tmlCtx.fillText(msg, tmlStartX, endY + 5);
+    if (new Date() - copiedTime >= 1000) {
+      copied = false;
+    }
+
+    //Mouse cursor
+    if (pointingCntElement.i === "") {
+      if (mouseX >= tmlCanvas.width / 20 && mouseX <= tmlCanvas.width / 10 && mouseY < tmlCanvas.height / 6) {
+        timelineContainer.style.cursor = "url('/images/parts/cursor/blueSelect.cur'), pointer";
+      } else {
+        timelineContainer.style.cursor = "";
+      }
+    } else {
+      timelineContainer.style.cursor = "url('/images/parts/cursor/blueSelect.cur'), pointer";
+    }
   } catch (e) {
     tmlCtx.font = `500 ${tmlCanvas.height / 15}px Metropolis, Pretendard JP Variable`;
     tmlCtx.fillStyle = "#F55";
@@ -1030,75 +1135,6 @@ const tmlRender = () => {
     tmlCtx.textBaseline = "top";
     tmlCtx.fillText(e, tmlStartX, endY);
     console.error(e);
-  }
-  if (mode == 2 && mouseMode == 1) {
-    if (mouseX > tmlStartX && mouseX < endX && mouseY > startY && mouseY < endY) {
-      let height = tmlCanvas.height / 9;
-      let w = height / 3;
-      let mousePosY = mouseY - timelineYLoc;
-      tmlCtx.beginPath();
-      tmlCtx.fillStyle = "#ebd534";
-      if (mousePosY >= startY && mousePosY <= startY + height) {
-        tmlCtx.arc(mouseX, startY + height / 2, w, 0, 2 * Math.PI);
-      } else if (mousePosY >= startY + height && mousePosY <= startY + height * (bulletsOverlapNum + 1)) {
-        if (selectedValue > 1) selectedValue = 0;
-        let mouseYLocCount = 1 + bulletsOverlapNum - Math.round(Math.round(2 * startY + height * bulletsOverlapNum - mousePosY) / height);
-        let y = startY + height * mouseYLocCount + height / 2 + timelineYLoc;
-        if (selectedValue == 0) {
-          tmlCtx.moveTo(mouseX - w, y);
-          tmlCtx.lineTo(mouseX, y + w);
-          tmlCtx.lineTo(mouseX + w, y);
-          tmlCtx.lineTo(mouseX, y - w);
-          tmlCtx.lineTo(mouseX - w, y);
-        } else if (selectedValue == 1) {
-          tmlCtx.arc(mouseX, y, w, 0, 2 * Math.PI);
-        }
-      } else if (mousePosY >= startY + height * (bulletsOverlapNum + 1) && mousePosY <= startY + height * (bulletsOverlapNum + 1) + height * (triggersOverlapNum - 1)) {
-        let mouseYLocCount = -(1 - Math.round((mousePosY - height - height * (bulletsOverlapNum + 1)) / height));
-        let y = startY + height * (bulletsOverlapNum + 1) + height * mouseYLocCount + height / 2 + timelineYLoc;
-        tmlCtx.moveTo(mouseX - w / 1.1, y - w);
-        tmlCtx.lineTo(mouseX + w / 1.1, y);
-        tmlCtx.lineTo(mouseX - w / 1.1, y + w);
-        tmlCtx.lineTo(mouseX - w / 1.1, y - w);
-      }
-      tmlCtx.fill();
-    }
-  }
-  tmlCtx.font = `500 ${tmlCanvas.height / 15}px Metropolis, Pretendard JP Variable`;
-  tmlCtx.fillStyle = "#555";
-  tmlCtx.textAlign = "right";
-  tmlCtx.textBaseline = "top";
-  if (tmlCanvas.width / tmlCanvas.height >= 4.9) {
-    if (sync >= 50 || sync <= -50) {
-      tmlCtx.fillText(syncAlert, endX, endY + 5);
-    }
-  }
-  tmlCtx.textAlign = "left";
-  let msg = timeAlert;
-  if (copied) {
-    msg = copiedText;
-  } else if (shiftDown) {
-    msg = "Shift : ON";
-    if (ctrlDown) {
-      msg += `, ${isMac ? "Cmd" : "Ctrl"} : ON`;
-    }
-    tmlCtx.fillStyle = "#F55";
-  } else if (ctrlDown) {
-    msg = `${isMac ? "Cmd" : "Ctrl"} : ON`;
-    tmlCtx.fillStyle = "#F55";
-  }
-  tmlCtx.fillText(msg, tmlStartX, endY + 5);
-  if (new Date() - copiedTime >= 1000) {
-    copied = false;
-  }
-  if (pointingCntElement.i === "") {
-    if (mouseX >= tmlCanvas.width / 20 && mouseX <= tmlCanvas.width / 10 && mouseY < tmlCanvas.height / 6) {
-      timelineContainer.style.cursor = "url('/images/parts/cursor/blueSelect.cur'), pointer";
-    } else {
-      timelineContainer.style.cursor = "";
-    }
-  } else {
-    timelineContainer.style.cursor = "url('/images/parts/cursor/blueSelect.cur'), pointer";
   }
 };
 
@@ -1209,7 +1245,6 @@ const cntRender = () => {
 
     // Calculate seeking position
     const beats = bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm);
-    console.log(beats);
 
     // Trigger
     let end = upperBound(pattern.triggers, beats);
@@ -1358,7 +1393,7 @@ const cntRender = () => {
             ms: Date.now(),
           });
         }
-        const p = ((beats - renderBullets[i].beat) / (5 / speed / renderBullets[i].speed)) * 100;
+        const p = ((beats - renderBullets[i].beat) / (15 / speed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
         const left = renderBullets[i].direction == "L";
         let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
         if (renderBullets[i].value == 0) {
