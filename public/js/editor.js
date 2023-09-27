@@ -2391,12 +2391,12 @@ const triggerSet = (isChanged) => {
 };
 
 const zoomIn = () => {
-  zoom -= 0.15;
+  zoom *= 0.9;
   zoom = Number(zoom.toPrecision(3));
 };
 
 const zoomOut = () => {
-  zoom += 0.15;
+  zoom /= 0.9;
   zoom = Number(zoom.toPrecision(3));
 };
 
