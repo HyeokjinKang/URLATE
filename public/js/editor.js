@@ -779,8 +779,8 @@ const tmlRender = () => {
       endX = tmlCanvas.width / 1.01,
       endY = tmlCanvas.height / 1.1,
       height = tmlCanvas.height / 9;
-    const renderStart = beats - zoom,
-      renderEnd = beats + 16 * zoom,
+    const renderStart = Number((beats - zoom).toPrecision(7)),
+      renderEnd = Number((beats + 16 * zoom).toPrecision(7)),
       beatToPx = (endX - tmlStartX) / (renderEnd - renderStart);
 
     //Timeline background
@@ -1507,7 +1507,7 @@ const settingsInput = (v, e) => {
       } else {
         if (e.value[e.value.length - 1] == ".") return;
         let targetElements, changedResult;
-        let value = Number(Number(e.value).toPrecision(5));
+        let value = Number(Number(e.value).toPrecision(7));
         if (selectedCntElement.v1 === copySelection.element) {
           rangeCopyCancel();
         }
@@ -2003,7 +2003,7 @@ const timelineFollowMouse = (v1, v2, i) => {
         const beatToPx = (tmlCanvas.width / 1.01 - tmlCanvas.width / 10) / (17 * zoom);
         let calculatedBeat = beats + ((mouseX - tmlCanvas.width / 10) / beatToPx) * zoom - 1;
         if (calculatedBeat <= 0) calculatedBeat = 0;
-        calculatedBeat = Number(calculatedBeat.toPrecision(5));
+        calculatedBeat = Number(calculatedBeat.toPrecision(7));
         switch (v1) {
           case 0:
             pattern.patterns[i].beat = magnetToggle ? Math.round(calculatedBeat * split) / split : calculatedBeat;
@@ -2072,7 +2072,7 @@ const timelineAddElement = () => {
   const beatToPx = (tmlCanvas.width / 1.01 - tmlCanvas.width / 10) / (17 * zoom);
   let calculatedBeat = beats + ((mouseX - tmlCanvas.width / 10) / beatToPx) * zoom - 1;
   if (calculatedBeat <= 0) calculatedBeat = 0;
-  calculatedBeat = Number(calculatedBeat.toPrecision(5));
+  calculatedBeat = Number(calculatedBeat.toPrecision(7));
   let mousePosY = mouseY - timelineYLoc;
   if (mouseX > tmlCanvas.width / 10 && mouseX < tmlCanvas.width / 1.01 && mouseY > startY && mouseY < tmlCanvas.height / 1.1) {
     if (mousePosY >= startY && mousePosY <= startY + height) {
@@ -2392,12 +2392,12 @@ const triggerSet = (isChanged) => {
 
 const zoomIn = () => {
   zoom -= 0.15;
-  zoom = Number(zoom.toPrecision(2));
+  zoom = Number(zoom.toPrecision(3));
 };
 
 const zoomOut = () => {
   zoom += 0.15;
-  zoom = Number(zoom.toPrecision(2));
+  zoom = Number(zoom.toPrecision(3));
 };
 
 const playPauseBtn = () => {
@@ -2541,7 +2541,7 @@ const elementPaste = () => {
     return;
   }
   const beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
-  copiedElement.element.beat = Number(beats.toPrecision(5));
+  copiedElement.element.beat = Number(beats.toPrecision(7));
   let searchTarget = "";
   if (copiedElement.v1 == 0) {
     pattern.patterns.push(eval(`(${JSON.stringify(copiedElement.element)})`));
@@ -2645,7 +2645,7 @@ const rangePaste = () => {
   }
   for (let i = start; i <= end; i++) {
     let copy = JSON.parse(JSON.stringify(pattern[element][i]));
-    copy.beat += Number((beats - beat).toPrecision(5));
+    copy.beat += Number((beats - beat).toPrecision(7));
     pattern[element].push(copy);
   }
   pattern[element].sort(sortAsTiming);
