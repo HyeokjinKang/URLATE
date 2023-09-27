@@ -730,7 +730,7 @@ const gotoMain = (isCalledByMain) => {
 const trackMouseSelection = (i, v1, v2, x, y) => {
   if (mode != 2 && mouseMode == 0) {
     if (pointingCntElement.i == "") {
-      const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(7));
+      const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
       const powX = ((((mouseX - x) * canvasContainer.offsetWidth) / 200) * pixelRatio * settings.display.canvasRes) / 100;
       const powY = ((((mouseY - y) * canvasContainer.offsetHeight) / 200) * pixelRatio * settings.display.canvasRes) / 100;
       switch (v1) {
@@ -779,8 +779,8 @@ const tmlRender = () => {
       endX = tmlCanvas.width / 1.01,
       endY = tmlCanvas.height / 1.1,
       height = tmlCanvas.height / 9;
-    const renderStart = Number((beats - zoom).toPrecision(7)),
-      renderEnd = Number((beats + 16 * zoom).toPrecision(7)),
+    const renderStart = Number((beats - zoom).toPrecision(10)),
+      renderEnd = Number((beats + 16 * zoom).toPrecision(10)),
       beatToPx = (endX - tmlStartX) / (renderEnd - renderStart);
 
     //Timeline background
@@ -1091,7 +1091,7 @@ const tmlRender = () => {
 };
 
 const callBulletDestroy = (j) => {
-  const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(7));
+  const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
   const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
   const left = pattern.bullets[j].direction == "L";
   let x = (left ? -1 : 1) * (100 - p);
@@ -1196,7 +1196,7 @@ const cntRender = () => {
     }
 
     // Calculate seeking position
-    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(7));
+    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
 
     // Initialize triggers
     bpm = pattern.information.bpm;
@@ -1501,7 +1501,7 @@ const settingsInput = (v, e) => {
       } else {
         if (e.value[e.value.length - 1] == ".") return;
         let targetElements, changedResult;
-        let value = Number(Number(e.value).toPrecision(7));
+        let value = Number(Number(e.value).toPrecision(10));
         if (selectedCntElement.v1 === copySelection.element) {
           rangeCopyCancel();
         }
@@ -1997,7 +1997,7 @@ const timelineFollowMouse = (v1, v2, i) => {
         const beatToPx = (tmlCanvas.width / 1.01 - tmlCanvas.width / 10) / (17 * zoom);
         let calculatedBeat = beats + ((mouseX - tmlCanvas.width / 10) / beatToPx) * zoom - 1;
         if (calculatedBeat <= 0) calculatedBeat = 0;
-        calculatedBeat = Number(calculatedBeat.toPrecision(7));
+        calculatedBeat = Number(calculatedBeat.toPrecision(10));
         switch (v1) {
           case 0:
             pattern.patterns[i].beat = magnetToggle ? Math.round(calculatedBeat * split) / split : calculatedBeat;
@@ -2066,7 +2066,7 @@ const timelineAddElement = () => {
   const beatToPx = (tmlCanvas.width / 1.01 - tmlCanvas.width / 10) / (17 * zoom);
   let calculatedBeat = beats + ((mouseX - tmlCanvas.width / 10) / beatToPx) * zoom - 1;
   if (calculatedBeat <= 0) calculatedBeat = 0;
-  calculatedBeat = Number(calculatedBeat.toPrecision(7));
+  calculatedBeat = Number(calculatedBeat.toPrecision(10));
   let mousePosY = mouseY - timelineYLoc;
   if (mouseX > tmlCanvas.width / 10 && mouseX < tmlCanvas.width / 1.01 && mouseY > startY && mouseY < tmlCanvas.height / 1.1) {
     if (mousePosY >= startY && mousePosY <= startY + height) {
@@ -2534,7 +2534,7 @@ const elementPaste = () => {
     });
     return;
   }
-  const beats = Number((bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm)).toPrecision(7));
+  const beats = Number((bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
   copiedElement.element.beat = beats;
   let searchTarget = "";
   if (copiedElement.v1 == 0) {
@@ -2620,7 +2620,7 @@ const rangeCopy = () => {
 };
 
 const rangePaste = () => {
-  const beats = Number((bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm)).toPrecision(7));
+  const beats = Number((bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
   const start = copySelection.start;
   const end = copySelection.end;
   const beat = copySelection.beat;
@@ -2639,7 +2639,7 @@ const rangePaste = () => {
   }
   for (let i = start; i <= end; i++) {
     let copy = JSON.parse(JSON.stringify(pattern[element][i]));
-    copy.beat += Number((beats - beat).toPrecision(7));
+    copy.beat += Number((beats - beat).toPrecision(10));
     pattern[element].push(copy);
   }
   pattern[element].sort(sortAsTiming);
