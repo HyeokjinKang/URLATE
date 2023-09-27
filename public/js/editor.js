@@ -936,12 +936,12 @@ const tmlRender = () => {
     tmlCtx.textAlign = "center";
     tmlCtx.textBaseline = "bottom";
     tmlCtx.fillStyle = "#777";
-    for (let t = -1 * beats; t <= renderEnd; t += 1) {
-      if ((renderStart + t) / 1000 >= 0) {
-        tmlCtx.fillText(Math.round(beats + t - 1), tmlStartX + t * beatToPx, startY / 1.3);
+    for (let t = Math.round(renderStart); t <= renderEnd; t += 1) {
+      if (Math.floor(t) >= 0) {
+        tmlCtx.fillText(Math.floor(t), tmlStartX + parseInt((t - renderStart) * beatToPx), startY / 1.3);
         for (let i = 0; i < split; i++) {
           tmlCtx.beginPath();
-          let strokeX = tmlStartX + t * beatToPx + (beatToPx / split) * i;
+          let strokeX = tmlStartX + parseInt((t - renderStart) * beatToPx) + (beatToPx / split) * i;
           let strokeY;
           if (i == 0) {
             tmlCtx.strokeStyle = "#555";
