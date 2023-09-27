@@ -1198,7 +1198,16 @@ const cntRender = () => {
     // Calculate seeking position
     const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(7));
 
-    // Trigger
+    // Initialize triggers
+    bpm = pattern.information.bpm;
+    speed = pattern.information.speed;
+    cntCanvas.style.filter = `opacity(100%)`;
+    bpmsync = {
+      ms: 0,
+      beat: 0,
+    };
+
+    // Track triggers from start to now
     let end = upperBound(pattern.triggers, beats);
     const renderTriggers = pattern.triggers.slice(0, end);
     for (let i = 0; i < renderTriggers.length; i++) {
@@ -1222,9 +1231,9 @@ const cntRender = () => {
         }
       } else if (renderTriggers[i].value == 2) {
         bpmCount++;
+        bpmsync.ms = bpmsync.ms + (renderTriggers[i].beat - bpmsync.beat) * (60000 / bpm);
         bpm = renderTriggers[i].bpm;
         bpmsync.beat = renderTriggers[i].beat;
-        bpmsync.ms = song.seek() * 1000 - (offset + sync);
       } else if (renderTriggers[i].value == 3) {
         opacityCount++;
         cntCanvas.style.filter = `opacity(${renderTriggers[i].opacity * 100}%)`;
@@ -1253,21 +1262,6 @@ const cntRender = () => {
         destroyParticles[i].w = 5 - (Date.now() - destroyParticles[i].ms) / 50;
         destroyParticles[i].n++;
       }
-    }
-
-    // Editor only
-    if (!bpmCount) {
-      bpm = pattern.information.bpm;
-      bpmsync = {
-        ms: 0,
-        beat: 0,
-      };
-    }
-    if (!speedCount) {
-      speed = pattern.information.speed;
-    }
-    if (!opacityCount) {
-      cntCanvas.style.filter = `opacity(100%)`;
     }
 
     // Prevent destroy infinite loop
