@@ -69,7 +69,7 @@ The to-do list of URLATE is managed in [GitHub Projects](https://github.com/user
 
 ## Documentation
 
-If you want to know the internal structure of URLATE, or if you are interested in developing new features, creating external extensions, etc., you can refer to the [official document](https://docs.urlate.coupy.dev/).
+If you want to know the internal structure of URLATE, or if you are interested in developing new features, creating external extensions, etc., you can refer to the [official document](https://mirai.urlate.coupy.dev/docs).
 
 ## License
 
