@@ -3172,3 +3172,9 @@ del {
   justify-content: flex-start;
   align-items: center;
 }
+
+#noticeText {
+  color: #000;
+  text-decoration: none;
+  font-size: 1.8vh;
+}
