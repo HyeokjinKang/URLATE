@@ -476,6 +476,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  fetch(`${api}/notice/${lang}`, {
+    method: "GET",
+    credentials: "include",
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.result == "success") {
+        data = data.data;
+        document.getElementById("noticeText").textContent = `${new Date(data.date).toLocaleDateString()} | ${data[`title_${lang}`]}`;
+        document.getElementById("noticeText").href = data[`url_${lang}`];
+      }
+    });
+
   lottieAnim = bodymovin.loadAnimation({
     wrapper: animContainer,
     animType: "canvas",
