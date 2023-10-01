@@ -1144,19 +1144,6 @@ const cntRender = () => {
       speedCount = 0,
       opacityCount = 0;
 
-    // Metronome
-    if (metronomeToggle) {
-      const intBeat = Math.floor(beats);
-      if (song.playing()) {
-        if (prevBeat != intBeat) {
-          prevBeat = intBeat;
-          beep.play();
-        }
-      } else {
-        prevBeat = intBeat;
-      }
-    }
-
     // Grid
     if (gridToggle) {
       for (let i = -100; i <= 100; i += 10) {
@@ -1197,6 +1184,19 @@ const cntRender = () => {
 
     // Calculate seeking position
     const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+
+    // Metronome
+    if (metronomeToggle) {
+      const intBeat = Math.floor(beats);
+      if (song.playing()) {
+        if (prevBeat != intBeat) {
+          prevBeat = intBeat;
+          beep.play();
+        }
+      } else {
+        prevBeat = intBeat;
+      }
+    }
 
     // Initialize triggers
     bpm = pattern.information.bpm;
