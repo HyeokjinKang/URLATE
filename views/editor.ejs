@@ -432,27 +432,6 @@
                   <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="changeOffset(this)" value="0" />
                 </div>
               </div>
-              <div class="settingsPropertiesContainer">
-                <p class="settingsSemiTitle">BACKGROUND</p>
-                <div class="settingsPropertiesIndividual">
-                  <span class="settingsPropertiesTitle">LOTTIE</span>
-                  <input type="button" class="settingsButtons metropolis clickable" onclick="lottieUpload()" value="▶" />
-                </div>
-                <div id="settingsBGAContainer" class="hideBGA">
-                  <div class="settingsPropertiesIndividual">
-                    <span class="settingsPropertiesTitle">TYPE</span>
-                    <select class="settingsSelectBox metropolis clickable" id="lottieInitBox" onchange="lottieSet()">
-                      <option value="0">Image</option>
-                      <option value="1">Image & BGA</option>
-                      <option value="2">BGA</option>
-                    </select>
-                  </div>
-                  <div class="settingsPropertiesIndividual">
-                    <span class="settingsPropertiesTitle">LETTERBOX COLOR</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="changeLetterbox(this)" value="FFFFFF" />
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -494,7 +473,6 @@
       const lang = "<%= __('lang') %>";
       if (lang == "en") document.body.style.letterSpacing = "-0.3px";
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.5/lottie.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.2/howler.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
     <script src="/js/playerModules.js?v=<%= ver %>"></script>

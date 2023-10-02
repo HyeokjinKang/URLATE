@@ -2,7 +2,6 @@
 /* global api, url, Howl, cdn, bodymovin, getTan, calcAngleDegrees, lowerBound, upperBound, Howler, rusure, syncAlert, copiedText, timeAlert, deleteSure, moveToAlert, need2Save */
 const songSelectBox = document.getElementById("songSelectBox");
 const trackSettings = document.getElementById("trackSettings");
-const lottieInitBox = document.getElementById("lottieInitBox");
 const volumeMaster = document.getElementById("volumeMaster");
 const volumeMasterValue = document.getElementById("volumeMasterValue");
 const songName = document.getElementById("songName");
@@ -75,15 +74,6 @@ let gridToggle = true,
   circleToggle = false;
 let scrollTimer = 0;
 
-let lottieAnim = {
-  play: () => {},
-  stop: () => {},
-  pause: () => {},
-  goToAndPlay: () => {},
-  goToAndStop: () => {},
-  setSpeed: () => {},
-};
-
 let pattern = {
   information: {
     version: "1.0",
@@ -93,11 +83,6 @@ let pattern = {
     bpm: "",
     speed: "",
     offset: "",
-  },
-  background: {
-    lottie: {},
-    type: 0,
-    boxColor: "FFFFFF",
   },
   patterns: [],
   bullets: [],
@@ -273,12 +258,7 @@ const songSelected = (isLoaded, withoutSong) => {
       },
     });
   }
-  if (isLoaded) {
-    if (pattern.background.type) {
-      lottieInitBox.value = pattern.background.type;
-      lottieLoad();
-    }
-  } else {
+  if (!isLoaded) {
     pattern.information = {
       version: "1.0",
       track: tracks[songSelectBox.selectedIndex].name,
@@ -299,8 +279,6 @@ const songSelected = (isLoaded, withoutSong) => {
   settingsPropertiesTextbox[3].value = pattern.information.bpm;
   settingsPropertiesTextbox[4].value = pattern.information.speed;
   settingsPropertiesTextbox[5].value = pattern.information.offset;
-  settingsPropertiesTextbox[6].value = pattern.background.boxColor;
-  lottieInitBox.value = pattern.background.type;
   if (denySkin) canvasBackground.style.filter = `grayscale(30%) opacity(20%)`;
   else canvasBackground.style.filter = `brightness(30%)`;
   bpm = pattern.information.bpm;
@@ -676,18 +654,6 @@ const initialize = () => {
 const gotoMain = (isCalledByMain) => {
   if (isCalledByMain || confirm(rusure)) {
     song.stop();
-    lottieAnim.stop();
-    if (!settingsBGAContainer.classList.length) {
-      lottieAnim.destroy();
-      settingsBGAContainer.classList.add("hideBGA");
-    }
-    lottieAnim = {
-      play: () => {},
-      stop: () => {},
-      pause: () => {},
-      goToAndPlay: () => {},
-      goToAndStop: () => {},
-    };
     song = new Howl({
       src: ["/sounds/tick.mp3"],
       format: ["mp3"],
@@ -713,11 +679,6 @@ const gotoMain = (isCalledByMain) => {
         bpm: "",
         speed: "",
         offset: "",
-      },
-      background: {
-        lottie: {},
-        type: 0,
-        boxColor: "FFFFFF",
       },
       patterns: [],
       bullets: [],
@@ -1398,13 +1359,11 @@ const songPlayPause = () => {
       controlBtn.classList.add("timeline-play");
       controlBtn.classList.remove("timeline-pause");
       song.pause();
-      lottieAnim.pause();
     } else {
       controlBtn.classList.add("timeline-pause");
       controlBtn.classList.remove("timeline-play");
       circleBulletAngles = [];
       song.play();
-      lottieAnim.play();
     }
   }
 };
@@ -2396,7 +2355,6 @@ const stopBtn = () => {
   controlBtn.classList.add("timeline-play");
   controlBtn.classList.remove("timeline-pause");
   song.stop();
-  lottieAnim.stop();
 };
 
 const changeRate = () => {
@@ -2406,7 +2364,6 @@ const changeRate = () => {
   }
   document.getElementById("percentage").innerText = `${rate * 100}%`;
   song.rate(rate);
-  lottieAnim.setSpeed(rate);
 };
 
 const test = () => {
@@ -2852,78 +2809,6 @@ const globalScrollEvent = (e) => {
   }
 };
 
-const lottieUpload = () => {
-  let input = document.createElement("input");
-  input.type = "file";
-  input.accept = ".json, .lottie";
-  input.setAttribute("onchange", `lottieLoaded(event)`);
-  input.click();
-};
-
-const lottieLoaded = (event) => {
-  lottieInitBox.value = 2;
-  let file = event.target.files[0];
-  let reader = new FileReader();
-  reader.onload = (e) => {
-    pattern.background.lottie = e.target.result;
-    lottieLoad();
-  };
-  reader.readAsText(file);
-};
-
-const lottieLoad = () => {
-  if (settingsBGAContainer.classList.length) {
-    settingsBGAContainer.classList.remove("hideBGA");
-  } else {
-    lottieAnim.destroy();
-  }
-  let blob = new Blob([pattern.background.lottie], {
-    type: "application/json",
-  });
-  let path = URL.createObjectURL(blob);
-  lottieAnim = bodymovin.loadAnimation({
-    wrapper: canvasBackground,
-    animType: "svg",
-    loop: true,
-    autoplay: false,
-    path: path,
-  });
-  lottieAnim.addEventListener("DOMLoaded", () => {
-    lottieSet();
-  });
-  URL.revokeObjectURL(path);
-};
-
-const lottieSet = () => {
-  switch (lottieInitBox.value) {
-    case "0": //Image
-      canvasBackground.getElementsByTagName("svg")[0].style.display = "none";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[songSelectBox.selectedIndex].fileName}.webp")`;
-      break;
-    case "1": //Image & BGA
-      canvasBackground.getElementsByTagName("svg")[0].style.display = "initial";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[songSelectBox.selectedIndex].fileName}.webp")`;
-      break;
-    case "2": //BGA
-      canvasBackground.getElementsByTagName("svg")[0].style.display = "initial";
-      canvasBackground.style.backgroundImage = "none";
-      canvasBackground.style.backgroundColor = `#${settingsPropertiesTextbox[7].value}`;
-      break;
-  }
-  pattern.background.type = Number(lottieInitBox.value);
-};
-
-const changeLetterbox = (e) => {
-  e.value = e.value.toUpperCase();
-  if (e.value == "BLACK") {
-    e.value = "000000";
-  } else if (e.value == "WHITE") {
-    e.value = "FFFFFF";
-  }
-  canvasBackground.style.backgroundColor = `#${e.value}`;
-  pattern.background.boxColor = e.value;
-};
-
 const toggleCircle = () => {
   if (circleToggle) document.getElementsByClassName("menuIcon")[10].classList.remove("menuSelected");
   else document.getElementsByClassName("menuIcon")[10].classList.add("menuSelected");
@@ -2987,7 +2872,6 @@ document.onkeydown = (e) => {
         timelineScrollCount = 0;
         timelineYLoc = 0;
         song.stop();
-        lottieAnim.stop();
       }
     }
   } else if (isMac ? e.key == "Meta" : e.key == "Control") {
