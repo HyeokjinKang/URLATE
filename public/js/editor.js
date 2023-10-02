@@ -1140,9 +1140,6 @@ const cntRender = () => {
     createdBullets.clear();
     destroyedBullets.clear();
     destroyedSeeks.clear();
-    let bpmCount = 0,
-      speedCount = 0,
-      opacityCount = 0;
 
     // Grid
     if (gridToggle) {
@@ -1230,15 +1227,12 @@ const cntRender = () => {
           }
         }
       } else if (renderTriggers[i].value == 2) {
-        bpmCount++;
         bpmsync.ms = bpmsync.ms + (renderTriggers[i].beat - bpmsync.beat) * (60000 / bpm);
         bpm = renderTriggers[i].bpm;
         bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
-        opacityCount++;
         cntCanvas.style.filter = `opacity(${renderTriggers[i].opacity * 100}%)`;
       } else if (renderTriggers[i].value == 4) {
-        speedCount++;
         speed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
         if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration) {
