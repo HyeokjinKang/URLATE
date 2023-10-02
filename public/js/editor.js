@@ -2679,30 +2679,59 @@ const rangeCopyCancel = () => {
 };
 
 const tmlScrollLeft = () => {
-  song.seek(song.seek() - 0.01);
-  let seek = song.seek();
-  seek = seek - (seek % (60 / bpm / split));
-  song.seek(seek);
-  if (song.playing()) {
-    lottieAnim.goToAndPlay((seek * 1000) / rate);
-  } else {
-    lottieAnim.goToAndStop((seek * 1000) / rate);
+  let beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm); // Get current beat from song position
+  beats = Number(beats.toPrecision(10 + (beats > 1 ? Math.ceil(Math.log10(beats)) : 0))); // Prevent floating point error
+
+  const splitCalc = Number((1 / split).toPrecision(10));
+  const decimalCalc = Number((beats % 1).toPrecision(10));
+  const numerator = Math.floor(decimalCalc / splitCalc) - 1;
+  if (numerator < 0) beats = Math.floor(beats) - 1 + (split - 1) * splitCalc;
+  else beats = Math.floor(beats) + numerator * splitCalc; // Calculate numerator / denominator(splitCalc)
+
+  // Calculate BPM change
+  const renderTriggers = pattern.triggers.slice(0, upperBound(pattern.triggers, beats));
+  bpm = pattern.information.bpm;
+  bpmsync = {
+    ms: 0,
+    beat: 0,
+  };
+  for (let i = 0; i < renderTriggers.length; i++) {
+    if (renderTriggers[i].value == 2) {
+      bpmsync.ms = bpmsync.ms + (renderTriggers[i].beat - bpmsync.beat) * (60000 / bpm);
+      bpm = renderTriggers[i].bpm;
+      bpmsync.beat = renderTriggers[i].beat;
+    }
   }
+  const seek = (beats - bpmsync.beat) * (60000 / bpm) + bpmsync.ms;
+  song.seek(seek / 1000);
 };
 
 const tmlScrollRight = () => {
-  song.seek(song.seek() + 0.01);
-  let seek = song.seek();
-  let now = seek + 60 / bpm / split - (seek % (60 / bpm / split));
-  if (now >= song._duration) {
-    now = seek - 60 / bpm / split + (seek % (60 / bpm / split)) - 0.01;
+  let beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm); // Get current beat from song position
+  beats = Number(beats.toPrecision(10 + (beats > 1 ? Math.ceil(Math.log10(beats)) : 0))); // Prevent floating point error
+
+  const splitCalc = Number((1 / split).toPrecision(10));
+  const decimalCalc = Number((beats % 1).toPrecision(10));
+  const numerator = Math.floor(decimalCalc / splitCalc) + 1;
+  if (numerator >= split) beats = Math.floor(beats) + 1;
+  else beats = Math.floor(beats) + numerator * splitCalc; // Calculate numerator / denominator(splitCalc)
+
+  // Calculate BPM change
+  const renderTriggers = pattern.triggers.slice(0, upperBound(pattern.triggers, beats));
+  bpm = pattern.information.bpm;
+  bpmsync = {
+    ms: 0,
+    beat: 0,
+  };
+  for (let i = 0; i < renderTriggers.length; i++) {
+    if (renderTriggers[i].value == 2) {
+      bpmsync.ms = bpmsync.ms + (renderTriggers[i].beat - bpmsync.beat) * (60000 / bpm);
+      bpm = renderTriggers[i].bpm;
+      bpmsync.beat = renderTriggers[i].beat;
+    }
   }
-  song.seek(now);
-  if (song.playing()) {
-    lottieAnim.goToAndPlay((now * 1000) / rate);
-  } else {
-    lottieAnim.goToAndStop((now * 1000) / rate);
-  }
+  const seek = (beats - bpmsync.beat) * (60000 / bpm) + bpmsync.ms;
+  song.seek(seek / 1000);
 };
 
 const tmlScrollUp = () => {
