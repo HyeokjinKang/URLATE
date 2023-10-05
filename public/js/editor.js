@@ -1672,7 +1672,7 @@ const triggersInput = (v, e) => {
       e.value = pattern.triggers[selectedCntElement.i][v];
       break;
     case "bpm":
-    case "time":
+    case "duration":
       textBlurred();
       if (isNaN(Number(e.value))) {
         iziToast.error({
