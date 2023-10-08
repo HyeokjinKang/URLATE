@@ -927,7 +927,7 @@ const cntRender = () => {
           s: Date.now(),
         });
         miss++;
-        shotOverlay();
+        showOverlay();
         missPoint.push(song.seek() * 1000);
         keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
       } else if (t >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && renderNotes[i].value == 2) {
@@ -1227,7 +1227,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
             combo = 0;
             medalCheck(medal);
             callBulletDestroy(i);
-            shotOverlay();
+            showOverlay();
             keyInput.push({ judge: "Bullet", key: "-", time: Date.now() });
           }
         }
@@ -1297,7 +1297,7 @@ const compClicked = (isTyped, key, isWheel) => {
         } else {
           judge = "Miss";
           miss++;
-          shotOverlay();
+          showOverlay();
         }
       }
       if (pattern.patterns[pointingCntElement[i].i].value == 2) {
@@ -1591,7 +1591,7 @@ document.onkeyup = (e) => {
         s: Date.now(),
       });
       miss++;
-      shotOverlay();
+      showOverlay();
       missPoint.push(song.seek() * 1000);
       keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
     } else {
