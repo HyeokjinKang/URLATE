@@ -98,6 +98,7 @@ let effectNum = -1;
 let keyPressing = {};
 let trackName = "";
 let medal = 1;
+let globalAlpha = 1;
 const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -491,11 +492,11 @@ const drawNote = (p, x, y, n, d, t, index, f) => {
       ctx.stroke();
     }
     ctx.beginPath();
-    ctx.globalAlpha = (0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100;
+    ctx.globalAlpha = ((0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100) * globalAlpha;
     ctx.fillStyle = ctx.strokeStyle;
     ctx.arc(x, y, w, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = globalAlpha;
   } else if (n == 1) {
     w = w * 0.9;
     let parr = [p <= 20 ? p * 5 : 100, p >= 20 ? (p <= 80 ? (p - 20) * 1.66 : 100) : 0, p >= 80 ? (p <= 100 ? (p - 80) * 5 : 100) : 0];
@@ -532,14 +533,14 @@ const drawNote = (p, x, y, n, d, t, index, f) => {
       ctx.stroke();
     }
     ctx.beginPath();
-    ctx.globalAlpha = (0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100;
+    ctx.globalAlpha = ((0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100) * globalAlpha;
     ctx.fillStyle = ctx.strokeStyle;
     ctx.moveTo(x, y - 1.5 * d * w);
     if (d == 1) ctx.arc(x, y, w, -Math.PI / 5, (Math.PI / 5) * 6);
     else ctx.arc(x, y, w, (-Math.PI / 5) * 6, Math.PI / 5);
     ctx.lineTo(x, y - 1.5 * d * w);
     ctx.fill();
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = globalAlpha;
   } else if (n == 2) {
     ctx.beginPath();
     if (skin.note[n].outline) {
@@ -576,11 +577,11 @@ const drawNote = (p, x, y, n, d, t, index, f) => {
       ctx.arc(x, y, w, 0, 2 * Math.PI);
       ctx.stroke();
     }
-    ctx.globalAlpha = (0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100;
+    ctx.globalAlpha = ((0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100) * globalAlpha;
     ctx.fillStyle = ctx.strokeStyle;
     ctx.arc(x, y, w, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = globalAlpha;
   }
 };
 
@@ -816,7 +817,7 @@ const drawKeyInput = () => {
       canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200
     );
   }
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha = globalAlpha;
   ctx.clearRect(0, 0, canvas.width * 0.08 - canvas.height / 15 - canvas.width / 800, canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200 + canvas.height / 20);
 };
 
@@ -828,6 +829,7 @@ const cntRender = () => {
       initialize(false);
     }
     eraseCnt();
+    ctx.globalAlpha = 1;
     let mouseCalcX = ((rawX / canvas.offsetWidth) * 200 - 100) * sens;
     let mouseCalcY = ((rawY / canvas.offsetHeight) * 200 - 100) * sens;
     mouseX = mouseCalcX >= 100 ? 100 : mouseCalcX <= -100 ? -100 : mouseCalcX;
@@ -871,6 +873,7 @@ const cntRender = () => {
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
     const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+    ctx.globalAlpha = globalAlpha;
     let end = upperBound(pattern.triggers, beats);
     const renderTriggers = pattern.triggers.slice(0, end);
     for (let i = 0; i < renderTriggers.length; i++) {
@@ -885,7 +888,8 @@ const cntRender = () => {
         bpm = renderTriggers[i].bpm;
         bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
-        canvas.style.opacity = renderTriggers[i].opacity;
+        globalAlpha = renderTriggers[i].opacity;
+        ctx.globalAlpha = globalAlpha;
       } else if (renderTriggers[i].value == 4) {
         speed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
@@ -996,6 +1000,7 @@ const cntRender = () => {
       console.error(e);
     }
   }
+  ctx.globalAlpha = 1;
   ctx.beginPath();
   ctx.fillStyle = "#6021ff";
   ctx.rect(canvas.width * 0.92, canvas.height * 0.05, canvas.height / 15 + canvas.width * 0.004, canvas.height / 15 + canvas.width * 0.004);
@@ -1079,7 +1084,7 @@ const drawFinalEffect = (i) => {
   ctx.textAlign = "right";
   ctx.textBaseline = "bottom";
   ctx.fillText(text, effectX, effectY);
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha = globalAlpha;
 
   ctx.beginPath();
   let mainTextX = canvas.width / 2;
