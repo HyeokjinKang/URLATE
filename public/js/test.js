@@ -84,8 +84,6 @@ let resultEffect = new Howl({
   autoplay: false,
   loop: false,
 });
-let startDate = 0;
-let pauseDate = 0;
 let isPaused = false;
 let rate = 1;
 let disableText = false;
@@ -1262,8 +1260,6 @@ const compClicked = (isTyped, key, isWheel) => {
   let d = Date.now();
   if (!song.playing() && isPaused) {
     isPaused = false;
-    if (startDate != 0) startDate = startDate + d - pauseDate;
-    else startDate = Date.now();
     floatingResumeContainer.style.opacity = 0;
     setTimeout(() => {
       floatingResumeContainer.style.display = "none";
@@ -1398,9 +1394,8 @@ const doneLoading = () => {
       menuAllowed = true;
     }, 1000);
     setTimeout(() => {
-      if (!isPaused && startDate == 0) {
+      if (!isPaused) {
         song.play();
-        startDate = Date.now();
       }
     }, 2000);
   }, 1000);
@@ -1550,7 +1545,6 @@ document.onkeydown = (e) => {
       e.preventDefault();
       if (menuAllowed) {
         if (menuContainer.style.display == "none") {
-          if (song.playing()) pauseDate = Date.now();
           isPaused = true;
           floatingResumeContainer.style.opacity = 0;
           floatingResumeContainer.style.display = "none";
@@ -1616,7 +1610,6 @@ window.addEventListener("blur", () => {
   shiftDown = false;
   if (menuAllowed) {
     if (menuContainer.style.display == "none") {
-      if (song.playing()) pauseDate = Date.now();
       isPaused = true;
       floatingResumeContainer.style.opacity = 0;
       floatingResumeContainer.style.display = "none";
