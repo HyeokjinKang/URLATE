@@ -1259,7 +1259,7 @@ const cntRender = () => {
     }
 
     // Note render
-    end = upperBound(pattern.patterns, beats + 5);
+    end = upperBound(pattern.patterns, beats + 5 / speed);
     const renderNotes = pattern.patterns.slice(0, end);
     for (let i = 0; renderNotes.length > i; i++) {
       if (mouseMode == 0) trackMouseSelection(i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);

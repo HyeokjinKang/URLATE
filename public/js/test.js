@@ -908,7 +908,7 @@ const cntRender = () => {
         drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
       }
     }
-    end = upperBound(pattern.patterns, beats + 5);
+    end = upperBound(pattern.patterns, beats + 5 / speed);
     const renderNotes = pattern.patterns.slice(0, end);
     for (let i = 0; renderNotes.length > i; i++) {
       const p = (1 - (renderNotes[i].beat - beats) / (5 / speed)) * 100;
