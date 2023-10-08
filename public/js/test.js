@@ -18,6 +18,10 @@ const missCtx = missCanvas.getContext("2d");
 let pattern = {};
 let patternLength = 0;
 let settings, sync, song, tracks, pixelRatio, offset, bpm, speed;
+let bpmsync = {
+  ms: 0,
+  beat: 0,
+};
 let pointingCntElement = [{ v1: "", v2: "", i: "" }];
 let circleBulletAngles = [];
 let destroyParticles = [];
@@ -68,14 +72,6 @@ let hide = {},
 let load = 0;
 let fileName = "";
 let paceLoaded = 0;
-let lottieAnim = {
-  play: () => {},
-  stop: () => {},
-  pause: () => {},
-  goToAndPlay: () => {},
-  goToAndStop: () => {},
-  setSpeed: () => {},
-};
 let overlayTime = 0;
 let shiftDown = false;
 let tick = new Howl({
@@ -178,6 +174,10 @@ const initialize = (isFirstCalled) => {
     offset = pattern.information.offset;
     bpm = pattern.information.bpm;
     speed = pattern.information.speed;
+    bpmsync = {
+      ms: 0,
+      beat: 0,
+    };
     for (let i = 0; i < tracks.length; i++) {
       if (tracks[i].name == pattern.information.track) {
         document.getElementById("scoreTitle").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
@@ -191,9 +191,6 @@ const initialize = (isFirstCalled) => {
         albumImg.src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.webp`;
         break;
       }
-    }
-    if (pattern.background.type) {
-      lottieLoad();
     }
     fetch(`${api}/skin/${settings.game.skin}`, {
       method: "GET",
@@ -231,55 +228,6 @@ const initialize = (isFirstCalled) => {
         load++;
       },
     });
-  } else {
-    if (pattern.background.type) {
-      lottieLoad(true);
-    }
-  }
-};
-
-const lottieLoad = (needToSeek) => {
-  if (JSON.stringify(pattern.background.lottie) == "{}") return;
-  let blob = new Blob([pattern.background.lottie], {
-    type: "application/json",
-  });
-  let path = URL.createObjectURL(blob);
-  if (lottieAnim.animType) {
-    lottieAnim.destroy();
-  }
-  lottieAnim = bodymovin.loadAnimation({
-    wrapper: canvasBackground,
-    animType: "canvas",
-    loop: true,
-    autoplay: false,
-    path: path,
-  });
-  lottieAnim.addEventListener("DOMLoaded", () => {
-    if (needToSeek) {
-      if (song.playing()) {
-        lottieAnim.goToAndPlay(song.seek() * 1000);
-      }
-    }
-    lottieSet();
-  });
-  URL.revokeObjectURL(path);
-};
-
-const lottieSet = () => {
-  switch (pattern.background.type) {
-    case 0: //Image
-      canvasBackground.getElementsByTagName("canvas")[0].style.display = "none";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-      break;
-    case 1: //Image & BGA
-      canvasBackground.getElementsByTagName("canvas")[0].style.display = "initial";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-      break;
-    case 2: //BGA
-      canvasBackground.getElementsByTagName("canvas")[0].style.display = "initial";
-      canvasBackground.style.backgroundImage = "none";
-      canvasBackground.style.backgroundColor = `#${pattern.background.boxColor}`;
-      break;
   }
 };
 
@@ -741,8 +689,8 @@ const drawBullet = (n, x, y, a) => {
   }
 };
 
-const destroyAll = (ms) => {
-  const end = upperBound(pattern.bullets, ms);
+const destroyAll = (beat) => {
+  const end = upperBound(pattern.bullets, beat);
   const renderBullets = pattern.bullets.slice(0, end);
   for (let j = 0; renderBullets.length > j; j++) {
     if (!destroyedBullets.has(j)) {
@@ -752,9 +700,8 @@ const destroyAll = (ms) => {
 };
 
 const callBulletDestroy = (j) => {
-  let date = Date.now();
-  const seek = (date - startDate - (offset + sync)) * rate;
-  const p = ((seek - pattern.bullets[j].ms) / ((bpm * 40) / speed / pattern.bullets[j].speed)) * 100;
+  const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+  const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
   const left = pattern.bullets[j].direction == "L";
   let x = (left ? -1 : 1) * (100 - p);
   let y = 0;
@@ -874,22 +821,23 @@ const drawKeyInput = () => {
 };
 
 const cntRender = () => {
-  let mouseCalcX = ((rawX / canvas.offsetWidth) * 200 - 100) * sens;
-  let mouseCalcY = ((rawY / canvas.offsetHeight) * 200 - 100) * sens;
-  mouseX = mouseCalcX >= 100 ? 100 : mouseCalcX <= -100 ? -100 : mouseCalcX;
-  mouseY = mouseCalcY >= 100 ? 100 : mouseCalcY <= -100 ? -100 : mouseCalcY;
-  eraseCnt();
-  if (window.devicePixelRatio != pixelRatio) {
-    pixelRatio = window.devicePixelRatio;
-    initialize(false);
-  }
-  if (isResultShowing) {
-    if (resultMs == 0) {
-      resultMs = Date.now();
-    }
-  }
-  if (resultMs != 0 && resultMs + 500 <= Date.now()) return;
+  requestAnimationFrame(cntRender);
   try {
+    if (window.devicePixelRatio != pixelRatio) {
+      pixelRatio = window.devicePixelRatio;
+      initialize(false);
+    }
+    eraseCnt();
+    let mouseCalcX = ((rawX / canvas.offsetWidth) * 200 - 100) * sens;
+    let mouseCalcY = ((rawY / canvas.offsetHeight) * 200 - 100) * sens;
+    mouseX = mouseCalcX >= 100 ? 100 : mouseCalcX <= -100 ? -100 : mouseCalcX;
+    mouseY = mouseCalcY >= 100 ? 100 : mouseCalcY <= -100 ? -100 : mouseCalcY;
+    if (isResultShowing) {
+      if (resultMs == 0) {
+        resultMs = Date.now();
+      }
+    }
+    if (resultMs != 0 && resultMs + 500 <= Date.now()) return;
     if (comboAlert) {
       let comboOpacity = 0;
       let fontSize = 20;
@@ -922,14 +870,8 @@ const cntRender = () => {
     ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
-    let date = Date.now();
-    let seek = 0;
-    if (isPaused || startDate == 0) {
-      seek = (date - (startDate + date - pauseDate) - (offset + sync)) * rate;
-    } else {
-      seek = (date - startDate - (offset + sync)) * rate;
-    }
-    let end = upperBound(pattern.triggers, seek + 0.002); //for floating point miss
+    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+    let end = upperBound(pattern.triggers, beats);
     const renderTriggers = pattern.triggers.slice(0, end);
     for (let i = 0; i < renderTriggers.length; i++) {
       if (renderTriggers[i].value == 0) {
@@ -937,15 +879,17 @@ const cntRender = () => {
           callBulletDestroy(renderTriggers[i].num);
         }
       } else if (renderTriggers[i].value == 1) {
-        destroyAll(renderTriggers[i].ms);
+        destroyAll(renderTriggers[i].beat);
       } else if (renderTriggers[i].value == 2) {
+        bpmsync.ms = bpmsync.ms + (renderTriggers[i].beat - bpmsync.beat) * (60000 / bpm);
         bpm = renderTriggers[i].bpm;
+        bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
         canvas.style.opacity = renderTriggers[i].opacity;
       } else if (renderTriggers[i].value == 4) {
         speed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
-        if (renderTriggers[i].ms - 1 <= seek && renderTriggers[i].ms + renderTriggers[i].time > seek && disableText == false) {
+        if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration) {
           ctx.beginPath();
           ctx.fillStyle = "#fff";
           ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Montserrat, Pretendard JP Variable`;
@@ -962,18 +906,18 @@ const cntRender = () => {
         drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
       }
     }
-    end = upperBound(pattern.patterns, seek + (bpm * 14) / speed);
+    end = upperBound(pattern.patterns, beats + 5);
     const renderNotes = pattern.patterns.slice(0, end);
     for (let i = 0; renderNotes.length > i; i++) {
-      const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
+      const p = (1 - (renderNotes[i].beat - beats) / (5 / speed)) * 100;
       if (p >= 50) {
         trackMouseSelection(i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
       }
     }
     for (let i = renderNotes.length - 1; i >= 0; i--) {
-      const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
-      const t = ((seek - renderNotes[i].ms) / renderNotes[i].time) * 100;
-      const f = (((bpm * 14) / speed - (renderNotes[i].ms + renderNotes[i].time - seek)) / ((bpm * 14) / speed)) * 100;
+      const p = (1 - (renderNotes[i].beat - beats) / (5 / speed)) * 100;
+      const t = ((beats - renderNotes[i].beat) / renderNotes[i].duration) * 100;
+      const f = (1 - (renderNotes[i].beat + renderNotes[i].duration - beats) / (5 / speed)) * 100;
       drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, t, i, f);
       if (p >= 120 && !destroyedNotes.has(i) && (renderNotes[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
         calculateScore("miss", i, true);
@@ -984,7 +928,7 @@ const cntRender = () => {
         });
         miss++;
         shotOverlay();
-        missPoint.push(seek);
+        missPoint.push(song.seek() * 1000);
         keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
       } else if (t >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && renderNotes[i].value == 2) {
         grabbedNotes.add(`${i}!`);
@@ -1004,8 +948,8 @@ const cntRender = () => {
         drawParticle(4, missParticles[i].x, missParticles[i].y, i);
       }
     }
-    let start = lowerBound(pattern.bullets, seek - bpm * 100);
-    end = upperBound(pattern.bullets, seek);
+    let start = lowerBound(pattern.bullets, beats - 16);
+    end = upperBound(pattern.bullets, beats);
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
       if (!destroyedBullets.has(start + i)) {
@@ -1027,7 +971,7 @@ const cntRender = () => {
             ms: Date.now(),
           });
         }
-        const p = ((seek - renderBullets[i].ms) / ((bpm * 40) / speed / renderBullets[i].speed)) * 100;
+        const p = ((beats - renderBullets[i].beat) / (15 / speed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
         const left = renderBullets[i].direction == "L";
         let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
         if (renderBullets[i].value == 0) {
@@ -1101,7 +1045,6 @@ const cntRender = () => {
     frameCounterMs = Date.now();
   }
   drawCursor();
-  requestAnimationFrame(cntRender);
 };
 
 const drawFinalEffect = (i) => {
@@ -1193,7 +1136,6 @@ const trackMousePos = (e) => {
 };
 
 const calculateResult = () => {
-  lottieAnim.stop();
   resultEffect.play();
   document.getElementById("perfectResult").textContent = perfect;
   document.getElementById("greatResult").textContent = great;
@@ -1265,14 +1207,14 @@ const calculateResult = () => {
 
 const trackMouseSelection = (i, v1, v2, x, y) => {
   if (song.playing()) {
-    const date = Date.now();
-    const seek = (date - startDate - (offset + sync)) * rate;
+    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
     const powX = ((((mouseX - x) * canvas.offsetWidth) / 200) * pixelRatio * settings.display.canvasRes) / 100;
     const powY = ((((mouseY - y) * canvas.offsetHeight) / 200) * pixelRatio * settings.display.canvasRes) / 100;
-    const p = v1 == 0 ? (((bpm * 14) / speed - (pattern.patterns[i].ms - seek)) / ((bpm * 14) / speed)) * 100 : 0;
     switch (v1) {
       case 0:
-        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvas.width / 40 + canvas.width / 70 && p <= 120) {
+        const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
+        const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
+        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvas.width / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 100) && p >= 0) {
           pointingCntElement = [];
           pointingCntElement.push({ v1: v1, v2: v2, i: i });
         }
@@ -1322,36 +1264,34 @@ const compClicked = (isTyped, key, isWheel) => {
       floatingResumeContainer.style.display = "none";
     }, 300);
     song.play();
-    lottieAnim.play();
   }
   if (key && !isWheel) mouseClicked = key;
   else if (!isWheel) mouseClicked = true;
   mouseClickedMs = Date.now();
+  const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
   for (let i = 0; i < pointingCntElement.length; i++) {
     if (pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && ((pointingCntElement[i].v2 === 0) == !isWheel || pointingCntElement[i].v2 === 2)) {
       if (pointingCntElement[i].v2 == 1 && pattern.patterns[pointingCntElement[i].i].direction != key) return;
       drawParticle(1, pattern.patterns[pointingCntElement[i].i].x, pattern.patterns[pointingCntElement[i].i].y, 0, pointingCntElement[i].v2);
-      let date = d;
-      const seek = (date - startDate - (offset + sync)) * rate;
-      let ms = pattern.patterns[pointingCntElement[i].i].ms;
-      let perfectJudge = (60000 / bpm / 6) * rate;
-      let greatJudge = (60000 / bpm / 4) * rate;
-      let goodJudge = (60000 / bpm / 2) * rate;
-      let badJudge = (60000 / bpm) * rate;
+      let beat = pattern.patterns[pointingCntElement[i].i].beat;
+      let perfectJudge = (1 / 6) * rate;
+      let greatJudge = (1 / 3) * rate;
+      let goodJudge = (1 / 2) * rate;
+      let badJudge = rate;
       let x = pattern.patterns[pointingCntElement[i].i].x;
       let y = pattern.patterns[pointingCntElement[i].i].y;
       let judge = "Perfect";
       if (pattern.patterns[pointingCntElement[i].i].value != 1) {
-        if (seek < ms + perfectJudge && seek > ms - perfectJudge) {
+        if (beats < beat + perfectJudge && beats > beat - perfectJudge) {
           judge = "Perfect";
           perfect++;
-        } else if (seek < ms + greatJudge && seek > ms - greatJudge) {
+        } else if (beats < beat + greatJudge && beats > beat - greatJudge) {
           judge = "Great";
           great++;
-        } else if (seek > ms - goodJudge && seek < ms) {
+        } else if (beats > beat - goodJudge && beats < beat) {
           judge = "Good";
           good++;
-        } else if ((seek > ms - badJudge && seek < ms) || ms < seek) {
+        } else if ((beats > beat - badJudge && beats < beat) || beat < beats) {
           judge = "Bad";
           bad++;
         } else {
@@ -1385,7 +1325,8 @@ const calculateScore = (judge, i, ignoreMs) => {
   prevScore = displayScore;
   destroyedNotes.add(i);
   if (!ignoreMs) {
-    pattern.patterns[i].ms = song.seek() * 1000 - (offset + sync);
+    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+    pattern.patterns[i].beat = beats;
   }
   if (judge == "miss") {
     combo = 0;
@@ -1419,7 +1360,7 @@ const calculateScore = (judge, i, ignoreMs) => {
     comboAlertCount = combo;
   }
   if (i == patternLength - 1) {
-    destroyAll(pattern.bullets[pattern.bullets.length - 1].ms);
+    destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
     effectMs = Date.now();
     if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
       effectNum = 0;
@@ -1454,7 +1395,6 @@ const doneLoading = () => {
     setTimeout(() => {
       if (!isPaused && startDate == 0) {
         song.play();
-        lottieAnim.play();
         startDate = Date.now();
       }
     }, 2000);
@@ -1612,7 +1552,6 @@ document.onkeydown = (e) => {
           isMenuOpened = true;
           menuContainer.style.display = "flex";
           song.pause();
-          lottieAnim.pause();
         } else {
           resume();
         }
@@ -1631,7 +1570,7 @@ document.onkeydown = (e) => {
 document.onkeyup = (e) => {
   e = e || window.event;
   let date = Date.now();
-  const seek = (date - startDate - (offset + sync)) * rate;
+  const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
   if (e.key == "Escape") {
     return;
   } else if (e.key == "Shift") {
@@ -1642,9 +1581,9 @@ document.onkeyup = (e) => {
   if (keyPressing.hasOwnProperty(e.key) && grabbedNotes.has(keyPressing[e.key]) && !grabbedNotes.has(`${keyPressing[e.key]}!`)) {
     grabbedNotes.delete(keyPressing[e.key]);
     grabbedNotes.add(`${keyPressing[e.key]}!`);
-    if (pattern.patterns[keyPressing[e.key]].ms + pattern.patterns[keyPressing[e.key]].time - (60000 / bpm / 3) * rate > seek) {
+    if (pattern.patterns[keyPressing[e.key]].beat + pattern.patterns[keyPressing[e.key]].duration - 1 / 3 > beats) {
       medalCheck(medal);
-      pattern.patterns[keyPressing[e.key]].ms = song.seek() * 1000 - pattern.patterns[keyPressing[e.key]].time - (offset + sync);
+      pattern.patterns[keyPressing[e.key]].beat = beats - pattern.patterns[keyPressing[e.key]].duration;
       calculateScore("Miss", keyPressing[e.key], true);
       missParticles.push({
         x: pattern.patterns[keyPressing[e.key]].x,
@@ -1679,7 +1618,6 @@ window.addEventListener("blur", () => {
       isMenuOpened = true;
       menuContainer.style.display = "flex";
       song.pause();
-      lottieAnim.pause();
     }
   }
 });
