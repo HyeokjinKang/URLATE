@@ -1418,7 +1418,7 @@ const settingsInput = (v, e) => {
         e.value = pattern.patterns[selectedCntElement.i][v];
       }
       break;
-    case "direction":
+    case "Direction":
       if (isNaN(Number(e.value))) {
         if (e.value != "-") {
           iziToast.error({
@@ -1432,12 +1432,12 @@ const settingsInput = (v, e) => {
           message: "Input value should be 1 or -1.",
         });
       } else {
-        pattern.patterns[selectedCntElement.i][v] = Number(e.value);
+        pattern.patterns[selectedCntElement.i][v.toLowerCase()] = Number(e.value);
         patternChanged();
         return;
       }
       if (e.value != "-") {
-        e.value = pattern.patterns[selectedCntElement.i][v];
+        e.value = pattern.patterns[selectedCntElement.i][v.toLowerCase()];
       }
       break;
     case "Timing":
