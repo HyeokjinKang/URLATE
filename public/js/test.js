@@ -1217,8 +1217,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
       case 0:
         const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
         const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
-        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvas.width / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 100) && p >= 0) {
-          pointingCntElement = [];
+        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvas.width / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 130) && p >= 0) {
           pointingCntElement.push({ v1: v1, v2: v2, i: i });
         }
         break;
@@ -1257,7 +1256,6 @@ const compClicked = (isTyped, key, isWheel) => {
   if ((!isTyped && !settings.input.mouse && !isWheel) || isMenuOpened || !menuAllowed || mouseClicked == key) {
     return;
   }
-  let d = Date.now();
   if (!song.playing() && isPaused) {
     isPaused = false;
     floatingResumeContainer.style.opacity = 0;
@@ -1283,16 +1281,16 @@ const compClicked = (isTyped, key, isWheel) => {
       let y = pattern.patterns[pointingCntElement[i].i].y;
       let judge = "Perfect";
       if (pattern.patterns[pointingCntElement[i].i].value != 1) {
-        if (beats < beat + perfectJudge && beats > beat - perfectJudge) {
+        if (beats <= beat + perfectJudge && beats >= beat - perfectJudge) {
           judge = "Perfect";
           perfect++;
-        } else if (beats < beat + greatJudge && beats > beat - greatJudge) {
+        } else if (beats <= beat + greatJudge && beats >= beat - greatJudge) {
           judge = "Great";
           great++;
-        } else if (beats > beat - goodJudge && beats < beat) {
+        } else if (beats >= beat - goodJudge && beats <= beat) {
           judge = "Good";
           good++;
-        } else if ((beats > beat - badJudge && beats < beat) || beat < beats) {
+        } else if ((beats >= beat - badJudge && beats <= beat) || beat <= beats) {
           judge = "Bad";
           bad++;
         } else {
