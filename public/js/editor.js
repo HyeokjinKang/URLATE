@@ -2374,15 +2374,9 @@ const test = () => {
   setTimeout(() => {
     save();
     let trackSettingsForm = settingsPropertiesTextbox;
-    pattern.information = {
-      version: "1.0",
-      track: trackSettingsForm[0].value,
-      producer: trackSettingsForm[1].value,
-      author: trackSettingsForm[2].value,
-      bpm: bpm,
-      speed: speed,
-      offset: offset,
-    };
+    pattern.track = trackSettingsForm[0].value;
+    pattern.producer = trackSettingsForm[1].value;
+    pattern.author = trackSettingsForm[2].value;
     localStorage.pattern = JSON.stringify(pattern);
     window.location.href = `${url}/test`;
   }, 500);
