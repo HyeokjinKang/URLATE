@@ -2,10 +2,15 @@
 
 # Avoid & Get on the tempo, URLATE.
 
+![GitHub License](https://img.shields.io/github/license/HyeokjinKang/URLATE-v3l-frontend)
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/HyeokjinKang/URLATE/build.yml)
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/HyeokjinKang/urlate-v3l-frontend/main?label=updated)
 ![GitHub Issues](https://badgen.net/github/issues/HyeokjinKang/URLATE-v3l-frontend)
-![GitHub License](https://img.shields.io/github/license/HyeokjinKang/URLATE-v3l-frontend)
+![GitHub closed issues](https://img.shields.io/github/issues-closed/HyeokjinKang/URLATE)
+![GitHub Repo stars](https://img.shields.io/github/stars/HyeokjinKang/URLATE)
+![Discord](https://img.shields.io/discord/1160914703892103298?label=Discord)
 [![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/HyeokjinKang)
+![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/CroissantGlobal)
 
 URLATE is a open-source rhythm game built with web technologies.  
 It does not support Safari, but it is compatible with Firefox and Blink based browsers such as Chrome, Edge, and Opera.
