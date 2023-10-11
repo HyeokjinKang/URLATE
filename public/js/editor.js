@@ -1602,6 +1602,7 @@ const settingsInput = (v, e) => {
       }
       break;
     case "Time":
+    case "Duration":
       if (isNaN(Number(e.value))) {
         iziToast.error({
           title: "Input Error",
@@ -1613,13 +1614,13 @@ const settingsInput = (v, e) => {
           message: "Input value must not be less than 0.",
         });
       } else {
-        pattern.patterns[selectedCntElement.i].time = Number(e.value);
+        pattern.patterns[selectedCntElement.i][v.toLowerCase()] = Number(e.value);
         patternChanged();
         return;
       }
       break;
     default:
-      alert("settingsInput:Error");
+      alert(`settingsInput:Error, ${v} is not defined.`);
   }
 };
 
