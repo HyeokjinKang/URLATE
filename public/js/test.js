@@ -871,7 +871,6 @@ const cntRender = () => {
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
     const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-    ctx.globalAlpha = globalAlpha;
     let end = upperBound(pattern.triggers, beats);
     const renderTriggers = pattern.triggers.slice(0, end);
     for (let i = 0; i < renderTriggers.length; i++) {
@@ -887,7 +886,6 @@ const cntRender = () => {
         bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
         globalAlpha = renderTriggers[i].opacity;
-        ctx.globalAlpha = globalAlpha;
       } else if (renderTriggers[i].value == 4) {
         speed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
@@ -903,6 +901,7 @@ const cntRender = () => {
         }
       }
     }
+    ctx.globalAlpha = globalAlpha;
     for (let i = 0; i < destroyParticles.length; i++) {
       if (destroyParticles[i].ms + 250 > Date.now()) {
         drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
