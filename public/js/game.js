@@ -16,7 +16,6 @@ const offsetButtonText = document.getElementById("offsetButtonText");
 const intro1video = document.getElementById("intro1video");
 const warningContainer = document.getElementById("warningContainer");
 const intro1container = document.getElementById("intro1container");
-const intro2container = document.getElementById("intro2container");
 const warningInner = document.getElementById("warningInner");
 const langSelector = document.getElementById("langSelector");
 const registerBtn = document.getElementById("registerBtn");
@@ -92,9 +91,6 @@ let lottieAnim;
 let arrowAnim;
 
 let intro1skipped = 0;
-
-let intro2anim;
-let intro2skipped = 0;
 
 let overlayTime = 0;
 let shiftDown = false;
@@ -382,23 +378,6 @@ const intro1skip = () => {
     intro1container.style.opacity = "0";
     setTimeout(() => {
       intro1container.style.display = "none";
-      intro2anim.setSpeed(1);
-      intro2play();
-    }, 500);
-  }
-};
-
-intro1video.onended = () => {
-  intro1skip();
-};
-
-const intro2skip = () => {
-  if (!intro2skipped) {
-    intro2skipped++;
-    intro2anim.setVolume(0);
-    intro2anim.stop();
-    intro2container.style.opacity = "0";
-    setTimeout(() => {
       loaded++;
       setTimeout(() => {
         if (loaded == 4) {
@@ -406,31 +385,12 @@ const intro2skip = () => {
           gameLoaded();
         }
       }, 1000);
-      intro2container.style.display = "none";
     }, 500);
   }
 };
 
-const intro2animUpdate = () => {
-  if (intro2anim.currentFrame >= 95) {
-    intro2container.style.transitionDuration = "0s";
-    requestAnimationFrame(() => {
-      intro2container.style.backgroundColor = "#fff";
-      requestAnimationFrame(() => {
-        intro2container.style.transitionDuration = "0.5s";
-      });
-    });
-  } else {
-    requestAnimationFrame(intro2animUpdate);
-  }
-};
-
-const intro2play = () => {
-  intro2anim.play();
-  intro2animUpdate();
-  setTimeout(() => {
-    intro2skip();
-  }, 5000);
+intro1video.onended = () => {
+  intro1skip();
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -465,15 +425,6 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     warningContainer.style.display = "flex";
     intro1container.style.display = "flex";
-    intro2container.style.display = "flex";
-
-    intro2anim = bodymovin.loadAnimation({
-      wrapper: document.getElementById("intro2"),
-      animType: "canvas",
-      autoplay: false,
-      loop: false,
-      path: "lottie/coupy.json",
-    });
   }
 
   lottieAnim = bodymovin.loadAnimation({
