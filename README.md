@@ -8,7 +8,7 @@
 ![GitHub Issues](https://badgen.net/github/issues/HyeokjinKang/URLATE-v3l-frontend)
 ![GitHub closed issues](https://img.shields.io/github/issues-closed/HyeokjinKang/URLATE)
 ![GitHub Repo stars](https://img.shields.io/github/stars/HyeokjinKang/URLATE)
-![Discord](https://img.shields.io/discord/1160914703892103298?label=Discord)
+[![Discord](https://img.shields.io/discord/1160914703892103298?label=Discord)](https://discord.gg/YMhYzPbEYV)
 [![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/HyeokjinKang)
 [![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/URLATE_)](https://twitter.com/URLATE_)
 
