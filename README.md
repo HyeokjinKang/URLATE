@@ -79,7 +79,7 @@ Detailed information about the license can be found [here](https://choosealicens
 **If you want to use the source code of this repository for commercial purposes, please contact me via [email](mailto:urlate@coupy.dev).**
 
 Note that the license only applies to the source code of this repository, and does not apply to the assets used in the game.  
-Brand "URLATE" and its logo are credited to Team Croissant.
+Brand "URLATE" and its logo are credited to Coupyworks.
 
 Copyright informations can be found [here](https://urlate.coupy.dev/info).
 
