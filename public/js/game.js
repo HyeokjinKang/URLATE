@@ -465,15 +465,6 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     warningContainer.style.display = "flex";
     intro1container.style.display = "flex";
-    intro2container.style.display = "flex";
-
-    intro2anim = bodymovin.loadAnimation({
-      wrapper: document.getElementById("intro2"),
-      animType: "canvas",
-      autoplay: false,
-      loop: false,
-      path: "lottie/coupy.json",
-    });
   }
 
   lottieAnim = bodymovin.loadAnimation({
