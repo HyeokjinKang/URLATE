@@ -91,7 +91,6 @@ let pattern = {
 let patternHistory = [];
 let pointingCntElement = { v1: "", v2: "", i: "" };
 let selectedCntElement = { v1: "", v2: "", i: "" };
-let circleBulletAngles = [];
 let destroyedBullets = new Set([]);
 let prevDestroyedBullets = new Set([]);
 let createdBullets = new Set([]);
@@ -529,14 +528,7 @@ const changeNote = () => {
   changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
 };
 
-const changeBullet = () => {
-  pattern.bullets[selectedCntElement.i].value = Number(!pattern.bullets[selectedCntElement.i].value);
-  patternChanged();
-  selectedCntElement.v2 = pattern.bullets[selectedCntElement.i].value;
-  changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
-};
-
-const drawBullet = (n, x, y, a, s, l, d) => {
+const drawBullet = (x, y, a, s, l, d) => {
   x = (cntCanvas.width / 200) * (x + 100);
   y = (cntCanvas.height / 200) * (y + 100);
   let w = cntCanvas.width / 80;
@@ -585,30 +577,14 @@ const drawBullet = (n, x, y, a, s, l, d) => {
     }
   }
   cntCtx.beginPath();
-  switch (n) {
-    case 0:
-      a = Math.PI * (a / 180 + 0.5);
-      cntCtx.arc(x, y, w, a, a + Math.PI);
-      a = a - 0.5 * Math.PI;
-      cntCtx.moveTo(x - w * Math.sin(a), y + w * Math.cos(a));
-      cntCtx.lineTo(x + w * 2 * Math.cos(a), y + w * 2 * Math.sin(a));
-      cntCtx.lineTo(x + w * Math.sin(a), y - w * Math.cos(a));
-      cntCtx.fill();
-      if (skin.bullet.outline && !denySkin) cntCtx.stroke();
-      break;
-    case 1:
-      cntCtx.arc(x, y, w, 0, Math.PI * 2);
-      cntCtx.fill();
-      if (skin.bullet.outline && !denySkin) cntCtx.stroke();
-      break;
-    default:
-      cntCtx.font = `500 ${window.innerHeight / 40}px Metropolis, Pretendard JP Variable`;
-      cntCtx.fillStyle = "#F55";
-      cntCtx.textAlign = "left";
-      cntCtx.textBaseline = "top";
-      cntCtx.fillText(`drawBullet:bullet number isn't specified.`, cntCanvas.width / 100, cntCanvas.height / 100);
-      console.error(`drawBullet:bullet number isn't specified.`);
-  }
+  a = Math.PI * (a / 180 + 0.5);
+  cntCtx.arc(x, y, w, a, a + Math.PI);
+  a = a - 0.5 * Math.PI;
+  cntCtx.moveTo(x - w * Math.sin(a), y + w * Math.cos(a));
+  cntCtx.lineTo(x + w * 2 * Math.cos(a), y + w * 2 * Math.sin(a));
+  cntCtx.lineTo(x + w * Math.sin(a), y - w * Math.cos(a));
+  cntCtx.fill();
+  if (skin.bullet.outline && !denySkin) cntCtx.stroke();
 };
 
 const drawParticle = (n, x, y, j) => {
@@ -795,21 +771,17 @@ const tmlRender = () => {
       let x = tmlStartX + parseInt((renderBullets[j].beat - renderStart) * beatToPx);
       let y = startY + timelineYLoc + height * bulletsOverlap[parseInt(renderBullets[j].beat * 2)] + height / 2;
       let w = height / 3;
-      if (mouseMode == 1) trackMouseSelection(start + j, 1, renderBullets[j].value, x, y);
+      if (mouseMode == 1) trackMouseSelection(start + j, 1, 0, x, y);
       if (selectedCheck(1, start + j)) {
         tmlCtx.fillStyle = "#ed5b45";
       } else {
         tmlCtx.fillStyle = "#4297d4";
       }
-      if (renderBullets[j].value == 0) {
-        tmlCtx.moveTo(x - w, y);
-        tmlCtx.lineTo(x, y + w);
-        tmlCtx.lineTo(x + w, y);
-        tmlCtx.lineTo(x, y - w);
-        tmlCtx.lineTo(x - w, y);
-      } else if (renderBullets[j].value == 1) {
-        tmlCtx.arc(x, y, w, 0, 2 * Math.PI);
-      }
+      tmlCtx.moveTo(x - w, y);
+      tmlCtx.lineTo(x, y + w);
+      tmlCtx.lineTo(x + w, y);
+      tmlCtx.lineTo(x, y - w);
+      tmlCtx.lineTo(x - w, y);
       bulletsOverlap[parseInt(renderBullets[j].beat * 2)]--;
       tmlCtx.fill();
     }
@@ -976,18 +948,13 @@ const tmlRender = () => {
         if (mousePosY >= startY && mousePosY <= startY + height) {
           tmlCtx.arc(mouseX, startY + height / 2, w, 0, 2 * Math.PI);
         } else if (mousePosY >= startY + height && mousePosY <= startY + height * (bulletsOverlapNum + 1)) {
-          if (selectedValue > 1) selectedValue = 0;
           let mouseYLocCount = 1 + bulletsOverlapNum - Math.round(Math.round(2 * startY + height * bulletsOverlapNum - mousePosY) / height);
           let y = startY + height * mouseYLocCount + height / 2 + timelineYLoc;
-          if (selectedValue == 0) {
-            tmlCtx.moveTo(mouseX - w, y);
-            tmlCtx.lineTo(mouseX, y + w);
-            tmlCtx.lineTo(mouseX + w, y);
-            tmlCtx.lineTo(mouseX, y - w);
-            tmlCtx.lineTo(mouseX - w, y);
-          } else if (selectedValue == 1) {
-            tmlCtx.arc(mouseX, y, w, 0, 2 * Math.PI);
-          }
+          tmlCtx.moveTo(mouseX - w, y);
+          tmlCtx.lineTo(mouseX, y + w);
+          tmlCtx.lineTo(mouseX + w, y);
+          tmlCtx.lineTo(mouseX, y - w);
+          tmlCtx.lineTo(mouseX - w, y);
         } else if (mousePosY >= startY + height * (bulletsOverlapNum + 1) && mousePosY <= startY + height * (bulletsOverlapNum + 1) + height * (triggersOverlapNum - 1)) {
           let mouseYLocCount = -(1 - Math.round((mousePosY - height - height * (bulletsOverlapNum + 1)) / height));
           let y = startY + height * (bulletsOverlapNum + 1) + height * mouseYLocCount + height / 2 + timelineYLoc;
@@ -1056,20 +1023,7 @@ const callBulletDestroy = (j) => {
   const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
   const left = pattern.bullets[j].direction == "L";
   let x = (left ? -1 : 1) * (100 - p);
-  let y = 0;
-  if (pattern.bullets[j].value == 0) {
-    y = pattern.bullets[j].location + p * getTan(pattern.bullets[j].angle) * (left ? 1 : -1);
-  } else {
-    if (!circleBulletAngles[j]) circleBulletAngles[j] = calcAngleDegrees((left ? -100 : 100) - mouseX, pattern.bullets[j].location - mouseY);
-    if (left) {
-      if (110 > circleBulletAngles[j] && circleBulletAngles[j] > 0) circleBulletAngles[j] = 110;
-      else if (0 > circleBulletAngles[j] && circleBulletAngles[j] > -110) circleBulletAngles[j] = -110;
-    } else {
-      if (70 < circleBulletAngles[j] && circleBulletAngles[j] > 0) circleBulletAngles[j] = 70;
-      else if (0 > circleBulletAngles[j] && circleBulletAngles[j] < -70) circleBulletAngles[j] = -70;
-    }
-    y = pattern.bullets[j].location + p * getTan(circleBulletAngles[j]) * (left ? 1 : -1);
-  }
+  let y = pattern.bullets[j].location + p * getTan(pattern.bullets[j].angle) * (left ? 1 : -1);
   let randomDirection = [];
   for (let i = 0; i < 3; i++) {
     let rx = Math.floor(Math.random() * 4) - 2;
@@ -1249,11 +1203,10 @@ const cntRender = () => {
         } else if (magnetToggle) drawNote(100, mouseX - (mouseX % 5), mouseY - (mouseY % 5), true, selectedValue, 1, 0);
         else drawNote(100, mouseX, mouseY, true, selectedValue, 1, 0);
       } else {
-        if (selectedValue > 1) selectedValue = 0;
         if (p[1] == 0) {
-          drawBullet(selectedValue, -100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 0, true, mouseY - (mouseY % 5), "L");
+          drawBullet(-100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 0, true, mouseY - (mouseY % 5), "L");
         } else {
-          drawBullet(selectedValue, 100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 180, true, mouseY - (mouseY % 5), "R");
+          drawBullet(100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 180, true, mouseY - (mouseY % 5), "R");
         }
       }
     }
@@ -1297,16 +1250,9 @@ const cntRender = () => {
         const p = ((beats - renderBullets[i].beat) / (15 / speed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
         const left = renderBullets[i].direction == "L";
         let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
-        if (renderBullets[i].value == 0) {
-          let y = renderBullets[i].location + (left ? 1 : -1) * getSin(renderBullets[i].angle) * p;
-          if (mouseMode == 0) trackMouseSelection(start + i, 1, renderBullets[i].value, x, y);
-          drawBullet(renderBullets[i].value, x, y, renderBullets[i].angle + (left ? 0 : 180), selectedCheck(1, start + i), renderBullets[i].location, renderBullets[i].direction);
-        } else {
-          if (!circleBulletAngles[start + i]) circleBulletAngles[start + i] = calcAngleDegrees((left ? -100 : 100) - mouseX, renderBullets[i].location - mouseY);
-          y = renderBullets[i].location + p * getTan(circleBulletAngles[start + i]) * (left ? 1 : -1);
-          if (mouseMode == 0) trackMouseSelection(start + i, 1, renderBullets[i].value, x, y);
-          drawBullet(renderBullets[i].value, x, y, "", selectedCheck(1, start + i), renderBullets[i].location, renderBullets[i].direction);
-        }
+        let y = renderBullets[i].location + (left ? 1 : -1) * getSin(renderBullets[i].angle) * p;
+        if (mouseMode == 0) trackMouseSelection(start + i, 1, 0, x, y);
+        drawBullet(x, y, renderBullets[i].angle + (left ? 0 : 180), selectedCheck(1, start + i), renderBullets[i].location, renderBullets[i].direction);
       }
     }
     prevCreatedBullets = new Set(createdBullets);
@@ -1362,7 +1308,6 @@ const songPlayPause = () => {
     } else {
       controlBtn.classList.add("timeline-pause");
       controlBtn.classList.remove("timeline-play");
-      circleBulletAngles = [];
       song.play();
     }
   }
@@ -2037,7 +1982,6 @@ const timelineAddElement = () => {
     } else if (mousePosY >= startY + height && mousePosY <= startY + height * (bulletsOverlapNum + 1)) {
       let newElement = {
         beat: calculatedBeat,
-        value: selectedValue,
         direction: "L",
         location: 0,
         angle: 0,
@@ -2048,7 +1992,7 @@ const timelineAddElement = () => {
       patternChanged();
       for (let i = 0; i < pattern.bullets.length; i++) {
         if (JSON.stringify(pattern.bullets[i]) == JSON.stringify(newElement)) {
-          selectedCntElement = { v1: 1, v2: selectedValue, i: i };
+          selectedCntElement = { v1: 1, v2: 0, i: i };
           break;
         }
       }
@@ -2116,7 +2060,6 @@ const compClicked = () => {
       if (mouseX < -80 || mouseX > 80) {
         let newElement = {
           beat: beats,
-          value: selectedValue,
           direction: mouseX < -80 ? "L" : "R",
           location: parseInt(magnetToggle ? mouseY - (mouseY % 5) : mouseY),
           angle: 0,
@@ -2127,7 +2070,7 @@ const compClicked = () => {
         patternChanged();
         for (let i = 0; i < pattern.bullets.length; i++) {
           if (JSON.stringify(pattern.bullets[i]) == JSON.stringify(newElement)) {
-            selectedCntElement = { v1: 1, v2: selectedValue, i: i };
+            selectedCntElement = { v1: 1, v2: 0, i: i };
           }
         }
       } else {
@@ -2244,6 +2187,8 @@ const changeSettingsMode = (v1, v2, i) => {
       }
       break;
     case 1:
+      document.getElementById("settingsNameSpace").innerText = `Bullet_${i}`;
+      document.getElementById("dot").style.color = "#6fdef7";
       document.getElementById("noteSettingsContainer").style.display = "none";
       document.getElementById("triggerSettingsContainer").style.display = "none";
       document.getElementById("bulletSettingsContainer").style.display = "block";
@@ -2252,20 +2197,7 @@ const changeSettingsMode = (v1, v2, i) => {
       bulletSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[1].value = pattern.bullets[i].location;
       bulletSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[3].value = pattern.bullets[i].beat;
       bulletSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[4].value = pattern.bullets[i].speed;
-      switch (v2) {
-        case 0:
-          document.getElementById("dot").style.color = "#6fdef7";
-          bulletSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[2].style.display = "flex";
-          bulletSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[2].value = pattern.bullets[i].angle;
-          break;
-        case 1:
-          document.getElementById("dot").style.color = "#575cf2";
-          bulletSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[2].style.display = "none";
-          break;
-        default:
-          alert("changeSettingsMode:Error");
-      }
-      document.getElementById("settingsNameSpace").innerText = `Bullet_${i}`;
+      bulletSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[2].value = pattern.bullets[i].angle;
       break;
     case 2:
       document.getElementById("settingsNameSpace").innerText = `Trigger_${i}`;

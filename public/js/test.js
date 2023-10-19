@@ -23,7 +23,6 @@ let bpmsync = {
   beat: 0,
 };
 let pointingCntElement = [{ v1: "", v2: "", i: "" }];
-let circleBulletAngles = [];
 let destroyParticles = [];
 let missParticles = [];
 let perfectParticles = [];
@@ -634,7 +633,7 @@ const drawCursor = () => {
   ctx.shadowBlur = 0;
 };
 
-const drawBullet = (n, x, y, a) => {
+const drawBullet = (x, y, a) => {
   x = (canvas.width / 200) * (x + 100);
   y = (canvas.height / 200) * (y + 100);
   let w = canvas.width / 80;
@@ -662,30 +661,14 @@ const drawBullet = (n, x, y, a) => {
     }
   }
   ctx.beginPath();
-  switch (n) {
-    case 0:
-      a = Math.PI * (a / 180 + 0.5);
-      ctx.arc(x, y, w, a, a + Math.PI);
-      a = a - 0.5 * Math.PI;
-      ctx.moveTo(x - w * Math.sin(a), y + w * Math.cos(a));
-      ctx.lineTo(x + w * 2 * Math.cos(a), y + w * 2 * Math.sin(a));
-      ctx.lineTo(x + w * Math.sin(a), y - w * Math.cos(a));
-      ctx.fill();
-      if (skin.bullet.outline) ctx.stroke();
-      break;
-    case 1:
-      ctx.arc(x, y, w, 0, Math.PI * 2);
-      ctx.fill();
-      if (skin.bullet.outline) ctx.stroke();
-      break;
-    default:
-      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
-      ctx.fillStyle = "#F55";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "top";
-      ctx.fillText(`drawBullet:bullet number isn't specified.`, canvas.width / 100, canvas.height / 100);
-      console.error(`drawBullet:bullet number isn't specified.`);
-  }
+  a = Math.PI * (a / 180 + 0.5);
+  ctx.arc(x, y, w, a, a + Math.PI);
+  a = a - 0.5 * Math.PI;
+  ctx.moveTo(x - w * Math.sin(a), y + w * Math.cos(a));
+  ctx.lineTo(x + w * 2 * Math.cos(a), y + w * 2 * Math.sin(a));
+  ctx.lineTo(x + w * Math.sin(a), y - w * Math.cos(a));
+  ctx.fill();
+  if (skin.bullet.outline) ctx.stroke();
 };
 
 const destroyAll = (beat) => {
@@ -703,20 +686,7 @@ const callBulletDestroy = (j) => {
   const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
   const left = pattern.bullets[j].direction == "L";
   let x = (left ? -1 : 1) * (100 - p);
-  let y = 0;
-  if (pattern.bullets[j].value == 0) {
-    y = pattern.bullets[j].location + p * getTan(pattern.bullets[j].angle) * (left ? 1 : -1);
-  } else {
-    if (!circleBulletAngles[j]) circleBulletAngles[j] = calcAngleDegrees((left ? -100 : 100) - mouseX, pattern.bullets[j].location - mouseY);
-    if (left) {
-      if (110 > circleBulletAngles[j] && circleBulletAngles[j] > 0) circleBulletAngles[j] = 110;
-      else if (0 > circleBulletAngles[j] && circleBulletAngles[j] > -110) circleBulletAngles[j] = -110;
-    } else {
-      if (70 < circleBulletAngles[j] && circleBulletAngles[j] > 0) circleBulletAngles[j] = 70;
-      else if (0 > circleBulletAngles[j] && circleBulletAngles[j] < -70) circleBulletAngles[j] = -70;
-    }
-    y = pattern.bullets[j].location + p * getTan(circleBulletAngles[j]) * (left ? 1 : -1);
-  }
+  let y = pattern.bullets[j].location + p * getTan(pattern.bullets[j].angle) * (left ? 1 : -1);
   let randomDirection = [];
   for (let i = 0; i < 3; i++) {
     let rx = Math.floor(Math.random() * 4) - 2;
@@ -975,16 +945,9 @@ const cntRender = () => {
         const p = ((beats - renderBullets[i].beat) / (15 / speed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
         const left = renderBullets[i].direction == "L";
         let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
-        if (renderBullets[i].value == 0) {
-          let y = renderBullets[i].location + (left ? 1 : -1) * getSin(renderBullets[i].angle) * p;
-          trackMouseSelection(start + i, 1, renderBullets[i].value, x, y);
-          drawBullet(renderBullets[i].value, x, y, renderBullets[i].angle + (left ? 0 : 180));
-        } else {
-          if (!circleBulletAngles[start + i]) circleBulletAngles[start + i] = calcAngleDegrees((left ? -100 : 100) - mouseX, renderBullets[i].location - mouseY);
-          y = renderBullets[i].location + p * getTan(circleBulletAngles[start + i]) * (left ? 1 : -1);
-          trackMouseSelection(start + i, 1, renderBullets[i].value, x, y);
-          drawBullet(renderBullets[i].value, x, y, "");
-        }
+        let y = renderBullets[i].location + (left ? 1 : -1) * getSin(renderBullets[i].angle) * p;
+        trackMouseSelection(start + i, 1, 0, x, y);
+        drawBullet(x, y, renderBullets[i].angle + (left ? 0 : 180));
       }
     }
   } catch (e) {
