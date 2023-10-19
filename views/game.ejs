@@ -49,9 +49,6 @@
         <source type="video/mp4" src="<%= cdn %>/videos/croissant.mp4" />
       </video>
     </div>
-    <div id="intro2container" class="introContainer" onclick="intro2skip()">
-      <div id="intro2"></div>
-    </div>
     <div id="loadingContainer">
       <img src="/images/logos/URLATE_LITE_BIG.webp" id="logo" />
     </div>
@@ -61,6 +58,8 @@
         <span id="name" class="metropolis" onclick="profileScreen()">USERNAME</span>
       </div>
       <div id="headerRight">
+        <a id="noticeText" target="_blank"></a>
+        <div id="line"></div>
         <img src="https://img.icons8.com/windows/64/000000/info.png" class="icon clickable" onclick="infoScreen()" />
         <div id="line"></div>
         <img src="https://img.icons8.com/windows/64/000000/settings.png" class="icon clickable" onclick="optionScreen()" />
@@ -312,17 +311,23 @@
         <br /><br />
         Copyright notices for resources included in the game are located at <a href="https://urlate.coupy.dev/info" target="_blank" class="link">urlate.coupy.dev/info</a>.
         <br />
-        Excluding some music and images, URLATE resources are copyrighted by Team Croissant / Coupy.
+        Excluding some music and images, URLATE resources are copyrighted by Coupy.
       </span>
       <div id="infoLineContainer"><div id="infoLine"></div></div>
-      <span id="infoTitle">TEAM CROISSANT</span>
+      <span id="infoTitle">Producer</span>
       <br />
-      <span id="infoSubtitle">(Click to show details)</span>
+      <span id="infoSubtitle">Game directed, developed, designed, operated by</span>
       <br />
       <div class="profileContainer">
         <div class="profile" id="profileCoupy">
           <div class="profileHover" onclick="showProfile('coupy')">Coupy</div>
         </div>
+      </div>
+      <span id="infoTitle">Contributors</span>
+      <br />
+      <span id="infoSubtitle">(ex- Team Croissant)</span>
+      <br />
+      <div class="profileContainer">
         <div class="profile" id="profileAlta">
           <div class="profileHover" onclick="showProfile('altari')">Altari</div>
         </div>
@@ -335,15 +340,11 @@
         <div class="profile" id="profileRanol">
           <div class="profileHover" onclick="showProfile('ranolp')">RanolP</div>
         </div>
-      </div>
-      <div class="profileContainer">
         <div class="profile" id="profileKiwi">
           <div class="profileHover" onclick="showProfile('kiwiyou')">kiwiyou</div>
         </div>
       </div>
-      <span id="infoTitle">THANKS TO</span>
-      <br />
-      <span id="infoSubtitle">(Click to show details)</span>
+      <span id="infoTitle">Thanks to</span>
       <br />
       <div class="profileContainer">
         <div class="profile" id="profileHanu">
@@ -358,7 +359,7 @@
         <div class="profile" id="profileYou">..and You</div>
       </div>
       <div id="infoLineContainer"><div id="infoLine"></div></div>
-      <span id="infoTitle">TUMBLBUG SUPPORTERS</span>
+      <span id="infoTitle">Tumblbug Supporters</span>
       <br />
       <img src="/images/credits/supporters.svg" id="tumblbug" />
     </div>

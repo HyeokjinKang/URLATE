@@ -2,10 +2,15 @@
 
 # Avoid & Get on the tempo, URLATE.
 
+![GitHub License](https://img.shields.io/github/license/HyeokjinKang/URLATE-v3l-frontend)
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/HyeokjinKang/URLATE/build.yml)
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/HyeokjinKang/urlate-v3l-frontend/main?label=updated)
 ![GitHub Issues](https://badgen.net/github/issues/HyeokjinKang/URLATE-v3l-frontend)
-![GitHub License](https://img.shields.io/github/license/HyeokjinKang/URLATE-v3l-frontend)
+![GitHub closed issues](https://img.shields.io/github/issues-closed/HyeokjinKang/URLATE)
+![GitHub Repo stars](https://img.shields.io/github/stars/HyeokjinKang/URLATE)
+[![Discord](https://img.shields.io/discord/1160914703892103298?label=Discord)](https://discord.gg/YMhYzPbEYV)
 [![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/HyeokjinKang)
+[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/URLATE_)](https://twitter.com/URLATE_)
 
 URLATE is a open-source rhythm game built with web technologies.  
 It does not support Safari, but it is compatible with Firefox and Blink based browsers such as Chrome, Edge, and Opera.
@@ -27,7 +32,7 @@ If you need to refer to the past commit history, please refer to the repository 
 ## Try it out
 
 You can play the latest version of URLATE at [urlate.coupy.dev](https://urlate.coupy.dev/).  
-There's an development version of URLATE at [urlate-dev.coupy.dev](https://urlate-dev.coupy.dev/), but it's not recommended to play it because it's not stable, and it may not be playable.
+There's an development version of URLATE at [dev.urlate.coupy.dev](https://dev.urlate.coupy.dev/), but it's not recommended to play it because it's not stable, and it may not be playable.
 
 ## How to play
 
@@ -69,7 +74,7 @@ The to-do list of URLATE is managed in [GitHub Projects](https://github.com/user
 
 ## Documentation
 
-If you want to know the internal structure of URLATE, or if you are interested in developing new features, creating external extensions, etc., you can refer to the [official document](https://urlate-docs.coupy.dev/).
+If you want to know the internal structure of URLATE, or if you are interested in developing new features, creating external extensions, etc., you can refer to the [official document](https://mirai.urlate.coupy.dev/docs).
 
 ## License
 
@@ -79,7 +84,7 @@ Detailed information about the license can be found [here](https://choosealicens
 **If you want to use the source code of this repository for commercial purposes, please contact me via [email](mailto:urlate@coupy.dev).**
 
 Note that the license only applies to the source code of this repository, and does not apply to the assets used in the game.  
-Brand "URLATE" and its logo are credited to Team Croissant.
+Brand "URLATE" and its logo are credited to Coupyworks.
 
 Copyright informations can be found [here](https://urlate.coupy.dev/info).
 
