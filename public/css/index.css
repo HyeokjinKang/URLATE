@@ -28,7 +28,7 @@ body {
   position: relative;
   z-index: 1;
   width: 100vw;
-  height: 62vh;
+  height: 60vh;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -46,7 +46,7 @@ body {
 }
 
 #logo {
-  height: 25vh;
+  height: 30vh;
 }
 
 #footerLeft {
