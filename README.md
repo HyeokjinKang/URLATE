@@ -7,7 +7,7 @@
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/HyeokjinKang/urlate-v3l-frontend/main?label=updated)
 ![GitHub Issues](https://badgen.net/github/issues/HyeokjinKang/URLATE-v3l-frontend)
 ![GitHub closed issues](https://img.shields.io/github/issues-closed/HyeokjinKang/URLATE)
-![GitHub Repo stars](https://img.shields.io/github/stars/HyeokjinKang/URLATE)
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FHyeokjinKang%2FURLATE&count_bg=%233DC8A1&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 [![Discord](https://img.shields.io/discord/1160914703892103298?label=Discord)](https://discord.gg/YMhYzPbEYV)
 [![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/HyeokjinKang)
 [![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/URLATE_)](https://twitter.com/URLATE_)
