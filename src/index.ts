@@ -2,6 +2,15 @@ import signale from "signale";
 import cookieParser from "cookie-parser";
 import express from "express";
 import i18n from "./i18n";
+const { exec } = require("child_process");
+
+let branch;
+exec("git branch --show-current", (err, stdout, stderr) => {
+  if (err) {
+    return (branch = "production");
+  }
+  return (branch = stdout.trim());
+});
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const config = require(__dirname + "/../config/config.json");
@@ -20,6 +29,7 @@ app.get("/", (req, res) => {
     url: config.project.url,
     api: config.project.api,
     ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
+    branch: branch,
   });
 });
 

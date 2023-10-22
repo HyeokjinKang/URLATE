@@ -20,8 +20,11 @@ let patternLength = 0;
 let userName = "";
 let difficultyNames = ["EZ", "MID", "HARD"];
 let settings, sync, song, tracks, pixelRatio, offset, bpm, speed, userid;
+let bpmsync = {
+  ms: 0,
+  beat: 0,
+};
 let pointingCntElement = [{ v1: "", v2: "", i: "" }];
-let circleBulletAngles = [];
 let destroyParticles = [];
 let missParticles = [];
 let perfectParticles = [];
@@ -70,14 +73,6 @@ let hide = {},
 let load = 0;
 let fileName = "";
 let paceLoaded = 0;
-let lottieAnim = {
-  play: () => {},
-  stop: () => {},
-  pause: () => {},
-  goToAndPlay: () => {},
-  goToAndStop: () => {},
-  setSpeed: () => {},
-};
 let overlayTime = 0;
 let shiftDown = false;
 let tick = new Howl({
@@ -90,8 +85,6 @@ let resultEffect = new Howl({
   autoplay: false,
   loop: false,
 });
-let startDate = 0;
-let pauseDate = 0;
 let isPaused = false;
 let rate = 1;
 let disableText = false;
@@ -106,6 +99,7 @@ let medal = 1;
 let newRecordTime = 0;
 let effectMs = 0;
 let effectNum = -1;
+let globalAlpha = 1;
 const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -196,6 +190,10 @@ const initialize = (isFirstCalled) => {
         offset = pattern.information.offset;
         bpm = pattern.information.bpm;
         speed = pattern.information.speed;
+        bpmsync = {
+          ms: 0,
+          beat: 0,
+        };
         for (let i = 0; i < tracks.length; i++) {
           if (tracks[i].name == pattern.information.track) {
             document.getElementById("scoreTitle").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
@@ -209,9 +207,6 @@ const initialize = (isFirstCalled) => {
             albumImg.src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.webp`;
             break;
           }
-        }
-        if (pattern.background.type) {
-          lottieLoad();
         }
         fetch(`${api}/skin/${settings.game.skin}`, {
           method: "GET",
@@ -255,55 +250,6 @@ const initialize = (isFirstCalled) => {
         alert(`Error occured.\n${e}`);
         window.location.href = `${url}/game?initialize=1`;
       });
-  } else {
-    if (pattern.background.type) {
-      lottieLoad(true);
-    }
-  }
-};
-
-const lottieLoad = (needToSeek) => {
-  if (JSON.stringify(pattern.background.lottie) == "{}") return;
-  let blob = new Blob([pattern.background.lottie], {
-    type: "application/json",
-  });
-  let path = URL.createObjectURL(blob);
-  if (lottieAnim.animType) {
-    lottieAnim.destroy();
-  }
-  lottieAnim = bodymovin.loadAnimation({
-    wrapper: canvasBackground,
-    animType: "canvas",
-    loop: true,
-    autoplay: false,
-    path: path,
-  });
-  lottieAnim.addEventListener("DOMLoaded", () => {
-    if (needToSeek) {
-      if (song.playing()) {
-        lottieAnim.goToAndPlay(song.seek() * 1000);
-      }
-    }
-    lottieSet();
-  });
-  URL.revokeObjectURL(path);
-};
-
-const lottieSet = () => {
-  switch (pattern.background.type) {
-    case 0: //Image
-      canvasBackground.getElementsByTagName("canvas")[0].style.display = "none";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-      break;
-    case 1: //Image & BGA
-      canvasBackground.getElementsByTagName("canvas")[0].style.display = "initial";
-      canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-      break;
-    case 2: //BGA
-      canvasBackground.getElementsByTagName("canvas")[0].style.display = "initial";
-      canvasBackground.style.backgroundImage = "none";
-      canvasBackground.style.backgroundColor = `#${pattern.background.boxColor}`;
-      break;
   }
 };
 
@@ -506,9 +452,9 @@ const drawParticle = (n, x, y, j, d) => {
   }
 };
 
-const drawNote = (p, x, y, n, d, t, index) => {
+const drawNote = (p, x, y, n, d, t, index, f) => {
   if (n != 2 && p >= 130) return;
-  else if (n == 2 && t >= 130) return;
+  else if (n == 2 && f >= 130) return;
   p = Math.max(p, 0);
   x = (canvas.width / 200) * (x + 100);
   y = (canvas.height / 200) * (y + 100);
@@ -518,7 +464,7 @@ const drawNote = (p, x, y, n, d, t, index) => {
   if (n != 2 && p >= 100) {
     opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
   } else if (n == 2 && p >= 100 && t >= 100 && (grabbedNotes.has(index) || grabbedNotes.has(`${index}!`))) {
-    opacity = Math.max(Math.round((255 / 30) * (130 - t)), 0);
+    opacity = Math.max(Math.round((255 / 30) * (130 - f)), 0);
   } else if (n == 2 && p >= 100 && !grabbedNotes.has(index)) {
     opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
   }
@@ -567,11 +513,11 @@ const drawNote = (p, x, y, n, d, t, index) => {
       ctx.stroke();
     }
     ctx.beginPath();
-    ctx.globalAlpha = (0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100;
+    ctx.globalAlpha = ((0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100) * globalAlpha;
     ctx.fillStyle = ctx.strokeStyle;
     ctx.arc(x, y, w, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = globalAlpha;
   } else if (n == 1) {
     w = w * 0.9;
     let parr = [p <= 20 ? p * 5 : 100, p >= 20 ? (p <= 80 ? (p - 20) * 1.66 : 100) : 0, p >= 80 ? (p <= 100 ? (p - 80) * 5 : 100) : 0];
@@ -608,14 +554,14 @@ const drawNote = (p, x, y, n, d, t, index) => {
       ctx.stroke();
     }
     ctx.beginPath();
-    ctx.globalAlpha = (0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100;
+    ctx.globalAlpha = ((0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100) * globalAlpha;
     ctx.fillStyle = ctx.strokeStyle;
     ctx.moveTo(x, y - 1.5 * d * w);
     if (d == 1) ctx.arc(x, y, w, -Math.PI / 5, (Math.PI / 5) * 6);
     else ctx.arc(x, y, w, (-Math.PI / 5) * 6, Math.PI / 5);
     ctx.lineTo(x, y - 1.5 * d * w);
     ctx.fill();
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = globalAlpha;
   } else if (n == 2) {
     ctx.beginPath();
     if (skin.note[n].outline) {
@@ -652,11 +598,11 @@ const drawNote = (p, x, y, n, d, t, index) => {
       ctx.arc(x, y, w, 0, 2 * Math.PI);
       ctx.stroke();
     }
-    ctx.globalAlpha = (0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100;
+    ctx.globalAlpha = ((0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100) * globalAlpha;
     ctx.fillStyle = ctx.strokeStyle;
     ctx.arc(x, y, w, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = globalAlpha;
   }
 };
 
@@ -711,7 +657,7 @@ const drawCursor = () => {
   ctx.shadowBlur = 0;
 };
 
-const drawBullet = (n, x, y, a) => {
+const drawBullet = (x, y, a) => {
   x = (canvas.width / 200) * (x + 100);
   y = (canvas.height / 200) * (y + 100);
   let w = canvas.width / 80;
@@ -739,34 +685,18 @@ const drawBullet = (n, x, y, a) => {
     }
   }
   ctx.beginPath();
-  switch (n) {
-    case 0:
-      a = Math.PI * (a / 180 + 0.5);
-      ctx.arc(x, y, w, a, a + Math.PI);
-      a = a - 0.5 * Math.PI;
-      ctx.moveTo(x - w * Math.sin(a), y + w * Math.cos(a));
-      ctx.lineTo(x + w * 2 * Math.cos(a), y + w * 2 * Math.sin(a));
-      ctx.lineTo(x + w * Math.sin(a), y - w * Math.cos(a));
-      ctx.fill();
-      if (skin.bullet.outline) ctx.stroke();
-      break;
-    case 1:
-      ctx.arc(x, y, w, 0, Math.PI * 2);
-      ctx.fill();
-      if (skin.bullet.outline) ctx.stroke();
-      break;
-    default:
-      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
-      ctx.fillStyle = "#F55";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "top";
-      ctx.fillText(`drawBullet:bullet number isn't specified.`, canvas.width / 100, canvas.height / 100);
-      console.error(`drawBullet:bullet number isn't specified.`);
-  }
+  a = Math.PI * (a / 180 + 0.5);
+  ctx.arc(x, y, w, a, a + Math.PI);
+  a = a - 0.5 * Math.PI;
+  ctx.moveTo(x - w * Math.sin(a), y + w * Math.cos(a));
+  ctx.lineTo(x + w * 2 * Math.cos(a), y + w * 2 * Math.sin(a));
+  ctx.lineTo(x + w * Math.sin(a), y - w * Math.cos(a));
+  ctx.fill();
+  if (skin.bullet.outline) ctx.stroke();
 };
 
-const destroyAll = (ms) => {
-  const end = upperBound(pattern.bullets, ms);
+const destroyAll = (beat) => {
+  const end = upperBound(pattern.bullets, beat);
   const renderBullets = pattern.bullets.slice(0, end);
   for (let j = 0; renderBullets.length > j; j++) {
     if (!destroyedBullets.has(j)) {
@@ -776,25 +706,11 @@ const destroyAll = (ms) => {
 };
 
 const callBulletDestroy = (j) => {
-  let date = Date.now();
-  const seek = (date - startDate - (offset + sync)) * rate;
-  const p = ((seek - pattern.bullets[j].ms) / ((bpm * 40) / speed / pattern.bullets[j].speed)) * 100;
+  const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+  const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
   const left = pattern.bullets[j].direction == "L";
   let x = (left ? -1 : 1) * (100 - p);
-  let y = 0;
-  if (pattern.bullets[j].value == 0) {
-    y = pattern.bullets[j].location + p * getTan(pattern.bullets[j].angle) * (left ? 1 : -1);
-  } else {
-    if (!circleBulletAngles[j]) circleBulletAngles[j] = calcAngleDegrees((left ? -100 : 100) - mouseX, pattern.bullets[j].location - mouseY);
-    if (left) {
-      if (110 > circleBulletAngles[j] && circleBulletAngles[j] > 0) circleBulletAngles[j] = 110;
-      else if (0 > circleBulletAngles[j] && circleBulletAngles[j] > -110) circleBulletAngles[j] = -110;
-    } else {
-      if (70 < circleBulletAngles[j] && circleBulletAngles[j] > 0) circleBulletAngles[j] = 70;
-      else if (0 > circleBulletAngles[j] && circleBulletAngles[j] < -70) circleBulletAngles[j] = -70;
-    }
-    y = pattern.bullets[j].location + p * getTan(circleBulletAngles[j]) * (left ? 1 : -1);
-  }
+  let y = pattern.bullets[j].location + p * getTan(pattern.bullets[j].angle) * (left ? 1 : -1);
   let randomDirection = [];
   for (let i = 0; i < 3; i++) {
     let rx = Math.floor(Math.random() * 4) - 2;
@@ -893,27 +809,29 @@ const drawKeyInput = () => {
       canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200
     );
   }
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha = globalAlpha;
   ctx.clearRect(0, 0, canvas.width * 0.08 - canvas.height / 15 - canvas.width / 800, canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200 + canvas.height / 20);
 };
 
 const cntRender = () => {
-  let mouseCalcX = ((rawX / canvas.offsetWidth) * 200 - 100) * sens;
-  let mouseCalcY = ((rawY / canvas.offsetHeight) * 200 - 100) * sens;
-  mouseX = mouseCalcX >= 100 ? 100 : mouseCalcX <= -100 ? -100 : mouseCalcX;
-  mouseY = mouseCalcY >= 100 ? 100 : mouseCalcY <= -100 ? -100 : mouseCalcY;
-  eraseCnt();
-  if (window.devicePixelRatio != pixelRatio) {
-    pixelRatio = window.devicePixelRatio;
-    initialize(false);
-  }
-  if (isResultShowing) {
-    if (resultMs == 0) {
-      resultMs = Date.now();
-    }
-  }
-  if (resultMs != 0 && resultMs + 500 <= Date.now()) return;
+  requestAnimationFrame(cntRender);
   try {
+    if (window.devicePixelRatio != pixelRatio) {
+      pixelRatio = window.devicePixelRatio;
+      initialize(false);
+    }
+    eraseCnt();
+    ctx.globalAlpha = 1;
+    let mouseCalcX = ((rawX / canvas.offsetWidth) * 200 - 100) * sens;
+    let mouseCalcY = ((rawY / canvas.offsetHeight) * 200 - 100) * sens;
+    mouseX = mouseCalcX >= 100 ? 100 : mouseCalcX <= -100 ? -100 : mouseCalcX;
+    mouseY = mouseCalcY >= 100 ? 100 : mouseCalcY <= -100 ? -100 : mouseCalcY;
+    if (isResultShowing) {
+      if (resultMs == 0) {
+        resultMs = Date.now();
+      }
+    }
+    if (resultMs != 0 && resultMs + 500 <= Date.now()) return;
     if (comboAlert) {
       let comboOpacity = 0;
       let fontSize = 20;
@@ -946,14 +864,8 @@ const cntRender = () => {
     ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
-    let date = Date.now();
-    let seek = 0;
-    if (isPaused || startDate == 0) {
-      seek = (date - (startDate + date - pauseDate) - (offset + sync)) * rate;
-    } else {
-      seek = (date - startDate - (offset + sync)) * rate;
-    }
-    let end = upperBound(pattern.triggers, seek + 0.002); //for floating point miss
+    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+    let end = upperBound(pattern.triggers, beats);
     const renderTriggers = pattern.triggers.slice(0, end);
     for (let i = 0; i < renderTriggers.length; i++) {
       if (renderTriggers[i].value == 0) {
@@ -961,15 +873,17 @@ const cntRender = () => {
           callBulletDestroy(renderTriggers[i].num);
         }
       } else if (renderTriggers[i].value == 1) {
-        destroyAll(renderTriggers[i].ms);
+        destroyAll(renderTriggers[i].beat);
       } else if (renderTriggers[i].value == 2) {
+        bpmsync.ms = bpmsync.ms + (renderTriggers[i].beat - bpmsync.beat) * (60000 / bpm);
         bpm = renderTriggers[i].bpm;
+        bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
-        canvas.style.opacity = renderTriggers[i].opacity;
+        globalAlpha = renderTriggers[i].opacity;
       } else if (renderTriggers[i].value == 4) {
         speed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
-        if (renderTriggers[i].ms - 1 <= seek && renderTriggers[i].ms + renderTriggers[i].time > seek && disableText == "false") {
+        if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration) {
           ctx.beginPath();
           ctx.fillStyle = "#fff";
           ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Montserrat, Pretendard JP Variable`;
@@ -981,23 +895,25 @@ const cntRender = () => {
         }
       }
     }
+    ctx.globalAlpha = globalAlpha;
     for (let i = 0; i < destroyParticles.length; i++) {
       if (destroyParticles[i].ms + 250 > Date.now()) {
         drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
       }
     }
-    end = upperBound(pattern.patterns, seek + (bpm * 14) / speed);
+    end = upperBound(pattern.patterns, beats + 5 / speed);
     const renderNotes = pattern.patterns.slice(0, end);
     for (let i = 0; renderNotes.length > i; i++) {
-      const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
+      const p = (1 - (renderNotes[i].beat - beats) / (5 / speed)) * 100;
       if (p >= 50) {
         trackMouseSelection(i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
       }
     }
     for (let i = renderNotes.length - 1; i >= 0; i--) {
-      const p = (((bpm * 14) / speed - (renderNotes[i].ms - seek)) / ((bpm * 14) / speed)) * 100;
-      const t = ((seek - renderNotes[i].ms) / renderNotes[i].time) * 100;
-      drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, t, i);
+      const p = (1 - (renderNotes[i].beat - beats) / (5 / speed)) * 100;
+      const t = ((beats - renderNotes[i].beat) / renderNotes[i].duration) * 100;
+      const f = (1 - (renderNotes[i].beat + renderNotes[i].duration - beats) / (5 / speed)) * 100;
+      drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, t, i, f);
       if (p >= 120 && !destroyedNotes.has(i) && (renderNotes[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
         calculateScore("miss", i, true);
         missParticles.push({
@@ -1006,14 +922,16 @@ const cntRender = () => {
           s: Date.now(),
         });
         miss++;
+        showOverlay();
         missPoint.push(song.seek() * 1000);
-        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "miss", seek]);
+        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "miss(hold)", seek]);
         keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
       } else if (t >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && renderNotes[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
         perfectParticles.push({ x: renderNotes[i].x, y: renderNotes[i].y, s: Date.now() });
         calculateScore("Perfect", i, true);
+        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "perfect(hold)", seek]);
         keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
       }
     }
@@ -1027,8 +945,8 @@ const cntRender = () => {
         drawParticle(4, missParticles[i].x, missParticles[i].y, i);
       }
     }
-    let start = lowerBound(pattern.bullets, seek - bpm * 100);
-    end = upperBound(pattern.bullets, seek);
+    let start = lowerBound(pattern.bullets, beats - 16);
+    end = upperBound(pattern.bullets, beats);
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
       if (!destroyedBullets.has(start + i)) {
@@ -1050,20 +968,12 @@ const cntRender = () => {
             ms: Date.now(),
           });
         }
-        const p = ((seek - renderBullets[i].ms) / ((bpm * 40) / speed / renderBullets[i].speed)) * 100;
+        const p = ((beats - renderBullets[i].beat) / (15 / speed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
         const left = renderBullets[i].direction == "L";
-        let x = (left ? -1 : 1) * (100 - p);
-        let y = 0;
-        if (renderBullets[i].value == 0) {
-          y = renderBullets[i].location + p * getTan(renderBullets[i].angle) * (left ? 1 : -1);
-          trackMouseSelection(start + i, 1, renderBullets[i].value, x, y);
-          drawBullet(renderBullets[i].value, x, y, renderBullets[i].angle + (left ? 0 : 180));
-        } else {
-          if (!circleBulletAngles[start + i]) circleBulletAngles[start + i] = calcAngleDegrees((left ? -100 : 100) - mouseX, renderBullets[i].location - mouseY);
-          y = renderBullets[i].location + p * getTan(circleBulletAngles[start + i]) * (left ? 1 : -1);
-          trackMouseSelection(start + i, 1, renderBullets[i].value, x, y);
-          drawBullet(renderBullets[i].value, x, y, "");
-        }
+        let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
+        let y = renderBullets[i].location + (left ? 1 : -1) * getSin(renderBullets[i].angle) * p;
+        trackMouseSelection(start + i, 1, 0, x, y);
+        drawBullet(x, y, renderBullets[i].angle + (left ? 0 : 180));
       }
     }
   } catch (e) {
@@ -1076,6 +986,7 @@ const cntRender = () => {
       console.error(e);
     }
   }
+  ctx.globalAlpha = 1;
   ctx.beginPath();
   if (localStorage.difficultySelection == 0) ctx.fillStyle = "#31A97E";
   else if (localStorage.difficultySelection == 1) ctx.fillStyle = "#F0C21D";
@@ -1132,7 +1043,7 @@ const cntRender = () => {
     ctx.fillStyle = "#35C692";
     ctx.rect(canvas.width - canvas.width * 0.15 * p1, canvas.height * 0.2, canvas.width * 0.15 * p1 - canvas.width * 0.145 * p2, canvas.height * 0.06);
     ctx.fill();
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = globalAlpha;
   }
 
   //fps counter
@@ -1153,7 +1064,6 @@ const cntRender = () => {
     frameCounterMs = Date.now();
   }
   drawCursor();
-  requestAnimationFrame(cntRender);
 };
 
 const drawFinalEffect = (i) => {
@@ -1245,7 +1155,6 @@ const trackMousePos = (e) => {
 };
 
 const calculateResult = () => {
-  lottieAnim.stop();
   resultEffect.play();
   document.getElementById("perfectResult").textContent = perfect;
   document.getElementById("greatResult").textContent = great;
@@ -1351,15 +1260,14 @@ const calculateResult = () => {
 
 const trackMouseSelection = (i, v1, v2, x, y) => {
   if (song.playing()) {
-    const date = Date.now();
-    const seek = (date - startDate - (offset + sync)) * rate;
+    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
     const powX = ((((mouseX - x) * canvas.offsetWidth) / 200) * pixelRatio * settings.display.canvasRes) / 100;
     const powY = ((((mouseY - y) * canvas.offsetHeight) / 200) * pixelRatio * settings.display.canvasRes) / 100;
-    const p = v1 == 0 ? (((bpm * 14) / speed - (pattern.patterns[i].ms - seek)) / ((bpm * 14) / speed)) * 100 : 0;
     switch (v1) {
       case 0:
-        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvas.width / 40 + canvas.width / 70 && p <= 120) {
-          pointingCntElement = [];
+        const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
+        const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
+        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvas.width / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 130) && p >= 0) {
           pointingCntElement.push({ v1: v1, v2: v2, i: i });
         }
         break;
@@ -1371,10 +1279,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
             combo = 0;
             medalCheck(medal);
             callBulletDestroy(i);
-            colorOverlayContainer.classList.add("show");
-            setTimeout(() => {
-              colorOverlayContainer.classList.remove("show");
-            }, 100);
+            showOverlay();
             record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "bullet", song.seek() * 1000]);
             keyInput.push({ judge: "Bullet", key: "-", time: Date.now() });
           }
@@ -1391,55 +1296,58 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
   }
 };
 
+const showOverlay = () => {
+  colorOverlayContainer.classList.add("show");
+  setTimeout(() => {
+    colorOverlayContainer.classList.remove("show");
+  }, 100);
+};
+
 const compClicked = (isTyped, key, isWheel) => {
   if ((!isTyped && !settings.input.mouse && !isWheel) || isMenuOpened || !menuAllowed || mouseClicked == key) {
     return;
   }
-  let d = Date.now();
   if (!song.playing() && isPaused) {
     isPaused = false;
-    if (startDate != 0) startDate = startDate + d - pauseDate;
-    else startDate = Date.now();
     floatingResumeContainer.style.opacity = 0;
     setTimeout(() => {
       floatingResumeContainer.style.display = "none";
     }, 300);
     song.play();
-    lottieAnim.play();
   }
   if (key && !isWheel) mouseClicked = key;
   else if (!isWheel) mouseClicked = true;
   mouseClickedMs = Date.now();
+  const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
   for (let i = 0; i < pointingCntElement.length; i++) {
     if (pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && ((pointingCntElement[i].v2 === 0) == !isWheel || pointingCntElement[i].v2 === 2)) {
       if (pointingCntElement[i].v2 == 1 && pattern.patterns[pointingCntElement[i].i].direction != key) return;
       drawParticle(1, pattern.patterns[pointingCntElement[i].i].x, pattern.patterns[pointingCntElement[i].i].y, 0, pointingCntElement[i].v2);
-      let date = d;
-      const seek = (date - startDate - (offset + sync)) * rate;
-      let ms = pattern.patterns[pointingCntElement[i].i].ms;
-      let perfectJudge = (60000 / bpm / 6) * rate;
-      let greatJudge = (60000 / bpm / 4) * rate;
-      let goodJudge = (60000 / bpm / 2) * rate;
-      let badJudge = (60000 / bpm) * rate;
+      let beat = pattern.patterns[pointingCntElement[i].i].beat;
+      let perfectJudge = (1 / 6) * rate;
+      let greatJudge = (1 / 3) * rate;
+      let goodJudge = (1 / 2) * rate;
+      let badJudge = rate;
       let x = pattern.patterns[pointingCntElement[i].i].x;
       let y = pattern.patterns[pointingCntElement[i].i].y;
       let judge = "Perfect";
       if (pattern.patterns[pointingCntElement[i].i].value != 1) {
-        if (seek < ms + perfectJudge && seek > ms - perfectJudge) {
+        if (beats <= beat + perfectJudge && beats >= beat - perfectJudge) {
           judge = "Perfect";
           perfect++;
-        } else if (seek < ms + greatJudge && seek > ms - greatJudge) {
+        } else if (beats <= beat + greatJudge && beats >= beat - greatJudge) {
           judge = "Great";
           great++;
-        } else if (seek > ms - goodJudge && seek < ms) {
+        } else if (beats >= beat - goodJudge && beats <= beat) {
           judge = "Good";
           good++;
-        } else if ((seek > ms - badJudge && seek < ms) || ms < seek) {
+        } else if ((beats >= beat - badJudge && beats <= beat) || beat <= beats) {
           judge = "Bad";
           bad++;
         } else {
           judge = "Miss";
           miss++;
+          showOverlay();
         }
       }
       if (pattern.patterns[pointingCntElement[i].i].value == 2) {
@@ -1468,7 +1376,8 @@ const calculateScore = (judge, i, ignoreMs) => {
   prevScore = displayScore;
   destroyedNotes.add(i);
   if (!ignoreMs) {
-    pattern.patterns[i].ms = song.seek() * 1000 - (offset + sync);
+    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+    pattern.patterns[i].beat = beats;
   }
   if (judge == "miss") {
     medalCheck(medal);
@@ -1505,7 +1414,7 @@ const calculateScore = (judge, i, ignoreMs) => {
     if (localStorage.record < score) {
       newRecordTime = Date.now();
     }
-    destroyAll(pattern.bullets[pattern.bullets.length - 1].ms);
+    destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
     effectMs = Date.now();
     if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
       effectNum = 0;
@@ -1538,10 +1447,8 @@ const doneLoading = () => {
       menuAllowed = true;
     }, 1000);
     setTimeout(() => {
-      if (!isPaused && startDate == 0) {
+      if (!isPaused) {
         song.play();
-        lottieAnim.play();
-        startDate = Date.now();
       }
     }, 2000);
   }, 1000);
@@ -1688,14 +1595,12 @@ document.onkeydown = (e) => {
       e.preventDefault();
       if (menuAllowed) {
         if (menuContainer.style.display == "none") {
-          if (song.playing()) pauseDate = Date.now();
           isPaused = true;
           floatingResumeContainer.style.opacity = 0;
           floatingResumeContainer.style.display = "none";
           isMenuOpened = true;
           menuContainer.style.display = "flex";
           song.pause();
-          lottieAnim.pause();
         } else {
           resume();
         }
@@ -1714,7 +1619,7 @@ document.onkeydown = (e) => {
 document.onkeyup = (e) => {
   e = e || window.event;
   let date = Date.now();
-  const seek = (date - startDate - (offset + sync)) * rate;
+  const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
   if (e.key == "Escape") {
     return;
   } else if (e.key == "Shift") {
@@ -1725,9 +1630,9 @@ document.onkeyup = (e) => {
   if (keyPressing.hasOwnProperty(e.key) && grabbedNotes.has(keyPressing[e.key]) && !grabbedNotes.has(`${keyPressing[e.key]}!`)) {
     grabbedNotes.delete(keyPressing[e.key]);
     grabbedNotes.add(`${keyPressing[e.key]}!`);
-    if (pattern.patterns[keyPressing[e.key]].ms + pattern.patterns[keyPressing[e.key]].time - (60000 / bpm / 3) * rate > seek) {
+    if (pattern.patterns[keyPressing[e.key]].beat + pattern.patterns[keyPressing[e.key]].duration - 1 / 3 > beats) {
       medalCheck(medal);
-      pattern.patterns[keyPressing[e.key]].ms = song.seek() * 1000 - pattern.patterns[keyPressing[e.key]].time - (offset + sync);
+      pattern.patterns[keyPressing[e.key]].beat = beats - pattern.patterns[keyPressing[e.key]].duration;
       calculateScore("Miss", keyPressing[e.key], true);
       missParticles.push({
         x: pattern.patterns[keyPressing[e.key]].x,
@@ -1735,12 +1640,15 @@ document.onkeyup = (e) => {
         s: Date.now(),
       });
       miss++;
+      showOverlay();
       missPoint.push(song.seek() * 1000);
+      record.push([record.length, 0, 2, keyPressing[e.key], mouseX, mouseY, "miss(hold)", song.seek() * 1000]);
       keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
     } else {
       perfectParticles.push({ x: pattern.patterns[keyPressing[e.key]].x, y: pattern.patterns[keyPressing[e.key]].y, s: Date.now() });
       calculateScore("Perfect", keyPressing[e.key], true);
       keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
+      record.push([record.length, 0, 2, keyPressing[e.key], mouseX, mouseY, "perfect(hold)", song.seek() * 1000]);
     }
     delete keyPressing[e.key];
   }
@@ -1751,16 +1659,15 @@ window.addEventListener("resize", () => {
 });
 
 window.addEventListener("blur", () => {
+  shiftDown = false;
   if (menuAllowed) {
     if (menuContainer.style.display == "none") {
-      if (song.playing()) pauseDate = Date.now();
       isPaused = true;
       floatingResumeContainer.style.opacity = 0;
       floatingResumeContainer.style.display = "none";
       isMenuOpened = true;
       menuContainer.style.display = "flex";
       song.pause();
-      lottieAnim.pause();
     }
   }
 });
