@@ -1030,7 +1030,7 @@ const drawFinalEffect = (i) => {
   ctx.textAlign = "right";
   ctx.textBaseline = "bottom";
   ctx.fillText(text, effectX, effectY);
-  ctx.globalAlpha = globalAlpha;
+  ctx.globalAlpha = 1;
 
   ctx.beginPath();
   let mainTextX = canvas.width / 2;
