@@ -1225,7 +1225,7 @@ const cntRender = () => {
     }
 
     //Bullet render
-    let start = lowerBound(pattern.bullets, beats - 16);
+    let start = lowerBound(pattern.bullets, beats - 24);
     end = upperBound(pattern.bullets, beats);
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
