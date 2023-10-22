@@ -2499,8 +2499,8 @@ const rangeCopy = () => {
 
 const rangePaste = () => {
   const beats = Number((bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-  const start = copySelection.start;
-  const end = copySelection.end;
+  let start = copySelection.start;
+  let end = copySelection.end;
   const beat = copySelection.beat;
   const element = ["patterns", "bullets", "triggers"][copySelection.element];
   if (end == -1) {
