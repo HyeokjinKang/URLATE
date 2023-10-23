@@ -1390,6 +1390,7 @@ const resume = () => {
 };
 
 const retry = () => {
+  if (isResultShowing) return location.reload();
   blackOverlayContainer.classList.add("show");
   setTimeout(() => {
     song.stop();

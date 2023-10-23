@@ -1481,8 +1481,64 @@ const resume = () => {
 };
 
 const retry = () => {
-  if (isResultShowing) localStorage.setItem("retry", score);
-  location.reload();
+  if (isResultShowing) {
+    if (localStorage.record < score) localStorage.record = score;
+    return location.reload();
+  }
+  blackOverlayContainer.classList.add("show");
+  setTimeout(() => {
+    song.stop();
+    pattern = patternBackup;
+    bpm = pattern.information.bpm;
+    speed = pattern.information.speed;
+    bpmsync = {
+      ms: 0,
+      beat: 0,
+    };
+    pointingCntElement = [{ v1: "", v2: "", i: "" }];
+    destroyParticles = [];
+    missParticles = [];
+    perfectParticles = [];
+    createdBullets = new Set([]);
+    destroyedBullets = new Set([]);
+    destroyedNotes = new Set([]);
+    grabbedNotes = new Set([]);
+    score = 0;
+    combo = 0;
+    displayScore = 0;
+    prevScore = 0;
+    maxCombo = 0;
+    scoreMs = 0;
+    perfect = 0;
+    great = 0;
+    good = 0;
+    bad = 0;
+    miss = 0;
+    bullet = 0;
+    mouseClicked = false;
+    mouseClickedMs = -1;
+    resultMs = 0;
+    missPoint = [];
+    comboAlertMs = 0;
+    comboAlertCount = 0;
+    comboAnimationMs = 0;
+    overlayTime = 0;
+    keyInput = [];
+    record = [];
+    keyInputMemory = 0;
+    keyInputMemoryMs = 0;
+    newRecordTime = 0;
+    effectMs = 0;
+    effectNum = -1;
+    keyPressing = {};
+    medal = 1;
+    globalAlpha = 1;
+    blackOverlayContainer.classList.remove("show");
+    menuContainer.style.display = "none";
+    isMenuOpened = false;
+    isPaused = false;
+    song.play();
+  }, 100);
 };
 
 const home = () => {
