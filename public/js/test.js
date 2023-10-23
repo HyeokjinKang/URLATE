@@ -16,6 +16,7 @@ const ctx = canvas.getContext("2d");
 const missCanvas = document.getElementById("missPointCanvas");
 const missCtx = missCanvas.getContext("2d");
 let pattern = {};
+let patternBackup = {};
 let patternLength = 0;
 let settings, sync, song, tracks, pixelRatio, offset, bpm, speed;
 let bpmsync = {
@@ -165,6 +166,7 @@ const initialize = (isFirstCalled) => {
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
   if (isFirstCalled) {
     pattern = JSON.parse(localStorage.pattern);
+    patternBackup = JSON.parse(localStorage.pattern);
     patternLength = pattern.patterns.length;
     document.getElementById("artist").textContent = pattern.information.producer;
     document.getElementById("scoreArtist").textContent = pattern.information.producer;
@@ -1354,7 +1356,7 @@ const doneLoading = () => {
       menuAllowed = true;
     }, 1000);
     setTimeout(() => {
-      if (!isPaused) {
+      if (!isPaused && !song.playing()) {
         song.play();
       }
     }, 2000);
@@ -1388,7 +1390,59 @@ const resume = () => {
 };
 
 const retry = () => {
-  location.reload();
+  if (isResultShowing) return location.reload();
+  blackOverlayContainer.classList.add("show");
+  setTimeout(() => {
+    song.stop();
+    pattern = patternBackup;
+    bpm = pattern.information.bpm;
+    speed = pattern.information.speed;
+    bpmsync = {
+      ms: 0,
+      beat: 0,
+    };
+    pointingCntElement = [{ v1: "", v2: "", i: "" }];
+    destroyParticles = [];
+    missParticles = [];
+    perfectParticles = [];
+    createdBullets = new Set([]);
+    destroyedBullets = new Set([]);
+    destroyedNotes = new Set([]);
+    grabbedNotes = new Set([]);
+    score = 0;
+    combo = 0;
+    displayScore = 0;
+    prevScore = 0;
+    maxCombo = 0;
+    scoreMs = 0;
+    perfect = 0;
+    great = 0;
+    good = 0;
+    bad = 0;
+    miss = 0;
+    bullet = 0;
+    mouseClicked = false;
+    mouseClickedMs = -1;
+    resultMs = 0;
+    missPoint = [];
+    comboAlertMs = 0;
+    comboAlertCount = 0;
+    comboAnimationMs = 0;
+    overlayTime = 0;
+    keyInput = [];
+    keyInputMemory = 0;
+    keyInputMemoryMs = 0;
+    effectMs = 0;
+    effectNum = -1;
+    keyPressing = {};
+    medal = 1;
+    globalAlpha = 1;
+    blackOverlayContainer.classList.remove("show");
+    menuContainer.style.display = "none";
+    isMenuOpened = false;
+    isPaused = false;
+    song.play();
+  }, 100);
 };
 
 const editor = () => {

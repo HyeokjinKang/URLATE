@@ -4,7 +4,7 @@
     "url": "https://github.com/HyeokjinKang/URLATE-v3l-frontend"
   },
   "name": "urlate-v3l-frontend",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.2",
   "description": "Avoid & Get on the tempo, URLATE",
   "main": "src/",
   "scripts": {
