@@ -1356,7 +1356,7 @@ const doneLoading = () => {
       menuAllowed = true;
     }, 1000);
     setTimeout(() => {
-      if (!isPaused) {
+      if (!isPaused && !song.playing()) {
         song.play();
       }
     }, 2000);
