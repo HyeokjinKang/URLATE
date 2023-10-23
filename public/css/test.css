@@ -781,6 +781,24 @@ body {
   transition-duration: 0s;
 }
 
+#blackOverlayContainer {
+  z-index: 200;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: black;
+  opacity: 0;
+  pointer-events: none;
+  transition-duration: 1s;
+}
+
+#blackOverlayContainer.show {
+  opacity: 1;
+  transition-duration: 0.1s;
+}
+
 #arrow {
   height: 5vh;
 }
