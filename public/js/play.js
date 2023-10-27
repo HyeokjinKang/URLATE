@@ -926,14 +926,14 @@ const cntRender = () => {
         miss++;
         showOverlay();
         missPoint.push(song.seek() * 1000);
-        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "miss(hold)", seek]);
+        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "miss(hold)", song.seek() * 1000]);
         keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
       } else if (t >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && renderNotes[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
         perfectParticles.push({ x: renderNotes[i].x, y: renderNotes[i].y, s: Date.now() });
         calculateScore("Perfect", i, true);
-        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "perfect(hold)", seek]);
+        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "perfect(hold)", song.seek() * 1000]);
         keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
       }
     }
@@ -1358,7 +1358,7 @@ const compClicked = (isTyped, key, isWheel) => {
       }
       calculateScore(judge, pointingCntElement[i].i);
       drawParticle(3, x, y, judge);
-      record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, judge, seek]);
+      record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, judge, song.seek() * 1000]);
       keyInput.push({ judge, key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
       return;
     }
