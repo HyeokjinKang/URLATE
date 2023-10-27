@@ -1558,7 +1558,7 @@ document.onkeydown = (e) => {
     if (e.key == "Escape") {
       e.preventDefault();
       if (menuAllowed) {
-        if (menuContainer.style.display == "none") {
+        if (!isMenuOpened) {
           isPaused = true;
           floatingResumeContainer.style.opacity = 0;
           floatingResumeContainer.style.display = "none";
@@ -1623,7 +1623,7 @@ window.addEventListener("resize", () => {
 window.addEventListener("blur", () => {
   shiftDown = false;
   if (menuAllowed) {
-    if (menuContainer.style.display == "none") {
+    if (!isMenuOpened) {
       isPaused = true;
       floatingResumeContainer.style.opacity = 0;
       floatingResumeContainer.style.display = "none";
