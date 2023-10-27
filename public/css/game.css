@@ -983,6 +983,23 @@ p {
   filter: blur(20px);
   opacity: 0.6;
   transform: scale(1.1);
+  transition-duration: 0.1s;
+  transition-timing-function: ease-out;
+}
+
+#selectBackground.fadeIn {
+  transition-duration: 1s;
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0px);
+}
+
+#selectBackground.fadeOut {
+  transition-duration: 0.5s;
+  transition-timing-function: ease-in;
+  opacity: 0;
+  transform: scale(1.1);
+  filter: blur(20px);
 }
 
 #selectContainerTopLeft {
@@ -1131,6 +1148,7 @@ p {
 }
 
 #selectAlbum {
+  transition-duration: 0.1s;
   height: auto;
   width: auto;
   max-width: 100%;
@@ -1242,6 +1260,17 @@ input[type="number"] {
   justify-content: flex-start;
   height: 15%;
   width: 100%;
+}
+
+#selectInnerContainer {
+  transition-duration: 0.5s;
+  transition-timing-function: ease-out;
+}
+
+#selectInnerContainer.fadeOut {
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(1.1);
 }
 
 .selectInfo {

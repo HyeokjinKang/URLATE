@@ -113,163 +113,165 @@
       </div>
     </div>
     <div id="selectContainer" class="containers metropolis">
-      <div id="visualizer"><canvas id="renderer"></canvas></div>
       <div id="selectBackground"></div>
-      <img src="https://img.icons8.com/windows/32/FFFFFF/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
-      <div id="selectContainerTopLeft">
-        <img src="/images/parts/elements/TRACKS.webp" id="tracks" />
-        <div id="tracksLine"></div>
-        <span class="tracksSelection selected">
-          <strong>Official</strong> Pattern
-          <!--<span class="bottomArrow">▼</span> --></span
-        >
-        <span class="tracksSelection"> <strong>Community</strong> Pattern <span class="bottomArrow">▼</span> </span>
-      </div>
-      <div id="selectContainerLeft">
-        <div id="selectContainerTitle">
-          <div id="selectContainerTitleLeft">
-            <span id="selectTitle"></span>
-            <span id="selectArtist"></span>
-          </div>
-          <div id="selectContainerTitleRight">
-            <span id="selectScore">SCORE</span>
-            <span id="selectScoreValue"></span>
-          </div>
+      <div id="selectInnerContainer">
+        <div id="visualizer"><canvas id="renderer"></canvas></div>
+        <img src="https://img.icons8.com/windows/32/FFFFFF/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+        <div id="selectContainerTopLeft">
+          <img src="/images/parts/elements/TRACKS.webp" id="tracks" />
+          <div id="tracksLine"></div>
+          <span class="tracksSelection selected">
+            <strong>Official</strong> Pattern
+            <!--<span class="bottomArrow">▼</span> --></span
+          >
+          <span class="tracksSelection"> <strong>Community</strong> Pattern <span class="bottomArrow">▼</span> </span>
         </div>
-        <div id="selectContainerAlbum">
-          <div id="selectContainerAlbumLeft">
-            <div id="selectAlbumContainer">
-              <img id="selectAlbum" />
-              <div id="starContainer">
-                <span id="selectStars">★★★★★☆☆☆☆☆</span>
+        <div id="selectContainerLeft">
+          <div id="selectContainerTitle">
+            <div id="selectContainerTitleLeft">
+              <span id="selectTitle"></span>
+              <span id="selectArtist"></span>
+            </div>
+            <div id="selectContainerTitleRight">
+              <span id="selectScore">SCORE</span>
+              <span id="selectScoreValue"></span>
+            </div>
+          </div>
+          <div id="selectContainerAlbum">
+            <div id="selectContainerAlbumLeft">
+              <div id="selectAlbumContainer">
+                <img id="selectAlbum" />
+                <div id="starContainer">
+                  <span id="selectStars">★★★★★☆☆☆☆☆</span>
+                </div>
+              </div>
+            </div>
+            <div id="selectContainerAlbumRight">
+              <span id="trackStats">TRACK STATISTICS</span>
+              <div class="trackStatContainer">
+                <span><%= __('bullet_density') %></span>
+                <span id="bulletDensity">0</span>
+              </div>
+              <div class="trackStatLineContainer"><div class="trackStatLine" id="bulletDensityValue"></div></div>
+              <div class="trackStatContainer">
+                <span><%= __('note_density') %></span>
+                <span id="noteDensity">0</span>
+              </div>
+              <div class="trackStatLineContainer"><div class="trackStatLine" id="noteDensityValue"></div></div>
+              <div class="trackStatContainer">
+                <span>BPM</span>
+                <span id="bpmText">0</span>
+              </div>
+              <div class="trackStatLineContainer"><div class="trackStatLine" id="bpmValue"></div></div>
+              <div class="trackStatContainer">
+                <span><%= __('speed') %></span>
+                <span id="speed">0</span>
+              </div>
+              <div class="trackStatLineContainer"><div class="trackStatLine" id="speedValue"></div></div>
+              <div id="modsTitleContainer">
+                <div class="modsTitleLine"></div>
+                <div id="modsTitle">MODS</div>
+                <div class="modsTitleLine"></div>
+              </div>
+              <div class="trackStatContainer">
+                <span class="trackModsTitle"><%= __('playback_rate') %></span>
+                <input type="number" id="trackModsRate" class="trackModsValue metropolis" value="1.0" onchange="rateChanged(this)" />
+              </div>
+              <div class="trackStatContainer">
+                <span class="trackModsTitle"><%= __('disable_text') %></span>
+                <div class="trackModsValue" id="trackModsText" onclick="textDisabled()">No</div>
               </div>
             </div>
           </div>
-          <div id="selectContainerAlbumRight">
-            <span id="trackStats">TRACK STATISTICS</span>
-            <div class="trackStatContainer">
-              <span><%= __('bullet_density') %></span>
-              <span id="bulletDensity">0</span>
-            </div>
-            <div class="trackStatLineContainer"><div class="trackStatLine" id="bulletDensityValue"></div></div>
-            <div class="trackStatContainer">
-              <span><%= __('note_density') %></span>
-              <span id="noteDensity">0</span>
-            </div>
-            <div class="trackStatLineContainer"><div class="trackStatLine" id="noteDensityValue"></div></div>
-            <div class="trackStatContainer">
-              <span>BPM</span>
-              <span id="bpmText">0</span>
-            </div>
-            <div class="trackStatLineContainer"><div class="trackStatLine" id="bpmValue"></div></div>
-            <div class="trackStatContainer">
-              <span><%= __('speed') %></span>
-              <span id="speed">0</span>
-            </div>
-            <div class="trackStatLineContainer"><div class="trackStatLine" id="speedValue"></div></div>
-            <div id="modsTitleContainer">
-              <div class="modsTitleLine"></div>
-              <div id="modsTitle">MODS</div>
-              <div class="modsTitleLine"></div>
-            </div>
-            <div class="trackStatContainer">
-              <span class="trackModsTitle"><%= __('playback_rate') %></span>
-              <input type="number" id="trackModsRate" class="trackModsValue metropolis" value="1.0" onchange="rateChanged(this)" />
-            </div>
-            <div class="trackStatContainer">
-              <span class="trackModsTitle"><%= __('disable_text') %></span>
-              <div class="trackModsValue" id="trackModsText" onclick="textDisabled()">No</div>
-            </div>
-          </div>
-        </div>
-        <div id="selectContainerInfo">
-          <div class="selectInfo">
-            <div class="selectInfoTitleContainer">
-              <span class="selectInfoTitle">DIFFICULTY</span>
-              <span class="key">TAB</span>
-            </div>
-            <div class="selectInfoContentsContainer">
-              <div class="difficulty difficultySelected" onclick="difficultySelected(0)"><span class="difficultyNumber">1</span><span class="difficultyText">EZ</span></div>
-              <div class="difficulty" onclick="difficultySelected(1)"><span class="difficultyNumber">3</span><span class="difficultyText">MID</span></div>
-              <div class="difficulty right" onclick="difficultySelected(2)"><span class="difficultyNumber">5</span><span class="difficultyText">HARD</span></div>
-            </div>
-          </div>
-          <div class="selectInfo clickable" onclick="rankToggle()">
-            <div class="selectInfoTitleContainer">
-              <span class="selectInfoTitle">RANK</span>
-              <span class="key">F2</span>
-            </div>
-            <div class="selectInfoContentsContainer">
-              <span id="selectRank">-</span>
-            </div>
-          </div>
-          <div class="selectInfo clickable" onclick="medalDescription()">
-            <div class="selectInfoTitleContainer">
-              <span class="selectInfoTitle">MEDAL</span>
-              <span class="key">?</span>
-            </div>
-            <div class="selectInfoContentsContainer">
-              <img src="/images/parts/icons/AP.svg" class="medals" id="goldMedal" />
-              <img src="/images/parts/icons/FC.svg" class="medals" id="silverMedal" />
-              <img src="/images/parts/icons/CLEAR.svg" class="medals" id="checkMedal" />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div id="selectContainerRight">
-        <div id="selectContainerRightTitles">
-          <span class="sortText selected" onclick="sortSelected(0)"><%= __('sort_as_name') %></span>
-          <span class="sortText" onclick="sortSelected(1)"><%= __('sort_as_producer') %></span>
-          <span class="sortText" onclick="sortSelected(2)"><%= __('sort_as_difficulty') %></span>
-          <span class="sortText" id="sortTextRight" onclick="sortSelected(3)"><%= __('sort_as_bpm') %></span>
-          <div id="trackListLine"></div>
-          <span id="trackList">TRACK <strong>LIST</strong></span>
-        </div>
-        <div id="selectSongContainer"></div>
-      </div>
-      <div id="selectRankContainer">
-        <div id="selectRankInnerContainer">
-          <div id="selectRankTitleContainer">
-            <div id="selectRankTitleLeftContainer">
-              <span id="selectRankTitle"><strong>R</strong>ANKING</span>
-            </div>
-            <div id="selectRankTitleRightContainer">
-              <img src="https://img.icons8.com/windows/32/FFFFFF/macos-close.png" class="icon clickable rankCloseBtn" onclick="displayClose()" />
-            </div>
-          </div>
-          <div class="selectRank">
-            <div class="selectRankNumber rankGuide">#</div>
-            <div class="selectRankName rankGuide">NAME</div>
-            <div class="selectRankScore rankGuide">SCORE</div>
-          </div>
-          <div id="selectRankScoreContainer"></div>
-        </div>
-      </div>
-      <div id="CPLContainer">
-        <div id="CPLInnerContainer">
-          <div id="CPLTopContainer">
-            <div id="CPLTopLeftContainer">
-              <div id="CPLAlbumContainer">
-                <img id="CPLAlbum" />
+          <div id="selectContainerInfo">
+            <div class="selectInfo">
+              <div class="selectInfoTitleContainer">
+                <span class="selectInfoTitle">DIFFICULTY</span>
+                <span class="key">TAB</span>
               </div>
-              <div id="CPLTopLeftVerticalContainer">
-                <span id="CPLTitle">Community Pattern Library</span>
-                <span id="CPLTrack">Track Name</span>
+              <div class="selectInfoContentsContainer">
+                <div class="difficulty difficultySelected" onclick="difficultySelected(0)"><span class="difficultyNumber">1</span><span class="difficultyText">EZ</span></div>
+                <div class="difficulty" onclick="difficultySelected(1)"><span class="difficultyNumber">3</span><span class="difficultyText">MID</span></div>
+                <div class="difficulty right" onclick="difficultySelected(2)"><span class="difficultyNumber">5</span><span class="difficultyText">HARD</span></div>
               </div>
             </div>
-            <div id="CPLTopRightContainer">
-              <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable rankCloseBtn" onclick="displayClose()" />
+            <div class="selectInfo clickable" onclick="rankToggle()">
+              <div class="selectInfoTitleContainer">
+                <span class="selectInfoTitle">RANK</span>
+                <span class="key">F2</span>
+              </div>
+              <div class="selectInfoContentsContainer">
+                <span id="selectRank">-</span>
+              </div>
+            </div>
+            <div class="selectInfo clickable" onclick="medalDescription()">
+              <div class="selectInfoTitleContainer">
+                <span class="selectInfoTitle">MEDAL</span>
+                <span class="key">?</span>
+              </div>
+              <div class="selectInfoContentsContainer">
+                <img src="/images/parts/icons/AP.svg" class="medals" id="goldMedal" />
+                <img src="/images/parts/icons/FC.svg" class="medals" id="silverMedal" />
+                <img src="/images/parts/icons/CLEAR.svg" class="medals" id="checkMedal" />
+              </div>
             </div>
           </div>
-          <div id="CPLListIndex">
-            <div class="CPLListLeft">이름 - 제작자</div>
-            <div class="CPLListRight">
-              <div class="CPLListRightDifficulty">측정된 난이도</div>
-              <div class="CPLListRightDifficulty">커뮤니티 난이도</div>
-              <div class="CPLListRightStar noMargin">평가</div>
-            </div>
+        </div>
+        <div id="selectContainerRight">
+          <div id="selectContainerRightTitles">
+            <span class="sortText selected" onclick="sortSelected(0)"><%= __('sort_as_name') %></span>
+            <span class="sortText" onclick="sortSelected(1)"><%= __('sort_as_producer') %></span>
+            <span class="sortText" onclick="sortSelected(2)"><%= __('sort_as_difficulty') %></span>
+            <span class="sortText" id="sortTextRight" onclick="sortSelected(3)"><%= __('sort_as_bpm') %></span>
+            <div id="trackListLine"></div>
+            <span id="trackList">TRACK <strong>LIST</strong></span>
           </div>
-          <div id="CPLListContainer"></div>
+          <div id="selectSongContainer"></div>
+        </div>
+        <div id="selectRankContainer">
+          <div id="selectRankInnerContainer">
+            <div id="selectRankTitleContainer">
+              <div id="selectRankTitleLeftContainer">
+                <span id="selectRankTitle"><strong>R</strong>ANKING</span>
+              </div>
+              <div id="selectRankTitleRightContainer">
+                <img src="https://img.icons8.com/windows/32/FFFFFF/macos-close.png" class="icon clickable rankCloseBtn" onclick="displayClose()" />
+              </div>
+            </div>
+            <div class="selectRank">
+              <div class="selectRankNumber rankGuide">#</div>
+              <div class="selectRankName rankGuide">NAME</div>
+              <div class="selectRankScore rankGuide">SCORE</div>
+            </div>
+            <div id="selectRankScoreContainer"></div>
+          </div>
+        </div>
+        <div id="CPLContainer">
+          <div id="CPLInnerContainer">
+            <div id="CPLTopContainer">
+              <div id="CPLTopLeftContainer">
+                <div id="CPLAlbumContainer">
+                  <img id="CPLAlbum" />
+                </div>
+                <div id="CPLTopLeftVerticalContainer">
+                  <span id="CPLTitle">Community Pattern Library</span>
+                  <span id="CPLTrack">Track Name</span>
+                </div>
+              </div>
+              <div id="CPLTopRightContainer">
+                <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable rankCloseBtn" onclick="displayClose()" />
+              </div>
+            </div>
+            <div id="CPLListIndex">
+              <div class="CPLListLeft">이름 - 제작자</div>
+              <div class="CPLListRight">
+                <div class="CPLListRightDifficulty">측정된 난이도</div>
+                <div class="CPLListRightDifficulty">커뮤니티 난이도</div>
+                <div class="CPLListRightStar noMargin">평가</div>
+              </div>
+            </div>
+            <div id="CPLListContainer"></div>
+          </div>
         </div>
       </div>
     </div>
