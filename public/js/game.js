@@ -676,7 +676,7 @@ const songSelected = (n, refreshed, seek) => {
     } else if (isOfficial) {
       document.getElementById("selectInnerContainer").classList.add("fadeOut");
       document.getElementById("selectBackground").classList.add("fadeOut");
-      loadingHide();
+      songs[songSelection].fade(1, 0, 2000);
       setTimeout(() => {
         localStorage.rate = rate;
         localStorage.disableText = disableText;
@@ -691,8 +691,8 @@ const songSelected = (n, refreshed, seek) => {
       display = 14;
       document.getElementById("CPLContainer").style.display = "flex";
       document.getElementById("CPLContainer").classList.add("fadeInAnim");
-      loadingHide();
     }
+    loadingHide();
     return;
   }
   disableText = false;
