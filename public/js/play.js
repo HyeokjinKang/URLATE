@@ -16,6 +16,7 @@ const ctx = canvas.getContext("2d");
 const missCanvas = document.getElementById("missPointCanvas");
 const missCtx = missCanvas.getContext("2d");
 let pattern = {};
+let patternBackup = {};
 let patternLength = 0;
 let userName = "";
 let difficultyNames = ["EZ", "MID", "HARD"];
@@ -178,6 +179,7 @@ const initialize = (isFirstCalled) => {
       .then((res) => res.json())
       .then((data) => {
         pattern = data;
+        patternBackup = data;
         patternLength = pattern.patterns.length;
         document.getElementById("scoreDifficultyNum").textContent = localStorage.difficulty;
         document.getElementById("scoreDifficultyName").textContent = difficultyNames[localStorage.difficultySelection];
