@@ -16,6 +16,7 @@ const ctx = canvas.getContext("2d");
 const missCanvas = document.getElementById("missPointCanvas");
 const missCtx = missCanvas.getContext("2d");
 let pattern = {};
+let patternBackup = {};
 let patternLength = 0;
 let userName = "";
 let difficultyNames = ["EZ", "MID", "HARD"];
@@ -103,7 +104,6 @@ let globalAlpha = 1;
 const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
-  menuContainer.style.display = "none";
   fetch(`${api}/tracks`, {
     method: "GET",
     credentials: "include",
@@ -179,6 +179,7 @@ const initialize = (isFirstCalled) => {
       .then((res) => res.json())
       .then((data) => {
         pattern = data;
+        patternBackup = data;
         patternLength = pattern.patterns.length;
         document.getElementById("scoreDifficultyNum").textContent = localStorage.difficulty;
         document.getElementById("scoreDifficultyName").textContent = difficultyNames[localStorage.difficultySelection];
@@ -258,6 +259,7 @@ const settingApply = () => {
   resultEffect.volume(settings.sound.volume.effect);
   sync = parseInt(settings.sound.offset);
   document.getElementById("loadingContainer").style.opacity = 1;
+  document.getElementById("canvasBackground").style.opacity = 1;
   sens = settings.input.sens;
   cursorZoom = settings.game.size;
   inputMode = settings.input.keys;
@@ -924,14 +926,14 @@ const cntRender = () => {
         miss++;
         showOverlay();
         missPoint.push(song.seek() * 1000);
-        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "miss(hold)", seek]);
+        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "miss(hold)", song.seek() * 1000]);
         keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
       } else if (t >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && renderNotes[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
         perfectParticles.push({ x: renderNotes[i].x, y: renderNotes[i].y, s: Date.now() });
         calculateScore("Perfect", i, true);
-        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "perfect(hold)", seek]);
+        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "perfect(hold)", song.seek() * 1000]);
         keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
       }
     }
@@ -1356,7 +1358,7 @@ const compClicked = (isTyped, key, isWheel) => {
       }
       calculateScore(judge, pointingCntElement[i].i);
       drawParticle(3, x, y, judge);
-      record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, judge, seek]);
+      record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, judge, song.seek() * 1000]);
       keyInput.push({ judge, key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
       return;
     }
@@ -1650,7 +1652,7 @@ document.onkeydown = (e) => {
     if (e.key == "Escape") {
       e.preventDefault();
       if (menuAllowed) {
-        if (menuContainer.style.display == "none") {
+        if (!isMenuOpened) {
           isPaused = true;
           floatingResumeContainer.style.opacity = 0;
           floatingResumeContainer.style.display = "none";
@@ -1717,7 +1719,7 @@ window.addEventListener("resize", () => {
 window.addEventListener("blur", () => {
   shiftDown = false;
   if (menuAllowed) {
-    if (menuContainer.style.display == "none") {
+    if (!isMenuOpened) {
       isPaused = true;
       floatingResumeContainer.style.opacity = 0;
       floatingResumeContainer.style.display = "none";

@@ -3,7 +3,7 @@
 @import url("https://fonts.googleapis.com/css?family=Montserrat:400,500,600,800&display=swap");
 
 body {
-  background: #222;
+  background: black;
   background-repeat: repeat;
   width: 100vw;
   height: 100vh;
@@ -141,6 +141,7 @@ body {
   background-size: cover;
   filter: blur(10px) brightness(30%);
   scale: 1.05;
+  transition-duration: 1s;
 }
 
 #loadingContainer {
@@ -239,6 +240,7 @@ body {
 }
 
 #menuContainer {
+  display: none;
   backdrop-filter: blur(10px);
   box-sizing: border-box;
   padding-left: 10vw;

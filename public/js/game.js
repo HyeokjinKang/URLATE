@@ -674,14 +674,19 @@ const songSelected = (n, refreshed, seek) => {
     if (JSON.parse(tracks[songSelection].difficulty)[difficultySelection] == 0 && isOfficial) {
       alert(`${notAvailable1}\n${notAvailable2}`);
     } else if (isOfficial) {
-      localStorage.rate = rate;
-      localStorage.disableText = disableText;
-      localStorage.songNum = songSelection;
-      localStorage.difficultySelection = difficultySelection;
-      localStorage.difficulty = JSON.parse(tracks[songSelection].difficulty)[difficultySelection];
-      localStorage.songName = tracks[songSelection].fileName;
-      localStorage.record = trackRecords[songSelection][difficultySelection].record;
-      window.location.href = `${url}/play`;
+      document.getElementById("selectInnerContainer").classList.add("fadeOut");
+      document.getElementById("selectBackground").classList.add("fadeOut");
+      songs[songSelection].fade(1, 0, 2000);
+      setTimeout(() => {
+        localStorage.rate = rate;
+        localStorage.disableText = disableText;
+        localStorage.songNum = songSelection;
+        localStorage.difficultySelection = difficultySelection;
+        localStorage.difficulty = JSON.parse(tracks[songSelection].difficulty)[difficultySelection];
+        localStorage.songName = tracks[songSelection].fileName;
+        localStorage.record = trackRecords[songSelection][difficultySelection].record;
+        window.location.href = `${url}/play`;
+      }, 2000);
     } else {
       display = 14;
       document.getElementById("CPLContainer").style.display = "flex";
