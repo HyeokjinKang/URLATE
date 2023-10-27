@@ -257,6 +257,7 @@ const settingApply = () => {
   resultEffect.volume(settings.sound.volume.effect);
   sync = parseInt(settings.sound.offset);
   document.getElementById("loadingContainer").style.opacity = 1;
+  document.getElementById("canvasBackground").style.opacity = 1;
   sens = settings.input.sens;
   cursorZoom = settings.game.size;
   inputMode = settings.input.keys;
