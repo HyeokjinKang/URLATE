@@ -675,11 +675,8 @@ const songSelected = (n, refreshed, seek) => {
       alert(`${notAvailable1}\n${notAvailable2}`);
     } else if (isOfficial) {
       document.getElementById("selectInnerContainer").classList.add("fadeOut");
-      document.getElementById("selectBackground").classList.add("fadeIn");
-      setTimeout(() => {
-        loadingHide();
-        document.getElementById("selectBackground").classList.add("fadeOut");
-      }, 2000);
+      document.getElementById("selectBackground").classList.add("fadeOut");
+      loadingHide();
       setTimeout(() => {
         localStorage.rate = rate;
         localStorage.disableText = disableText;
@@ -689,7 +686,7 @@ const songSelected = (n, refreshed, seek) => {
         localStorage.songName = tracks[songSelection].fileName;
         localStorage.record = trackRecords[songSelection][difficultySelection].record;
         window.location.href = `${url}/play`;
-      }, 2500);
+      }, 2000);
     } else {
       display = 14;
       document.getElementById("CPLContainer").style.display = "flex";

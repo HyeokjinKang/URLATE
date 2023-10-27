@@ -142,7 +142,6 @@ body {
   filter: blur(10px) brightness(30%);
   scale: 1.05;
   transition-duration: 1s;
-  opacity: 0;
 }
 
 #loadingContainer {
