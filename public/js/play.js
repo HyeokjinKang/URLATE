@@ -103,7 +103,6 @@ let globalAlpha = 1;
 const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
-  menuContainer.style.display = "none";
   fetch(`${api}/tracks`, {
     method: "GET",
     credentials: "include",

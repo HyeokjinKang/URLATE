@@ -99,7 +99,6 @@ let globalAlpha = 1;
 const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
-  menuContainer.style.display = "none";
   fetch(`${api}/auth/status`, {
     method: "GET",
     credentials: "include",
