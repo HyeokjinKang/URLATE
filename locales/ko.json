@@ -217,5 +217,6 @@
   "profile_description": "각 부분을 클릭하면 프로필 수정이 가능합니다.",
   "rank_title": "랭킹",
   "rank_subtitle": "RANKING",
-  "profile": "프로필"
+  "profile": "프로필",
+  "banner": "장식장"
 }
