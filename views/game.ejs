@@ -702,14 +702,9 @@
     <div class="overlayContainer" id="overlayLoadingContainer">
       <span class="overlayContainerText"><%= __('loading') %></span>
       <br />
-      <img src="/images/parts/elements/loading.webp" alt="loading" class="loadingCircle" />
+      <img src="/images/parts/elements/loading.webp" alt="loading" class="loadingCircle" id="loadingOverlayCircle" />
     </div>
     <img src="/images/parts/elements/loading.webp" alt="loading" class="loadingCircle" id="loadingCircle" />
-    <div class="overlayContainer" id="purchasingContainer">
-      <span class="overlayLoadingContainerText"><%= __('purchasing_1') %><br /><%= __('purchasing_2') %></span>
-      <br />
-      <img src="/images/parts/elements/loading.webp" alt="loading" class="loadingCircle" />
-    </div>
     <div class="overlay" id="volumeOverlay">
       <p class="optionSemiTitle"><%= __('volume') %></p>
       <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" oninput="settingChanged(this, 'volumeMaster')" />
