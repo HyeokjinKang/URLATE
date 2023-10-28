@@ -26,6 +26,7 @@ const overlayPaymentContainer = document.getElementById("overlayPaymentContainer
 const overlayCodeContainer = document.getElementById("overlayCodeContainer");
 const overlayLoadingContainer = document.getElementById("overlayLoadingContainer");
 const loadingCircle = document.getElementById("loadingCircle");
+const loadingOverlayCircle = document.getElementById("loadingOverlayCircle");
 const DLCinfoDLCName = document.getElementById("DLCinfoDLCName");
 const DLCinfoArtistName = document.getElementById("DLCinfoArtistName");
 const DLCbasketButton = document.getElementById("DLCbasketButton");
@@ -674,6 +675,7 @@ const songSelected = (n, refreshed, seek) => {
     if (JSON.parse(tracks[songSelection].difficulty)[difficultySelection] == 0 && isOfficial) {
       alert(`${notAvailable1}\n${notAvailable2}`);
     } else if (isOfficial) {
+      display = 0;
       document.getElementById("selectInnerContainer").classList.add("fadeOut");
       document.getElementById("selectBackground").classList.add("fadeOut");
       songs[songSelection].fade(1, 0, 2000);
@@ -1267,22 +1269,22 @@ const loadingOverlayShow = () => {
   loading = true;
   overlayLoadingContainer.style.pointerEvents = "all";
   overlayLoadingContainer.style.opacity = "1";
+  loadingOverlayCircle.classList.add("anim");
 };
 
 const loadingOverlayHide = () => {
   loading = false;
   overlayLoadingContainer.style.pointerEvents = "none";
   overlayLoadingContainer.style.opacity = "0";
+  loadingOverlayCircle.classList.remove("anim");
 };
 
 const loadingShow = () => {
-  loadingCircle.style.pointerEvents = "all";
-  loadingCircle.style.opacity = "1";
+  loadingCircle.classList.add("anim");
 };
 
 const loadingHide = () => {
-  loadingCircle.style.pointerEvents = "none";
-  loadingCircle.style.opacity = "0";
+  loadingCircle.classList.remove("anim");
 };
 
 const menuSelected = (n) => {
