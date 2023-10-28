@@ -26,6 +26,7 @@ const overlayPaymentContainer = document.getElementById("overlayPaymentContainer
 const overlayCodeContainer = document.getElementById("overlayCodeContainer");
 const overlayLoadingContainer = document.getElementById("overlayLoadingContainer");
 const loadingCircle = document.getElementById("loadingCircle");
+const loadingOverlayCircle = document.getElementById("loadingOverlayCircle");
 const DLCinfoDLCName = document.getElementById("DLCinfoDLCName");
 const DLCinfoArtistName = document.getElementById("DLCinfoArtistName");
 const DLCbasketButton = document.getElementById("DLCbasketButton");
@@ -1268,22 +1269,22 @@ const loadingOverlayShow = () => {
   loading = true;
   overlayLoadingContainer.style.pointerEvents = "all";
   overlayLoadingContainer.style.opacity = "1";
+  loadingOverlayCircle.classList.add("anim");
 };
 
 const loadingOverlayHide = () => {
   loading = false;
   overlayLoadingContainer.style.pointerEvents = "none";
   overlayLoadingContainer.style.opacity = "0";
+  loadingOverlayCircle.classList.remove("anim");
 };
 
 const loadingShow = () => {
-  loadingCircle.style.pointerEvents = "all";
-  loadingCircle.style.opacity = "1";
+  loadingCircle.classList.add("anim");
 };
 
 const loadingHide = () => {
-  loadingCircle.style.pointerEvents = "none";
-  loadingCircle.style.opacity = "0";
+  loadingCircle.classList.remove("anim");
 };
 
 const menuSelected = (n) => {

@@ -2196,6 +2196,10 @@ input[type="number"] {
 
 .loadingCircle {
   width: 2vw;
+}
+
+.loadingCircle.anim {
+  opacity: 1 !important;
   -webkit-animation: pace-spinner 400ms linear infinite;
   -moz-animation: pace-spinner 400ms linear infinite;
   -ms-animation: pace-spinner 400ms linear infinite;
