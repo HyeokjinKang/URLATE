@@ -2995,6 +2995,11 @@ del {
   width: 100%;
 }
 
+#profileBanner {
+  margin-top: 1vh;
+  width: 100%;
+}
+
 .playContainer::before {
   z-index: -1;
   top: 0;
@@ -3194,4 +3199,13 @@ del {
   color: #000;
   text-decoration: none;
   font-size: 1.8vh;
+}
+
+#profileBannerContainer {
+  text-align: left;
+}
+
+.bannerImage {
+  margin-right: 0.15vw;
+  width: 10vw;
 }

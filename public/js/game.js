@@ -957,14 +957,6 @@ const gameLoaded = () => {
       songSelected(songNum, true);
     }
     menuSelected(0);
-  } else if (iniMode == 2) {
-    //dev purpose
-    menuSelected(3);
-    themeSong.play();
-  } else if (iniMode == 3) {
-    //dev purpose
-    profileScreen();
-    themeSong.play();
   } else if (display == 0 && songSelection == -1) {
     themeSong.play();
   }
@@ -1384,6 +1376,15 @@ const profileUpdate = async (uid, isMe) => {
     document.getElementsByClassName("profileStatValue")[2].textContent = `${Number(profile.accuracy).toFixed(2)}%`;
     document.getElementsByClassName("profileStatValue")[3].textContent = profile.playtime;
     document.getElementsByClassName("profileStatValue")[4].textContent = profile["1stNum"];
+    let banners = JSON.parse(profile.banner);
+    if (banners.length == 0) {
+      document.getElementById("profileBanner").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
+    } else {
+      document.getElementById("profileBanner").innerHTML = `<div id="profileBannerContainer"></div>`;
+      for (let i = 0; i < banners.length; i++) {
+        document.getElementById("profileBannerContainer").innerHTML += `<img src="${cdn}/banners/${banners[i]}.webp" class="bannerImage" />`;
+      }
+    }
     let recentPlay = JSON.parse(profile.recentPlay);
     if (recentPlay.length == 0) {
       document.getElementsByClassName("profileStatValue")[5].textContent = "-";
