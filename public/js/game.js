@@ -674,6 +674,7 @@ const songSelected = (n, refreshed, seek) => {
     if (JSON.parse(tracks[songSelection].difficulty)[difficultySelection] == 0 && isOfficial) {
       alert(`${notAvailable1}\n${notAvailable2}`);
     } else if (isOfficial) {
+      display = 0;
       document.getElementById("selectInnerContainer").classList.add("fadeOut");
       document.getElementById("selectBackground").classList.add("fadeOut");
       songs[songSelection].fade(1, 0, 2000);
