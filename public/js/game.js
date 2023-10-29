@@ -221,10 +221,11 @@ const settingApply = () => {
   document.getElementById("inputSelector").getElementsByTagName("option")[Number(settings.input.keys)].selected = true;
   for (let i = 0; i <= 1; i++) {
     document.getElementsByClassName("volumeMaster")[i].value = settings.sound.volume.master * 100;
-    document.getElementsByClassName("volumeMasterValue")[i].textContent = Math.round(settings.sound.volume.music * 100) + "%";
+    document.getElementsByClassName("volumeMasterValue")[i].textContent = Math.round(settings.sound.volume.master * 100) + "%";
   }
   document.getElementById("volumeSong").value = settings.sound.volume.music * 100;
   document.getElementById("volumeHit").value = settings.sound.volume.hitSound * 100;
+  document.getElementById("volumeEft").value = settings.sound.volume.effect * 100;
   document.getElementById("inputSensitive").value = settings.input.sens * 100;
   document.getElementById("inputSize").value = settings.game.size * 10;
   document.getElementById("mouseCheck").checked = settings.input.mouse;
