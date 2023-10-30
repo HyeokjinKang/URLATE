@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
   </head>
-  <body oncontextmenu="return false">
+  <body oncontextmenu="return false" ondragstart="return false" onselect="return false">
     <div id="initialScreenContainer" class="metropolis">
       <br /><br />
       <h2>Editor</h2>
@@ -470,7 +470,6 @@
       if (lang == "en") document.body.style.letterSpacing = "-0.3px";
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.2/howler.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
     <script src="/js/playerModules.js?v=<%= ver %>"></script>
     <script src="/js/iziToast.min.js"></script>
     <script src="/js/editor.js?v=<%= ver %>"></script>

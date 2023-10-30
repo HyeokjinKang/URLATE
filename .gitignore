@@ -8,3 +8,5 @@ resources/
 *.swp
 
 dist/
+
+public/images/profiles/

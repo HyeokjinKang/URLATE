@@ -1,5 +1,4 @@
-/* global intro1load:writable, api, url, Howl, cdn, bodymovin, Howler, confirmExit, pressAnywhere, enabled, registered, cancelSubscription, currency, purchased, addToBag, addedToBag, nothingHere, couponApplySuccess, couponUsed, inputEmpty, alreadySubscribed1, alreadySubscribed2, medalDesc, lang, Pace, lottie, couponInvalid1, couponInvalid2, count, bulletDensity, noteDensity, speed, advancedNeeded, DLCNeeded, notAvailable1, notAvailable2, advancedPreview1, advancedPreview2 */
-const animContainer = document.getElementById("animContainer");
+/* global intro1load:writable, api, url, Howl, cdn, Howler, confirmExit, pressAnywhere, enabled, registered, cancelSubscription, currency, purchased, addToBag, addedToBag, nothingHere, couponApplySuccess, couponUsed, inputEmpty, alreadySubscribed1, alreadySubscribed2, medalDesc, lang, Pace, couponInvalid1, couponInvalid2, count, bulletDensity, noteDensity, speed, advancedNeeded, DLCNeeded, notAvailable1, notAvailable2, advancedPreview1, advancedPreview2 */
 const langDetailSelector = document.getElementById("langDetailSelector");
 const canvasResSelector = document.getElementById("canvasResSelector");
 const albumResSelector = document.getElementById("albumResSelector");
@@ -82,9 +81,6 @@ let banners;
 let rate = 1;
 let disableText = false;
 
-let lottieAnim;
-let arrowAnim;
-
 let intro1skipped = 0;
 
 let overlayTime = 0;
@@ -119,50 +115,10 @@ let scrollTimer = 0;
 
 let chartVar;
 
-const lottieResize = () => {
-  let widthWidth = window.innerWidth;
-  let heightWidth = (window.innerHeight / 9) * 16;
-  if (widthWidth > heightWidth) {
-    animContainer.style.width = `${widthWidth}px`;
-    animContainer.style.height = `${(widthWidth / 16) * 9}px`;
-  } else {
-    animContainer.style.width = `${heightWidth}px`;
-    animContainer.style.height = `${(heightWidth / 16) * 9}px`;
-  }
-  let lottieCanvas = animContainer.getElementsByTagName("canvas")[0];
-  widthWidth = window.innerWidth * window.devicePixelRatio;
-  heightWidth = ((window.innerHeight * window.devicePixelRatio) / 9) * 16;
-  if (lottieCanvas) {
-    if (widthWidth > heightWidth) {
-      lottieCanvas.width = widthWidth;
-      lottieCanvas.height = (widthWidth / 16) * 9;
-    } else {
-      lottieCanvas.width = heightWidth;
-      lottieCanvas.height = (heightWidth / 16) * 9;
-    }
-  }
-  lottieAnim.destroy();
-  lottieAnim = bodymovin.loadAnimation({
-    wrapper: animContainer,
-    animType: "canvas",
-    loop: true,
-    path: "lottie/game.json",
-  });
-  if (songSelection != -1) {
-    arrowAnim.destroy();
-    arrowAnim = bodymovin.loadAnimation({
-      wrapper: document.getElementsByClassName("songSelectionLottie")[songSelection],
-      animType: "canvas",
-      loop: true,
-      path: "lottie/arrow.json",
-    });
-  }
-};
-
 const initialize = () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  lottieResize();
+  const canvasRes = settings.display ? settings.display.canvasRes / 100 : 1;
+  canvas.width = window.innerWidth * canvasRes;
+  canvas.height = window.innerHeight * canvasRes;
 };
 
 const settingApply = () => {
@@ -291,8 +247,8 @@ const drawBar = (x1, y1, x2, y2, width) => {
 
 const animationLooper = () => {
   if (display == 1 || display == 6) {
-    let wWidth = window.innerWidth;
-    let wHeight = window.innerHeight;
+    let wWidth = canvas.width;
+    let wHeight = canvas.height;
     analyser.getByteFrequencyData(dataArray);
     let barWidth = wWidth / 300;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -392,16 +348,7 @@ intro1video.onended = () => {
 document.addEventListener("DOMContentLoaded", () => {
   let initialize = new URLSearchParams(window.location.search).get("initialize");
   iniMode = initialize == null ? -1 : Number(initialize);
-  history.pushState("someAwesomeState", null, null);
-  let widthWidth = window.innerWidth;
-  let heightWidth = (window.innerHeight / 9) * 16;
-  if (widthWidth > heightWidth) {
-    animContainer.style.width = `${widthWidth}px`;
-    animContainer.style.height = `${(widthWidth / 16) * 9}px`;
-  } else {
-    animContainer.style.width = `${heightWidth}px`;
-    animContainer.style.height = `${(heightWidth / 16) * 9}px`;
-  }
+  history.pushState("", null, null);
   setTimeout(() => {
     warningInner.style.opacity = "1";
   }, 1000);
@@ -436,16 +383,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-  lottieAnim = bodymovin.loadAnimation({
-    wrapper: animContainer,
-    animType: "canvas",
-    loop: true,
-    path: "lottie/game.json",
-  });
-  lottieAnim.addEventListener("DOMLoaded", () => {
-    lottieResize();
-  });
-  lottie.setSpeed(0.5);
   fetch(`${api}/auth/status`, {
     method: "GET",
     credentials: "include",
@@ -529,7 +466,6 @@ const tracksUpdate = () => {
   for (let i = 0; i < tracks.length; i++) {
     if (tracks[i].type == 3) {
       songList += `<div class="songSelectionContainer songSelectionDisable">
-        <div class="songSelectionLottie"></div>
         <div class="songSelectionInfo">
             <span class="songSelectionTitle"></span>
             <span class="songSelectionArtist"></span>
@@ -551,7 +487,6 @@ const tracksUpdate = () => {
       loop: true,
     });
     songList += `<div class="songSelectionContainer" onclick="songSelected(${i})">
-              <div class="songSelectionLottie"></div>
               <div class="songSelectionInfo">
                 <div class="songSelectionTitle">
                   ${settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name}
@@ -719,15 +654,8 @@ const songSelected = (n, refreshed, seek) => {
     }
   }
   if (document.getElementsByClassName("songSelected")[0]) {
-    arrowAnim.destroy();
     document.getElementsByClassName("songSelected")[0].classList.remove("songSelected");
   }
-  arrowAnim = bodymovin.loadAnimation({
-    wrapper: document.getElementsByClassName("songSelectionContainer")[n].getElementsByClassName("songSelectionLottie")[0],
-    animType: "canvas",
-    loop: true,
-    path: "lottie/arrow.json",
-  });
   document.getElementsByClassName("songSelectionContainer")[n].classList.add("songSelected");
   selectTitle.textContent = settings.general.detailLang == "original" ? tracks[n].originalName : tracks[n].name;
   CPLTrack.textContent = settings.general.detailLang == "original" ? tracks[n].originalName : tracks[n].name;
@@ -1044,14 +972,12 @@ const stopProfileSong = () => {
 
 const infoScreen = () => {
   display = 4;
-  lottieAnim.pause();
   document.getElementById("infoContainer").style.display = "block";
   document.getElementById("infoContainer").classList.add("fadeInAnim");
 };
 
 const optionScreen = () => {
   display = 2;
-  lottieAnim.pause();
   document.getElementById("optionContainer").style.display = "block";
   document.getElementById("optionContainer").classList.add("fadeInAnim");
 };
@@ -1060,7 +986,6 @@ const profileScreen = (uid) => {
   if (uid) display = 16;
   else display = 15;
   playProfileSong();
-  lottieAnim.pause();
   document.getElementById("profileContainer").style.display = "block";
   document.getElementById("profileContainer").classList.add("fadeInAnim");
   loadingOverlayShow();
@@ -1246,7 +1171,6 @@ const displayClose = () => {
         document.getElementById("profileContainer").style.display = "none";
       }, 500);
     }
-    lottieAnim.play();
     if (display == 15) display = 0;
     else display = 3;
   }
@@ -1275,7 +1199,6 @@ const loadingHide = () => {
 };
 
 const menuSelected = (n) => {
-  lottieAnim.pause();
   if (n == 0) {
     //play
     display = 1;
@@ -2092,99 +2015,62 @@ const changeProfile = (e) => {
         ],
         onClosing: (instance, toast, closedBy) => {
           if (closedBy != "button") {
-            let url = "";
-            iziToast.show({
-              overlay: true,
-              timeout: 20000,
-              zindex: 999,
-              theme: "dark",
-              title: "Enter url of picture.",
-              position: "center",
-              progressBarColor: "#999",
-              inputs: [
-                [
-                  '<input type="text" id="urlInput" />',
-                  "change",
-                  (instance, toast, input, e) => {
-                    url = input.value;
-                  },
-                  true,
-                ],
-              ],
-              buttons: [
-                [
-                  "<button><b>OK</b></button>",
-                  async (instance, toast) => {
-                    loadingOverlayShow();
-                    instance.hide({ transitionOut: "fadeOut" }, toast, "confirm");
-                    url = document.getElementById("urlInput").value;
-                    if (url != "" && validURL(url)) {
-                      if (await validImage(url)) {
-                        await fetch(`${api}/profile/${closedBy}`, {
-                          method: "PUT",
-                          credentials: "include",
-                          body: JSON.stringify({
-                            value: url,
-                          }),
-                          headers: {
-                            "Content-Type": "application/json",
-                          },
-                        })
-                          .then((res) => res.json())
-                          .then((data) => {
-                            if (data.result != "success") {
-                              alert(`Error occured.\n${data.error}`);
-                            } else {
-                              if (closedBy == "background") document.getElementById("profileImageContainer").style.backgroundImage = `url("${url}")`;
-                              else document.getElementById("profileImage").src = url;
-                            }
-                          })
-                          .catch((error) => {
-                            alert(`Error occured.\n${error}`);
-                            console.error(`Error occured.\n${error}`);
-                          });
-                      } else {
-                        iziToast.error({
-                          title: "Invalid image",
-                          message: "Please enter valid image URL.",
-                        });
-                      }
-                    } else {
-                      if (url == "") {
-                        iziToast.error({
-                          title: "Empty URL",
-                          message: "Please enter valid URL.",
-                        });
-                      } else {
-                        iziToast.error({
-                          title: "Invalid URL",
-                          message: "Please enter valid URL.",
-                        });
-                      }
-                    }
-                    loadingOverlayHide();
-                  },
-                ],
-              ],
-            });
+            let input = document.createElement("input");
+            input.type = "file";
+            input.accept = "image/*";
+            input.setAttribute("onchange", `picLoaded(event, "${closedBy}")`);
+            input.click();
+            loadingOverlayShow();
           }
         },
       });
       break;
   }
 };
-const validURL = (str) => {
-  const pattern = /((?:(?:http?|https?|ftp)[s]*:\/\/)?[a-z0-9-%\/\&=?\.]+\.[a-z]{2,4}\/?([^\s<>\#%"\,\{\}\\|\\\^\[\]`]+)?)/gi;
-  return !!pattern.test(str);
-};
 
-const validImage = (url) => {
-  const img = new Image();
-  img.src = url;
-  return new Promise((resolve) => {
-    img.onerror = () => resolve(false);
-    img.onload = () => resolve(true);
-  });
+const picLoaded = async (e, type) => {
+  const file = e.target.files[0];
+  if (file.type.indexOf("image") == -1) {
+    loadingOverlayHide();
+    return iziToast.error({
+      title: "Error!",
+      message: imageError,
+    });
+  }
+  let payload = new FormData();
+  payload.append("img", file);
+  payload.append("userid", userid);
+  fetch(`${url}/profile/${userid}/${type}`, {
+    credentials: "include",
+    method: "POST",
+    body: payload,
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      loadingOverlayHide();
+      if (data.result == "failed") {
+        iziToast.error({
+          title: "Error!",
+          message: imageError,
+        });
+      } else {
+        iziToast.success({
+          title: "Success!",
+        });
+        if (type == "background") document.getElementById("profileImageContainer").style.backgroundImage = `url("${data.url}")`;
+        else {
+          document.getElementById("profileImage").src = data.url;
+          document.getElementById("profilePic").src = data.url;
+        }
+      }
+    })
+    .catch((e) => {
+      loadingOverlayHide();
+      iziToast.error({
+        title: "Error!",
+        message: imageError,
+      });
+    });
 };
 
 const scrollEvent = (e) => {

@@ -2,6 +2,9 @@ import signale from "signale";
 import cookieParser from "cookie-parser";
 import express from "express";
 import i18n from "./i18n";
+import multer from "multer";
+import path from "path";
+import fetch from "node-fetch";
 const { exec } = require("child_process");
 
 let branch;
@@ -102,6 +105,67 @@ app.get("/info", (req, res) => {
 
 app.get("/privacy", (req, res) => {
   res.render("privacy");
+});
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, __dirname + "/../public/images/profiles");
+    },
+    filename: function (req, file, cb) {
+      cb(null, Date.now() + path.extname(file.originalname));
+    },
+  }),
+  limits: {
+    fileSize: 1024 * 1024,
+  },
+}).single("img");
+
+app.post("/profile/:userid/:type", async (req, res) => {
+  upload(req, res, async (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError) err = err.message;
+      else err.code;
+      res.status(400).json({
+        result: "failed",
+        message: "Error occured while uploading",
+        error: err,
+      });
+      return;
+    }
+    const file = req.file;
+    if (!file || file.mimetype.indexOf("image") == -1) {
+      res.status(400).json({
+        result: "failed",
+        message: "Error occured while uploading",
+        error: "Invalid file type",
+      });
+      return;
+    }
+    fetch(`${config.project.api}/profile/${req.params.type}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userid: req.params.userid,
+        value: `${config.project.url}/images/profiles/${file.filename}`,
+        secret: config.project.secretKey,
+      }),
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.result == "failed") {
+          res.status(400).json({
+            result: "failed",
+            message: "Error occured while uploading",
+            error: json.message,
+          });
+          return;
+        }
+        res.status(200).json({ result: "success", url: `${config.project.url}/images/profiles/${file.filename}` });
+      });
+  });
 });
 
 app.listen(config.project.port, () => {
