@@ -77,6 +77,7 @@ let loading = false;
 let tutorial = false;
 let aliasNum;
 let ownedAlias;
+let banners;
 
 let rate = 1;
 let disableText = false;
@@ -1370,13 +1371,21 @@ const profileUpdate = async (uid, isMe) => {
     document.getElementsByClassName("profileStatValue")[2].textContent = `${Number(profile.accuracy).toFixed(2)}%`;
     document.getElementsByClassName("profileStatValue")[3].textContent = profile.playtime;
     document.getElementsByClassName("profileStatValue")[4].textContent = profile["1stNum"];
-    let banners = JSON.parse(profile.banner);
+    banners = JSON.parse(profile.banner);
     if (banners.length == 0) {
       document.getElementById("profileBanner").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
     } else {
       document.getElementById("profileBanner").innerHTML = `<div id="profileBannerContainer"></div>`;
       for (let i = 0; i < banners.length; i++) {
-        document.getElementById("profileBannerContainer").innerHTML += `<img src="${cdn}/banners/${banners[i]}.webp" class="bannerImage" />`;
+        if (banners[i].indexOf("(-)") != -1 && !isMe) continue;
+        document.getElementById("profileBannerContainer").innerHTML += `
+        <div class="bannerImage${isMe ? " clickable" : ""}${banners[i].indexOf("(-)") != -1 ? " hidden" : ""}" style="background-image: url('${cdn}/banners/${banners[i].replace("(-)", "")}.webp')" ${
+          isMe ? `onclick="bannerToggle(${i})"` : ""
+        }>
+          <div class="bannerHover">
+            <img src="/images/parts/icons/${banners[i].indexOf("(-)") != -1 ? "eye-closed" : "eye"}.svg" class="bannerIcon">
+          </div>
+        </div>`;
       }
     }
     let recentPlay = JSON.parse(profile.recentPlay);
@@ -1533,8 +1542,40 @@ const langChanged = (e) => {
   window.location.href = `${url}/${e.value}`;
 };
 
-const logout = (e) => {
+const logout = () => {
   window.location.href = `${api}/auth/logout?redirect=true`;
+};
+
+const bannerToggle = (n) => {
+  if (banners[n].indexOf("(-)") == -1) {
+    banners[n] = banners[n] + "(-)";
+    document.getElementsByClassName("bannerImage")[n].classList.add("hidden");
+    document.getElementsByClassName("bannerIcon")[n].src = "/images/parts/icons/eye-closed.svg";
+  } else {
+    banners[n] = banners[n].replace("(-)", "");
+    document.getElementsByClassName("bannerImage")[n].classList.remove("hidden");
+    document.getElementsByClassName("bannerIcon")[n].src = "/images/parts/icons/eye.svg";
+  }
+  fetch(`${api}/profile/banner`, {
+    method: "PUT",
+    credentials: "include",
+    body: JSON.stringify({
+      value: JSON.stringify(banners),
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.result != "success") {
+        alert(`Error occured.\n${data.error}`);
+      }
+    })
+    .catch((error) => {
+      alert(`Error occured.\n${error}`);
+      console.error(`Error occured.\n${error}`);
+    });
 };
 
 const settingChanged = (e, v) => {
