@@ -3206,6 +3206,68 @@ del {
 }
 
 .bannerImage {
+  float: left;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
   margin-right: 0.15vw;
   width: 10vw;
+  height: 2.3vw;
+  border-radius: 3px;
+}
+
+.bannerImage.hidden > .bannerHover {
+  opacity: 0.8;
+}
+
+.bannerHover {
+  pointer-events: none;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0.7) 10%,
+    rgba(0, 0, 0, 0.6) 0,
+    rgba(0, 0, 0, 0.6) 20%,
+    rgba(0, 0, 0, 0.7) 0,
+    rgba(0, 0, 0, 0.7) 30%,
+    rgba(0, 0, 0, 0.6) 0,
+    rgba(0, 0, 0, 0.6) 40%,
+    rgba(0, 0, 0, 0.7) 0,
+    rgba(0, 0, 0, 0.7) 50%,
+    rgba(0, 0, 0, 0.6) 0,
+    rgba(0, 0, 0, 0.6) 60%,
+    rgba(0, 0, 0, 0.7) 0,
+    rgba(0, 0, 0, 0.7) 70%,
+    rgba(0, 0, 0, 0.6) 0,
+    rgba(0, 0, 0, 0.6) 80%,
+    rgba(0, 0, 0, 0.7) 0,
+    rgba(0, 0, 0, 0.7) 90%,
+    rgba(0, 0, 0, 0.6) 0,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  transition-duration: 0.3s;
+  border-radius: 3px;
+}
+
+.bannerImage.clickable:hover > .bannerHover {
+  opacity: 1;
+}
+
+.bannerImage.clickable:hover > .bannerHover > .bannerIcon {
+  opacity: 1;
+}
+
+.bannerHover {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.bannerIcon {
+  opacity: 0;
+  height: 1.5vw;
+  transition-duration: 0.3s;
 }
