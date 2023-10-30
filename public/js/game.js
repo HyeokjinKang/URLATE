@@ -72,14 +72,7 @@ let maxCount = 0;
 let speeds = [1, 2, 3];
 let bpm = 130;
 let isRankOpened = false;
-let isAdvanced = false;
-let skins = [],
-  DLCs = [];
-let carts = new Set();
-let cartArray = [];
-let DLCdata = [];
-let skinData = [];
-let songData = [];
+let skins = [];
 let loading = false;
 let tutorial = false;
 let aliasNum;
@@ -588,7 +581,7 @@ const tracksUpdate = () => {
         trackRecords[i] = [];
         if (data.result == "success") {
           for (let j = 0; j < 3; j++) {
-            if ((tracks[i].type == 1 && !isAdvanced) || (tracks[i].type == 2 && !(songData.indexOf(tracks[i].name) != -1))) {
+            if (tracks[i].type == 1) {
               trackRecords[i][j] = {
                 rank: "rankL",
                 record: 0,
@@ -621,7 +614,7 @@ const tracksUpdate = () => {
           }
         } else {
           for (let j = 0; j < 3; j++) {
-            if ((tracks[i].type == 1 && !isAdvanced) || (tracks[i].type == 2 && !(songData.indexOf(tracks[i].name) != -1))) {
+            if (tracks[i].type == 1) {
               if (isOfficial) {
                 document.getElementsByClassName("ranks")[i].className = "ranks";
                 document.getElementsByClassName("ranks")[i].classList.add("rankL");
