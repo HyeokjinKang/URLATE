@@ -234,5 +234,6 @@
   "rank_title": "RANKING",
   "rank_subtitle": "랭킹",
   "profile": "Profile",
-  "banner": "Display"
+  "banner": "Display",
+  "image_error": "Image upload failed. Please make sure the image is less than 1MB."
 }

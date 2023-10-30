@@ -2015,99 +2015,62 @@ const changeProfile = (e) => {
         ],
         onClosing: (instance, toast, closedBy) => {
           if (closedBy != "button") {
-            let url = "";
-            iziToast.show({
-              overlay: true,
-              timeout: 20000,
-              zindex: 999,
-              theme: "dark",
-              title: "Enter url of picture.",
-              position: "center",
-              progressBarColor: "#999",
-              inputs: [
-                [
-                  '<input type="text" id="urlInput" />',
-                  "change",
-                  (instance, toast, input, e) => {
-                    url = input.value;
-                  },
-                  true,
-                ],
-              ],
-              buttons: [
-                [
-                  "<button><b>OK</b></button>",
-                  async (instance, toast) => {
-                    loadingOverlayShow();
-                    instance.hide({ transitionOut: "fadeOut" }, toast, "confirm");
-                    url = document.getElementById("urlInput").value;
-                    if (url != "" && validURL(url)) {
-                      if (await validImage(url)) {
-                        await fetch(`${api}/profile/${closedBy}`, {
-                          method: "PUT",
-                          credentials: "include",
-                          body: JSON.stringify({
-                            value: url,
-                          }),
-                          headers: {
-                            "Content-Type": "application/json",
-                          },
-                        })
-                          .then((res) => res.json())
-                          .then((data) => {
-                            if (data.result != "success") {
-                              alert(`Error occured.\n${data.error}`);
-                            } else {
-                              if (closedBy == "background") document.getElementById("profileImageContainer").style.backgroundImage = `url("${url}")`;
-                              else document.getElementById("profileImage").src = url;
-                            }
-                          })
-                          .catch((error) => {
-                            alert(`Error occured.\n${error}`);
-                            console.error(`Error occured.\n${error}`);
-                          });
-                      } else {
-                        iziToast.error({
-                          title: "Invalid image",
-                          message: "Please enter valid image URL.",
-                        });
-                      }
-                    } else {
-                      if (url == "") {
-                        iziToast.error({
-                          title: "Empty URL",
-                          message: "Please enter valid URL.",
-                        });
-                      } else {
-                        iziToast.error({
-                          title: "Invalid URL",
-                          message: "Please enter valid URL.",
-                        });
-                      }
-                    }
-                    loadingOverlayHide();
-                  },
-                ],
-              ],
-            });
+            let input = document.createElement("input");
+            input.type = "file";
+            input.accept = "image/*";
+            input.setAttribute("onchange", `picLoaded(event, "${closedBy}")`);
+            input.click();
+            loadingOverlayShow();
           }
         },
       });
       break;
   }
 };
-const validURL = (str) => {
-  const pattern = /((?:(?:http?|https?|ftp)[s]*:\/\/)?[a-z0-9-%\/\&=?\.]+\.[a-z]{2,4}\/?([^\s<>\#%"\,\{\}\\|\\\^\[\]`]+)?)/gi;
-  return !!pattern.test(str);
-};
 
-const validImage = (url) => {
-  const img = new Image();
-  img.src = url;
-  return new Promise((resolve) => {
-    img.onerror = () => resolve(false);
-    img.onload = () => resolve(true);
-  });
+const picLoaded = async (e, type) => {
+  const file = e.target.files[0];
+  if (file.type.indexOf("image") == -1) {
+    loadingOverlayHide();
+    return iziToast.error({
+      title: "Error!",
+      message: imageError,
+    });
+  }
+  let payload = new FormData();
+  payload.append("img", file);
+  payload.append("userid", userid);
+  fetch(`${url}/profile/${userid}/${type}`, {
+    credentials: "include",
+    method: "POST",
+    body: payload,
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      loadingOverlayHide();
+      if (data.result == "failed") {
+        iziToast.error({
+          title: "Error!",
+          message: imageError,
+        });
+      } else {
+        iziToast.success({
+          title: "Success!",
+        });
+        if (type == "background") document.getElementById("profileImageContainer").style.backgroundImage = `url("${data.url}")`;
+        else {
+          document.getElementById("profileImage").src = data.url;
+          document.getElementById("profilePic").src = data.url;
+        }
+      }
+    })
+    .catch((e) => {
+      loadingOverlayHide();
+      iziToast.error({
+        title: "Error!",
+        message: imageError,
+      });
+    });
 };
 
 const scrollEvent = (e) => {

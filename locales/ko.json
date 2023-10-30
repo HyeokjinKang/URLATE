@@ -218,5 +218,6 @@
   "rank_title": "랭킹",
   "rank_subtitle": "RANKING",
   "profile": "프로필",
-  "banner": "장식장"
+  "banner": "장식장",
+  "image_error": "이미지 업로드에 실패하였습니다. 이미지 용량이 1MB 이하인지 확인해주세요."
 }
