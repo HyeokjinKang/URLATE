@@ -1497,12 +1497,6 @@ input[type="number"] {
   content: "🔒";
 }
 
-.songSelectionLottie {
-  height: 5vh;
-  width: 10vh;
-  margin-right: 1vw;
-}
-
 .songSelected {
   --artist-display: none;
   --title-weight: 800;

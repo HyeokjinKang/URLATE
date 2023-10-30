@@ -717,9 +717,7 @@
       <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" oninput="settingChanged(this, 'volumeMaster')" />
       <p class="optionValue volumeMasterValue">50%</p>
     </div>
-    <div id="animContainer" class="widthAnim"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.2/howler.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       const cdn = "<%= cdn %>";
@@ -743,7 +741,6 @@
       const nothingHere = "<%= __('nothing_here') %>";
       if (lang == "en") document.body.style.letterSpacing = "-0.3px";
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.5/lottie.js"></script>
     <script src="/js/iziToast.min.js"></script>
     <script src="/js/game.js?v=<%= ver %>"></script>
   </body>
