@@ -2020,7 +2020,6 @@ const changeProfile = (e) => {
             input.accept = "image/*";
             input.setAttribute("onchange", `picLoaded(event, "${closedBy}")`);
             input.click();
-            loadingOverlayShow();
           }
         },
       });
@@ -2029,6 +2028,7 @@ const changeProfile = (e) => {
 };
 
 const picLoaded = async (e, type) => {
+  loadingOverlayShow();
   const file = e.target.files[0];
   if (file.type.indexOf("image") == -1) {
     loadingOverlayHide();
