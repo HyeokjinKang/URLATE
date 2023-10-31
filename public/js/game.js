@@ -1295,22 +1295,21 @@ const profileUpdate = async (uid, isMe) => {
     document.getElementsByClassName("profileStatValue")[3].textContent = profile.playtime;
     document.getElementsByClassName("profileStatValue")[4].textContent = profile["1stNum"];
     banners = JSON.parse(profile.banner);
-    if (banners.length == 0) {
-      document.getElementById("profileBanner").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
-    } else {
-      document.getElementById("profileBanner").innerHTML = `<div id="profileBannerContainer"></div>`;
-      for (let i = 0; i < banners.length; i++) {
-        if (banners[i].indexOf("(-)") != -1 && !isMe) continue;
-        document.getElementById("profileBannerContainer").innerHTML += `
+    document.getElementById("profileBanner").innerHTML = `<div id="profileBannerContainer"></div>`;
+    let count = 0;
+    for (let i = 0; i < banners.length; i++) {
+      if (banners[i].indexOf("(-)") != -1 && !isMe) continue;
+      count++;
+      document.getElementById("profileBannerContainer").innerHTML += `
         <div class="bannerImage${isMe ? " clickable" : ""}${banners[i].indexOf("(-)") != -1 ? " hidden" : ""}" style="background-image: url('${cdn}/banners/${banners[i].replace("(-)", "")}.webp')" ${
-          isMe ? `onclick="bannerToggle(${i})"` : ""
-        }>
+        isMe ? `onclick="bannerToggle(${i})"` : ""
+      }>
           <div class="bannerHover">
             <img src="/images/parts/icons/${banners[i].indexOf("(-)") != -1 ? "eye-closed" : "eye"}.svg" class="bannerIcon">
           </div>
         </div>`;
-      }
     }
+    if (count == 0) document.getElementById("profileBanner").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
     let recentPlay = JSON.parse(profile.recentPlay);
     if (recentPlay.length == 0) {
       document.getElementsByClassName("profileStatValue")[5].textContent = "-";

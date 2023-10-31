@@ -122,7 +122,10 @@ const upload = multer({
 }).single("img");
 
 app.post("/profile/:userid/:type", async (req, res) => {
-  if (req.params.type != "picture" && req.params.type != "background") {
+  let type = "";
+  if (req.params.type == "picture") type = "picture";
+  else if (req.params.type == "background") type = "background";
+  else {
     res.status(400).json({
       result: "failed",
       message: "Error occured while uploading",
@@ -150,7 +153,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
       });
       return;
     }
-    fetch(`${config.project.api}/profile/${req.params.type}`, {
+    fetch(`${config.project.api}/profile/${type}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
