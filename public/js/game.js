@@ -1,4 +1,3 @@
-/* global intro1load:writable, api, url, Howl, cdn, Howler, confirmExit, pressAnywhere, enabled, registered, cancelSubscription, currency, purchased, addToBag, addedToBag, nothingHere, couponApplySuccess, couponUsed, inputEmpty, alreadySubscribed1, alreadySubscribed2, medalDesc, lang, Pace, couponInvalid1, couponInvalid2, count, bulletDensity, noteDensity, speed, advancedNeeded, DLCNeeded, notAvailable1, notAvailable2, advancedPreview1, advancedPreview2 */
 const langDetailSelector = document.getElementById("langDetailSelector");
 const canvasResSelector = document.getElementById("canvasResSelector");
 const albumResSelector = document.getElementById("albumResSelector");

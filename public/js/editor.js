@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
-/* global api, url, Howl, cdn, bodymovin, getTan, calcAngleDegrees, lowerBound, upperBound, Howler, rusure, syncAlert, copiedText, timeAlert, deleteSure, moveToAlert, need2Save */
 const songSelectBox = document.getElementById("songSelectBox");
 const trackSettings = document.getElementById("trackSettings");
 const volumeMaster = document.getElementById("volumeMaster");
