@@ -1,4 +1,3 @@
-/* global api, projectUrl, lottie, bodymovin, shutdownAlert, auth2, loginFailed, loginError*/
 const animContainer = document.getElementById("animContainer");
 const safariBlocker = document.getElementById("safariBlocker");
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -36,13 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
       alert(`Error occured.\n${error}`);
     });
 });
-
-/*const mouseMove = (e) => {
-  lottie.pause();
-  animContainer.getElementsByTagName('canvas')[0].style.marginRight = `${50 + (e.clientX - (window.innerWidth / 2)) / (window.innerWidth / 2) * 50}px`;
-  animContainer.getElementsByTagName('canvas')[0].style.marginBottom = `${50 + (e.clientY - (window.innerHeight / 2)) / (window.innerHeight / 2) * 50}px`;
-  lottie.play();
-};*/
 
 function handleCredentialResponse(authResult) {
   fetch(`${api}/auth/login`, {

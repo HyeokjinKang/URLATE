@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
-/* global api, url, Howl, cdn, bodymovin, getTan, calcAngleDegrees, lowerBound, upperBound, numberWithCommas, Pace, Howler, patternError, returnToEditor */
 const menuContainer = document.getElementById("menuContainer");
 const canvasBackground = document.getElementById("canvasBackground");
 const canvasContainer = document.getElementById("canvasContainer");

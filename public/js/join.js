@@ -1,4 +1,3 @@
-/*global api, projectUrl*/
 document.addEventListener("DOMContentLoaded", () => {
   fetch(`${api}/auth/status`, {
     method: "GET",
