@@ -122,6 +122,14 @@ const upload = multer({
 }).single("img");
 
 app.post("/profile/:userid/:type", async (req, res) => {
+  if (req.params.type != "picture" && req.params.type != "background") {
+    res.status(400).json({
+      result: "failed",
+      message: "Error occured while uploading",
+      error: "Invalid type",
+    });
+    return;
+  }
   upload(req, res, async (err) => {
     if (err) {
       if (err instanceof multer.MulterError) err = err.message;

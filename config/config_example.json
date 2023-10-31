@@ -3,6 +3,7 @@
     "url": "https://example.com",
     "api": "https://api.example.com",
     "cdn": "https://cdn.example.com",
+    "secretKey": "Something Random",
     "mode": "production",
     "port": 3000
   }
