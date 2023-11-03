@@ -31,6 +31,7 @@ app.get("/", (req, res) => {
   res.render("index", {
     url: config.project.url,
     api: config.project.api,
+    game: config.project.game,
     ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
     branch: branch,
   });
@@ -55,6 +56,7 @@ app.get("/game", async (req, res) => {
     cdn: config.project.cdn,
     url: config.project.url,
     api: config.project.api,
+    game: config.project.game,
     ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
   });
 });
@@ -64,6 +66,7 @@ app.get("/editor", async (req, res) => {
     cdn: config.project.cdn,
     url: config.project.url,
     api: config.project.api,
+    game: config.project.game,
     ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
   });
 });
@@ -73,6 +76,7 @@ app.get("/test", async (req, res) => {
     cdn: config.project.cdn,
     url: config.project.url,
     api: config.project.api,
+    game: config.project.game,
     ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
   });
 });
@@ -82,6 +86,7 @@ app.get("/play", async (req, res) => {
     cdn: config.project.cdn,
     url: config.project.url,
     api: config.project.api,
+    game: config.project.game,
     ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
   });
 });
@@ -91,6 +96,7 @@ app.get("/tutorial", async (req, res) => {
     cdn: config.project.cdn,
     url: config.project.url,
     api: config.project.api,
+    game: config.project.game,
     ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
   });
 });

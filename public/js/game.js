@@ -114,6 +114,8 @@ let scrollTimer = 0;
 
 let chartVar;
 
+const socket = io(game);
+
 const initialize = () => {
   const canvasRes = settings.display ? settings.display.canvasRes / 100 : 1;
   canvas.width = window.innerWidth * canvasRes;
