@@ -19,8 +19,8 @@ socket.on("connect", () => {
 socket.on("disconnect", (reason) => {
   if (reason === "io server disconnect") {
     alert(connectionError);
-    window.location.href = `${api}/auth/logout?redirect=true&shutdowned=true`; // Session error, need to relogin
-  }
+    window.location.href = `${api}/auth/logout?redirect=true`; // Session error, need to relogin
+  } else if (reason === "io client disconnect") return;
   console.error("[Socket.IO] Disconnected from server");
   iziToast.warning({
     title: "Disconnected",
@@ -50,19 +50,20 @@ socket.on("connect_error", () => {
 socket.on("connection:conflict", () => {
   socket.disconnect();
   alert(connectionConflict);
-  window.location.href = `${api}/auth/logout?redirect=true&conflicted=true`;
+  window.location.href = `${api}/auth/logout?redirect=true`;
 });
 
 socket.on("connection:unauthorized", () => {
   socket.disconnect();
   alert(connectionUnauthorized);
-  window.location.href = `${api}/auth/logout?redirect=true&conflicted=true`;
+  window.location.href = `${api}/auth/logout?redirect=true`;
 });
 
 socket.on("pong", () => {
-  console.log("[Socket.IO] Pinged");
+  console.log("[Socket.IO] Pong");
 });
 
 const ping = setInterval(() => {
+  console.log("[Socket.IO] Ping");
   socket.emit("ping");
 }, 5000);
