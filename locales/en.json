@@ -235,5 +235,7 @@
   "rank_subtitle": "랭킹",
   "profile": "Profile",
   "banner": "Display",
-  "image_error": "Image upload failed. Please make sure the image is less than 1MB."
+  "socket_connection_conflict": "Connection has been disconnected because you logged in from another device. Please log in again.",
+  "socket_connection_error": "Connection has been disconnected due to an error. Please log in again.",
+  "socket_connection_unauthorized": "Your login has been revoked and the connection has been disconnected. Please log in again."
 }
