@@ -225,7 +225,7 @@
   "playtime": "Playtime",
   "number_of_1th": "1st",
   "last_played": "Last Played",
-  "alias": "Newbie,Geoplex Fan,Greenstar Fan,mkhito Fan,Neko Hacker Fan,fusq Fan,Yunomi Fan,Synthion Fan,Kunaru Fan,Sakuzyo Fan,MYUKKE. Fan,Author wind Fan,HyuN Fan",
+  "alias": "Newbie,Curse of 1,The taste of AP,The taste of FC,Talented,EZPZ,MID diff,Master",
   "recent": "Recent Played",
   "nothing_here": "Nothing here I think ;-;",
   "bestplay": "Best Play",
@@ -237,5 +237,9 @@
   "banner": "Display",
   "socket_connection_conflict": "Connection has been disconnected because you logged in from another device. Please log in again.",
   "socket_connection_error": "Connection has been disconnected due to an error. Please log in again.",
-  "socket_connection_unauthorized": "Your login has been revoked and the connection has been disconnected. Please log in again."
+  "socket_connection_unauthorized": "Your login has been revoked and the connection has been disconnected. Please log in again.",
+  "socket_status_connected": "You are connected to the server.",
+  "socket_status_reconnecting": "Trying to reconnect..",
+  "alias_select": "Select alias",
+  "picture_message": "Select what you want to change."
 }

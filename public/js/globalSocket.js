@@ -8,7 +8,7 @@ socket.on("connect", () => {
   if (isErrorOccured) {
     iziToast.success({
       title: "Connected",
-      message: "You are connected to server",
+      message: socketConnected,
       timeout: 2000,
       layout: 2,
       transitionIn: "fadeInLeft",
@@ -24,7 +24,7 @@ socket.on("disconnect", (reason) => {
   console.error("[Socket.IO] Disconnected from server");
   iziToast.warning({
     title: "Disconnected",
-    message: "Trying to reconnect...",
+    message: socketReconnecting,
     timeout: 2000,
     layout: 2,
     transitionIn: "fadeInLeft",
@@ -36,7 +36,7 @@ socket.on("connect_error", () => {
   console.error("[Socket.IO] Cannot connect to server");
   iziToast.error({
     title: "Connection error",
-    message: "Trying to reconnect...",
+    message: socketReconnecting,
     timeout: 2000,
     layout: 2,
     transitionIn: "fadeInLeft",
@@ -61,6 +61,11 @@ socket.on("connection:unauthorized", () => {
 
 socket.on("pong", () => {
   console.log("[Socket.IO] Pong");
+});
+
+socket.on("achievement", (data) => {
+  console.log("[Socket.IO] Achievement");
+  console.log(data);
 });
 
 const ping = setInterval(() => {

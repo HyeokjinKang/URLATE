@@ -1927,7 +1927,7 @@ const changeProfile = (e) => {
         id: "inputs",
         zindex: 999,
         timeout: 20000,
-        title: "Select alias",
+        title: aliasSelect,
         progressBarColor: "#999",
         message: "",
         position: "center",
@@ -1984,7 +1984,7 @@ const changeProfile = (e) => {
         timeout: 20000,
         zindex: 999,
         theme: "dark",
-        title: "What do you want to change?",
+        title: pictureMessage,
         position: "center",
         progressBarColor: "#999",
         buttons: [
