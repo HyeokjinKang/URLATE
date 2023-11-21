@@ -745,12 +745,15 @@
       const imageError = "<%= __('image_error') %>";
       const aliasSelect = "<%= __('alias_select') %>";
       const pictureMessage = "<%= __('picture_message') %>";
-      const socketConnected = "<%= __('socket_status_connected') %>";
-      const socketReconnecting = "<%= __('socket_status_reconnecting') %>";
-      const connectionConflict = "<%= __('socket_connection_conflict') %>";
-      const connectionError = "<%= __('socket_connection_error') %>";
-      const connectionUnauthorized = "<%= __('socket_connection_unauthorized') %>";
-      if (lang == "en") document.body.style.letterSpacing = "-0.3px";
+      const socketi18n = {
+        connected: "<%= __('socket_status_connected') %>",
+        reconnecting: "<%= __('socket_status_reconnecting') %>",
+        conflict: "<%= __('socket_connection_conflict') %>",
+        error: "<%= __('socket_connection_error') %>",
+        unauthorized: "<%= __('socket_connection_unauthorized') %>",
+        reward: "<%= __('socket_achievement_reward') %>",
+        alias: "<%= __('socket_achievement_alias') %>",
+      };
     </script>
     <script src="/js/iziToast.min.js"></script>
     <script src="/js/game.js?v=<%= ver %>"></script>
