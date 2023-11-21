@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Editor</title>
     <link rel="stylesheet" href="/css/iziToast.min.css" />
+    <link rel="stylesheet" href="/css/globalSocket.css?v=<%= ver %>" />
     <link rel="stylesheet" href="/css/editor.css?v=<%= ver %>" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
@@ -467,11 +468,20 @@
       const url = "<%= url %>";
       const api = "<%= api %>";
       const lang = "<%= __('lang') %>";
-      if (lang == "en") document.body.style.letterSpacing = "-0.3px";
+      const socketi18n = {
+        connected: "<%= __('socket_status_connected') %>",
+        reconnecting: "<%= __('socket_status_reconnecting') %>",
+        conflict: "<%= __('socket_connection_conflict') %>",
+        error: "<%= __('socket_connection_error') %>",
+        unauthorized: "<%= __('socket_connection_unauthorized') %>",
+        reward: "<%= __('socket_achievement_reward') %>",
+        alias: "<%= __('socket_achievement_alias') %>",
+      };
     </script>
     <script src="/js/howler.min.js"></script>
     <script src="/js/playerModules.js?v=<%= ver %>"></script>
     <script src="/js/iziToast.min.js"></script>
     <script src="/js/editor.js?v=<%= ver %>"></script>
+    <script src="/js/globalSocket.js?v=<%= ver %>"></script>
   </body>
 </html>

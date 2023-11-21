@@ -1,0 +1,119 @@
+.achievementOverlay {
+  letter-spacing: 0px;
+  z-index: 999;
+  position: fixed;
+  width: 100vw;
+  height: 10vh;
+  left: 0;
+  bottom: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: achievementOverlay 4s cubic-bezier(0.75, 0, 0.25, 1) forwards;
+  transition-duration: 0.8s;
+  transition-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@keyframes achievementOverlay {
+  0% {
+    opacity: 0;
+    transform: translateY(10vh);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0vh);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.achievementInner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 0vh 1.3vw;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 0.7vh;
+  height: 6vh;
+  box-shadow: 0 0.5vh 2vh 1vh rgba(0, 0, 0, 0.3);
+}
+
+.achievementInner::before {
+  content: "";
+  width: auto;
+  height: auto;
+  filter: blur(4px);
+}
+
+.achievementInnerLeft {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.achievementMedal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid white;
+  border-radius: 100vw;
+  padding: 2px 0.4vw;
+  margin-right: 0.7vw;
+}
+
+.achievementMedal > img {
+  height: 1.5vh;
+}
+
+.achievementContentVertical {
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.achievementContentTitle {
+  font-size: 1.4vh;
+  font-weight: 600;
+}
+
+.achievementContentDesc {
+  margin-top: 0.2vh;
+  font-size: 1.1vh;
+  font-weight: 300;
+}
+
+.achievementLine {
+  width: 1px;
+  height: 2vh;
+  background-color: white;
+  margin-left: 2vw;
+  margin-right: 0.7vw;
+}
+
+.achievementInnerRight {
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.achievementRewardTitle {
+  font-size: 1vh;
+  font-weight: 300;
+}
+
+.achievementRewardDesc {
+  margin-top: 0.4vh;
+  font-size: 1.1vh;
+  font-weight: 500;
+}

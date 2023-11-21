@@ -6,7 +6,7 @@ body {
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
   font-family: "Montserrat", "Pretendard JP Variable", system-ui, -apple-system, arial;
   background-color: white;
   margin: 3vh 3vw;

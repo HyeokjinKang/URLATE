@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <title>URLATE Client</title>
     <link rel="stylesheet" href="/css/iziToast.min.css" />
+    <link rel="stylesheet" href="/css/globalSocket.css?v=<%= ver %>" />
     <link rel="stylesheet" href="/css/game.css?v=<%= ver %>" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
@@ -718,11 +719,14 @@
       <p class="optionValue volumeMasterValue">50%</p>
     </div>
     <script src="/js/howler.min.js"></script>
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       const cdn = "<%= cdn %>";
       const url = "<%= url %>";
       const api = "<%= api %>";
+      const game = "<%= game %>";
+      const alias = "<%= __('alias') %>".split(",");
       const pressAnywhere = "<%= __('press_anywhere') %>";
       const enabled = "<%= __('enabled') %>";
       const registered = "<%= __('registered') %>";
@@ -736,13 +740,23 @@
       const speed = "<%= __('speed') %>";
       const notAvailable1 = "<%= __('not_available_1') %>";
       const notAvailable2 = "<%= __('not_available_2') %>";
-      const alias = "<%= __('alias') %>".split(",");
       const rating = "<%= __('rating') %>";
       const nothingHere = "<%= __('nothing_here') %>";
       const imageError = "<%= __('image_error') %>";
-      if (lang == "en") document.body.style.letterSpacing = "-0.3px";
+      const aliasSelect = "<%= __('alias_select') %>";
+      const pictureMessage = "<%= __('picture_message') %>";
+      const socketi18n = {
+        connected: "<%= __('socket_status_connected') %>",
+        reconnecting: "<%= __('socket_status_reconnecting') %>",
+        conflict: "<%= __('socket_connection_conflict') %>",
+        error: "<%= __('socket_connection_error') %>",
+        unauthorized: "<%= __('socket_connection_unauthorized') %>",
+        reward: "<%= __('socket_achievement_reward') %>",
+        alias: "<%= __('socket_achievement_alias') %>",
+      };
     </script>
     <script src="/js/iziToast.min.js"></script>
     <script src="/js/game.js?v=<%= ver %>"></script>
+    <script src="/js/globalSocket.js?v=<%= ver %>"></script>
   </body>
 </html>
