@@ -241,5 +241,7 @@
   "socket_status_connected": "You are connected to the server.",
   "socket_status_reconnecting": "Trying to reconnect..",
   "alias_select": "Select alias",
-  "picture_message": "Select what you want to change."
+  "picture_message": "Select what you want to change.",
+  "socket_achievement_reward": "Reward",
+  "socket_achievement_alias": "Alias"
 }
