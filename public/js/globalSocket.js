@@ -1,6 +1,16 @@
+const body = document.querySelector("body");
 let isErrorOccured = false;
+let achievementCount = 0;
 const socket = io(game, {
   withCredentials: true,
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const img = new Image();
+  img.src = "/images/parts/icons/medal-solid.svg";
+  const div = document.createElement("div");
+  div.id = "achievementsContainer";
+  body.appendChild(div);
 });
 
 socket.on("connect", () => {
@@ -59,16 +69,47 @@ socket.on("connection:unauthorized", () => {
   window.location.href = `${api}/auth/logout?redirect=true`;
 });
 
-socket.on("pong", () => {
-  console.log("[Socket.IO] Pong");
-});
-
 socket.on("achievement", (data) => {
+  data = JSON.parse(data);
   console.log("[Socket.IO] Achievement");
   console.log(data);
+  data.rewards.forEach((reward) => {
+    [...document.getElementsByClassName("achievementOverlay")].forEach((element, i) => {
+      element.style.bottom = `${7 * (i + 1)}vh`;
+    });
+    const div = document.createElement("div");
+    div.classList.add("achievementOverlay");
+    document.getElementById("achievementsContainer").appendChild(div);
+    document.getElementsByClassName("achievementOverlay")[achievementCount].innerHTML = `
+      <div class="achievementInner">
+        <div class="achievementInnerLeft">
+          <div class="achievementMedal">
+            <img src="/images/parts/icons/medal-solid.svg" />
+          </div>
+          <div class="achievementContentVertical">
+            <span class="achievementContentTitle">${data[`title_${lang}`]}</span>
+            <span class="achievementContentDesc">${data[`detail_${lang}`]}</span>
+          </div>
+        </div>
+        <div class="achievementLine"></div>
+        <div class="achievementInnerRight">
+          <span class="achievementRewardTitle">${socketi18n[reward[0]]}</span>
+          <span class="achievementRewardDesc">${getReward(reward[0], reward[1])}</span>
+        </div>
+      </div>`;
+    achievementCount++;
+    setTimeout(() => {
+      achievementCount--;
+      document.getElementsByClassName("achievementOverlay")[0].remove();
+    }, 4000);
+  });
 });
 
+const getReward = (type, id) => {
+  if (type == "reward") return "-";
+  if (type == "alias") return alias[id];
+};
+
 const ping = setInterval(() => {
-  console.log("[Socket.IO] Ping");
   socket.emit("ping");
 }, 5000);
