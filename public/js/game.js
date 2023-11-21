@@ -41,6 +41,7 @@ let settings = [];
 let profileSong;
 let display = -1;
 let userid;
+let profileid;
 let username = "";
 let picture;
 let analyser, dataArray;
@@ -1250,6 +1251,7 @@ const rankUpdate = async () => {
 };
 
 const profileUpdate = async (uid, isMe) => {
+  profileid = uid;
   const res = await fetch(`${api}/profile/${uid}`, {
     method: "GET",
     credentials: "include",
@@ -1913,105 +1915,107 @@ const tracksToggle = () => {
 };
 
 const changeProfile = (e) => {
-  switch (e) {
-    case "alias":
-      let element = "";
-      let options = "";
-      for (let i = 0; i < alias.length; i++) {
-        if (ownedAlias.has(i)) options += `<option value="${i}"${i == aliasNum ? " selected" : ""}>${alias[i]}</option>`;
-      }
-      iziToast.show({
-        overlay: true,
-        displayMode: "once",
-        theme: "dark",
-        id: "inputs",
-        zindex: 999,
-        timeout: 20000,
-        title: aliasSelect,
-        progressBarColor: "#999",
-        message: "",
-        position: "center",
-        drag: false,
-        inputs: [
-          [
-            `<select>${options}</select>`,
-            "change",
-            (instance, toast, input, e) => {
-              element = input.value;
-            },
+  if (profileid == userid) {
+    switch (e) {
+      case "alias":
+        let element = "";
+        let options = "";
+        for (let i = 0; i < alias.length; i++) {
+          if (ownedAlias.has(i)) options += `<option value="${i}"${i == aliasNum ? " selected" : ""}>${alias[i]}</option>`;
+        }
+        iziToast.show({
+          overlay: true,
+          displayMode: "once",
+          theme: "dark",
+          id: "inputs",
+          zindex: 999,
+          timeout: 20000,
+          title: aliasSelect,
+          progressBarColor: "#999",
+          message: "",
+          position: "center",
+          drag: false,
+          inputs: [
+            [
+              `<select>${options}</select>`,
+              "change",
+              (instance, toast, input, e) => {
+                element = input.value;
+              },
+            ],
           ],
-        ],
-        buttons: [
-          [
-            "<button><b>OK</b></button>",
-            async (instance, toast) => {
-              loadingOverlayShow();
-              instance.hide({ transitionOut: "fadeOut" }, toast, "confirm");
-              if (element !== "" && ownedAlias.has(Number(element))) {
-                await fetch(`${api}/profile/alias`, {
-                  method: "PUT",
-                  credentials: "include",
-                  body: JSON.stringify({
-                    value: element,
-                  }),
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                })
-                  .then((res) => res.json())
-                  .then((data) => {
-                    if (data.result != "success") {
-                      alert(`Error occured.\n${data.error}`);
-                    }
+          buttons: [
+            [
+              "<button><b>OK</b></button>",
+              async (instance, toast) => {
+                loadingOverlayShow();
+                instance.hide({ transitionOut: "fadeOut" }, toast, "confirm");
+                if (element !== "" && ownedAlias.has(Number(element))) {
+                  await fetch(`${api}/profile/alias`, {
+                    method: "PUT",
+                    credentials: "include",
+                    body: JSON.stringify({
+                      value: element,
+                    }),
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
                   })
-                  .catch((error) => {
-                    alert(`Error occured.\n${error}`);
-                    console.error(`Error occured.\n${error}`);
-                  });
-              }
-              aliasNum = Number(element);
-              document.getElementById("profileBio").textContent = `| ${alias[aliasNum]}`;
-              loadingOverlayHide();
-            },
-            true,
+                    .then((res) => res.json())
+                    .then((data) => {
+                      if (data.result != "success") {
+                        alert(`Error occured.\n${data.error}`);
+                      }
+                    })
+                    .catch((error) => {
+                      alert(`Error occured.\n${error}`);
+                      console.error(`Error occured.\n${error}`);
+                    });
+                }
+                aliasNum = Number(element);
+                document.getElementById("profileBio").textContent = `| ${alias[aliasNum]}`;
+                loadingOverlayHide();
+              },
+              true,
+            ],
           ],
-        ],
-      });
-      break;
-    case "picture":
-      iziToast.show({
-        overlay: true,
-        timeout: 20000,
-        zindex: 999,
-        theme: "dark",
-        title: pictureMessage,
-        position: "center",
-        progressBarColor: "#999",
-        buttons: [
-          [
-            "<button>Profile</button>",
-            (instance, toast) => {
-              instance.hide({ transitionOut: "fadeOut" }, toast, "picture");
-            },
+        });
+        break;
+      case "picture":
+        iziToast.show({
+          overlay: true,
+          timeout: 20000,
+          zindex: 999,
+          theme: "dark",
+          title: pictureMessage,
+          position: "center",
+          progressBarColor: "#999",
+          buttons: [
+            [
+              "<button>Profile</button>",
+              (instance, toast) => {
+                instance.hide({ transitionOut: "fadeOut" }, toast, "picture");
+              },
+            ],
+            [
+              "<button>Background</button>",
+              (instance, toast) => {
+                instance.hide({ transitionOut: "fadeOut" }, toast, "background");
+              },
+            ],
           ],
-          [
-            "<button>Background</button>",
-            (instance, toast) => {
-              instance.hide({ transitionOut: "fadeOut" }, toast, "background");
-            },
-          ],
-        ],
-        onClosing: (instance, toast, closedBy) => {
-          if (closedBy != "button") {
-            let input = document.createElement("input");
-            input.type = "file";
-            input.accept = "image/*";
-            input.setAttribute("onchange", `picLoaded(event, "${closedBy}")`);
-            input.click();
-          }
-        },
-      });
-      break;
+          onClosing: (instance, toast, closedBy) => {
+            if (closedBy != "button") {
+              let input = document.createElement("input");
+              input.type = "file";
+              input.accept = "image/*";
+              input.setAttribute("onchange", `picLoaded(event, "${closedBy}")`);
+              input.click();
+            }
+          },
+        });
+        break;
+    }
   }
 };
 
