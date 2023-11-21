@@ -8,7 +8,7 @@ socket.on("connect", () => {
   if (isErrorOccured) {
     iziToast.success({
       title: "Connected",
-      message: socketConnected,
+      message: socketi18n.connected,
       timeout: 2000,
       layout: 2,
       transitionIn: "fadeInLeft",
@@ -18,13 +18,13 @@ socket.on("connect", () => {
 
 socket.on("disconnect", (reason) => {
   if (reason === "io server disconnect") {
-    alert(connectionError);
+    alert(socketi18n.error);
     window.location.href = `${api}/auth/logout?redirect=true`; // Session error, need to relogin
   } else if (reason === "io client disconnect") return;
   console.error("[Socket.IO] Disconnected from server");
   iziToast.warning({
     title: "Disconnected",
-    message: socketReconnecting,
+    message: socketi18n.reconnecting,
     timeout: 2000,
     layout: 2,
     transitionIn: "fadeInLeft",
@@ -36,7 +36,7 @@ socket.on("connect_error", () => {
   console.error("[Socket.IO] Cannot connect to server");
   iziToast.error({
     title: "Connection error",
-    message: socketReconnecting,
+    message: socketi18n.reconnecting,
     timeout: 2000,
     layout: 2,
     transitionIn: "fadeInLeft",
@@ -49,13 +49,13 @@ socket.on("connect_error", () => {
 
 socket.on("connection:conflict", () => {
   socket.disconnect();
-  alert(connectionConflict);
+  alert(socketi18n.conflict);
   window.location.href = `${api}/auth/logout?redirect=true`;
 });
 
 socket.on("connection:unauthorized", () => {
   socket.disconnect();
-  alert(connectionUnauthorized);
+  alert(socketi18n.unauthorized);
   window.location.href = `${api}/auth/logout?redirect=true`;
 });
 
