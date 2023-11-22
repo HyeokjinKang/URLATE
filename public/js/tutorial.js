@@ -1116,7 +1116,7 @@ const calculateResult = () => {
   rankImg.src = `/images/parts/elements/${rank}.webp`;
   document.getElementById("scoreInfoRank").style.setProperty("--background", `url('/images/parts/elements/${rank}back.webp')`);
   setTimeout(() => {
-    document.getElementById("componentCanvas").style.opacity = "0";
+    canvasContainer.style.opacity = "0";
   }, 500);
   setTimeout(() => {
     floatingArrowContainer.style.display = "flex";
@@ -1154,6 +1154,20 @@ const calculateResult = () => {
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
   }
+  fetch(`${api}/tutorial`, {
+    method: "PUT",
+    credentials: "include",
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.result != "success") {
+        alert(`Error occured.\n${data.error}`);
+      }
+    })
+    .catch((error) => {
+      alert(`Error occured.\n${error}`);
+      console.error(`Error occured.\n${error}`);
+    });
 };
 
 const trackMouseSelection = (i, v1, v2, x, y) => {
@@ -1472,22 +1486,7 @@ const overlayClose = (s) => {
 };
 
 const finish = () => {
-  fetch(`${api}/tutorial`, {
-    method: "PUT",
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.result != "success") {
-        alert(`Error occured.\n${data.error}`);
-      } else {
-        window.location.href = `${url}/game?initialize=0`;
-      }
-    })
-    .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
-    });
+  window.location.href = `${url}/game?initialize=0`;
 };
 
 let scrollTimer = 0;
