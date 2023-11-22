@@ -73,36 +73,39 @@ socket.on("achievement", (data) => {
   data = JSON.parse(data);
   console.log("[Socket.IO] Achievement");
   console.log(data);
-  data.rewards.forEach((reward) => {
-    [...document.getElementsByClassName("achievementOverlay")].forEach((element, i) => {
-      element.style.bottom = `${7 * (i + 1)}vh`;
+  for (const achievement of data) {
+    console.log(achievement.rewards);
+    JSON.parse(achievement.rewards).forEach((reward) => {
+      [...document.getElementsByClassName("achievementOverlay")].forEach((element, i) => {
+        element.style.bottom = `${7 * (i + 1)}vh`;
+      });
+      const div = document.createElement("div");
+      div.classList.add("achievementOverlay");
+      document.getElementById("achievementsContainer").appendChild(div);
+      document.getElementsByClassName("achievementOverlay")[achievementCount].innerHTML = `
+        <div class="achievementInner">
+          <div class="achievementInnerLeft">
+            <div class="achievementMedal">
+              <img src="/images/parts/icons/medal-solid.svg" />
+            </div>
+            <div class="achievementContentVertical">
+              <span class="achievementContentTitle">${achievement[`title_${lang}`]}</span>
+              <span class="achievementContentDesc">${achievement[`detail_${lang}`]}</span>
+            </div>
+          </div>
+          <div class="achievementLine"></div>
+          <div class="achievementInnerRight">
+            <span class="achievementRewardTitle">${socketi18n[reward[0]]}</span>
+            <span class="achievementRewardDesc">${getReward(reward[0], reward[1])}</span>
+          </div>
+        </div>`;
+      achievementCount++;
+      setTimeout(() => {
+        achievementCount--;
+        document.getElementsByClassName("achievementOverlay")[0].remove();
+      }, 4000);
     });
-    const div = document.createElement("div");
-    div.classList.add("achievementOverlay");
-    document.getElementById("achievementsContainer").appendChild(div);
-    document.getElementsByClassName("achievementOverlay")[achievementCount].innerHTML = `
-      <div class="achievementInner">
-        <div class="achievementInnerLeft">
-          <div class="achievementMedal">
-            <img src="/images/parts/icons/medal-solid.svg" />
-          </div>
-          <div class="achievementContentVertical">
-            <span class="achievementContentTitle">${data[`title_${lang}`]}</span>
-            <span class="achievementContentDesc">${data[`detail_${lang}`]}</span>
-          </div>
-        </div>
-        <div class="achievementLine"></div>
-        <div class="achievementInnerRight">
-          <span class="achievementRewardTitle">${socketi18n[reward[0]]}</span>
-          <span class="achievementRewardDesc">${getReward(reward[0], reward[1])}</span>
-        </div>
-      </div>`;
-    achievementCount++;
-    setTimeout(() => {
-      achievementCount--;
-      document.getElementsByClassName("achievementOverlay")[0].remove();
-    }, 4000);
-  });
+  }
 });
 
 const getReward = (type, id) => {
