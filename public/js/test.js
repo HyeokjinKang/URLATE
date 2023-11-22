@@ -1130,7 +1130,7 @@ const calculateResult = () => {
   rankImg.src = `/images/parts/elements/${rank}.webp`;
   document.getElementById("scoreInfoRank").style.setProperty("--background", `url('/images/parts/elements/${rank}back.webp')`);
   setTimeout(() => {
-    document.getElementById("componentCanvas").style.opacity = "0";
+    canvasContainer.style.opacity = "0";
   }, 500);
   setTimeout(() => {
     floatingArrowContainer.style.display = "flex";
