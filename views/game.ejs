@@ -9,13 +9,20 @@
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
     <script>
-      let intro1load = 0;
+      let introload = 0;
       const intro1loaded = () => {
-        if (intro1load == 1) {
+        if (introload == 2) {
           document.getElementById("pressAnywhere").textContent = pressAnywhere;
           document.getElementById("warningContainer").onclick = warningSkip;
         }
-        intro1load++;
+        introload++;
+      };
+      const intro2loaded = () => {
+        if (introload == 2) {
+          document.getElementById("pressAnywhere").textContent = pressAnywhere;
+          document.getElementById("warningContainer").onclick = warningSkip;
+        }
+        introload++;
       };
     </script>
   </head>
@@ -48,6 +55,12 @@
       <video id="intro1video" onloadeddata="intro1loaded()">
         <source type="video/webm" src="<%= cdn %>/videos/croissant.webm" />
         <source type="video/mp4" src="<%= cdn %>/videos/croissant.mp4" />
+      </video>
+    </div>
+    <div id="intro2container" class="introContainer" onclick="intro2skip()">
+      <video id="intro2video" onloadeddata="intro2loaded()">
+        <source type="video/webm" src="<%= cdn %>/videos/coupy.webm" />
+        <source type="video/mp4" src="<%= cdn %>/videos/coupy.mp4" />
       </video>
     </div>
     <div id="loadingContainer">

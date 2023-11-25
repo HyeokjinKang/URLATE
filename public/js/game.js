@@ -11,10 +11,12 @@ const offsetButton = document.getElementById("offsetButton");
 const sensitiveValue = document.getElementById("sensitiveValue");
 const inputSizeValue = document.getElementById("inputSizeValue");
 const offsetButtonText = document.getElementById("offsetButtonText");
-const intro1video = document.getElementById("intro1video");
 const warningContainer = document.getElementById("warningContainer");
-const intro1container = document.getElementById("intro1container");
 const warningInner = document.getElementById("warningInner");
+const intro1video = document.getElementById("intro1video");
+const intro1container = document.getElementById("intro1container");
+const intro2video = document.getElementById("intro2video");
+const intro2container = document.getElementById("intro2container");
 const langSelector = document.getElementById("langSelector");
 const selectSongContainer = document.getElementById("selectSongContainer");
 const trackModsText = document.getElementById("trackModsText");
@@ -72,6 +74,7 @@ let rate = 1;
 let disableText = false;
 
 let intro1skipped = 0;
+let intro2skipped = 0;
 
 let overlayTime = 0;
 let shiftDown = false;
@@ -206,6 +209,7 @@ const settingApply = () => {
       }
       Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
       intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
+      intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
     },
   });
   themeSong = new Howl({
@@ -221,6 +225,7 @@ const settingApply = () => {
       }
       Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
       intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
+      intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
     },
   });
 };
@@ -320,6 +325,22 @@ const intro1skip = () => {
     intro1container.style.opacity = "0";
     setTimeout(() => {
       intro1container.style.display = "none";
+      intro2video.play();
+    }, 500);
+  }
+};
+
+intro1video.onended = () => {
+  intro1skip();
+};
+
+const intro2skip = () => {
+  intro2video.pause();
+  if (!intro2skipped) {
+    intro2skipped++;
+    intro2container.style.opacity = "0";
+    setTimeout(() => {
+      intro2container.style.display = "none";
       loaded++;
       setTimeout(() => {
         if (loaded == 4) {
@@ -331,8 +352,8 @@ const intro1skip = () => {
   }
 };
 
-intro1video.onended = () => {
-  intro1skip();
+intro2video.onended = () => {
+  intro2skip();
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -343,11 +364,11 @@ document.addEventListener("DOMContentLoaded", () => {
     warningInner.style.opacity = "1";
   }, 1000);
   setTimeout(() => {
-    if (intro1load == 1) {
+    if (introload == 2) {
       document.getElementById("pressAnywhere").textContent = pressAnywhere;
       document.getElementById("warningContainer").onclick = warningSkip;
     }
-    intro1load++;
+    introload++;
     document.getElementById("pressAnywhere").style.opacity = "1";
     warningInner.style.borderBottom = "0.1vh solid #555";
   }, 3000);
@@ -358,6 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     warningContainer.style.display = "flex";
     intro1container.style.display = "flex";
+    intro2container.style.display = "flex";
   }
 
   fetch(`${api}/notice/${lang}`, {
@@ -426,6 +448,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     tracksUpdate();
                     Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
                     intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
+                    intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
                   } else {
                     alert("Failed to load song list.");
                     console.error("Failed to load song list.");
@@ -1509,6 +1532,7 @@ const settingChanged = (e, v) => {
     }, 1500);
     Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
     intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
+    intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
   } else if (v == "volumeSong") {
     settings.sound.volume.music = e.value / 100;
     volumeSongValue.textContent = Math.round(e.value) + "%";
@@ -2097,6 +2121,7 @@ const scrollEvent = (e) => {
       }
       Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
       intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
+      intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
       volumeOverlay.classList.add("overlayOpen");
       overlayTime = Date.now();
       setTimeout(() => {
