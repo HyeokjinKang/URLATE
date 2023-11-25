@@ -2407,6 +2407,16 @@ input[type="number"] {
   object-fit: cover;
 }
 
+#intro2container {
+  z-index: 500;
+}
+
+#intro2video {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+}
+
 #warningTitle {
   font-weight: 700;
   font-size: 4vh;
