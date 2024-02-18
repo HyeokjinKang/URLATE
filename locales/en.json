@@ -243,5 +243,6 @@
   "alias_select": "Select alias",
   "picture_message": "Select what you want to change.",
   "socket_achievement_reward": "Reward",
-  "socket_achievement_alias": "Alias"
+  "socket_achievement_alias": "Alias",
+  "image_error": "Image upload failed, please check if the image capacity is less than 1MB."
 }
