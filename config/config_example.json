@@ -4,6 +4,7 @@
     "api": "https://api.example.com",
     "cdn": "https://cdn.example.com",
     "game": "https://game.example.com",
+    "nsfw": "https://nsfw.example.com",
     "secretKey": "Something Random",
     "mode": "production",
     "port": 3000

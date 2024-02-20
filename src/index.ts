@@ -5,7 +5,11 @@ import i18n from "./i18n";
 import multer from "multer";
 import path from "path";
 import fetch from "node-fetch";
-const { exec } = require("child_process");
+import * as nsfw from "nsfwjs";
+import { exec } from "child_process";
+import * as tf from "@tensorflow/tfjs-node";
+import fs from "fs";
+import sharp from "sharp";
 
 let branch;
 exec("git branch --show-current", (err, stdout, stderr) => {
@@ -17,6 +21,8 @@ exec("git branch --show-current", (err, stdout, stderr) => {
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const config = require(__dirname + "/../config/config.json");
+
+let model;
 
 const app = express();
 app.locals.pretty = true;
@@ -119,7 +125,7 @@ const upload = multer({
       cb(null, __dirname + "/../public/images/profiles");
     },
     filename: function (req, file, cb) {
-      cb(null, Date.now() + path.extname(file.originalname));
+      cb(null, Date.now() + ".webp");
     },
   }),
   limits: {
@@ -159,33 +165,56 @@ app.post("/profile/:userid/:type", async (req, res) => {
       });
       return;
     }
-    fetch(`${config.project.api}/profile/${type}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userid: req.params.userid,
-        value: `${config.project.url}/images/profiles/${file.filename}`,
-        secret: config.project.secretKey,
-      }),
-    })
-      .then((res) => res.json())
-      .then((json) => {
-        if (json.result == "failed") {
-          res.status(400).json({
-            result: "failed",
-            message: "Error occured while uploading",
-            error: json.message,
-          });
-          return;
-        }
-        res.status(200).json({ result: "success", url: `${config.project.url}/images/profiles/${file.filename}` });
+    sharp(file.path)
+      .resize({ width: 256 })
+      .withMetadata()
+      .toFormat("webp")
+      .toBuffer((err, buffer) => {
+        if (err) throw err;
+        fs.writeFile(file.path, buffer, async (err) => {
+          if (err) throw err;
+          const buffer = await sharp(file.path).toFormat("png").toBuffer();
+          const image = tf.node.decodeImage(buffer, 3);
+          const predictions = await model.classify(image);
+          image.dispose();
+          let explicit = false;
+          if (predictions[0].className != "Drawing" || predictions[0].className != "Neutral") explicit = true;
+          fetch(`${config.project.api}/profile/${type}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              explicit,
+              userid: req.params.userid,
+              value: `${config.project.url}/images/profiles/${file.filename}`,
+              secret: config.project.secretKey,
+            }),
+          })
+            .then((res) => res.json())
+            .then((json) => {
+              if (json.result == "failed") {
+                res.status(400).json({
+                  result: "failed",
+                  message: "Error occured while uploading",
+                  error: json.message,
+                });
+                return;
+              }
+              res.status(200).json({ result: "success", url: `${config.project.url}/images/profiles/${file.filename}`, explicit });
+            });
+        });
       });
   });
 });
 
-app.listen(config.project.port, () => {
-  signale.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : process.env.npm_package_version}.`);
-  signale.success(`HTTP Server running at port ${config.project.port}.`);
+const loadModel = async () => {
+  model = await nsfw.load(`${config.project.nsfw}/quant_nsfw_mobilenet/`);
+};
+
+loadModel().then(() => {
+  app.listen(config.project.port, () => {
+    signale.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : process.env.npm_package_version}.`);
+    signale.success(`HTTP Server running at port ${config.project.port}.`);
+  });
 });
