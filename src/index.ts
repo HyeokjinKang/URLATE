@@ -182,7 +182,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
           const predictions = await model.classify(image);
           image.dispose();
           let explicit = false;
-          if (predictions[0].className != "Drawing" || predictions[0].className != "Neutral") explicit = true;
+          if (predictions[0].className != "Drawing" && predictions[0].className != "Neutral") explicit = true;
           fetch(`${config.project.api}/profile/${type}`, {
             method: "PUT",
             headers: {
