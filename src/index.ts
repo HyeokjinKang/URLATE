@@ -135,9 +135,13 @@ const upload = multer({
 
 app.post("/profile/:userid/:type", async (req, res) => {
   let type = "";
-  if (req.params.type == "picture") type = "picture";
-  else if (req.params.type == "background") type = "background";
-  else {
+  let width = 256;
+  if (req.params.type == "picture") {
+    type = "picture";
+  } else if (req.params.type == "background") {
+    width = 1024;
+    type = "background";
+  } else {
     res.status(400).json({
       result: "failed",
       message: "Error occured while uploading",
@@ -166,7 +170,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
       return;
     }
     sharp(file.path)
-      .resize({ width: 256 })
+      .resize({ width: width })
       .withMetadata()
       .toFormat("webp")
       .toBuffer((err, buffer) => {
