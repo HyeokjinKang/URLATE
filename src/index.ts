@@ -123,7 +123,7 @@ const upload = multer({
     },
   }),
   limits: {
-    fileSize: 1024 * 1024,
+    fileSize: 1024 * 1024 * 3,
   },
 }).single("img");
 
@@ -142,7 +142,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
       if (err instanceof multer.MulterError) err = err.message;
-      else err.code;
+      else err = err.code;
       res.status(400).json({
         result: "failed",
         message: "Error occured while uploading",
