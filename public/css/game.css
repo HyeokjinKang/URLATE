@@ -362,6 +362,7 @@ p {
 #profilePic {
   cursor: pointer;
   height: 5vh;
+  width: 5vh;
   border-radius: 5vh;
   border: 2px solid black;
   box-shadow: 0 0 1vw rgba(20, 20, 20, 0.1);
@@ -3297,4 +3298,12 @@ del {
 
 #renderer {
   width: 100vw;
+}
+
+.blur {
+  filter: blur(5px);
+}
+
+#profileImageContainer.blur {
+  filter: blur(50px) brightness(0.6);
 }

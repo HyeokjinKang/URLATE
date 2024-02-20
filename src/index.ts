@@ -5,7 +5,11 @@ import i18n from "./i18n";
 import multer from "multer";
 import path from "path";
 import fetch from "node-fetch";
-const { exec } = require("child_process");
+import * as nsfw from "nsfwjs";
+import { exec } from "child_process";
+import * as tf from "@tensorflow/tfjs-node";
+import fs from "fs";
+import sharp from "sharp";
 
 let branch;
 exec("git branch --show-current", (err, stdout, stderr) => {
@@ -17,6 +21,8 @@ exec("git branch --show-current", (err, stdout, stderr) => {
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const config = require(__dirname + "/../config/config.json");
+
+let model;
 
 const app = express();
 app.locals.pretty = true;
@@ -119,19 +125,25 @@ const upload = multer({
       cb(null, __dirname + "/../public/images/profiles");
     },
     filename: function (req, file, cb) {
-      cb(null, Date.now() + path.extname(file.originalname));
+      cb(null, Date.now() + ".webp");
     },
   }),
   limits: {
-    fileSize: 1024 * 1024,
+    fileSize: 1024 * 1024 * 3,
   },
 }).single("img");
 
 app.post("/profile/:userid/:type", async (req, res) => {
   let type = "";
-  if (req.params.type == "picture") type = "picture";
-  else if (req.params.type == "background") type = "background";
-  else {
+  let width = 256;
+  let height = 256;
+  if (req.params.type == "picture") {
+    type = "picture";
+  } else if (req.params.type == "background") {
+    width = 1024;
+    height = null;
+    type = "background";
+  } else {
     res.status(400).json({
       result: "failed",
       message: "Error occured while uploading",
@@ -142,7 +154,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
       if (err instanceof multer.MulterError) err = err.message;
-      else err.code;
+      else err = err.code;
       res.status(400).json({
         result: "failed",
         message: "Error occured while uploading",
@@ -159,33 +171,77 @@ app.post("/profile/:userid/:type", async (req, res) => {
       });
       return;
     }
-    fetch(`${config.project.api}/profile/${type}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userid: req.params.userid,
-        value: `${config.project.url}/images/profiles/${file.filename}`,
-        secret: config.project.secretKey,
-      }),
-    })
-      .then((res) => res.json())
-      .then((json) => {
-        if (json.result == "failed") {
-          res.status(400).json({
-            result: "failed",
-            message: "Error occured while uploading",
-            error: json.message,
-          });
-          return;
-        }
-        res.status(200).json({ result: "success", url: `${config.project.url}/images/profiles/${file.filename}` });
+    const ROOT = __dirname.split("/").slice(0, -1).join("/") + "/public/images/profiles";
+    const filePath = fs.realpathSync(path.resolve(ROOT, file.path));
+    if (!filePath.startsWith(ROOT)) {
+      res.status(400).json({
+        result: "failed",
+        message: "Error occured while uploading",
+        error: "Invalid file path",
       });
+      return;
+    }
+    let fileBuffer: Buffer;
+    //TODO : https://github.com/lovell/sharp/issues/3999
+    if (path.extname(file.originalname) == ".webp") {
+      fileBuffer = await sharp(filePath)
+        .webp({
+          quality: 70,
+          effort: 6,
+        })
+        .toBuffer();
+    } else {
+      fileBuffer = await sharp(filePath)
+        .resize({ width, height })
+        .webp({
+          quality: 70,
+          effort: 6,
+        })
+        .toBuffer();
+    }
+    fs.writeFile(filePath, fileBuffer, async (err) => {
+      if (err) throw err;
+      const buffer = await sharp(filePath).toFormat("png").toBuffer();
+      const image = tf.node.decodeImage(buffer, 3);
+      const predictions = await model.classify(image);
+      image.dispose();
+      let explicit = false;
+      if (predictions[0].className != "Drawing" && predictions[0].className != "Neutral") explicit = true;
+      fetch(`${config.project.api}/profile/${type}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          explicit,
+          userid: req.params.userid,
+          value: `${config.project.url}/images/profiles/${file.filename}`,
+          secret: config.project.secretKey,
+        }),
+      })
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.result == "failed") {
+            res.status(400).json({
+              result: "failed",
+              message: "Error occured while uploading",
+              error: json.message,
+            });
+            return;
+          }
+          res.status(200).json({ result: "success", url: `${config.project.url}/images/profiles/${file.filename}`, explicit });
+        });
+    });
   });
 });
 
-app.listen(config.project.port, () => {
-  signale.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : process.env.npm_package_version}.`);
-  signale.success(`HTTP Server running at port ${config.project.port}.`);
+const loadModel = async () => {
+  model = await nsfw.load(`${config.project.nsfw}/quant_nsfw_mobilenet/`);
+};
+
+loadModel().then(() => {
+  app.listen(config.project.port, () => {
+    signale.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : process.env.npm_package_version}.`);
+    signale.success(`HTTP Server running at port ${config.project.port}.`);
+  });
 });

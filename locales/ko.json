@@ -219,7 +219,7 @@
   "rank_subtitle": "RANKING",
   "profile": "프로필",
   "banner": "장식장",
-  "image_error": "이미지 업로드에 실패하였습니다. 이미지 용량이 1MB 이하인지 확인해주세요.",
+  "image_error": "이미지 업로드에 실패하였습니다. 이미지 용량이 3MB 이하인지 확인해주세요.",
   "socket_connection_conflict": "다른 기기에서 접속하여 연결이 끊어졌습니다. 다시 로그인해주세요.",
   "socket_connection_error": "에러가 발생하여 연결이 끊어졌습니다. 다시 로그인해주세요.",
   "socket_connection_unauthorized": "로그인이 해제되어 연결이 끊어졌습니다. 다시 로그인해주세요.",

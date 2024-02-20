@@ -422,6 +422,7 @@ document.addEventListener("DOMContentLoaded", () => {
               tutorial = data.tutorial;
               picture = data.picture;
               document.getElementById("profilePic").src = picture;
+              if (data.explicit % 2 == 1) document.getElementById("profilePic").classList.add("blur");
               document.getElementById("name").textContent = username;
               document.getElementById("optionName").textContent = username;
               if (lang == "ko") {
@@ -1297,6 +1298,12 @@ const profileUpdate = async (uid, isMe) => {
       }
       document.getElementById("profileDescription").style.opacity = "0";
     }
+    if (profile.explicit >= 2) {
+      document.getElementById("profileImageContainer").classList.add("blur");
+    }
+    if (profile.explicit % 2 == 1) {
+      document.getElementById("profileImage").classList.add("blur");
+    }
     document.getElementById("profileImageContainer").style.backgroundImage = `url("${profile.background}")`;
     document.getElementById("profileImage").src = profile.picture;
     document.getElementById("profileName").textContent = profile.nickname;
@@ -2073,10 +2080,23 @@ const picLoaded = async (e, type) => {
         iziToast.success({
           title: "Success!",
         });
-        if (type == "background") document.getElementById("profileImageContainer").style.backgroundImage = `url("${data.url}")`;
-        else {
+        if (type == "background") {
+          document.getElementById("profileImageContainer").style.backgroundImage = `url("${data.url}")`;
+          if (data.explicit) {
+            document.getElementById("profileImageContainer").classList.add("blur");
+          } else {
+            document.getElementById("profileImageContainer").classList.remove("blur");
+          }
+        } else {
           document.getElementById("profileImage").src = data.url;
           document.getElementById("profilePic").src = data.url;
+          if (data.explicit) {
+            document.getElementById("profileImage").classList.add("blur");
+            document.getElementById("profilePic").classList.add("blur");
+          } else {
+            document.getElementById("profileImage").classList.remove("blur");
+            document.getElementById("profilePic").classList.remove("blur");
+          }
         }
       }
     })
