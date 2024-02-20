@@ -136,10 +136,12 @@ const upload = multer({
 app.post("/profile/:userid/:type", async (req, res) => {
   let type = "";
   let width = 256;
+  let height = 256;
   if (req.params.type == "picture") {
     type = "picture";
   } else if (req.params.type == "background") {
     width = 1024;
+    height = null;
     type = "background";
   } else {
     res.status(400).json({
@@ -169,46 +171,67 @@ app.post("/profile/:userid/:type", async (req, res) => {
       });
       return;
     }
-    sharp(file.path)
-      .resize({ width: width })
-      .withMetadata()
-      .toFormat("webp")
-      .toBuffer((err, buffer) => {
-        if (err) throw err;
-        fs.writeFile(file.path, buffer, async (err) => {
-          if (err) throw err;
-          const buffer = await sharp(file.path).toFormat("png").toBuffer();
-          const image = tf.node.decodeImage(buffer, 3);
-          const predictions = await model.classify(image);
-          image.dispose();
-          let explicit = false;
-          if (predictions[0].className != "Drawing" && predictions[0].className != "Neutral") explicit = true;
-          fetch(`${config.project.api}/profile/${type}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              explicit,
-              userid: req.params.userid,
-              value: `${config.project.url}/images/profiles/${file.filename}`,
-              secret: config.project.secretKey,
-            }),
-          })
-            .then((res) => res.json())
-            .then((json) => {
-              if (json.result == "failed") {
-                res.status(400).json({
-                  result: "failed",
-                  message: "Error occured while uploading",
-                  error: json.message,
-                });
-                return;
-              }
-              res.status(200).json({ result: "success", url: `${config.project.url}/images/profiles/${file.filename}`, explicit });
-            });
-        });
+    const ROOT = __dirname.split("/").slice(0, -1).join("/") + "/public/images/profiles";
+    const filePath = fs.realpathSync(path.resolve(ROOT, file.path));
+    if (!filePath.startsWith(ROOT)) {
+      res.status(400).json({
+        result: "failed",
+        message: "Error occured while uploading",
+        error: "Invalid file path",
       });
+      return;
+    }
+    let fileBuffer: Buffer;
+    //TODO : https://github.com/lovell/sharp/issues/3999
+    if (path.extname(file.originalname) == ".webp") {
+      fileBuffer = await sharp(filePath)
+        .webp({
+          quality: 70,
+          effort: 6,
+        })
+        .toBuffer();
+    } else {
+      fileBuffer = await sharp(filePath)
+        .resize({ width, height })
+        .webp({
+          quality: 70,
+          effort: 6,
+        })
+        .toBuffer();
+    }
+    fs.writeFile(filePath, fileBuffer, async (err) => {
+      if (err) throw err;
+      const buffer = await sharp(filePath).toFormat("png").toBuffer();
+      const image = tf.node.decodeImage(buffer, 3);
+      const predictions = await model.classify(image);
+      image.dispose();
+      let explicit = false;
+      if (predictions[0].className != "Drawing" && predictions[0].className != "Neutral") explicit = true;
+      fetch(`${config.project.api}/profile/${type}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          explicit,
+          userid: req.params.userid,
+          value: `${config.project.url}/images/profiles/${file.filename}`,
+          secret: config.project.secretKey,
+        }),
+      })
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.result == "failed") {
+            res.status(400).json({
+              result: "failed",
+              message: "Error occured while uploading",
+              error: json.message,
+            });
+            return;
+          }
+          res.status(200).json({ result: "success", url: `${config.project.url}/images/profiles/${file.filename}`, explicit });
+        });
+    });
   });
 });
 
