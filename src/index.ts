@@ -181,57 +181,44 @@ app.post("/profile/:userid/:type", async (req, res) => {
       });
       return;
     }
-    let fileBuffer: Buffer;
-    //TODO : https://github.com/lovell/sharp/issues/3999
-    if (path.extname(file.originalname) == ".webp") {
-      fileBuffer = await sharp(filePath)
-        .webp({
-          quality: 70,
-          effort: 6,
-        })
-        .toBuffer();
-    } else {
-      fileBuffer = await sharp(filePath)
-        .resize({ width, height })
-        .webp({
-          quality: 70,
-          effort: 6,
-        })
-        .toBuffer();
-    }
-    fs.writeFile(filePath, fileBuffer, async (err) => {
-      if (err) throw err;
-      const buffer = await sharp(filePath).toFormat("png").toBuffer();
-      const image = tf.node.decodeImage(buffer, 3);
-      const predictions = await model.classify(image);
-      image.dispose();
-      let explicit = false;
-      if (predictions[0].className != "Drawing" && predictions[0].className != "Neutral") explicit = true;
-      fetch(`${config.project.api}/profile/${type}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          explicit,
-          userid: req.params.userid,
-          value: `${config.project.url}/images/profiles/${file.filename}`,
-          secret: config.project.secretKey,
-        }),
+    const fileBuffer: Buffer = await sharp(filePath)
+      .resize({ width, height })
+      .webp({
+        quality: 70,
+        effort: 6,
       })
-        .then((res) => res.json())
-        .then((json) => {
-          if (json.result == "failed") {
-            res.status(400).json({
-              result: "failed",
-              message: "Error occured while uploading",
-              error: json.message,
-            });
-            return;
-          }
-          res.status(200).json({ result: "success", url: `${config.project.url}/images/profiles/${file.filename}`, explicit });
-        });
-    });
+      .toBuffer();
+    fs.writeFileSync(filePath, fileBuffer);
+    const buffer = await sharp(fileBuffer).png().toBuffer();
+    const image = tf.node.decodeImage(buffer, 3);
+    const predictions = await model.classify(image);
+    image.dispose();
+    let explicit = false;
+    if (predictions[0].className != "Drawing" && predictions[0].className != "Neutral") explicit = true;
+    fetch(`${config.project.api}/profile/${type}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        explicit,
+        userid: req.params.userid,
+        value: `${config.project.url}/images/profiles/${file.filename}`,
+        secret: config.project.secretKey,
+      }),
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.result == "failed") {
+          res.status(400).json({
+            result: "failed",
+            message: "Error occured while uploading",
+            error: json.message,
+          });
+          return;
+        }
+        res.status(200).json({ result: "success", url: `${config.project.url}/images/profiles/${file.filename}`, explicit });
+      });
   });
 });
 
