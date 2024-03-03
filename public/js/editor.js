@@ -100,9 +100,9 @@ let copySelection = { element: -1, start: -1, end: -1, beat: 0 };
 
 let prevBeat = 1;
 const beep = new Howl({
-  src: `/sounds/beep1.ogg`,
-  format: ["ogg"],
-  volume: 0.5,
+  src: `/sounds/tick.wav`,
+  format: ["wav"],
+  volume: 0.8,
   autoplay: false,
   loop: false,
 });
