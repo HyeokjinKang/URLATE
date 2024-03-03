@@ -30,5 +30,11 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Tensorflow fix
+        run: |
+          cd node_modules/@tensorflow/tfjs-node/
+          node-pre-gyp rebuild
+          cd ../../../
+
       - name: Deploy
         run: rsync -azq --exclude=/.git/ $GITHUB_WORKSPACE URLATE-PRODUCTION:${{secrets.DEPLOY_TARGET}}
