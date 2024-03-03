@@ -100,9 +100,9 @@ let copySelection = { element: -1, start: -1, end: -1, beat: 0 };
 
 let prevBeat = 1;
 const beep = new Howl({
-  src: `/sounds/beep1.ogg`,
-  format: ["ogg"],
-  volume: 0.5,
+  src: `/sounds/tick.wav`,
+  format: ["wav"],
+  volume: 0.8,
   autoplay: false,
   loop: false,
 });
@@ -1054,25 +1054,29 @@ const cntRender = () => {
     destroyedBullets.clear();
     destroyedSeeks.clear();
 
+    const tw = cntCanvas.width / 200;
+    const th = cntCanvas.height / 200;
+
     // Grid
     if (gridToggle) {
+      let x1 = 0;
+      let x2 = tw * 5;
+      let y = 0;
+      cntCtx.lineWidth = 2;
+      cntCtx.strokeStyle = "#bbbbbb20";
+      cntCtx.beginPath();
       for (let i = -100; i <= 100; i += 10) {
-        const x1 = (cntCanvas.width / 200) * (i + 100);
-        const x2 = (cntCanvas.width / 200) * (i + 105);
-        const y = (cntCanvas.height / 200) * (i + 100);
-        cntCtx.strokeStyle = i == 0 ? "#ed3a2680" : "#88888830";
-        cntCtx.lineWidth = 2;
-        cntCtx.beginPath();
         cntCtx.moveTo(x1, 0);
         cntCtx.lineTo(x1, cntCanvas.height);
         cntCtx.moveTo(0, y);
         cntCtx.lineTo(cntCanvas.width, y);
-        cntCtx.stroke();
-        cntCtx.strokeStyle = "#bbbbbb20";
         cntCtx.moveTo(x2, 0);
         cntCtx.lineTo(x2, cntCanvas.height);
-        cntCtx.stroke();
+        x1 += tw * 10;
+        x2 += tw * 10;
+        y += th * 10;
       }
+      cntCtx.stroke();
     }
 
     // Circle Grid
@@ -1081,13 +1085,7 @@ const cntRender = () => {
       cntCtx.lineWidth = 2;
       for (let i = 1; i <= 10; i++) {
         cntCtx.beginPath();
-        cntCtx.arc(
-          (cntCanvas.width / 200) * (pattern.patterns[selectedCntElement.i].x + 100),
-          (cntCanvas.height / 200) * (pattern.patterns[selectedCntElement.i].y + 100),
-          (cntCanvas.width / 10) * i,
-          0,
-          2 * Math.PI
-        );
+        cntCtx.arc(tw * (pattern.patterns[selectedCntElement.i].x + 100), th * (pattern.patterns[selectedCntElement.i].y + 100), (cntCanvas.width / 10) * i, 0, 2 * Math.PI);
         cntCtx.stroke();
       }
     }
@@ -1157,7 +1155,7 @@ const cntRender = () => {
             cntCtx.font = `${renderTriggers[i].weight} ${(cntCanvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Metropolis, Pretendard JP Variable`;
           cntCtx.textAlign = renderTriggers[i].align;
           cntCtx.textBaseline = renderTriggers[i].valign;
-          cntCtx.fillText(renderTriggers[i].text, (cntCanvas.width / 200) * (renderTriggers[i].x + 100), (cntCanvas.height / 200) * (renderTriggers[i].y + 100));
+          cntCtx.fillText(renderTriggers[i].text, tw * (renderTriggers[i].x + 100), th * (renderTriggers[i].y + 100));
         }
       }
     }
@@ -1188,10 +1186,10 @@ const cntRender = () => {
       if (p[0] == 0 && p[1] == 0) {
         if (circleToggle && selectedCntElement.v1 === 0) {
           const radius = cntCanvas.width / 10;
-          const noteX = (cntCanvas.width / 200) * (pattern.patterns[selectedCntElement.i].x + 100);
-          const noteY = (cntCanvas.height / 200) * (pattern.patterns[selectedCntElement.i].y + 100);
-          const difX = noteX - (cntCanvas.width / 200) * (mouseX + 100);
-          const difY = noteY - (cntCanvas.height / 200) * (mouseY + 100);
+          const noteX = tw * (pattern.patterns[selectedCntElement.i].x + 100);
+          const noteY = th * (pattern.patterns[selectedCntElement.i].y + 100);
+          const difX = noteX - tw * (mouseX + 100);
+          const difY = noteY - th * (mouseY + 100);
           const distance = Math.sqrt(difX * difX + difY * difY) + radius / 2;
           const angle = calcAngleDegrees(difX, difY) + 180;
           const newDistance = distance - (distance % radius);
