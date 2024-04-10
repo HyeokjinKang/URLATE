@@ -198,8 +198,6 @@ const initialize = (isFirstCalled) => {
       autoplay: false,
       loop: false,
       onend: () => {
-        isResultShowing = true;
-        menuAllowed = false;
         calculateResult();
       },
       onload: () => {
@@ -855,6 +853,8 @@ const cntRender = () => {
           ctx.textBaseline = renderTriggers[i].valign;
           ctx.fillText(renderTriggers[i].text, (canvas.width / 200) * (renderTriggers[i].x + 100), (canvas.height / 200) * (renderTriggers[i].y + 100));
         }
+      } else if (renderTriggers[i].value == 6) {
+        calculateResult();
       }
     }
     ctx.globalAlpha = globalAlpha;
@@ -1087,7 +1087,10 @@ const trackMousePos = (e) => {
 };
 
 const calculateResult = () => {
-  resultEffect.play();
+  if (isResultShowing) return;
+  isResultShowing = true;
+  menuAllowed = false;
+  if (!song.playing) resultEffect.play();
   document.getElementById("perfectResult").textContent = perfect;
   document.getElementById("greatResult").textContent = great;
   document.getElementById("goodResult").textContent = good;
@@ -1115,21 +1118,33 @@ const calculateResult = () => {
   }
   rankImg.src = `/images/parts/elements/${rank}.webp`;
   document.getElementById("scoreInfoRank").style.setProperty("--background", `url('/images/parts/elements/${rank}back.webp')`);
-  setTimeout(() => {
-    canvasContainer.style.opacity = "0";
-  }, 500);
-  setTimeout(() => {
-    floatingArrowContainer.style.display = "flex";
-    floatingArrowContainer.classList.toggle("arrowFade");
-  }, 1000);
-  setTimeout(() => {
-    floatingResultContainer.style.display = "flex";
-    floatingResultContainer.classList.toggle("resultFade");
-  }, 1300);
-  setTimeout(() => {
-    scoreContainer.style.opacity = "1";
-    scoreContainer.style.pointerEvents = "all";
-  }, 2000);
+  setTimeout(
+    () => {
+      canvasContainer.style.opacity = "0";
+    },
+    song.playing ? 0 : 500
+  );
+  setTimeout(
+    () => {
+      floatingArrowContainer.style.display = "flex";
+      floatingArrowContainer.classList.toggle("arrowFade");
+    },
+    song.playing ? 0 : 1000
+  );
+  setTimeout(
+    () => {
+      floatingResultContainer.style.display = "flex";
+      floatingResultContainer.classList.toggle("resultFade");
+    },
+    song.playing ? 300 : 1300
+  );
+  setTimeout(
+    () => {
+      scoreContainer.style.opacity = "1";
+      scoreContainer.style.pointerEvents = "all";
+    },
+    song.playing ? 1000 : 2000
+  );
   missCtx.beginPath();
   missCtx.fillStyle = "#FFF";
   missCtx.strokeStyle = "#FFF";

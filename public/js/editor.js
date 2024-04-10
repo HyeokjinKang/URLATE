@@ -1078,6 +1078,13 @@ const cntRender = () => {
       }
       cntCtx.stroke();
     }
+    cntCtx.strokeStyle = "#ed3a2680";
+    cntCtx.beginPath();
+    cntCtx.moveTo(tw * 100, 0);
+    cntCtx.lineTo(tw * 100, cntCanvas.height);
+    cntCtx.moveTo(0, th * 100);
+    cntCtx.lineTo(cntCanvas.width, th * 100);
+    cntCtx.stroke();
 
     // Circle Grid
     if (circleToggle && selectedCntElement.v1 === 0) {
@@ -1157,6 +1164,8 @@ const cntRender = () => {
           cntCtx.textBaseline = renderTriggers[i].valign;
           cntCtx.fillText(renderTriggers[i].text, tw * (renderTriggers[i].x + 100), th * (renderTriggers[i].y + 100));
         }
+      } else if (renderTriggers[i].value == 6) {
+        song.stop();
       }
     }
 
