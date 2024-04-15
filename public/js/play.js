@@ -1158,7 +1158,7 @@ const calculateResult = () => {
   if (isResultShowing) return;
   isResultShowing = true;
   menuAllowed = false;
-  if (!song.playing) resultEffect.play();
+  if (!song.playing()) resultEffect.play();
   document.getElementById("perfectResult").textContent = perfect;
   document.getElementById("greatResult").textContent = great;
   document.getElementById("goodResult").textContent = good;
