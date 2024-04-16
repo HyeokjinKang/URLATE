@@ -27,7 +27,6 @@ socket.on("connect", () => {
 });
 
 socket.on("disconnect", (reason) => {
-  alert(reason);
   if (reason === "io server disconnect") {
     alert(socketi18n.error);
     window.location.href = `${api}/auth/logout?redirect=true`; // Session error, need to relogin
