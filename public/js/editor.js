@@ -1018,7 +1018,29 @@ const tmlRender = () => {
 
 const callBulletDestroy = (j) => {
   const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-  const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
+  // const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
+  let end = upperBound(pattern.triggers, beats - 32);
+  let scanTriggers = pattern.triggers.slice(0, end);
+  let baseSpeed = pattern.information.speed;
+  for (let i = 0; scanTriggers.length > i; i++) {
+    if (scanTriggers[i].value == 4) {
+      baseSpeed = scanTriggers[i].speed;
+    }
+  }
+  let triggerStart = lowerBound(pattern.triggers, pattern.bullets[j].beat);
+  let triggerEnd = upperBound(pattern.triggers, beats);
+  scanTriggers = pattern.triggers.slice(triggerStart, triggerEnd);
+  let p = 0;
+  let prevBeat = pattern.bullets[j].beat;
+  let prevSpeed = baseSpeed;
+  for (let k = 0; k < scanTriggers.length; k++) {
+    if (scanTriggers[k].value == 4) {
+      p += ((scanTriggers[k].beat - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
+      prevBeat = scanTriggers[k].beat;
+      prevSpeed = scanTriggers[k].speed;
+    }
+  }
+  p += ((beats - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
   const left = pattern.bullets[j].direction == "L";
   let x = (left ? -1 : 1) * (100 - p);
   let y = pattern.bullets[j].location + p * getTan(pattern.bullets[j].angle) * (left ? 1 : -1);
@@ -1261,11 +1283,10 @@ const cntRender = () => {
         let triggerStart = lowerBound(pattern.triggers, renderBullets[i].beat);
         let triggerEnd = upperBound(pattern.triggers, beats);
         const scanTriggers = pattern.triggers.slice(triggerStart, triggerEnd);
-        let p = 0,
-          j = 0;
+        let p = 0;
         let prevBeat = renderBullets[i].beat;
         let prevSpeed = baseSpeed;
-        for (j = 0; j < scanTriggers.length; j++) {
+        for (let j = 0; j < scanTriggers.length; j++) {
           if (scanTriggers[j].value == 4) {
             p += ((scanTriggers[j].beat - prevBeat) / (15 / prevSpeed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
             prevBeat = scanTriggers[j].beat;
