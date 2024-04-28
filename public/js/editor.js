@@ -1019,7 +1019,7 @@ const tmlRender = () => {
 const callBulletDestroy = (j) => {
   const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
   // const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
-  let end = upperBound(pattern.triggers, beats - 32);
+  let end = upperBound(pattern.triggers, pattern.bullets[j].beat);
   let scanTriggers = pattern.triggers.slice(0, end);
   let baseSpeed = pattern.information.speed;
   for (let i = 0; scanTriggers.length > i; i++) {
@@ -1248,15 +1248,6 @@ const cntRender = () => {
       drawNote(p, renderNotes[i].x, renderNotes[i].y, selectedCheck(0, i), renderNotes[i].value, renderNotes[i].direction, t, f);
     }
 
-    end = upperBound(pattern.triggers, beats - 32);
-    let scanTriggers = pattern.triggers.slice(0, end);
-    let baseSpeed = pattern.information.speed;
-    for (let i = 0; scanTriggers.length > i; i++) {
-      if (scanTriggers[i].value == 4) {
-        baseSpeed = scanTriggers[i].speed;
-      }
-    }
-
     //Bullet render
     let start = lowerBound(pattern.bullets, beats - 32);
     end = upperBound(pattern.bullets, beats);
@@ -1280,9 +1271,18 @@ const cntRender = () => {
             ms: Date.now(),
           });
         }
+        end = upperBound(pattern.triggers, renderBullets[i].beat);
+        let scanTriggers = pattern.triggers.slice(0, end);
+        let baseSpeed = pattern.information.speed;
+        for (let i = 0; scanTriggers.length > i; i++) {
+          if (scanTriggers[i].value == 4) {
+            baseSpeed = scanTriggers[i].speed;
+          }
+        }
+
         let triggerStart = lowerBound(pattern.triggers, renderBullets[i].beat);
         let triggerEnd = upperBound(pattern.triggers, beats);
-        const scanTriggers = pattern.triggers.slice(triggerStart, triggerEnd);
+        scanTriggers = pattern.triggers.slice(triggerStart, triggerEnd);
         let p = 0;
         let prevBeat = renderBullets[i].beat;
         let prevSpeed = baseSpeed;
