@@ -1705,16 +1705,6 @@ const triggersInput = (v, e) => {
           title: "Input Error",
           message: "Input value is not number.",
         });
-      } else if (Number(e.value) < 0) {
-        iziToast.error({
-          title: "Input Error",
-          message: "Input value must not be less than 0.",
-        });
-      } else if (Number(e.value) > 5) {
-        iziToast.error({
-          title: "Input Error",
-          message: "Input value must not be more than 5.",
-        });
       } else {
         pattern.triggers[selectedCntElement.i][v] = Number(e.value);
         patternChanged();
