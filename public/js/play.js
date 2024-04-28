@@ -705,7 +705,29 @@ const destroyAll = (beat) => {
 
 const callBulletDestroy = (j) => {
   const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-  const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
+  // const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
+  let end = upperBound(pattern.triggers, pattern.bullets[j].beat);
+  let scanTriggers = pattern.triggers.slice(0, end);
+  let baseSpeed = pattern.information.speed;
+  for (let i = 0; scanTriggers.length > i; i++) {
+    if (scanTriggers[i].value == 4) {
+      baseSpeed = scanTriggers[i].speed;
+    }
+  }
+  let triggerStart = lowerBound(pattern.triggers, pattern.bullets[j].beat);
+  let triggerEnd = upperBound(pattern.triggers, beats);
+  scanTriggers = pattern.triggers.slice(triggerStart, triggerEnd);
+  let p = 0;
+  let prevBeat = pattern.bullets[j].beat;
+  let prevSpeed = baseSpeed;
+  for (let k = 0; k < scanTriggers.length; k++) {
+    if (scanTriggers[k].value == 4) {
+      p += ((scanTriggers[k].beat - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
+      prevBeat = scanTriggers[k].beat;
+      prevSpeed = scanTriggers[k].speed;
+    }
+  }
+  p += ((beats - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
   const left = pattern.bullets[j].direction == "L";
   let x = (left ? -1 : 1) * (100 - p);
   let y = pattern.bullets[j].location + p * getTan(pattern.bullets[j].angle) * (left ? 1 : -1);
@@ -878,8 +900,6 @@ const cntRender = () => {
         bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
         globalAlpha = renderTriggers[i].opacity;
-      } else if (renderTriggers[i].value == 4) {
-        speed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
         if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration) {
           ctx.beginPath();
@@ -945,7 +965,7 @@ const cntRender = () => {
         drawParticle(4, missParticles[i].x, missParticles[i].y, i);
       }
     }
-    let start = lowerBound(pattern.bullets, beats - 24);
+    let start = lowerBound(pattern.bullets, beats - 32);
     end = upperBound(pattern.bullets, beats);
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
@@ -968,7 +988,29 @@ const cntRender = () => {
             ms: Date.now(),
           });
         }
-        const p = ((beats - renderBullets[i].beat) / (15 / speed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
+        end = upperBound(pattern.triggers, renderBullets[i].beat);
+        let scanTriggers = pattern.triggers.slice(0, end);
+        let baseSpeed = pattern.information.speed;
+        for (let i = 0; scanTriggers.length > i; i++) {
+          if (scanTriggers[i].value == 4) {
+            baseSpeed = scanTriggers[i].speed;
+          }
+        }
+
+        let triggerStart = lowerBound(pattern.triggers, renderBullets[i].beat);
+        let triggerEnd = upperBound(pattern.triggers, beats);
+        scanTriggers = pattern.triggers.slice(triggerStart, triggerEnd);
+        let p = 0;
+        let prevBeat = renderBullets[i].beat;
+        let prevSpeed = baseSpeed;
+        for (let j = 0; j < scanTriggers.length; j++) {
+          if (scanTriggers[j].value == 4) {
+            p += ((scanTriggers[j].beat - prevBeat) / (15 / prevSpeed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
+            prevBeat = scanTriggers[j].beat;
+            prevSpeed = scanTriggers[j].speed;
+          }
+        }
+        p += ((beats - prevBeat) / (15 / prevSpeed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
         const left = renderBullets[i].direction == "L";
         let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
         let y = renderBullets[i].location + (left ? 1 : -1) * getSin(renderBullets[i].angle) * p;
