@@ -1115,7 +1115,6 @@ const cntRender = () => {
 
     // Initialize triggers
     bpm = pattern.information.bpm;
-    speed = pattern.information.speed;
     cntCanvas.style.filter = `opacity(100%)`;
     bpmsync = {
       ms: 0,
@@ -1150,8 +1149,6 @@ const cntRender = () => {
         bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
         cntCanvas.style.filter = `opacity(${renderTriggers[i].opacity * 100}%)`;
-      } else if (renderTriggers[i].value == 4) {
-        speed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
         if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration) {
           cntCtx.beginPath();
