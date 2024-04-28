@@ -1229,8 +1229,17 @@ const cntRender = () => {
       drawNote(p, renderNotes[i].x, renderNotes[i].y, selectedCheck(0, i), renderNotes[i].value, renderNotes[i].direction, t, f);
     }
 
+    end = upperBound(pattern.triggers, beats - 32);
+    let scanTriggers = pattern.triggers.slice(0, end);
+    let baseSpeed = pattern.information.speed;
+    for (let i = 0; scanTriggers.length > i; i++) {
+      if (scanTriggers[i].value == 4) {
+        baseSpeed = scanTriggers[i].speed;
+      }
+    }
+
     //Bullet render
-    let start = lowerBound(pattern.bullets, beats - 24);
+    let start = lowerBound(pattern.bullets, beats - 32);
     end = upperBound(pattern.bullets, beats);
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
@@ -1252,7 +1261,21 @@ const cntRender = () => {
             ms: Date.now(),
           });
         }
-        const p = ((beats - renderBullets[i].beat) / (15 / speed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
+        let triggerStart = lowerBound(pattern.triggers, renderBullets[i].beat);
+        let triggerEnd = upperBound(pattern.triggers, beats);
+        const scanTriggers = pattern.triggers.slice(triggerStart, triggerEnd);
+        let p = 0,
+          j = 0;
+        let prevBeat = renderBullets[i].beat;
+        let prevSpeed = baseSpeed;
+        for (j = 0; j < scanTriggers.length; j++) {
+          if (scanTriggers[j].value == 4) {
+            p += ((scanTriggers[j].beat - prevBeat) / (15 / prevSpeed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
+            prevBeat = scanTriggers[j].beat;
+            prevSpeed = scanTriggers[j].speed;
+          }
+        }
+        p += ((beats - prevBeat) / (15 / prevSpeed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
         const left = renderBullets[i].direction == "L";
         let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
         let y = renderBullets[i].location + (left ? 1 : -1) * getSin(renderBullets[i].angle) * p;
@@ -1535,16 +1558,6 @@ const settingsInput = (v, e) => {
             message: "Input value is not number.",
           });
         }
-      } else if (Number(e.value) > 5) {
-        iziToast.error({
-          title: "Input Error",
-          message: "Input value is too high.",
-        });
-      } else if (e.value != "" && Number(e.value) < 1) {
-        iziToast.error({
-          title: "Input Error",
-          message: "Input value is too low.",
-        });
       } else {
         element.speed = Number(e.value);
         patternChanged();
