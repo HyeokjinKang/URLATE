@@ -12,7 +12,9 @@ body {
   margin: 0;
   padding: 0;
   text-align: center;
-  font-family: "Pretendard JP Variable", "나눔바른고딕", arial;
+  font-family: "Montserrat", "Pretendard JP Variable", "Pretendard JP", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Hiragino Sans",
+    "Apple SD Gothic Neo", Meiryo, "Noto Sans JP", "Noto Sans KR", "Malgun Gothic", Osaka, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  font-feature-settings: "ss05";
   letter-spacing: -0.3px;
   overflow-x: hidden;
   overflow-y: hidden;
@@ -139,7 +141,9 @@ body {
 }
 
 .metropolis {
-  font-family: "Metropolis", "Pretendard JP Variable", "나눔바른고딕", arial;
+  font-family: "Metropolis", "Pretendard JP Variable", "Pretendard JP", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Hiragino Sans",
+    "Apple SD Gothic Neo", Meiryo, "Noto Sans JP", "Noto Sans KR", "Malgun Gothic", Osaka, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  font-feature-settings: "ss05";
 }
 
 #topCenterBar {
@@ -642,7 +646,9 @@ body {
 }
 
 kbd {
-  font-family: "Metropolis", "Pretendard JP Variable", "나눔바른고딕", arial;
+  font-family: "Metropolis", "Pretendard JP Variable", "Pretendard JP", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Hiragino Sans",
+    "Apple SD Gothic Neo", Meiryo, "Noto Sans JP", "Noto Sans KR", "Malgun Gothic", Osaka, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  font-feature-settings: "ss05";
   font-style: italic;
   border: 1.5px solid #555;
   padding: 2px 10px 2px 6px;
@@ -715,7 +721,9 @@ kbd {
 }
 
 .optionValue {
-  font-family: "Metropolis", "Pretendard JP Variable", "나눔바른고딕", arial;
+  font-family: "Montserrat", "Pretendard JP Variable", "Pretendard JP", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Hiragino Sans",
+    "Apple SD Gothic Neo", Meiryo, "Noto Sans JP", "Noto Sans KR", "Malgun Gothic", Osaka, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  font-feature-settings: "ss05";
   font-weight: 400;
   color: #404040;
   font-size: 2vh;
