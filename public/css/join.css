@@ -1,4 +1,5 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable-jp-dynamic-subset.css");
+@import url("https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700&display=swap");
 
 body {
   width: 100vw;
@@ -6,7 +7,9 @@ body {
   margin: 0;
   padding: 0;
   background-color: #eee;
-  font-family: "Pretendard JP Variable", "나눔바른고딕", arial;
+  font-family: "Montserrat", "Pretendard JP Variable", "Pretendard JP", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Hiragino Sans",
+    "Apple SD Gothic Neo", Meiryo, "Noto Sans JP", "Noto Sans KR", "Malgun Gothic", Osaka, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  font-feature-settings: "ss05";
   letter-spacing: -0.3px;
   display: flex;
   flex-direction: column;
@@ -15,7 +18,9 @@ body {
 }
 
 input {
-  font-family: "Pretendard JP Variable", "나눔바른고딕", arial;
+  font-family: "Montserrat", "Pretendard JP Variable", "Pretendard JP", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Hiragino Sans",
+    "Apple SD Gothic Neo", Meiryo, "Noto Sans JP", "Noto Sans KR", "Malgun Gothic", Osaka, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  font-feature-settings: "ss05";
 }
 
 form {

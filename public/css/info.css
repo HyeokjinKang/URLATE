@@ -7,7 +7,9 @@ body {
   align-items: flex-start;
   justify-content: flex-start;
   letter-spacing: -0.3px;
-  font-family: "Montserrat", "Pretendard JP Variable", system-ui, -apple-system, arial;
+  font-family: "Montserrat", "Pretendard JP Variable", "Pretendard JP", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Hiragino Sans",
+    "Apple SD Gothic Neo", Meiryo, "Noto Sans JP", "Noto Sans KR", "Malgun Gothic", Osaka, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  font-feature-settings: "ss05";
   background-color: white;
   margin: 3vh 3vw;
   padding: 0;
