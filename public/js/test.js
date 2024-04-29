@@ -387,7 +387,7 @@ const drawParticle = (n, x, y, j, d) => {
         let p = easeOutQuad((Date.now() - s) / 700);
         let newY = y - (canvas.height / 20) * p;
         ctx.fillStyle = getJudgeStyle(j.toLowerCase(), p, cx, newY);
-        ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
+        ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(j, cx, newY);
@@ -406,7 +406,7 @@ const drawParticle = (n, x, y, j, d) => {
       let p = easeOutQuad((Date.now() - missParticles[j].s) / 700);
       let newY = cy - (canvas.height / 20) * p;
       ctx.fillStyle = getJudgeStyle("miss", p);
-      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
+      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("Miss", cx, newY);
@@ -418,7 +418,7 @@ const drawParticle = (n, x, y, j, d) => {
       let p = easeOutQuad((Date.now() - perfectParticles[j].s) / 700);
       let newY = cy - (canvas.height / 20) * p;
       ctx.fillStyle = getJudgeStyle("perfect", p, cx, newY);
-      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
+      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("Perfect", cx, newY);
@@ -796,7 +796,7 @@ const drawKeyInput = () => {
     ctx.stroke();
     ctx.beginPath();
     ctx.fillStyle = "#fff";
-    ctx.font = `600 ${canvas.height / 40}px Montserrat, Pretendard JP Variable`;
+    ctx.font = `600 ${canvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     ctx.textBaseline = "top";
     ctx.textAlign = "center";
     ctx.fillText(
@@ -840,7 +840,7 @@ const cntRender = () => {
       }
       fontSize = (canvas.height / 5) * easeOutSine((Date.now() - comboAlertMs) / 1000);
       ctx.beginPath();
-      ctx.font = `700 ${fontSize}px Montserrat, Pretendard JP Variable`;
+      ctx.font = `700 ${fontSize}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       ctx.fillStyle = `rgba(200,200,200,${comboOpacity})`;
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
@@ -880,9 +880,9 @@ const cntRender = () => {
         if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration) {
           ctx.beginPath();
           ctx.fillStyle = "#fff";
-          ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Montserrat, Pretendard JP Variable`;
+          ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
           if (renderTriggers[i].size.indexOf("vh") != -1)
-            ctx.font = `${renderTriggers[i].weight} ${(canvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Montserrat, Pretendard JP Variable`;
+            ctx.font = `${renderTriggers[i].weight} ${(canvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
           ctx.textAlign = renderTriggers[i].align;
           ctx.textBaseline = renderTriggers[i].valign;
           ctx.fillText(renderTriggers[i].text, (canvas.width / 200) * (renderTriggers[i].x + 100), (canvas.height / 200) * (renderTriggers[i].y + 100));
@@ -994,7 +994,7 @@ const cntRender = () => {
     }
   } catch (e) {
     if (e) {
-      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
+      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       ctx.fillStyle = "#F55";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
@@ -1019,13 +1019,13 @@ const cntRender = () => {
     displayScore = score;
   }
   ctx.beginPath();
-  ctx.font = `700 ${canvas.height / 25}px Montserrat, Pretendard JP Variable`;
+  ctx.font = `700 ${canvas.height / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
   ctx.fillStyle = "#fff";
   ctx.textAlign = "right";
   ctx.textBaseline = "top";
   ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05);
   const comboAnimation = Math.max(0, 1 - easeOutQuart(Math.min(Date.now() - comboAnimationMs, 500) / 500));
-  ctx.font = `${400 * (1 + comboAnimation * 0.5)} ${(canvas.height / 40) * (1 + comboAnimation)}px Montserrat, Pretendard JP Variable`;
+  ctx.font = `${400 * (1 + comboAnimation * 0.5)} ${(canvas.height / 40) * (1 + comboAnimation)}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
   ctx.fillStyle = "#fff";
   ctx.fillText(`${combo}x`, canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05 + canvas.height / 25);
   drawCursor();
@@ -1220,7 +1220,7 @@ const calculateResult = () => {
   }
   if (missPoint.length == 0) {
     missCtx.fillStyle = "#FFF";
-    missCtx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
+    missCtx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     missCtx.textAlign = "right";
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
@@ -1254,7 +1254,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
         }
         break;
       default:
-        ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable`;
+        ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
         ctx.fillStyle = "#F55";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
