@@ -78,10 +78,11 @@ If you want to know the internal structure of URLATE, or if you are interested i
 
 ## License
 
+> [!important]
+> If you want to use the source code of this repository for commercial purposes, please contact me via [email](mailto:urlate@coupy.dev).
+
 URLATE-v3l is licensed under the AGPLv3 license.  
 Detailed information about the license can be found [here](https://choosealicense.com/licenses/agpl-3.0/).
-
-**If you want to use the source code of this repository for commercial purposes, please contact me via [email](mailto:urlate@coupy.dev).**
 
 Note that the license only applies to the source code of this repository, and does not apply to the assets used in the game.  
 Brand "URLATE" and its logo are credited to Coupyworks.
