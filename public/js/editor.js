@@ -71,6 +71,7 @@ let gridToggle = true,
   metronomeToggle = false,
   circleToggle = false;
 let scrollTimer = 0;
+let errorCount = 0;
 
 let pattern = {
   information: {
@@ -686,7 +687,8 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
           cntCtx.fillStyle = "#F55";
           cntCtx.textAlign = "left";
           cntCtx.textBaseline = "top";
-          cntCtx.fillText(`trackMouseSelection:Undefined element.`, cntCanvas.width / 100, cntCanvas.height / 100);
+          cntCtx.fillText(`trackMouseSelection:Undefined element.`, cntCanvas.width / 100, cntCanvas.height / 100 + (window.innerHeight / 30) * errorCount);
+          errorCount++;
           console.error(`trackMouseSelection:Undefined element.`);
       }
     }
@@ -1011,7 +1013,8 @@ const tmlRender = () => {
     tmlCtx.fillStyle = "#F55";
     tmlCtx.textAlign = "left";
     tmlCtx.textBaseline = "top";
-    tmlCtx.fillText(e, tmlStartX, endY);
+    tmlCtx.fillText(e, tmlStartX, endY + (window.innerHeight / 30) * errorCount);
+    errorCount++;
     console.error(e);
   }
 };
@@ -1078,6 +1081,8 @@ const cntRender = () => {
 
     const tw = cntCanvas.width / 200;
     const th = cntCanvas.height / 200;
+
+    errorCount = 0;
 
     // Grid
     if (gridToggle) {
@@ -1245,7 +1250,8 @@ const cntRender = () => {
         cntCtx.fillStyle = "#F55";
         cntCtx.textAlign = "left";
         cntCtx.textBaseline = "top";
-        cntCtx.fillText(`Notes at beat ${renderNotes[i].beat} are too close.`, cntCanvas.width / 100, cntCanvas.height / 100);
+        cntCtx.fillText(`Notes at beat ${renderNotes[i].beat} are too close.`, cntCanvas.width / 100, cntCanvas.height / 100 + (window.innerHeight / 30) * errorCount);
+        errorCount++;
       }
       prevNoteBeat = renderNotes[i].beat;
       if (mouseMode == 0) trackMouseSelection(i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
@@ -1344,7 +1350,8 @@ const cntRender = () => {
       cntCtx.fillStyle = "#F55";
       cntCtx.textAlign = "left";
       cntCtx.textBaseline = "top";
-      cntCtx.fillText(e, cntCanvas.width / 100, cntCanvas.height / 100);
+      cntCtx.fillText(e, cntCanvas.width / 100, cntCanvas.height / 100 + (window.innerHeight / 30) * errorCount);
+      errorCount++;
       console.error(e);
     }
   }
