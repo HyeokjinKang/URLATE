@@ -1238,7 +1238,16 @@ const cntRender = () => {
     // Note render
     end = upperBound(pattern.patterns, beats + 5 / speed);
     const renderNotes = pattern.patterns.slice(0, end);
+    let prevNoteBeat = -1;
     for (let i = 0; renderNotes.length > i; i++) {
+      if (renderNotes[i].beat >= prevNoteBeat - 0.01 && renderNotes[i].beat <= prevNoteBeat + 0.01) {
+        cntCtx.font = `500 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+        cntCtx.fillStyle = "#F55";
+        cntCtx.textAlign = "left";
+        cntCtx.textBaseline = "top";
+        cntCtx.fillText(`Notes at beat ${renderNotes[i].beat} are too close.`, cntCanvas.width / 100, cntCanvas.height / 100);
+      }
+      prevNoteBeat = renderNotes[i].beat;
       if (mouseMode == 0) trackMouseSelection(i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
     }
     for (let i = renderNotes.length - 1; i >= 0; i--) {
