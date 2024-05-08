@@ -1262,7 +1262,7 @@ const rankUpdate = async () => {
       <td>${i + 1}</td>
       <td>
         <div class="rankProfileContainer" onclick="profileScreen('${e.userid}')">
-          <img src="${e.picture}" class="rankProfile" />
+          <img src="${e.picture}" class="rankProfile ${e.explicit % 2 == 1 ? "blur" : ""}" />
           ${e.nickname}
         </div>
       </td>
