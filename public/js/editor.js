@@ -366,6 +366,32 @@ const drawCursor = () => {
   if (skin.cursor.outline) cntCtx.stroke();
 };
 
+const drawShadow = (x, y, n, d, a) => {
+  x = (cntCanvas.width / 200) * (x + 100);
+  y = (cntCanvas.height / 200) * (y + 100);
+  n = n == undefined ? 0 : n;
+  let w = cntCanvas.width / 40;
+  cntCtx.beginPath();
+  cntCtx.fillStyle = `rgba(255,255,255,${a})`;
+  if (n != 1) {
+    cntCtx.arc(x, y, w, 0, 2 * Math.PI);
+    cntCtx.fill();
+  } else {
+    w = w * 0.9;
+    let parr = [100, 100, 100];
+    cntCtx.beginPath();
+    let originalValue = [0, -1.5 * d * w];
+    let moveValue = [originalValue[0] - w * Math.cos(Math.PI / 5) * d, originalValue[1] + w * Math.sin(Math.PI / 5) * d];
+    cntCtx.moveTo(x + originalValue[0], y + originalValue[1]);
+    cntCtx.lineTo(x + originalValue[0] - (moveValue[0] / 100) * parr[0], y + originalValue[1] - (moveValue[1] / 100) * parr[0]);
+    cntCtx.moveTo(x + originalValue[0] - moveValue[0], y + originalValue[1] - moveValue[1]);
+    if (d == 1) cntCtx.arc(x, y, w, -Math.PI / 5, (((Math.PI / 5) * 7) / 100) * parr[1] - Math.PI / 5);
+    else cntCtx.arc(x, y, w, (-Math.PI / 5) * 6, (((Math.PI / 5) * 7) / 100) * parr[1] - (Math.PI / 5) * 6);
+    cntCtx.lineTo(x, y - 1.5 * d * w);
+    cntCtx.fill();
+  }
+};
+
 const drawNote = (p, x, y, s, n, d, t, f) => {
   if (n != 2 && p >= 130) return;
   else if (n == 2 && f >= 130) return;
@@ -1256,11 +1282,17 @@ const cntRender = () => {
       prevNoteBeat = renderNotes[i].beat;
       if (mouseMode == 0) trackMouseSelection(i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
     }
+    let validNote = renderNotes.length;
     for (let i = renderNotes.length - 1; i >= 0; i--) {
       const p = (1 - (renderNotes[i].beat - beats) / (5 / speed)) * 100;
       const t = ((beats - renderNotes[i].beat) / renderNotes[i].duration) * 100;
       const f = (1 - (renderNotes[i].beat + renderNotes[i].duration - beats) / (5 / speed)) * 100;
-      drawNote(p, renderNotes[i].x, renderNotes[i].y, selectedCheck(0, i), renderNotes[i].value, renderNotes[i].direction, t, f);
+      if (renderNotes[i].value != 2 && p < 130) validNote = i;
+      else if (renderNotes[i].value == 2 && f < 130) validNote = i;
+      if (i == validNote) drawNote(p, renderNotes[i].x, renderNotes[i].y, selectedCheck(0, i), renderNotes[i].value, renderNotes[i].direction, t, f);
+      else if (i + 3 >= validNote) {
+        drawShadow(renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, 0.4 - 0.1 * (validNote - i));
+      }
     }
 
     //Bullet render
