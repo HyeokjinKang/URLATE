@@ -1287,8 +1287,8 @@ const cntRender = () => {
       const p = (1 - (renderNotes[i].beat - beats) / (5 / speed)) * 100;
       const t = ((beats - renderNotes[i].beat) / renderNotes[i].duration) * 100;
       const f = (1 - (renderNotes[i].beat + renderNotes[i].duration - beats) / (5 / speed)) * 100;
-      if (renderNotes[i].value != 2 && p < 130) validNote = i;
-      else if (renderNotes[i].value == 2 && f < 130) validNote = i;
+      if (renderNotes[i].value != 2 && p < 100) validNote = i;
+      else if (renderNotes[i].value == 2 && f < 100) validNote = i;
       if (i == validNote) drawNote(p, renderNotes[i].x, renderNotes[i].y, selectedCheck(0, i), renderNotes[i].value, renderNotes[i].direction, t, f);
       else if (i + 3 >= validNote) {
         drawShadow(renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, 0.4 - 0.1 * (validNote - i));
