@@ -1449,7 +1449,7 @@ const retry = () => {
   blackOverlayContainer.classList.add("show");
   setTimeout(() => {
     song.stop();
-    pattern = patternBackup;
+    pattern = JSON.parse(JSON.stringify(patternBackup));
     bpm = pattern.information.bpm;
     speed = pattern.information.speed;
     bpmsync = {
