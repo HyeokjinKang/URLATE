@@ -1731,6 +1731,7 @@ document.onkeydown = (e) => {
 
 document.onkeyup = (e) => {
   e = e || window.event;
+  if (e.repeat) return;
   let date = Date.now();
   const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
   if (e.key == "Escape") {

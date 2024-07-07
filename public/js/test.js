@@ -1606,6 +1606,7 @@ const medalCheck = (n) => {
 
 document.onkeydown = (e) => {
   e = e || window.event;
+  if (e.repeat) return;
   if (e.key == "Shift") {
     shiftDown = true;
   }
