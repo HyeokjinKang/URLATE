@@ -14,7 +14,6 @@ const ctx = canvas.getContext("2d");
 const missCanvas = document.getElementById("missPointCanvas");
 const missCtx = missCanvas.getContext("2d");
 let pattern = {};
-let patternBackup = {};
 let patternLength = 0;
 let settings, sync, song, tracks, pixelRatio, offset, bpm, speed;
 let bpmsync = {
@@ -163,7 +162,6 @@ const initialize = (isFirstCalled) => {
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
   if (isFirstCalled) {
     pattern = JSON.parse(localStorage.pattern);
-    patternBackup = JSON.parse(localStorage.pattern);
     patternLength = pattern.patterns.length;
     document.getElementById("artist").textContent = pattern.information.producer;
     document.getElementById("scoreArtist").textContent = pattern.information.producer;
@@ -1449,7 +1447,7 @@ const retry = () => {
   blackOverlayContainer.classList.add("show");
   setTimeout(() => {
     song.stop();
-    pattern = patternBackup;
+    pattern = JSON.parse(localStorage.pattern);
     bpm = pattern.information.bpm;
     speed = pattern.information.speed;
     bpmsync = {
@@ -1606,6 +1604,7 @@ const medalCheck = (n) => {
 
 document.onkeydown = (e) => {
   e = e || window.event;
+  if (e.repeat) return;
   if (e.key == "Shift") {
     shiftDown = true;
   }

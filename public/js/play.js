@@ -1545,7 +1545,7 @@ const retry = () => {
   blackOverlayContainer.classList.add("show");
   setTimeout(() => {
     song.stop();
-    pattern = patternBackup;
+    pattern = JSON.parse(JSON.stringify(patternBackup));
     bpm = pattern.information.bpm;
     speed = pattern.information.speed;
     bpmsync = {
@@ -1731,6 +1731,7 @@ document.onkeydown = (e) => {
 
 document.onkeyup = (e) => {
   e = e || window.event;
+  if (e.repeat) return;
   let date = Date.now();
   const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
   if (e.key == "Escape") {
