@@ -103,7 +103,7 @@ let prevBeat = 1;
 const beep = new Howl({
   src: `/sounds/metronome.mp3`,
   format: ["mp3"],
-  volume: 0.8,
+  volume: 1,
   autoplay: false,
   loop: false,
 });
