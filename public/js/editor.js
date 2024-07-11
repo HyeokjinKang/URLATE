@@ -101,9 +101,9 @@ let copySelection = { element: -1, start: -1, end: -1, beat: 0 };
 
 let prevBeat = 1;
 const beep = new Howl({
-  src: `/sounds/tick.wav`,
-  format: ["wav"],
-  volume: 0.8,
+  src: `/sounds/metronome.mp3`,
+  format: ["mp3"],
+  volume: 1,
   autoplay: false,
   loop: false,
 });
