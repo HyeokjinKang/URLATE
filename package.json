@@ -16,7 +16,7 @@
   "author": "Team Croissant",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@tensorflow/tfjs-node": "^4.17.0",
+    "@tensorflow/tfjs-node": "^4.20.0",
     "cookie-parser": "^1.4.4",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
