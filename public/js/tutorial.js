@@ -92,6 +92,7 @@ let keyInputMemoryMs = 0;
 let effectMs = 0;
 let effectNum = -1;
 let keyPressing = {};
+let pressingKeys = [];
 let medal = 1;
 let globalAlpha = 1;
 const albumImg = new Image();
@@ -1490,6 +1491,7 @@ const retry = () => {
     effectMs = 0;
     effectNum = -1;
     keyPressing = {};
+    pressingKeys = [];
     medal = 1;
     globalAlpha = 1;
     blackOverlayContainer.classList.remove("show");
@@ -1624,6 +1626,7 @@ const medalCheck = (n) => {
 document.onkeydown = (e) => {
   e = e || window.event;
   if (e.repeat) return;
+  if (pressingKeys.includes(e.key)) return;
   if (e.key == "Shift") {
     shiftDown = true;
   }
@@ -1649,6 +1652,7 @@ document.onkeydown = (e) => {
     } else if (inputMode == 2 && !(e.code == "KeyZ" || e.code == "KeyX")) {
       return;
     }
+    pressingKeys.push(e.key);
     compClicked(true, e.key, false);
   }
 };
@@ -1664,6 +1668,7 @@ document.onkeyup = (e) => {
   }
   mouseClicked = false;
   mouseClickedMs = date;
+  if (pressingKeys.includes(e.key)) pressingKeys.splice(pressingKeys.indexOf(e.key), 1);
   if (keyPressing.hasOwnProperty(e.key) && grabbedNotes.has(keyPressing[e.key]) && !grabbedNotes.has(`${keyPressing[e.key]}!`)) {
     grabbedNotes.delete(keyPressing[e.key]);
     grabbedNotes.add(`${keyPressing[e.key]}!`);
