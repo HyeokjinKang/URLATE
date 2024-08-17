@@ -1145,7 +1145,7 @@ const cntRender = () => {
       cntCtx.lineWidth = 2;
       for (let i = 1; i <= 10; i++) {
         cntCtx.beginPath();
-        cntCtx.arc(tw * (pattern.patterns[selectedCntElement.i].x + 100), th * (pattern.patterns[selectedCntElement.i].y + 100), (cntCanvas.width / 10) * i, 0, 2 * Math.PI);
+        cntCtx.arc(tw * (pattern.patterns[selectedCntElement.i].x + 100), th * (pattern.patterns[selectedCntElement.i].y + 100), (cntCanvas.width / 15) * i, 0, 2 * Math.PI);
         cntCtx.stroke();
       }
     }
@@ -1244,7 +1244,7 @@ const cntRender = () => {
       }
       if (p[0] == 0 && p[1] == 0) {
         if (circleToggle && selectedCntElement.v1 === 0) {
-          const radius = cntCanvas.width / 10;
+          const radius = cntCanvas.width / 15;
           const noteX = tw * (pattern.patterns[selectedCntElement.i].x + 100);
           const noteY = th * (pattern.patterns[selectedCntElement.i].y + 100);
           const difX = noteX - tw * (mouseX + 100);
@@ -2152,7 +2152,7 @@ const compClicked = () => {
         let newX = magnetToggle ? mouseX - (mouseX % 5) : mouseX;
         let newY = magnetToggle ? mouseY - (mouseY % 5) : mouseY;
         if (circleToggle && selectedCntElement.v1 === 0) {
-          const radius = cntCanvas.width / 10;
+          const radius = cntCanvas.width / 15;
           const noteX = (cntCanvas.width / 200) * (pattern.patterns[selectedCntElement.i].x + 100);
           const noteY = (cntCanvas.height / 200) * (pattern.patterns[selectedCntElement.i].y + 100);
           const difX = noteX - (cntCanvas.width / 200) * (mouseX + 100);
