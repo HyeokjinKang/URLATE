@@ -862,6 +862,7 @@ const cntRender = () => {
     const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
     let end = upperBound(pattern.triggers, beats);
     const renderTriggers = pattern.triggers.slice(0, end);
+    let nowSpeed = pattern.information.speed;
     for (let i = 0; i < renderTriggers.length; i++) {
       if (renderTriggers[i].value == 0) {
         if (!destroyedBullets.has(renderTriggers[i].num)) {
@@ -875,6 +876,8 @@ const cntRender = () => {
         bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
         globalAlpha = renderTriggers[i].opacity;
+      } else if (renderTriggers[i].value == 4) {
+        nowSpeed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
         if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration) {
           ctx.beginPath();
@@ -891,6 +894,12 @@ const cntRender = () => {
       }
     }
     ctx.globalAlpha = globalAlpha;
+    ctx.beginPath();
+    ctx.fillStyle = "#fff";
+    ctx.font = `600 ${canvas.height / 70}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(`Speed : ${nowSpeed}, BPM : ${bpm}`, canvas.width / 100, canvas.height - canvas.height / 70);
     for (let i = 0; i < destroyParticles.length; i++) {
       if (destroyParticles[i].ms + 250 > Date.now()) {
         drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
