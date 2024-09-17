@@ -1226,7 +1226,7 @@ const cntRender = () => {
     cntCtx.font = `700 ${cntCanvas.height / 50}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     cntCtx.textAlign = "center";
     cntCtx.textBaseline = "bottom";
-    cntCtx.fillText(`Speed : ${nowSpeed}, BPM : ${bpm}`, cntCanvas.width / 2, cntCanvas.height - cntCanvas.height / 50);
+    cntCtx.fillText(`Speed : ${nowSpeed}, BPM : ${bpm}`, cntCanvas.width / 2, cntCanvas.height / 50);
 
     // Destroy Particles
     for (let i = 0; i < destroyParticles.length; i++) {
