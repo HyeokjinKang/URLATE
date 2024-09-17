@@ -1177,6 +1177,7 @@ const cntRender = () => {
     // Track triggers from start to now
     let end = upperBound(pattern.triggers, beats);
     const renderTriggers = pattern.triggers.slice(0, end);
+    let nowSpeed = pattern.information.speed;
     for (let i = 0; i < renderTriggers.length; i++) {
       if (renderTriggers[i].value == 0) {
         if (!destroyedBullets.has(renderTriggers[i].num)) {
@@ -1202,6 +1203,8 @@ const cntRender = () => {
         bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
         cntCanvas.style.filter = `opacity(${renderTriggers[i].opacity * 100}%)`;
+      } else if (renderTriggers[i].value == 4) {
+        nowSpeed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
         if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration) {
           cntCtx.beginPath();
@@ -1218,6 +1221,12 @@ const cntRender = () => {
         song.stop();
       }
     }
+    cntCtx.beginPath();
+    cntCtx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    cntCtx.font = `700 ${cntCanvas.height / 50}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    cntCtx.textAlign = "center";
+    cntCtx.textBaseline = "bottom";
+    cntCtx.fillText(`Speed : ${nowSpeed}, BPM : ${bpm}`, cntCanvas.width / 2, cntCanvas.height - cntCanvas.height / 50);
 
     // Destroy Particles
     for (let i = 0; i < destroyParticles.length; i++) {
