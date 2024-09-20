@@ -140,7 +140,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
   if (req.params.type == "picture") {
     type = "picture";
   } else if (req.params.type == "background") {
-    width = 1024;
+    width = 2560;
     height = null;
     type = "background";
   } else {
