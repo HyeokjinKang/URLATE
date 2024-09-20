@@ -665,8 +665,8 @@
         <p class="infoText"><%= __('info16') %></p>
       </div>
     </div>
-    <div id="profileContainer" class="containers metropolis">
-      <span id="profileDescription"><%= __('profile_description') %></span>
+    <div id="profileContainer" class="containers metropolis" onclick="showProfileBackground(event)">
+      <span id="profileDescription" onclick="return false"><%= __('profile_description') %></span>
       <img src="https://img.icons8.com/windows/32/ffffff/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
       <div id="profileImageContainer"></div>
       <div id="profileNameContainer">

@@ -2842,6 +2842,21 @@ del {
   filter: blur(10px);
   opacity: 0.5;
   transform: scale(1.05);
+  transition-duration: 0.5s;
+}
+
+#profileImageContainer.blur {
+  filter: blur(50px) brightness(0.6);
+}
+
+#profileImageContainer.showBackground:not(.blur) {
+  filter: blur(0px);
+  transform: scale(1);
+  opacity: 1;
+}
+
+#profileNameContainer.showBackground {
+  filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
 }
 
 #profileNameContainer {
@@ -2853,6 +2868,7 @@ del {
   padding-left: 5vw;
   margin-top: 5vh;
   margin-bottom: 5vh;
+  transition-duration: 0.5s;
 }
 
 #profileName {
@@ -2878,6 +2894,13 @@ del {
   margin-right: 5vw;
 }
 
+.profileContentsContainer.showBackground > .profileContents::before {
+  transition-delay: 0s;
+  background: none;
+  mix-blend-mode: normal;
+  opacity: 0.3;
+}
+
 .profileContents::before {
   z-index: -1;
   top: 0;
@@ -2894,6 +2917,16 @@ del {
   border-radius: 5px;
   box-sizing: border-box;
   mix-blend-mode: plus-lighter;
+  transition-delay: 0.3s;
+  transition-duration: 0.2s;
+}
+
+.profileContentsContainer.showBackground > .profileContents {
+  opacity: 0;
+}
+
+.profileContentsContainer.showBackground {
+  pointer-events: none;
 }
 
 .profileContents {
@@ -3123,6 +3156,12 @@ del {
   line-height: 100%;
   color: #ffffffaa;
   font-weight: 400;
+  opacity: 1;
+  transition-duration: 0.3s;
+}
+
+#profileDescription.showBackground {
+  opacity: 0 !important;
 }
 
 .iziToast-theme-dark > .iziToast-body > .iziToast-inputs > select {
@@ -3315,8 +3354,4 @@ del {
 
 .blur {
   filter: blur(5px);
-}
-
-#profileImageContainer.blur {
-  filter: blur(50px) brightness(0.6);
 }

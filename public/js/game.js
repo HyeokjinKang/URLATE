@@ -38,6 +38,10 @@ const offsetSpeedText = document.getElementById("offsetSpeedText");
 const volumeOverlay = document.getElementById("volumeOverlay");
 const codeInput = document.getElementById("codeInput");
 const CPLTrack = document.getElementById("CPLTrack");
+const profileContentsContainer = document.getElementsByClassName("profileContentsContainer")[0];
+const profileImageContainer = document.getElementById("profileImageContainer");
+const profileDescription = document.getElementById("profileDescription");
+const profileNameContainer = document.getElementById("profileNameContainer");
 
 let settings = [];
 let profileSong;
@@ -1178,6 +1182,10 @@ const displayClose = () => {
     } else if (display == 15 || display == 16) {
       //PROFILE
       stopProfileSong();
+      profileContentsContainer.classList.remove("showBackground");
+      profileImageContainer.classList.remove("showBackground");
+      profileDescription.classList.remove("showBackground");
+      profileNameContainer.classList.remove("showBackground");
       document.getElementById("profileContainer").classList.remove("fadeInAnim");
       document.getElementById("profileContainer").classList.add("fadeOutAnim");
       setTimeout(() => {
@@ -1467,6 +1475,15 @@ const profileUpdate = async (uid, isMe) => {
     console.error(`Error occured.\n${profile.error}`);
   }
   loadingOverlayHide();
+};
+
+const showProfileBackground = (event) => {
+  if (event.target.id === "profileContainer") {
+    profileContentsContainer.classList.toggle("showBackground");
+    profileImageContainer.classList.toggle("showBackground");
+    profileDescription.classList.toggle("showBackground");
+    profileNameContainer.classList.toggle("showBackground");
+  }
 };
 
 const fadeRate = (track, start, end, duration, time) => {
