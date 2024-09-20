@@ -216,6 +216,8 @@ const initialize = (isFirstCalled) => {
       onload: () => {
         Howler.volume(settings.sound.volume.master);
         song.volume(settings.sound.volume.music);
+        let rate = new URLSearchParams(window.location.search).get("rate");
+        song.rate(rate ? parseFloat(rate) : 1);
         if (load == 1) {
           doneLoading();
         }

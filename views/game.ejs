@@ -332,11 +332,20 @@
       <div id="infoLineContainer"><div id="infoLine"></div></div>
       <span id="infoTitle">Producer</span>
       <br />
-      <span id="infoSubtitle">Game directed, developed, designed, operated by</span>
+      <span id="infoSubtitle">Game directed, developed, operated by</span>
       <br />
       <div class="profileContainer">
         <div class="profile" id="profileCoupy">
           <div class="profileHover" onclick="showProfile('coupy')">Coupy</div>
+        </div>
+      </div>
+      <span id="infoTitle">Designer</span>
+      <br />
+      <span id="infoSubtitle">Game designed by</span>
+      <br />
+      <div class="profileContainer">
+        <div class="profile" id="profileAlta">
+          <div class="profileHover" onclick="showProfile('altari')">Altari</div>
         </div>
       </div>
       <span id="infoTitle">Contributors</span>
@@ -344,9 +353,6 @@
       <span id="infoSubtitle">(ex- Team Croissant)</span>
       <br />
       <div class="profileContainer">
-        <div class="profile" id="profileAlta">
-          <div class="profileHover" onclick="showProfile('altari')">Altari</div>
-        </div>
         <div class="profile" id="profileShd">
           <div class="profileHover" onclick="showProfile('sihyeon')">Sihyeon</div>
         </div>
@@ -659,8 +665,8 @@
         <p class="infoText"><%= __('info16') %></p>
       </div>
     </div>
-    <div id="profileContainer" class="containers metropolis">
-      <span id="profileDescription"><%= __('profile_description') %></span>
+    <div id="profileContainer" class="containers metropolis" onclick="showProfileBackground(event)">
+      <span id="profileDescription" onclick="return false"><%= __('profile_description') %></span>
       <img src="https://img.icons8.com/windows/32/ffffff/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
       <div id="profileImageContainer"></div>
       <div id="profileNameContainer">
