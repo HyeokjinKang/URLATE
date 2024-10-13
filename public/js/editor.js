@@ -1298,9 +1298,23 @@ const cntRender = () => {
       const f = (1 - (renderNotes[i].beat + renderNotes[i].duration - beats) / (5 / speed)) * 100;
       if (renderNotes[i].value != 2 && p < 101) validNote = i;
       else if (renderNotes[i].value == 2 && f < 100) validNote = i;
-      if (i == validNote) drawNote(p, renderNotes[i].x, renderNotes[i].y, selectedCheck(0, i), renderNotes[i].value, renderNotes[i].direction, t, f);
-      else if (i + 3 >= validNote) {
-        drawShadow(renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, 0.4 - 0.1 * (validNote - i));
+      const alpha = 0.4 - 0.1 * (validNote - i);
+      if (i > 0) {
+        const x1 = (cntCanvas.width / 200) * (renderNotes[i - 1].x + 100);
+        const y1 = (cntCanvas.height / 200) * (renderNotes[i - 1].y + 100);
+        const x2 = (cntCanvas.width / 200) * (renderNotes[i].x + 100);
+        const y2 = (cntCanvas.height / 200) * (renderNotes[i].y + 100);
+        cntCtx.beginPath();
+        cntCtx.strokeStyle = `rgba(255,255,255,${alpha})`;
+        cntCtx.lineWidth = 3;
+        cntCtx.moveTo(x1, y1);
+        cntCtx.lineTo(x2, y2);
+        cntCtx.stroke();
+      }
+      if (i == validNote) {
+        drawNote(p, renderNotes[i].x, renderNotes[i].y, selectedCheck(0, i), renderNotes[i].value, renderNotes[i].direction, t, f);
+      } else if (i + 3 >= validNote) {
+        drawShadow(renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, alpha);
       }
     }
 
