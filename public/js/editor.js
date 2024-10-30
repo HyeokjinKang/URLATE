@@ -94,8 +94,7 @@ let destroyedBullets = new Set([]);
 let prevDestroyedBullets = new Set([]);
 let createdBullets = new Set([]);
 let prevCreatedBullets = new Set([]);
-let destroyedSeeks = new Set([]);
-let prevDestroyedSeeks = new Set([]);
+let hitBullets = new Set([]);
 
 let copySelection = { element: -1, start: -1, end: -1, beat: 0 };
 
@@ -553,7 +552,7 @@ const changeNote = () => {
   changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
 };
 
-const drawBullet = (x, y, a, s, l, d) => {
+const drawBullet = (x, y, a, s, l, d, t) => {
   x = (cntCanvas.width / 200) * (x + 100);
   y = (cntCanvas.height / 200) * (y + 100);
   let w = cntCanvas.width / 80;
@@ -572,7 +571,10 @@ const drawBullet = (x, y, a, s, l, d) => {
     cntCtx.fillStyle = `#ebd534`;
     cntCtx.strokeStyle = `#ebd534`;
   } else {
-    if (!denySkin) {
+    if (t) {
+      cntCtx.fillStyle = "#fb4934";
+      cntCtx.strokeStyle = "#fb4934";
+    } else if (!denySkin) {
       if (skin.bullet.type == "gradient") {
         let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
         for (let i = 0; i < skin.bullet.stops.length; i++) {
@@ -706,6 +708,9 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
         case 1:
           if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= cntCanvas.width / (song.playing() ? 80 : 50)) {
             pointingCntElement = { v1: v1, v2: v2, i: i };
+            if (song.playing()) {
+              hitBullets.add(i);
+            }
           }
           break;
         default:
@@ -1103,7 +1108,6 @@ const cntRender = () => {
     pointingCntElement = { v1: "", v2: "", i: "" };
     createdBullets.clear();
     destroyedBullets.clear();
-    destroyedSeeks.clear();
 
     const tw = cntCanvas.width / 200;
     const th = cntCanvas.height / 200;
@@ -1239,9 +1243,6 @@ const cntRender = () => {
 
     // Prevent destroy infinite loop
     prevDestroyedBullets = new Set(destroyedBullets);
-    for (let i of destroyedSeeks) {
-      prevDestroyedSeeks.add(i);
-    }
 
     // Editor only - Note & Bullet location live draw (when mode is "Add")
     if (mode == 2 && mouseMode == 0) {
@@ -1368,7 +1369,7 @@ const cntRender = () => {
         let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
         let y = renderBullets[i].location + (left ? 1 : -1) * getSin(renderBullets[i].angle) * p;
         if (mouseMode == 0) trackMouseSelection(start + i, 1, 0, x, y);
-        drawBullet(x, y, renderBullets[i].angle + (left ? 0 : 180), selectedCheck(1, start + i), renderBullets[i].location, renderBullets[i].direction);
+        drawBullet(x, y, renderBullets[i].angle + (left ? 0 : 180), selectedCheck(1, start + i), renderBullets[i].location, renderBullets[i].direction, hitBullets.has(start + i));
       }
     }
     prevCreatedBullets = new Set(createdBullets);
@@ -1416,13 +1417,12 @@ const cntRender = () => {
 
 const songPlayPause = () => {
   if (document.getElementById("editorMainContainer").style.display == "initial") {
-    prevDestroyedSeeks.clear();
-    destroyedSeeks.clear();
     if (song.playing()) {
       controlBtn.classList.add("timeline-play");
       controlBtn.classList.remove("timeline-pause");
       song.pause();
     } else {
+      hitBullets.clear();
       controlBtn.classList.add("timeline-pause");
       controlBtn.classList.remove("timeline-play");
       song.play();
