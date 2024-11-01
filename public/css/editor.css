@@ -379,7 +379,7 @@ body {
 }
 
 .settingsPropertiesContainer {
-  width: 70%;
+  width: 90%;
 }
 
 #settingsTracksContainer {
@@ -396,15 +396,14 @@ body {
 
 .settingsPropertiesTitle {
   letter-spacing: 0px;
-  margin-left: 1.5vw;
   font-size: 1.5vh;
 }
 
 .settingsPropertiesTextbox {
+  box-sizing: border-box;
+  padding: 4px 6px;
   text-align: center;
-  margin-left: 0.5vw;
   width: 50%;
-  height: 2vh;
   border-radius: 2px;
   border: 1px solid #bbb;
   color: #999;
@@ -412,7 +411,12 @@ body {
   font-size: 1.5vh;
 }
 
+.settingsPropertiesTextbox.left {
+  text-align: left;
+}
+
 .settingsPropertiesIndividual {
+  margin-left: 1.5vw;
   margin-top: 1vh;
   width: 100%;
   display: flex;
@@ -420,9 +424,19 @@ body {
   justify-content: space-between;
 }
 
+.settingsPropertiesIndividual.column {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.settingsPropertiesIndividual.column input {
+  margin-left: 0;
+  margin-top: 1vh;
+  width: 100%;
+}
+
 .settingsButtons {
   width: 25%;
-  margin: 0.1vw;
   border: solid 1px #aaa;
   background-color: #fff;
   color: #555;
@@ -635,8 +649,9 @@ body {
 }
 
 .settingsSelectBox {
-  width: 53%;
-  height: 2.6vh;
+  width: 50%;
+  box-sizing: border-box;
+  padding: 4px 6px;
   border-radius: 2px;
   border: 1px solid #bbb;
   color: #999;
