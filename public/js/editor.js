@@ -2413,7 +2413,7 @@ const test = () => {
     pattern.track = trackSettingsForm[0].value;
     pattern.producer = trackSettingsForm[1].value;
     pattern.author = trackSettingsForm[2].value;
-    pattern.comment = trackSettingsForm[3].comment;
+    pattern.comment = trackSettingsForm[3].value;
     localStorage.pattern = JSON.stringify(pattern);
     window.location.href = `${url}/test`;
   }, 500);
