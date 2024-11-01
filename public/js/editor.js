@@ -79,6 +79,7 @@ let pattern = {
     track: "",
     producer: "",
     author: "",
+    comment: "",
     bpm: "",
     speed: "",
     offset: "",
@@ -261,6 +262,7 @@ const songSelected = (isLoaded, withoutSong) => {
       track: tracks[songSelectBox.selectedIndex].name,
       producer: tracks[songSelectBox.selectedIndex].producer,
       author: userName,
+      comment: `Hello. This is ${userName}.`,
       bpm: tracks[songSelectBox.selectedIndex].bpm,
       speed: 2,
       offset: 0,
@@ -273,9 +275,10 @@ const songSelected = (isLoaded, withoutSong) => {
   settingsPropertiesTextbox[0].value = pattern.information.track;
   settingsPropertiesTextbox[1].value = pattern.information.producer;
   settingsPropertiesTextbox[2].value = pattern.information.author;
-  settingsPropertiesTextbox[3].value = pattern.information.bpm;
-  settingsPropertiesTextbox[4].value = pattern.information.speed;
-  settingsPropertiesTextbox[5].value = pattern.information.offset;
+  settingsPropertiesTextbox[3].value = pattern.information.comment;
+  settingsPropertiesTextbox[4].value = pattern.information.bpm;
+  settingsPropertiesTextbox[5].value = pattern.information.speed;
+  settingsPropertiesTextbox[6].value = pattern.information.offset;
   if (denySkin) canvasBackground.style.filter = `grayscale(30%) opacity(20%)`;
   else canvasBackground.style.filter = `brightness(30%)`;
   bpm = pattern.information.bpm;
@@ -679,6 +682,7 @@ const gotoMain = (isCalledByMain) => {
         track: "",
         producer: "",
         author: "",
+        comment: "",
         bpm: "",
         speed: "",
         offset: "",
@@ -1437,6 +1441,7 @@ const save = () => {
     track: trackSettingsForm[0].value,
     producer: trackSettingsForm[1].value,
     author: trackSettingsForm[2].value,
+    comment: trackSettingsForm[3].value,
     bpm: pattern.information.bpm,
     speed: pattern.information.speed,
     offset: offset,
@@ -2408,6 +2413,7 @@ const test = () => {
     pattern.track = trackSettingsForm[0].value;
     pattern.producer = trackSettingsForm[1].value;
     pattern.author = trackSettingsForm[2].value;
+    pattern.comment = trackSettingsForm[3].comment;
     localStorage.pattern = JSON.stringify(pattern);
     window.location.href = `${url}/test`;
   }, 500);
