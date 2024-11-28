@@ -97,7 +97,7 @@ let createdBullets = new Set([]);
 let prevCreatedBullets = new Set([]);
 let hitBullets = new Set([]);
 
-let copySelection = { element: -1, start: -1, end: -1, beat: 0 };
+let copySelection = { element: -2, start: -1, end: -1, beat: 0 };
 
 let prevBeat = 1;
 const beep = new Howl({
@@ -676,7 +676,7 @@ const gotoMain = (isCalledByMain) => {
     changeSettingsMode(-1);
     if (isSettingsOpened) toggleSettings();
     selectedCntElement = { v1: "", v2: "", i: "" };
-    copySelection = { element: -1, start: -1, end: -1, ms: 0 };
+    copySelection = { element: -2, start: -1, end: -1, ms: 0 };
     document.getElementById("initialScreenContainer").style.display = "block";
     document.getElementById("initialButtonsContainer").style.display = "flex";
     document.getElementById("songSelectionContainer").style.display = "none";
@@ -2188,6 +2188,7 @@ const compClicked = () => {
         for (let i = 0; i < pattern.bullets.length; i++) {
           if (JSON.stringify(pattern.bullets[i]) == JSON.stringify(newElement)) {
             selectedCntElement = { v1: 1, v2: 0, i: i };
+            break;
           }
         }
         destroyTriggerValidate(selectedCntElement.i);
@@ -2221,6 +2222,7 @@ const compClicked = () => {
         for (let i = 0; i < pattern.patterns.length; i++) {
           if (JSON.stringify(pattern.patterns[i]) == JSON.stringify(newElement)) {
             selectedCntElement = { v1: 0, v2: selectedValue, i: i };
+            break;
           }
         }
       }
@@ -2245,14 +2247,15 @@ const compClicked = () => {
       };
       pattern.triggers.push(newElement);
       pattern.triggers.sort(sortAsTiming);
+      patternChanged();
       for (let i = 0; i < pattern.triggers.length; i++) {
         if (JSON.stringify(pattern.triggers[i]) == JSON.stringify(newElement)) {
           selectedCntElement = { i: i, v1: 2, v2: -1 };
-          patternChanged();
-          changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
-          if (!isSettingsOpened) toggleSettings();
+          break;
         }
       }
+      changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
+      if (!isSettingsOpened) toggleSettings();
     }
     if (selectedCntElement.v1 === copySelection.element) {
       rangeCopyCancel();
@@ -2578,6 +2581,7 @@ const elementPaste = () => {
         v1: copiedElement.v1,
         v2: searchTarget[i].value,
       };
+      break;
     }
   }
   destroyTriggerValidate(selectedCntElement.i);
@@ -2643,7 +2647,8 @@ const rangePaste = () => {
 
 const copySelect = () => {
   if (selectedCntElement.v1 === "") return;
-  if (copySelection.element !== -1 && selectedCntElement.v1 !== copySelection.element) return;
+  if (copySelection.element == -2) return;
+  if (copySelection.element >= 0 && selectedCntElement.v1 !== copySelection.element) return;
   if (copySelection.end !== -1) return;
   if (copySelection.start === -1) {
     copySelection.element = selectedCntElement.v1;
@@ -2668,7 +2673,7 @@ const copySelect = () => {
 
 const rangeCopyCancel = () => {
   if (copySelection.element === -1) return;
-  copySelection = { element: -1, start: -1, end: -1, ms: 0 };
+  copySelection = { element: -2, start: -1, end: -1, ms: 0 };
   iziToast.warning({
     title: "Range Copy",
     message: "Range copy canceled.",
