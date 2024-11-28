@@ -2473,7 +2473,7 @@ const deleteElement = () => {
 };
 
 const destroyTriggerValidate = (index, isDelete) => {
-  for (let i = 0; i < pattern.triggers.length; i++) {
+  for (let i = pattern.triggers.length - 1; i >= 0; i--) {
     if (pattern.triggers[i].value == 0) {
       if (isDelete) {
         if (pattern.triggers[i].num == index) {
@@ -2482,7 +2482,6 @@ const destroyTriggerValidate = (index, isDelete) => {
             message: `Trigger_${i} is deleted.`,
           });
           pattern.triggers.splice(i, 1);
-          i--;
         } else if (pattern.triggers[i].num > index) {
           pattern.triggers[i].num--;
         }
