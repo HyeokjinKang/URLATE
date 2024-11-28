@@ -2105,13 +2105,14 @@ const timelineAddElement = () => {
       };
       pattern.bullets.push(newElement);
       pattern.bullets.sort(sortAsTiming);
-      patternChanged();
       for (let i = 0; i < pattern.bullets.length; i++) {
         if (JSON.stringify(pattern.bullets[i]) == JSON.stringify(newElement)) {
           selectedCntElement = { v1: 1, v2: 0, i: i };
           break;
         }
       }
+      destroyTriggerValidate(selectedCntElement.i);
+      patternChanged();
     } else if (mousePosY >= startY + height * (bulletsOverlapNum + 1) && mousePosY <= startY + height * (bulletsOverlapNum + 1) + height * (triggersOverlapNum + 1)) {
       let newElement = {
         beat: calculatedBeat,
@@ -2184,12 +2185,13 @@ const compClicked = () => {
         };
         pattern.bullets.push(newElement);
         pattern.bullets.sort(sortAsTiming);
-        patternChanged();
         for (let i = 0; i < pattern.bullets.length; i++) {
           if (JSON.stringify(pattern.bullets[i]) == JSON.stringify(newElement)) {
             selectedCntElement = { v1: 1, v2: 0, i: i };
           }
         }
+        destroyTriggerValidate(selectedCntElement.i);
+        patternChanged();
       } else {
         let newX = magnetToggle ? mouseX - (mouseX % 5) : mouseX;
         let newY = magnetToggle ? mouseY - (mouseY % 5) : mouseY;
@@ -2459,6 +2461,7 @@ const deleteElement = () => {
       pattern.patterns.splice(selectedCntElement.i, 1);
     } else if (selectedCntElement.v1 == 1) {
       pattern.bullets.splice(selectedCntElement.i, 1);
+      destroyTriggerValidate(selectedCntElement.i, true);
     } else if (selectedCntElement.v1 == 2) {
       pattern.triggers.splice(selectedCntElement.i, 1);
     }
@@ -2466,6 +2469,29 @@ const deleteElement = () => {
     changeSettingsMode(-1);
     selectedCntElement = { v1: "", v2: "", i: "" };
     if (isSettingsOpened) toggleSettings();
+  }
+};
+
+const destroyTriggerValidate = (index, isDelete) => {
+  for (let i = 0; i < pattern.triggers.length; i++) {
+    if (pattern.triggers[i].value == 0) {
+      if (isDelete) {
+        if (pattern.triggers[i].num == index) {
+          iziToast.warning({
+            title: "Destroy trigger deleted",
+            message: `Trigger_${i} is deleted.`,
+          });
+          pattern.triggers.splice(i, 1);
+          i--;
+        } else if (pattern.triggers[i].num > index) {
+          pattern.triggers[i].num--;
+        }
+      } else {
+        if (pattern.triggers[i].num >= index) {
+          pattern.triggers[i].num++;
+        }
+      }
+    }
   }
 };
 
@@ -2555,6 +2581,7 @@ const elementPaste = () => {
       };
     }
   }
+  destroyTriggerValidate(selectedCntElement.i);
   if (!isSettingsOpened) toggleSettings();
   changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
   patternChanged();
