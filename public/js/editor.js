@@ -2574,45 +2574,12 @@ const hideHelp = () => {
 
 const rangeCopy = () => {
   copySelection = { element: -1, start: -1, end: -1, ms: 0 };
-  let element = "";
   iziToast.info({
-    timeout: 20000,
-    overlay: true,
-    displayMode: "once",
-    id: "inputs",
-    zindex: 999,
     title: "Range Copy",
-    message: rangeCopyAlert,
-    position: "center",
-    drag: false,
-    inputs: [
-      [
-        '<select><option value="">--Choose--</option><option value="0">Pattern</option><option value="1">Bullet</option><option value="2">Trigger</option></select>',
-        "change",
-        (instance, toast, input, e) => {
-          element = input.value;
-        },
-      ],
-    ],
-    buttons: [
-      [
-        "<button><b>OK</b></button>",
-        (instance, toast) => {
-          if (element !== "") {
-            copySelection.element = Number(element);
-            iziToast.info({
-              title: "Range Copy",
-              message: `Select starting point of ${["pattern", "bullet", "trigger"][copySelection.element]} to copy`,
-            });
-            copySelect();
-            changeMode(1);
-          }
-          instance.hide({ transitionOut: "fadeOut" }, toast, "confirm");
-        },
-        true,
-      ],
-    ],
+    message: `Select starting point to copy`,
   });
+  copySelect();
+  changeMode(1);
 };
 
 const rangePaste = () => {
@@ -2649,9 +2616,11 @@ const rangePaste = () => {
 };
 
 const copySelect = () => {
-  if (selectedCntElement.v1 !== copySelection.element) return;
+  if (selectedCntElement.v1 === "") return;
+  if (copySelection.element !== -1 && selectedCntElement.v1 !== copySelection.element) return;
   if (copySelection.end !== -1) return;
   if (copySelection.start === -1) {
+    copySelection.element = selectedCntElement.v1;
     copySelection.start = selectedCntElement.i;
     copySelection.beat = pattern[["patterns", "bullets", "triggers"][selectedCntElement.v1]][selectedCntElement.i].beat;
     iziToast.success({
