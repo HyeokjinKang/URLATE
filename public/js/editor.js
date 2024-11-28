@@ -2618,6 +2618,7 @@ const rangePaste = () => {
   let end = copySelection.end;
   const beat = copySelection.beat;
   const element = ["patterns", "bullets", "triggers"][copySelection.element];
+  let elementsCopy = [];
   if (end == -1) {
     iziToast.warning({
       title: "Range Paste",
@@ -2634,8 +2635,19 @@ const rangePaste = () => {
     let copy = JSON.parse(JSON.stringify(pattern[element][i]));
     copy.beat += Number((beats - beat).toPrecision(10));
     pattern[element].push(copy);
+    elementsCopy.push(copy);
   }
   pattern[element].sort(sortAsTiming);
+  if (element == "bullets") {
+    for (let i = 0; i <= elementsCopy.length; i++) {
+      for (let j = 0; j < pattern[element].length; j++) {
+        if (JSON.stringify(pattern[element][j]) == JSON.stringify(elementsCopy[i])) {
+          destroyTriggerValidate(j);
+          break;
+        }
+      }
+    }
+  }
   patternChanged();
   iziToast.success({
     title: "Range Paste",
