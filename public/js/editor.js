@@ -1125,11 +1125,11 @@ const cntRender = () => {
     errorCount = 0;
 
     // Grid
+    cntCtx.lineWidth = 2;
     if (gridToggle) {
       let x1 = 0;
       let x2 = tw * 5;
       let y = 0;
-      cntCtx.lineWidth = 2;
       cntCtx.strokeStyle = "#bbbbbb20";
       cntCtx.beginPath();
       for (let i = -100; i <= 100; i += 10) {
