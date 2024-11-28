@@ -555,7 +555,7 @@ const changeNote = () => {
   changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
 };
 
-const drawBullet = (x, y, a, s, l, d, t) => {
+const drawBullet = (x, y, a, s, l, d, t, index) => {
   x = (cntCanvas.width / 200) * (x + 100);
   y = (cntCanvas.height / 200) * (y + 100);
   let w = cntCanvas.width / 80;
@@ -565,12 +565,17 @@ const drawBullet = (x, y, a, s, l, d, t) => {
     cntCtx.fillStyle = "#000";
     cntCtx.strokeStyle = "#fff";
     cntCtx.textAlign = d == "L" ? "left" : "right";
-    cntCtx.textBaseline = "bottom";
     cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
-    cntCtx.strokeText(`(Loc: ${l})`, x, y - 1.5 * w - window.innerHeight / 40);
-    cntCtx.strokeText(`(Angle: ${d == "L" ? a : a - 180})`, x, y - 1.5 * w);
-    cntCtx.fillText(`(Loc: ${l})`, x, y - 1.5 * w - window.innerHeight / 40);
-    cntCtx.fillText(`(Angle: ${d == "L" ? a : a - 180})`, x, y - 1.5 * w);
+    if (index != undefined) {
+      cntCtx.textBaseline = "bottom";
+      cntCtx.strokeText(`Bullet_${index}`, x, y - 1.5 * w);
+      cntCtx.fillText(`Bullet_${index}`, x, y - 1.5 * w);
+    }
+    cntCtx.textBaseline = "top";
+    cntCtx.strokeText(`(Angle: ${d == "L" ? a : a - 180})`, x, y + 1.5 * w);
+    cntCtx.fillText(`(Angle: ${d == "L" ? a : a - 180})`, x, y + 1.5 * w);
+    cntCtx.strokeText(`(Loc: ${l})`, x, y + 1.5 * w + window.innerHeight / 40);
+    cntCtx.fillText(`(Loc: ${l})`, x, y + 1.5 * w + window.innerHeight / 40);
     cntCtx.fillStyle = `#ebd534`;
     cntCtx.strokeStyle = `#ebd534`;
   } else {
@@ -1373,7 +1378,7 @@ const cntRender = () => {
         let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
         let y = renderBullets[i].location + (left ? 1 : -1) * getSin(renderBullets[i].angle) * p;
         if (mouseMode == 0) trackMouseSelection(start + i, 1, 0, x, y);
-        drawBullet(x, y, renderBullets[i].angle + (left ? 0 : 180), selectedCheck(1, start + i), renderBullets[i].location, renderBullets[i].direction, hitBullets.has(start + i));
+        drawBullet(x, y, renderBullets[i].angle + (left ? 0 : 180), selectedCheck(1, start + i), renderBullets[i].location, renderBullets[i].direction, hitBullets.has(start + i), start + i);
       }
     }
     prevCreatedBullets = new Set(createdBullets);
