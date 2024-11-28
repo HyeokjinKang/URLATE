@@ -1194,6 +1194,7 @@ const cntRender = () => {
     let nowSpeed = pattern.information.speed;
     for (let i = 0; i < renderTriggers.length; i++) {
       if (renderTriggers[i].value == 0) {
+        // Bullet Destroy
         if (!destroyedBullets.has(renderTriggers[i].num)) {
           if (!prevDestroyedBullets.has(renderTriggers[i].num)) {
             callBulletDestroy(renderTriggers[i].num);
@@ -1201,6 +1202,7 @@ const cntRender = () => {
           destroyedBullets.add(renderTriggers[i].num);
         }
       } else if (renderTriggers[i].value == 1) {
+        // Bullet Destroy ALL
         end = upperBound(pattern.bullets, renderTriggers[i].beat);
         const renderBullets = pattern.bullets.slice(0, end);
         for (let j = 0; renderBullets.length > j; j++) {
@@ -1212,14 +1214,19 @@ const cntRender = () => {
           }
         }
       } else if (renderTriggers[i].value == 2) {
+        // BPM Change
         bpmsync.ms = bpmsync.ms + (renderTriggers[i].beat - bpmsync.beat) * (60000 / bpm);
         bpm = renderTriggers[i].bpm;
         bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
+        // Opacity Change
+        // Todo: 성능 최적화 필요
         cntCanvas.style.filter = `opacity(${renderTriggers[i].opacity * 100}%)`;
       } else if (renderTriggers[i].value == 4) {
+        // Speed Change
         nowSpeed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
+        // Text
         if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration) {
           cntCtx.beginPath();
           if (denySkin) cntCtx.fillStyle = "#111";
@@ -1232,6 +1239,7 @@ const cntRender = () => {
           cntCtx.fillText(renderTriggers[i].text, tw * (renderTriggers[i].x + 100), th * (renderTriggers[i].y + 100));
         }
       } else if (renderTriggers[i].value == 6) {
+        // End
         song.stop();
       }
     }
