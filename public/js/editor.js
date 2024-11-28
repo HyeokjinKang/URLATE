@@ -647,6 +647,7 @@ const eraseTml = () => {
 };
 
 const initialize = () => {
+  cntCtx.lineJoin = "round";
   cntCanvas.width = (window.innerWidth * 0.6 * window.devicePixelRatio * settings.display.canvasRes) / 100;
   cntCanvas.height = (window.innerHeight * 0.65 * window.devicePixelRatio * settings.display.canvasRes) / 100;
   tmlCanvas.height = window.innerHeight * 0.27 * window.devicePixelRatio;
