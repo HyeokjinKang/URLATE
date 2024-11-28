@@ -97,7 +97,7 @@ let createdBullets = new Set([]);
 let prevCreatedBullets = new Set([]);
 let hitBullets = new Set([]);
 
-let copySelection = { element: -1, start: -1, end: -1, beat: 0 };
+let copySelection = { element: -2, start: -1, end: -1, beat: 0 };
 
 let prevBeat = 1;
 const beep = new Howl({
@@ -555,7 +555,7 @@ const changeNote = () => {
   changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
 };
 
-const drawBullet = (x, y, a, s, l, d, t) => {
+const drawBullet = (x, y, a, s, l, d, t, index) => {
   x = (cntCanvas.width / 200) * (x + 100);
   y = (cntCanvas.height / 200) * (y + 100);
   let w = cntCanvas.width / 80;
@@ -565,12 +565,17 @@ const drawBullet = (x, y, a, s, l, d, t) => {
     cntCtx.fillStyle = "#000";
     cntCtx.strokeStyle = "#fff";
     cntCtx.textAlign = d == "L" ? "left" : "right";
-    cntCtx.textBaseline = "bottom";
     cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
-    cntCtx.strokeText(`(Loc: ${l})`, x, y - 1.5 * w - window.innerHeight / 40);
-    cntCtx.strokeText(`(Angle: ${d == "L" ? a : a - 180})`, x, y - 1.5 * w);
-    cntCtx.fillText(`(Loc: ${l})`, x, y - 1.5 * w - window.innerHeight / 40);
-    cntCtx.fillText(`(Angle: ${d == "L" ? a : a - 180})`, x, y - 1.5 * w);
+    if (index != undefined) {
+      cntCtx.textBaseline = "bottom";
+      cntCtx.strokeText(`Bullet_${index}`, x, y - 1.5 * w);
+      cntCtx.fillText(`Bullet_${index}`, x, y - 1.5 * w);
+    }
+    cntCtx.textBaseline = "top";
+    cntCtx.strokeText(`(Angle: ${d == "L" ? a : a - 180})`, x, y + 1.5 * w);
+    cntCtx.fillText(`(Angle: ${d == "L" ? a : a - 180})`, x, y + 1.5 * w);
+    cntCtx.strokeText(`(Loc: ${l})`, x, y + 1.5 * w + window.innerHeight / 40);
+    cntCtx.fillText(`(Loc: ${l})`, x, y + 1.5 * w + window.innerHeight / 40);
     cntCtx.fillStyle = `#ebd534`;
     cntCtx.strokeStyle = `#ebd534`;
   } else {
@@ -670,7 +675,7 @@ const gotoMain = (isCalledByMain) => {
     changeSettingsMode(-1);
     if (isSettingsOpened) toggleSettings();
     selectedCntElement = { v1: "", v2: "", i: "" };
-    copySelection = { element: -1, start: -1, end: -1, ms: 0 };
+    copySelection = { element: -2, start: -1, end: -1, ms: 0 };
     document.getElementById("initialScreenContainer").style.display = "block";
     document.getElementById("initialButtonsContainer").style.display = "flex";
     document.getElementById("songSelectionContainer").style.display = "none";
@@ -1118,12 +1123,14 @@ const cntRender = () => {
 
     errorCount = 0;
 
+    cntCtx.lineJoin = "round";
+
     // Grid
+    cntCtx.lineWidth = 2;
     if (gridToggle) {
       let x1 = 0;
       let x2 = tw * 5;
       let y = 0;
-      cntCtx.lineWidth = 2;
       cntCtx.strokeStyle = "#bbbbbb20";
       cntCtx.beginPath();
       for (let i = -100; i <= 100; i += 10) {
@@ -1188,6 +1195,7 @@ const cntRender = () => {
     let nowSpeed = pattern.information.speed;
     for (let i = 0; i < renderTriggers.length; i++) {
       if (renderTriggers[i].value == 0) {
+        // Bullet Destroy
         if (!destroyedBullets.has(renderTriggers[i].num)) {
           if (!prevDestroyedBullets.has(renderTriggers[i].num)) {
             callBulletDestroy(renderTriggers[i].num);
@@ -1195,6 +1203,7 @@ const cntRender = () => {
           destroyedBullets.add(renderTriggers[i].num);
         }
       } else if (renderTriggers[i].value == 1) {
+        // Bullet Destroy ALL
         end = upperBound(pattern.bullets, renderTriggers[i].beat);
         const renderBullets = pattern.bullets.slice(0, end);
         for (let j = 0; renderBullets.length > j; j++) {
@@ -1206,14 +1215,19 @@ const cntRender = () => {
           }
         }
       } else if (renderTriggers[i].value == 2) {
+        // BPM Change
         bpmsync.ms = bpmsync.ms + (renderTriggers[i].beat - bpmsync.beat) * (60000 / bpm);
         bpm = renderTriggers[i].bpm;
         bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
+        // Opacity Change
+        // Todo: 성능 최적화 필요
         cntCanvas.style.filter = `opacity(${renderTriggers[i].opacity * 100}%)`;
       } else if (renderTriggers[i].value == 4) {
+        // Speed Change
         nowSpeed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
+        // Text
         if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration) {
           cntCtx.beginPath();
           if (denySkin) cntCtx.fillStyle = "#111";
@@ -1226,6 +1240,7 @@ const cntRender = () => {
           cntCtx.fillText(renderTriggers[i].text, tw * (renderTriggers[i].x + 100), th * (renderTriggers[i].y + 100));
         }
       } else if (renderTriggers[i].value == 6) {
+        // End
         song.stop();
       }
     }
@@ -1373,7 +1388,7 @@ const cntRender = () => {
         let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
         let y = renderBullets[i].location + (left ? 1 : -1) * getSin(renderBullets[i].angle) * p;
         if (mouseMode == 0) trackMouseSelection(start + i, 1, 0, x, y);
-        drawBullet(x, y, renderBullets[i].angle + (left ? 0 : 180), selectedCheck(1, start + i), renderBullets[i].location, renderBullets[i].direction, hitBullets.has(start + i));
+        drawBullet(x, y, renderBullets[i].angle + (left ? 0 : 180), selectedCheck(1, start + i), renderBullets[i].location, renderBullets[i].direction, hitBullets.has(start + i), start + i);
       }
     }
     prevCreatedBullets = new Set(createdBullets);
@@ -2091,13 +2106,14 @@ const timelineAddElement = () => {
       };
       pattern.bullets.push(newElement);
       pattern.bullets.sort(sortAsTiming);
-      patternChanged();
       for (let i = 0; i < pattern.bullets.length; i++) {
         if (JSON.stringify(pattern.bullets[i]) == JSON.stringify(newElement)) {
           selectedCntElement = { v1: 1, v2: 0, i: i };
           break;
         }
       }
+      destroyTriggerValidate(selectedCntElement.i);
+      patternChanged();
     } else if (mousePosY >= startY + height * (bulletsOverlapNum + 1) && mousePosY <= startY + height * (bulletsOverlapNum + 1) + height * (triggersOverlapNum + 1)) {
       let newElement = {
         beat: calculatedBeat,
@@ -2170,12 +2186,14 @@ const compClicked = () => {
         };
         pattern.bullets.push(newElement);
         pattern.bullets.sort(sortAsTiming);
-        patternChanged();
         for (let i = 0; i < pattern.bullets.length; i++) {
           if (JSON.stringify(pattern.bullets[i]) == JSON.stringify(newElement)) {
             selectedCntElement = { v1: 1, v2: 0, i: i };
+            break;
           }
         }
+        destroyTriggerValidate(selectedCntElement.i);
+        patternChanged();
       } else {
         let newX = magnetToggle ? mouseX - (mouseX % 5) : mouseX;
         let newY = magnetToggle ? mouseY - (mouseY % 5) : mouseY;
@@ -2205,6 +2223,7 @@ const compClicked = () => {
         for (let i = 0; i < pattern.patterns.length; i++) {
           if (JSON.stringify(pattern.patterns[i]) == JSON.stringify(newElement)) {
             selectedCntElement = { v1: 0, v2: selectedValue, i: i };
+            break;
           }
         }
       }
@@ -2229,14 +2248,15 @@ const compClicked = () => {
       };
       pattern.triggers.push(newElement);
       pattern.triggers.sort(sortAsTiming);
+      patternChanged();
       for (let i = 0; i < pattern.triggers.length; i++) {
         if (JSON.stringify(pattern.triggers[i]) == JSON.stringify(newElement)) {
           selectedCntElement = { i: i, v1: 2, v2: -1 };
-          patternChanged();
-          changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
-          if (!isSettingsOpened) toggleSettings();
+          break;
         }
       }
+      changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
+      if (!isSettingsOpened) toggleSettings();
     }
     if (selectedCntElement.v1 === copySelection.element) {
       rangeCopyCancel();
@@ -2445,6 +2465,7 @@ const deleteElement = () => {
       pattern.patterns.splice(selectedCntElement.i, 1);
     } else if (selectedCntElement.v1 == 1) {
       pattern.bullets.splice(selectedCntElement.i, 1);
+      destroyTriggerValidate(selectedCntElement.i, true);
     } else if (selectedCntElement.v1 == 2) {
       pattern.triggers.splice(selectedCntElement.i, 1);
     }
@@ -2452,6 +2473,28 @@ const deleteElement = () => {
     changeSettingsMode(-1);
     selectedCntElement = { v1: "", v2: "", i: "" };
     if (isSettingsOpened) toggleSettings();
+  }
+};
+
+const destroyTriggerValidate = (index, isDelete) => {
+  for (let i = pattern.triggers.length - 1; i >= 0; i--) {
+    if (pattern.triggers[i].value == 0) {
+      if (isDelete) {
+        if (pattern.triggers[i].num == index) {
+          iziToast.warning({
+            title: "Destroy trigger deleted",
+            message: `Trigger_${i} is deleted.`,
+          });
+          pattern.triggers.splice(i, 1);
+        } else if (pattern.triggers[i].num > index) {
+          pattern.triggers[i].num--;
+        }
+      } else {
+        if (pattern.triggers[i].num >= index) {
+          pattern.triggers[i].num++;
+        }
+      }
+    }
   }
 };
 
@@ -2539,8 +2582,10 @@ const elementPaste = () => {
         v1: copiedElement.v1,
         v2: searchTarget[i].value,
       };
+      break;
     }
   }
+  destroyTriggerValidate(selectedCntElement.i);
   if (!isSettingsOpened) toggleSettings();
   changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
   patternChanged();
@@ -2560,45 +2605,12 @@ const hideHelp = () => {
 
 const rangeCopy = () => {
   copySelection = { element: -1, start: -1, end: -1, ms: 0 };
-  let element = "";
   iziToast.info({
-    timeout: 20000,
-    overlay: true,
-    displayMode: "once",
-    id: "inputs",
-    zindex: 999,
     title: "Range Copy",
-    message: rangeCopyAlert,
-    position: "center",
-    drag: false,
-    inputs: [
-      [
-        '<select><option value="">--Choose--</option><option value="0">Pattern</option><option value="1">Bullet</option><option value="2">Trigger</option></select>',
-        "change",
-        (instance, toast, input, e) => {
-          element = input.value;
-        },
-      ],
-    ],
-    buttons: [
-      [
-        "<button><b>OK</b></button>",
-        (instance, toast) => {
-          if (element !== "") {
-            copySelection.element = Number(element);
-            iziToast.info({
-              title: "Range Copy",
-              message: `Select starting point of ${["pattern", "bullet", "trigger"][copySelection.element]} to copy`,
-            });
-            copySelect();
-            changeMode(1);
-          }
-          instance.hide({ transitionOut: "fadeOut" }, toast, "confirm");
-        },
-        true,
-      ],
-    ],
+    message: `Select starting point to copy`,
   });
+  copySelect();
+  changeMode(1);
 };
 
 const rangePaste = () => {
@@ -2607,6 +2619,7 @@ const rangePaste = () => {
   let end = copySelection.end;
   const beat = copySelection.beat;
   const element = ["patterns", "bullets", "triggers"][copySelection.element];
+  let elementsCopy = [];
   if (end == -1) {
     iziToast.warning({
       title: "Range Paste",
@@ -2623,8 +2636,19 @@ const rangePaste = () => {
     let copy = JSON.parse(JSON.stringify(pattern[element][i]));
     copy.beat += Number((beats - beat).toPrecision(10));
     pattern[element].push(copy);
+    elementsCopy.push(copy);
   }
   pattern[element].sort(sortAsTiming);
+  if (element == "bullets") {
+    for (let i = 0; i <= elementsCopy.length; i++) {
+      for (let j = 0; j < pattern[element].length; j++) {
+        if (JSON.stringify(pattern[element][j]) == JSON.stringify(elementsCopy[i])) {
+          destroyTriggerValidate(j);
+          break;
+        }
+      }
+    }
+  }
   patternChanged();
   iziToast.success({
     title: "Range Paste",
@@ -2635,9 +2659,12 @@ const rangePaste = () => {
 };
 
 const copySelect = () => {
-  if (selectedCntElement.v1 !== copySelection.element) return;
+  if (selectedCntElement.v1 === "") return;
+  if (copySelection.element == -2) return;
+  if (copySelection.element >= 0 && selectedCntElement.v1 !== copySelection.element) return;
   if (copySelection.end !== -1) return;
   if (copySelection.start === -1) {
+    copySelection.element = selectedCntElement.v1;
     copySelection.start = selectedCntElement.i;
     copySelection.beat = pattern[["patterns", "bullets", "triggers"][selectedCntElement.v1]][selectedCntElement.i].beat;
     iziToast.success({
@@ -2659,7 +2686,7 @@ const copySelect = () => {
 
 const rangeCopyCancel = () => {
   if (copySelection.element === -1) return;
-  copySelection = { element: -1, start: -1, end: -1, ms: 0 };
+  copySelection = { element: -2, start: -1, end: -1, ms: 0 };
   iziToast.warning({
     title: "Range Copy",
     message: "Range copy canceled.",
