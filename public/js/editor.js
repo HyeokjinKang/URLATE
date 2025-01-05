@@ -2772,10 +2772,12 @@ const scrollEvent = (e) => {
   if (delta == 1) {
     //UP
     if (shiftDown) tmlScrollUp();
+    else if (ctrlDown) zoomIn();
     else tmlScrollLeft();
   } else {
     //DOWN
     if (shiftDown) tmlScrollDown();
+    else if (ctrlDown) zoomOut();
     else tmlScrollRight();
   }
   e.preventDefault();
