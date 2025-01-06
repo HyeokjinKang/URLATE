@@ -2774,12 +2774,12 @@ const scrollEvent = (e) => {
     //UP
     if (shiftDown) tmlScrollUp();
     else if (ctrlDown) zoomIn();
-    else tmlScrollLeft();
+    else tmlScrollRight();
   } else {
     //DOWN
     if (shiftDown) tmlScrollDown();
     else if (ctrlDown) zoomOut();
-    else tmlScrollRight();
+    else tmlScrollLeft();
   }
   e.preventDefault();
 };
