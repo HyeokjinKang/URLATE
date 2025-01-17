@@ -1169,8 +1169,9 @@ const cntRender = () => {
     const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
 
     // Metronome
+    const noSyncBeats = Number((bpmsync.beat + (song.seek() * 1000 - offset - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
     if (metronomeToggle) {
-      const intBeat = Math.floor(beats);
+      const intBeat = Math.floor(noSyncBeats);
       if (song.playing()) {
         if (prevBeat != intBeat) {
           prevBeat = intBeat;
