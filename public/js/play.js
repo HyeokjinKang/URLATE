@@ -347,7 +347,7 @@ const drawParticle = (n, x, y, j, d) => {
     //Click Note
     const raf = (w, s, n) => {
       ctx.beginPath();
-      let width = canvas.width / 20;
+      let width = canvas.width / 24;
       if (Date.now() - s >= 800) return;
       let p = 100 * easeOutQuad((Date.now() - s) / 800);
       ctx.lineWidth = ((100 - p) / 100) * (canvas.width / 40);
