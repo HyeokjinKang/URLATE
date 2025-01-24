@@ -309,10 +309,10 @@ const drawParticle = (n, x, y, j, d) => {
     //Click Note
     const raf = (w, s, n) => {
       ctx.beginPath();
-      let width = canvas.width / 60;
+      let width = canvas.width / 20;
       if (Date.now() - s >= 800) return;
       let p = 100 * easeOutQuad((Date.now() - s) / 800);
-      ctx.lineWidth = ((100 - p) / 100) * (canvas.width / 200);
+      ctx.lineWidth = ((100 - p) / 100) * (canvas.width / 40);
       let opacity = parseInt(225 - p * 1.25);
       if (opacity <= 0) opacity = "00";
       if (skin.note[n].circle) {
@@ -342,28 +342,27 @@ const drawParticle = (n, x, y, j, d) => {
       }
       ctx.arc(cx, cy, w, 0, 2 * Math.PI);
       ctx.stroke();
-      w = canvas.width / 40 + width * (p / 100);
+      w = canvas.width / 80 + width * (p / 100);
       requestAnimationFrame(() => {
         raf(w, s, n);
       });
     };
-    raf(canvas.width / 40, Date.now(), d);
+    raf(canvas.width / 80, Date.now(), d);
   } else if (n == 2) {
     //Click Default
     const raf = (w, s) => {
       ctx.beginPath();
-      let width = canvas.width / 60;
-      let p = 100 - (s + 300 - Date.now()) / 3;
-      ctx.lineWidth = ((100 - p) / 100) * 5;
+      let width = canvas.width / 50;
+      if (Date.now() - s >= 500) return;
+      let p = 100 * easeOutQuad((Date.now() - s) / 500);
+      ctx.lineWidth = ((100 - p) / 100) * (canvas.width / 200);
       ctx.strokeStyle = `rgba(67, 221, 166, ${0.5 - p / 200})`;
       ctx.arc(cx, cy, w, 0, 2 * Math.PI);
       ctx.stroke();
       w = canvas.width / 70 + canvas.width / 400 + width * (p / 100);
-      if (p < 100) {
-        requestAnimationFrame(() => {
-          raf(w, s);
-        });
-      }
+      requestAnimationFrame(() => {
+        raf(w, s);
+      });
     };
     raf(canvas.width / 70 + canvas.width / 400, Date.now());
   } else if (n == 3) {
