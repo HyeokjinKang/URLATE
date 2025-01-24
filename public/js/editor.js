@@ -2441,18 +2441,28 @@ const test = () => {
   ctrlDown = false;
 };
 
-const changeSplit = () => {
+const changeSplit = (isTriggeredByKey) => {
   split++;
   if (split == 5) {
     split = 6;
   } else if (split == 7) {
     split = 8;
-  } else if (split == 9) {
-    split = 12;
-  } else if (split == 13) {
-    split = 16;
-  } else if (split == 17) {
-    split = 1;
+  } else if (split > 8) {
+    if (isTriggeredByKey) {
+      if (split == 9) {
+        split = 12;
+      } else if (split == 13) {
+        split = 16;
+      } else if (split == 17) {
+        split = 24;
+      } else if (split == 25) {
+        split = 32;
+      } else {
+        split = 1;
+      }
+    } else {
+      split = 1;
+    }
   }
   document.getElementById("split").innerText = `1/${split}`;
 };
@@ -2915,8 +2925,6 @@ document.onkeyup = (e) => {
     ctrlDown = false;
   } else if (e.key == "Shift") {
     shiftDown = false;
-  } else if (e.code == "Slash") {
-    hideHelp();
   }
 };
 
@@ -2994,13 +3002,17 @@ document.onkeydown = (e) => {
         elementPaste();
       }
     } else if (e.code == "Slash") {
-      showHelp();
+      changeSplit(true);
     } else if (e.code == "KeyG") {
       toggleGrid();
     } else if (e.code == "KeyT") {
       toggleMagnet();
     } else if (e.code == "KeyB") {
       toggleMetronome();
+    } else if (e.code == "Minus") {
+      zoomOut();
+    } else if (e.code == "Equal") {
+      zoomIn();
     }
   }
   if (mode == 2) {
