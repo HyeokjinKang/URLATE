@@ -2596,7 +2596,9 @@ const elementPaste = () => {
       break;
     }
   }
-  destroyTriggerValidate(selectedCntElement.i);
+  if (selectedCntElement.v1 == 1) {
+    destroyTriggerValidate(selectedCntElement.i);
+  }
   if (!isSettingsOpened) toggleSettings();
   changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
   patternChanged();
