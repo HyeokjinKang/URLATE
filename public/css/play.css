@@ -240,6 +240,47 @@ body {
   font-weight: 400;
 }
 
+#authorContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: right;
+  position: fixed;
+  bottom: 2vh;
+  left: 2vw;
+}
+
+#authorIcon {
+  height: 5vh;
+  width: 5vh;
+  border-radius: 5vh;
+  border: 1px solid white;
+}
+
+#authorComment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border-radius: 0.4em;
+  color: #000;
+  font-size: 0.9em;
+  text-align: right;
+  font-weight: 500;
+  padding: 0.8vh 0.5vw;
+  margin-left: 1vw;
+  opacity: 0.8;
+}
+
+#authorComment::before {
+  content: "";
+  position: absolute;
+  left: calc(5vh + 0.6vw);
+  border-right: 0.6vw solid #fff;
+  border-top: 0.5vw solid transparent;
+  border-bottom: 0.5vw solid transparent;
+}
+
 #menuContainer {
   display: none;
   backdrop-filter: blur(10px);
