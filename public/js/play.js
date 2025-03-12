@@ -187,6 +187,12 @@ const initialize = (isFirstCalled) => {
         document.getElementById("artist").textContent = pattern.information.producer;
         document.getElementById("scoreArtist").textContent = pattern.information.producer;
         document.getElementById("authorNamespace").textContent = pattern.information.author;
+        document.getElementById("authorComment").textContent = pattern.information.comment;
+        fetch(`${api}/profilePic/${pattern.information.author}`)
+          .then((res) => res.json())
+          .then((data) => {
+            document.getElementById("authorIcon").src = data.picture;
+          });
         offset = pattern.information.offset;
         bpm = pattern.information.bpm;
         speed = pattern.information.speed;
@@ -1508,7 +1514,7 @@ const doneLoading = () => {
         song.play();
       }
     }, 2000);
-  }, 1000);
+  }, 2000);
 };
 
 const resume = () => {
