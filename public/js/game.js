@@ -377,8 +377,6 @@ document.addEventListener("DOMContentLoaded", () => {
     warningInner.style.borderBottom = "0.1vh solid #555";
   }, 3000);
   if (iniMode != -1) {
-    //no intro
-    loaded++;
     display = 0;
   } else {
     warningContainer.style.display = "flex";
@@ -588,6 +586,13 @@ const tracksUpdate = () => {
                 maxcombo: 0,
               };
             }
+          }
+        }
+        if (i == tracks.length - 1 && iniMode != -1) {
+          loaded++;
+          if (loaded == 4) {
+            loaded = -1;
+            gameLoaded();
           }
         }
       })
