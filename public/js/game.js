@@ -306,6 +306,7 @@ const tutorialSkip = () => {
       .catch((error) => {
         alert(`Error occured.\n${error}`);
         console.error(`Error occured.\n${error}`);
+        location.reload();
       });
     tutorial -= 2;
   }
@@ -460,6 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 .catch((error) => {
                   alert(`Error occured.\n${error}`);
                   console.error(`Error occured.\n${error}`);
+                  location.reload();
                 });
             } else {
               alert(`Error occured.\n${data.description}`);
@@ -468,12 +470,14 @@ document.addEventListener("DOMContentLoaded", () => {
           .catch((error) => {
             alert(`Error occured.\n${error}`);
             console.error(`Error occured.\n${error}`);
+            location.reload();
           });
       }
     })
     .catch((error) => {
       alert(`Error occured.\n${error}`);
       console.error(`Error occured.\n${error}`);
+      location.reload();
     });
 });
 
@@ -599,6 +603,7 @@ const tracksUpdate = () => {
       .catch((error) => {
         alert(`Error occured.\n${error}`);
         console.error(`Error occured.\n${error}`);
+        location.reload();
       });
   }
   selectSongContainer.innerHTML = songList;
@@ -1049,6 +1054,7 @@ const displayClose = () => {
         .catch((error) => {
           alert(`Error occured.\n${error}`);
           console.error(`Error occured.\n${error}`);
+          location.reload();
         });
       document.getElementById("optionContainer").classList.remove("fadeInAnim");
       document.getElementById("optionContainer").classList.add("fadeOutAnim");
@@ -1173,6 +1179,7 @@ const displayClose = () => {
         .catch((error) => {
           alert(`Error occured.\n${error}`);
           console.error(`Error occured.\n${error}`);
+          location.reload();
         });
       return;
     } else if (display == 14) {
@@ -1540,6 +1547,7 @@ const bannerToggle = (n) => {
     .catch((error) => {
       alert(`Error occured.\n${error}`);
       console.error(`Error occured.\n${error}`);
+      location.reload();
     });
 };
 
@@ -1655,6 +1663,7 @@ const showProfile = (name) => {
     .catch((error) => {
       alert(`Error occured.\n${error}`);
       console.error(`Error occured.\n${error}`);
+      location.reload();
     });
 };
 
@@ -1905,6 +1914,7 @@ const couponApply = () => {
       .catch((error) => {
         alert(`Error occured.\n${error}`);
         console.error(`Error occured.\n${error}`);
+        location.reload();
         overlayLoadingContainer.style.pointerEvents = "none";
         overlayLoadingContainer.style.opacity = "0";
       });
@@ -2023,6 +2033,7 @@ const changeProfile = (e) => {
                     .catch((error) => {
                       alert(`Error occured.\n${error}`);
                       console.error(`Error occured.\n${error}`);
+                      location.reload();
                     });
                 }
                 aliasNum = Number(element);
@@ -2188,6 +2199,7 @@ const scrollEvent = (e) => {
         .catch((error) => {
           alert(`Error occured.\n${error}`);
           console.error(`Error occured.\n${error}`);
+          location.reload();
         });
     }
   }
