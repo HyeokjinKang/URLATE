@@ -238,11 +238,22 @@ const analyzePattern = (data) => {
   const noteBeats = patterns.map((p) => p.beat);
   const bulletBeats = bullets.map((b) => b.beat);
 
-  if (noteBeats.length === 0 && bulletBeats.length === 0) {
-    return { noteDensity: 1, bulletDensity: 1 };
+  const allBeats = [];
+  if (noteBeats.length > 0) {
+    allBeats.push(noteBeats[0], noteBeats[noteBeats.length - 1]);
+  }
+  if (bulletBeats.length > 0) {
+    allBeats.push(bulletBeats[0], bulletBeats[bulletBeats.length - 1]);
   }
 
-  const allBeats = [noteBeats[0], bulletBeats[0], noteBeats[noteBeats.length - 1], bulletBeats[bulletBeats.length - 1]];
+  if (allBeats.length === 0) {
+    return {
+      speed: data.information.speed,
+      noteDensity: 0,
+      bulletDensity: 0,
+    };
+  }
+
   const minBeat = Math.min(...allBeats);
   const maxBeat = Math.max(...allBeats);
   const beatRange = maxBeat - minBeat;
