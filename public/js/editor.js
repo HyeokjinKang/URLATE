@@ -262,14 +262,19 @@ const analyzePattern = (data) => {
   const bulletPerBeat = bullets.length / beatRange;
 
   function calculateDensity(perBeat, minPerBeat, maxPerBeat) {
-    const normalized = (perBeat - minPerBeat) / (maxPerBeat - minPerBeat);
-    return Math.round(normalized * 100);
+    const score = Math.max(0.01, Math.min(1, (perBeat - minPerBeat) / (maxPerBeat - minPerBeat)));
+    return Math.round(score * 100);
+  }
+
+  function calculateLogDensity(perBeat, base, multiplier) {
+    const score = (Math.log(Math.max(1, perBeat)) / Math.log(base)) * multiplier;
+    return Math.round(score);
   }
 
   return {
     speed: data.information.speed,
-    noteDensity: calculateDensity(notePerBeat, 0.25, 1.5), // 4박자당 1개 = 0.25, 2박자당 3개 = 1.5
-    bulletDensity: calculateDensity(bulletPerBeat, 0, 8), // 1박자당 8개 = 8
+    noteDensity: calculateDensity(notePerBeat, 0.25, 1), // 4박자당 1개 = 0.25, 1박자당 1개 = 1
+    bulletDensity: calculateLogDensity(bulletPerBeat, 20, 100),
   };
 };
 
