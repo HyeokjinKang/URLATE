@@ -268,8 +268,8 @@ const analyzePattern = (data) => {
 
   return {
     speed: data.information.speed,
-    noteDensity: calculateDensity(notePerBeat, 0.25, 2), // 4박자당 1개 = 0.25, 1박자당 4개 = 4
-    bulletDensity: calculateDensity(bulletPerBeat, 0, 8), // 기존 그대로
+    noteDensity: calculateDensity(notePerBeat, 0.25, 1.5), // 4박자당 1개 = 0.25, 2박자당 3개 = 1.5
+    bulletDensity: calculateDensity(bulletPerBeat, 0, 8), // 1박자당 8개 = 8
   };
 };
 
