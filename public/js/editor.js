@@ -231,11 +231,45 @@ const loadEditor = () => {
   input.click();
 };
 
+const analyzePattern = (data) => {
+  const patterns = data.patterns || [];
+  const bullets = data.bullets || [];
+
+  const noteBeats = patterns.map((p) => p.beat);
+  const bulletBeats = bullets.map((b) => b.beat);
+
+  if (noteBeats.length === 0 && bulletBeats.length === 0) {
+    return { noteDensity: 1, bulletDensity: 1 };
+  }
+
+  const allBeats = [noteBeats[0], bulletBeats[0], noteBeats[noteBeats.length - 1], bulletBeats[bulletBeats.length - 1]];
+  const minBeat = Math.min(...allBeats);
+  const maxBeat = Math.max(...allBeats);
+  const beatRange = maxBeat - minBeat;
+
+  const notePerBeat = patterns.length / beatRange;
+  const bulletPerBeat = bullets.length / beatRange;
+
+  function calculateDensity(perBeat, minPerBeat, maxPerBeat) {
+    const normalized = (perBeat - minPerBeat) / (maxPerBeat - minPerBeat);
+    return Math.round(normalized * 100);
+  }
+
+  return {
+    speed: data.information.speed,
+    noteDensity: calculateDensity(notePerBeat, 0.25, 2), // 4박자당 1개 = 0.25, 1박자당 4개 = 4
+    bulletDensity: calculateDensity(bulletPerBeat, 0, 8), // 기존 그대로
+  };
+};
+
 const dataLoaded = (event) => {
   let file = event.target.files[0];
   let reader = new FileReader();
   reader.onload = (e) => {
     pattern = JSON.parse(e.target.result);
+    console.log(`Analyzing pattern...`);
+    const result = analyzePattern(pattern);
+    console.table(result);
     for (let i = 0; songSelectBox.options.length > i; i++) {
       if (songSelectBox.options[i].value == pattern.information.track) songSelectBox.selectedIndex = i;
     }

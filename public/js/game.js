@@ -304,7 +304,7 @@ const tutorialSkip = () => {
         }
       })
       .catch((error) => {
-        alert(`Error occured.\n${error}`);
+        // alert(`Error occured.\n${error}`);
         console.error(`Error occured.\n${error}`);
         location.reload();
       });
