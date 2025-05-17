@@ -231,11 +231,61 @@ const loadEditor = () => {
   input.click();
 };
 
+const analyzePattern = (data) => {
+  const patterns = data.patterns || [];
+  const bullets = data.bullets || [];
+
+  const noteBeats = patterns.map((p) => p.beat);
+  const bulletBeats = bullets.map((b) => b.beat);
+
+  const allBeats = [];
+  if (noteBeats.length > 0) {
+    allBeats.push(noteBeats[0], noteBeats[noteBeats.length - 1]);
+  }
+  if (bulletBeats.length > 0) {
+    allBeats.push(bulletBeats[0], bulletBeats[bulletBeats.length - 1]);
+  }
+
+  if (allBeats.length === 0) {
+    return {
+      speed: data.information.speed,
+      noteDensity: 0,
+      bulletDensity: 0,
+    };
+  }
+
+  const minBeat = Math.min(...allBeats);
+  const maxBeat = Math.max(...allBeats);
+  const beatRange = maxBeat - minBeat;
+
+  const notePerBeat = patterns.length / beatRange;
+  const bulletPerBeat = bullets.length / beatRange;
+
+  function calculateDensity(perBeat, minPerBeat, maxPerBeat) {
+    const score = Math.max(0.01, Math.min(1, (perBeat - minPerBeat) / (maxPerBeat - minPerBeat)));
+    return Math.round(score * 100);
+  }
+
+  function calculateLogDensity(perBeat, base, multiplier) {
+    const score = (Math.log(Math.max(1, perBeat)) / Math.log(base)) * multiplier;
+    return Math.round(score);
+  }
+
+  return {
+    speed: data.information.speed,
+    noteDensity: calculateDensity(notePerBeat, 0.25, 1.5), // 4박자당 1개 = 0.25, 2박자당 3개 = 1.5
+    bulletDensity: calculateLogDensity(bulletPerBeat, 20, 100),
+  };
+};
+
 const dataLoaded = (event) => {
   let file = event.target.files[0];
   let reader = new FileReader();
   reader.onload = (e) => {
     pattern = JSON.parse(e.target.result);
+    console.log(`Analyzing pattern...`);
+    const result = analyzePattern(pattern);
+    console.table(result);
     for (let i = 0; songSelectBox.options.length > i; i++) {
       if (songSelectBox.options[i].value == pattern.information.track) songSelectBox.selectedIndex = i;
     }
