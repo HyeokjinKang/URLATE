@@ -1620,6 +1620,39 @@ const medalCheck = (n) => {
   }
 };
 
+const checkHoldNote = (key) => {
+  let date = Date.now();
+  const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+  mouseClicked = false;
+  mouseClickedMs = date;
+  if (pressingKeys.includes(key)) pressingKeys.splice(pressingKeys.indexOf(key), 1);
+  if (keyPressing.hasOwnProperty(key) && grabbedNotes.has(keyPressing[key]) && !grabbedNotes.has(`${keyPressing[key]}!`)) {
+    grabbedNotes.delete(keyPressing[key]);
+    grabbedNotes.add(`${keyPressing[key]}!`);
+    if (pattern.patterns[keyPressing[key]].beat + pattern.patterns[keyPressing[key]].duration - 1 / 3 > beats) {
+      medalCheck(medal);
+      pattern.patterns[keyPressing[key]].beat = beats - pattern.patterns[keyPressing[key]].duration;
+      calculateScore("Miss", keyPressing[key], true);
+      missParticles.push({
+        x: pattern.patterns[keyPressing[key]].x,
+        y: pattern.patterns[keyPressing[key]].y,
+        s: Date.now(),
+      });
+      miss++;
+      showOverlay();
+      missPoint.push(song.seek() * 1000);
+      record.push([record.length, 0, 2, keyPressing[key], mouseX, mouseY, "miss(hold)", song.seek() * 1000]);
+      keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
+    } else {
+      perfectParticles.push({ x: pattern.patterns[keyPressing[key]].x, y: pattern.patterns[keyPressing[key]].y, s: Date.now() });
+      calculateScore("Perfect", keyPressing[key], true);
+      keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
+      record.push([record.length, 0, 2, keyPressing[key], mouseX, mouseY, "perfect(hold)", song.seek() * 1000]);
+    }
+    delete keyPressing[key];
+  }
+};
+
 document.onkeydown = (e) => {
   e = e || window.event;
   if (e.repeat) return;
@@ -1656,39 +1689,12 @@ document.onkeydown = (e) => {
 
 document.onkeyup = (e) => {
   e = e || window.event;
-  let date = Date.now();
-  const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
   if (e.key == "Escape") {
     return;
   } else if (e.key == "Shift") {
     shiftDown = false;
   }
-  mouseClicked = false;
-  mouseClickedMs = date;
-  if (pressingKeys.includes(e.key)) pressingKeys.splice(pressingKeys.indexOf(e.key), 1);
-  if (keyPressing.hasOwnProperty(e.key) && grabbedNotes.has(keyPressing[e.key]) && !grabbedNotes.has(`${keyPressing[e.key]}!`)) {
-    grabbedNotes.delete(keyPressing[e.key]);
-    grabbedNotes.add(`${keyPressing[e.key]}!`);
-    if (pattern.patterns[keyPressing[e.key]].beat + pattern.patterns[keyPressing[e.key]].duration - 1 / 3 > beats) {
-      medalCheck(medal);
-      pattern.patterns[keyPressing[e.key]].beat = beats - pattern.patterns[keyPressing[e.key]].duration;
-      calculateScore("Miss", keyPressing[e.key], true);
-      missParticles.push({
-        x: pattern.patterns[keyPressing[e.key]].x,
-        y: pattern.patterns[keyPressing[e.key]].y,
-        s: Date.now(),
-      });
-      miss++;
-      showOverlay();
-      missPoint.push(song.seek() * 1000);
-      keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
-    } else {
-      perfectParticles.push({ x: pattern.patterns[keyPressing[e.key]].x, y: pattern.patterns[keyPressing[e.key]].y, s: Date.now() });
-      calculateScore("Perfect", keyPressing[e.key], true);
-      keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
-    }
-    delete keyPressing[e.key];
-  }
+  checkHoldNote(e.key);
 };
 
 window.addEventListener("resize", () => {
@@ -1711,3 +1717,9 @@ window.addEventListener("blur", () => {
 
 window.addEventListener("wheel", globalScrollEvent);
 document.getElementById("componentCanvas").addEventListener("pointermove", trackMousePos);
+document.getElementById("componentCanvas").addEventListener("mousedown", (event) => {
+  compClicked(false, `${event.button}mouse`, false);
+});
+document.getElementById("componentCanvas").addEventListener("mouseup", (event) => {
+  checkHoldNote(`${event.button}mouse`);
+});
