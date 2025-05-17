@@ -273,7 +273,7 @@ const analyzePattern = (data) => {
 
   return {
     speed: data.information.speed,
-    noteDensity: calculateDensity(notePerBeat, 0.25, 1), // 4박자당 1개 = 0.25, 1박자당 1개 = 1
+    noteDensity: calculateDensity(notePerBeat, 0.25, 1.5), // 4박자당 1개 = 0.25, 2박자당 3개 = 1.5
     bulletDensity: calculateLogDensity(bulletPerBeat, 20, 100),
   };
 };
