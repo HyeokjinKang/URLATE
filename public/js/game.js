@@ -201,6 +201,7 @@ const settingApply = () => {
   profileSong = new Howl({
     src: [`${cdn}/tracks/128kbps/store.ogg`],
     format: ["ogg"],
+    html5: true,
     autoplay: false,
     loop: true,
     onload: () => {
@@ -219,6 +220,7 @@ const settingApply = () => {
   themeSong = new Howl({
     src: [`${cdn}/tracks/${settings.sound.res}/urlate.ogg`],
     format: ["ogg"],
+    html5: true,
     autoplay: false,
     loop: true,
     onload: () => {
@@ -503,6 +505,7 @@ const tracksUpdate = () => {
     songs[i] = new Howl({
       src: [`${cdn}/tracks/preview/${tracks[i].fileName}.ogg`],
       format: ["ogg"],
+      html5: true,
       autoplay: false,
       loop: true,
     });
