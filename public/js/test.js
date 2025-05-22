@@ -214,6 +214,7 @@ const initialize = (isFirstCalled) => {
     song = new Howl({
       src: `${cdn}/tracks/${settings.sound.res}/${fileName}.ogg`,
       format: ["ogg"],
+      html5: true,
       autoplay: false,
       loop: false,
       onend: () => {
