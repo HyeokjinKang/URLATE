@@ -485,7 +485,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const tracksUpdate = () => {
   let songList = "";
-  let loadedCount = 0;
   for (let i = 0; i < tracks.length; i++) {
     if (tracks[i].type == 3) {
       songList += `<div class="songSelectionContainer songSelectionDisable">
@@ -596,8 +595,7 @@ const tracksUpdate = () => {
             }
           }
         }
-        loadedCount++;
-        if (loadedCount == tracks.length && iniMode != -1) {
+        if (i == tracks.length - 1 && iniMode != -1) {
           loaded++;
           if (loaded == 4) {
             loaded = -1;
@@ -906,10 +904,11 @@ const numberWithCommas = (x) => {
 const gameLoaded = () => {
   if (iniMode == 1) {
     if (localStorage.songNum) {
-      songSelection = Number(localStorage.songNum);
-      sortSelected(Number(localStorage.sort ? localStorage.sort : 0), true);
-      songSelected(songSelection, true);
+      let songNum = Number(localStorage.songNum);
+      songSelection = songNum;
       difficultySelected(Number(localStorage.difficultySelection ? localStorage.difficultySelection : 0), true);
+      sortSelected(Number(localStorage.sort ? localStorage.sort : 0), true);
+      songSelected(songNum, true);
     }
     menuSelected(0);
   } else if (display == 0 && songSelection == -1) {
