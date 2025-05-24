@@ -81,7 +81,6 @@ let tick = new Howl({
 });
 let resultEffect = new Howl({
   src: [`${cdn}/tracks/result.mp3`],
-  html5: true,
   autoplay: false,
   loop: false,
 });
