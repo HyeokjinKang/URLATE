@@ -1597,6 +1597,8 @@ const retry = () => {
     keyPressing = {};
     pressingKeys = [];
     medal = 1;
+    document.getElementsByClassName("medal")[0].classList.remove("hide");
+    document.getElementsByClassName("medal")[1].classList.remove("hide");
     globalAlpha = 1;
     blackOverlayContainer.classList.remove("show");
     menuContainer.style.display = "none";
