@@ -2,6 +2,7 @@
 @import url("https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700&display=swap");
 
 body {
+  line-height: 1.2;
   display: flex;
   flex-direction: column;
   align-items: flex-start;

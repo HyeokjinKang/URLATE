@@ -3,6 +3,7 @@
 @import url("metropolis.css");
 
 body {
+  line-height: 1.2;
   background: #eee url("/images/backgrounds/editor.webp");
   background-size: 130vw;
   background-repeat: repeat;
