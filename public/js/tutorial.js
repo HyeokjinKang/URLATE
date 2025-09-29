@@ -151,8 +151,8 @@ const initialize = (isFirstCalled) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        pattern = data;
         patternBackup = data;
+        pattern = JSON.parse(JSON.stringify(patternBackup));
         patternLength = pattern.patterns.length;
         offset = pattern.information.offset;
         bpm = pattern.information.bpm;

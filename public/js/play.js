@@ -177,8 +177,8 @@ const initialize = (isFirstCalled) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        pattern = data;
         patternBackup = data;
+        pattern = JSON.parse(JSON.stringify(patternBackup));
         patternLength = pattern.patterns.length;
         document.getElementById("scoreDifficultyNum").textContent = localStorage.difficulty;
         document.getElementById("scoreDifficultyName").textContent = difficultyNames[localStorage.difficultySelection];
