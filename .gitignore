@@ -10,3 +10,6 @@ resources/
 dist/
 
 public/images/profiles/
+
+logs/
+*.log
