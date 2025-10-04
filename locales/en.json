@@ -244,5 +244,9 @@
   "picture_message": "Select what you want to change.",
   "socket_achievement_reward": "Reward",
   "socket_achievement_alias": "Alias",
-  "image_error": "Image upload failed, please check if the image capacity is less than 1MB."
+  "image_error": "Image upload failed, please check if the image capacity is less than 1MB.",
+  "report_profile": "Report Profile",
+  "report_profile_confirm": "Are you sure you want to report this user's profile? This action will notify administrators of inappropriate content.",
+  "report_profile_success": "Profile has been reported successfully.",
+  "report_profile_error": "Failed to report profile. Please try again later."
 }

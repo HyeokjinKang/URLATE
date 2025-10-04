@@ -441,6 +441,28 @@ p {
   right: 5vw;
 }
 
+.reportBtn {
+  z-index: 200;
+  position: fixed;
+  top: 6vh;
+  right: calc(5vw + 5vh);
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0.8vh 1.5vw;
+  font-size: 1.6vh;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.reportBtn:hover {
+  background-color: #cc0000;
+  transform: scale(1.05);
+}
+
 .rankCloseBtn {
   z-index: 200;
 }
