@@ -1,0 +1,120 @@
+╔════════════════════════════════════════════════════════════════════╗
+║          URLATE Error Logging System Integration                  ║
+╚════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                       Express Application                           │
+│                         (src/index.ts)                              │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ├── Import Modules
+                              │   ├── import { logger } from "./logger"
+                              │   └── import { errorHandler, requestLogger } from "./middleware"
+                              │
+                              ├── Add Request Logger Middleware
+                              │   └── app.use(requestLogger)
+                              │       │
+                              │       └──> Logs ALL HTTP requests
+                              │            ├── Method, Path, Status, Timing
+                              │            └── Extra metadata for errors
+                              │
+                              ├── Replace signale with logger
+                              │   ├── logger.info("Server running...")
+                              │   └── logger.success("HTTP Server running...")
+                              │
+                              ├── Add Error Logging to Routes
+                              │   ├── /profile upload handler
+                              │   │   ├── logger.error("File upload error")
+                              │   │   ├── logger.warn("Invalid file upload")
+                              │   │   └── logger.error("Path traversal attempt")
+                              │   └── API error handlers
+                              │       └── logger.error("Profile update error")
+                              │
+                              ├── Add Global Error Handlers
+                              │   ├── process.on("unhandledRejection")
+                              │   │   └── logger.fatal(...)
+                              │   └── process.on("uncaughtException")
+                              │       └── logger.fatal(...) + exit
+                              │
+                              └── Add Express Error Handler (LAST)
+                                  └── app.use(errorHandler)
+                                      └── Catches all unhandled route errors
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Logger Module                               │
+│                        (src/logger.ts)                              │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ├── Initialize
+                              │   └── Create logs/ directory
+                              │
+                              ├── Export logger instance
+                              │   └── Methods:
+                              │       ├── info(message, meta?)
+                              │       ├── success(message, meta?)
+                              │       ├── warn(message, meta?)
+                              │       ├── error(message, error?, meta?)
+                              │       ├── fatal(message, error?, meta?)
+                              │       └── debug(message, meta?)
+                              │
+                              └── Output Destinations
+                                  ├── Console (via signale)
+                                  │   └── Colored, formatted output
+                                  └── Files
+                                      ├── logs/combined.log (ALL levels)
+                                      └── logs/error.log (ERROR + FATAL only)
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Middleware Module                              │
+│                     (src/middleware.ts)                             │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ├── requestLogger
+                              │   └── Logs all requests with timing
+                              │       ├── Success (200-399): INFO level
+                              │       └── Errors (400+): WARN/ERROR level
+                              │
+                              └── errorHandler
+                                  └── Catches Express errors
+                                      ├── Logs error with context
+                                      └── Sends JSON error response
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                          Log Files                                  │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ├── logs/combined.log
+                              │   └── [timestamp] [LEVEL] message
+                              │       { metadata }
+                              │
+                              └── logs/error.log
+                                  └── [timestamp] [ERROR/FATAL] message
+                                      { error details + stack trace }
+
+╔════════════════════════════════════════════════════════════════════╗
+║                        Data Flow Example                           ║
+╚════════════════════════════════════════════════════════════════════╝
+
+HTTP Request → requestLogger → Route Handler → Response
+     │              │                │              │
+     │              │                ├──(success)──→ logger.info()
+     │              │                │                     │
+     │              │                └──(error)────→ logger.error()
+     │              │                                      │
+     │              └───> Logs: "GET /path - 200 - 45ms" ─┴──> Files
+     │
+     └──(uncaught error)──→ errorHandler → logger.error() → Files
+                                    │
+                                    └──> JSON error response
+
+╔════════════════════════════════════════════════════════════════════╗
+║                      Key Integration Points                        ║
+╚════════════════════════════════════════════════════════════════════╝
+
+1. ✅ requestLogger middleware added early in middleware chain
+2. ✅ logger.* calls replace signale.* throughout codebase
+3. ✅ Error handlers in routes call logger.error() with context
+4. ✅ errorHandler middleware added last to catch unhandled errors
+5. ✅ Global handlers for uncaughtException and unhandledRejection
+6. ✅ logs/ directory auto-created, excluded via .gitignore
+
