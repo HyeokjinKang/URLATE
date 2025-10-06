@@ -11,7 +11,7 @@ import * as tf from "@tensorflow/tfjs-node";
 import fs from "fs";
 import sharp from "sharp";
 import { logger } from "./logger";
-import { errorHandler, requestLogger } from "./middleware";
+import { errorHandler } from "./middleware";
 
 let branch;
 exec("git branch --show-current", (err, stdout, stderr) => {
@@ -34,7 +34,6 @@ app.set("views", __dirname + "/../views");
 app.use(cookieParser());
 app.use(express.static(__dirname + "/../public"));
 app.use(i18n);
-app.use(requestLogger);
 
 app.get("/", (req, res) => {
   res.render("index", {
