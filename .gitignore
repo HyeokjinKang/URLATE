@@ -10,3 +10,8 @@ resources/
 dist/
 
 public/images/profiles/
+
+logs/
+*.log
+
+package-lock.json

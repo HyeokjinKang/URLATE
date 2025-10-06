@@ -10,6 +10,8 @@ import { exec } from "child_process";
 import * as tf from "@tensorflow/tfjs-node";
 import fs from "fs";
 import sharp from "sharp";
+import { logger } from "./logger";
+import { errorHandler } from "./middleware";
 
 let branch;
 exec("git branch --show-current", (err, stdout, stderr) => {
@@ -155,6 +157,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
     if (err) {
       if (err instanceof multer.MulterError) err = err.message;
       else err = err.code;
+      logger.error("File upload error", err, { userid: req.params.userid, type: req.params.type });
       res.status(400).json({
         result: "failed",
         message: "Error occured while uploading",
@@ -164,6 +167,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
     }
     const file = req.file;
     if (!file || file.mimetype.indexOf("image") == -1) {
+      logger.warn("Invalid file upload attempt", { userid: req.params.userid, type: req.params.type, mimetype: file?.mimetype });
       res.status(400).json({
         result: "failed",
         message: "Error occured while uploading",
@@ -174,6 +178,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
     const ROOT = __dirname.split("/").slice(0, -1).join("/") + "/public/images/profiles";
     const filePath = fs.realpathSync(path.resolve(ROOT, file.path));
     if (!filePath.startsWith(ROOT)) {
+      logger.error("Path traversal attempt detected", null, { userid: req.params.userid, filePath, ROOT });
       res.status(400).json({
         result: "failed",
         message: "Error occured while uploading",
@@ -208,8 +213,9 @@ app.post("/profile/:userid/:type", async (req, res) => {
       }),
     })
       .then((res) => res.json())
-      .then((json) => {
+      .then((json: any) => {
         if (json.result == "failed") {
+          logger.error("Profile update API error", null, { message: json.message, userid: req.params.userid });
           res.status(400).json({
             result: "failed",
             message: "Error occured while uploading",
@@ -218,6 +224,14 @@ app.post("/profile/:userid/:type", async (req, res) => {
           return;
         }
         res.status(200).json({ result: "success", url: `${config.project.url}/images/profiles/${file.filename}`, explicit });
+      })
+      .catch((err) => {
+        logger.error("Profile update fetch error", err, { userid: req.params.userid });
+        res.status(500).json({
+          result: "failed",
+          message: "Error occured while uploading",
+          error: "Internal server error",
+        });
       });
   });
 });
@@ -226,9 +240,28 @@ const loadModel = async () => {
   model = await nsfw.load(`${config.project.nsfw}/quant_nsfw_mobilenet/`);
 };
 
-loadModel().then(() => {
-  app.listen(config.project.port, () => {
-    signale.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : process.env.npm_package_version}.`);
-    signale.success(`HTTP Server running at port ${config.project.port}.`);
-  });
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
+  logger.fatal("Unhandled Promise Rejection", reason, { promise: promise.toString() });
 });
+
+// Handle uncaught exceptions
+process.on("uncaughtException", (error: Error) => {
+  logger.fatal("Uncaught Exception", error);
+  process.exit(1);
+});
+
+loadModel()
+  .then(() => {
+    app.listen(config.project.port, () => {
+      logger.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : process.env.npm_package_version}.`);
+      logger.success(`HTTP Server running at port ${config.project.port}.`);
+    });
+  })
+  .catch((err) => {
+    logger.fatal("Failed to load NSFW model", err);
+    process.exit(1);
+  });
+
+// Add error handler middleware (must be last)
+app.use(errorHandler);
