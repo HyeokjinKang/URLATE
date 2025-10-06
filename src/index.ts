@@ -213,7 +213,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
       }),
     })
       .then((res) => res.json())
-      .then((json) => {
+      .then((json: any) => {
         if (json.result == "failed") {
           logger.error("Profile update API error", null, { message: json.message, userid: req.params.userid });
           res.status(400).json({
