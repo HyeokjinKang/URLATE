@@ -1,4 +1,3 @@
-import signale from "signale";
 import cookieParser from "cookie-parser";
 import express from "express";
 import i18n from "./i18n";
