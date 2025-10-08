@@ -2750,7 +2750,7 @@ const copySelect = () => {
 };
 
 const rangeCopyCancel = () => {
-  if (copySelection.element === -1) return;
+  if (copySelection.element < 0) return;
   copySelection = { element: -2, start: -1, end: -1, ms: 0 };
   iziToast.warning({
     title: "Range Copy",
