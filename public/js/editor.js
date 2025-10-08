@@ -2464,10 +2464,12 @@ const stopBtn = () => {
   song.stop();
 };
 
-const changeRate = () => {
-  rate += 0.25;
+const changeRate = (dir = 1) => {
+  rate += dir * 0.25;
   if (rate > 2) {
     rate = 0.25;
+  } else if (rate <= 0) {
+    rate = 2;
   }
   document.getElementById("percentage").innerText = `${rate * 100}%`;
   song.rate(rate);
@@ -3045,13 +3047,46 @@ document.onkeydown = (e) => {
       deleteElement();
     } else if (e.code == "KeyC") {
       if (ctrlDown) {
-        elementCopy();
+        if (shiftDown) {
+          e.preventDefault();
+          rangeCopy();
+        } else {
+          elementCopy();
+        }
       } else {
         toggleCircle();
       }
     } else if (e.code == "KeyV") {
       if (ctrlDown) {
-        elementPaste();
+        if (shiftDown) {
+          rangePaste();
+        } else {
+          elementPaste();
+        }
+      } else if (selectedCntElement.v1 !== "") {
+        if (selectedCntElement.v1 == 0) {
+          pattern.patterns[selectedCntElement.i].y *= -1;
+        } else if (selectedCntElement.v1 == 1) {
+          pattern.bullets[selectedCntElement.i].location *= -1;
+        }
+      } else {
+        iziToast.warning({
+          title: "Reflect Vertically Failed",
+          message: "No element is selected for reflection.",
+        });
+      }
+    } else if (e.code == "KeyH") {
+      if (selectedCntElement.v1 !== "") {
+        if (selectedCntElement.v1 == 0) {
+          pattern.patterns[selectedCntElement.i].x *= -1;
+        } else if (selectedCntElement.v1 == 1) {
+          pattern.bullets[selectedCntElement.i].direction = pattern.bullets[selectedCntElement.i].direction == "L" ? "R" : "L";
+        } else {
+          iziToast.warning({
+            title: "Reflect Horizontally Failed",
+            message: "No element is selected for reflection.",
+          });
+        }
       }
     } else if (e.code == "Slash") {
       changeSplit(true);
@@ -3065,6 +3100,10 @@ document.onkeydown = (e) => {
       zoomOut();
     } else if (e.code == "Equal") {
       zoomIn();
+    } else if (e.code == "Comma") {
+      changeRate(-1);
+    } else if (e.code == "Period") {
+      changeRate(1);
     }
   }
   if (mode == 2) {
