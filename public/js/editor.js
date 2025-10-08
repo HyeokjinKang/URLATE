@@ -3074,13 +3074,13 @@ document.onkeydown = (e) => {
           patternChanged();
         } else {
           iziToast.warning({
-            title: "Reflect Horizontally Failed",
-            message: "Horizontal reflection is not supported for triggers.",
+            title: "Vertical reflection Failed",
+            message: "Vertical reflection is not supported for triggers.",
           });
         }
       } else {
         iziToast.warning({
-          title: "Reflect Vertically Failed",
+          title: "Vertical reflection Failed",
           message: "No element is selected for reflection.",
         });
       }
@@ -3096,13 +3096,13 @@ document.onkeydown = (e) => {
           patternChanged();
         } else {
           iziToast.warning({
-            title: "Reflect Horizontally Failed",
+            title: "Horizontal reflection Failed",
             message: "Horizontal reflection is not supported for triggers.",
           });
         }
       } else {
         iziToast.warning({
-          title: "Reflect Horizontally Failed",
+          title: "Horizontal reflection Failed",
           message: "No element is selected for reflection.",
         });
       }
