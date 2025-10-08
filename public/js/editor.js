@@ -2468,7 +2468,7 @@ const changeRate = (dir = 1) => {
   rate += dir * 0.25;
   if (rate > 2) {
     rate = 0.25;
-  } else if (rate <= 0) {
+  } else if (rate < 0.25) {
     rate = 2;
   }
   document.getElementById("percentage").innerText = `${rate * 100}%`;
