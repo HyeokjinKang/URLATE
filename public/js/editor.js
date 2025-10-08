@@ -3081,12 +3081,12 @@ document.onkeydown = (e) => {
           pattern.patterns[selectedCntElement.i].x *= -1;
         } else if (selectedCntElement.v1 == 1) {
           pattern.bullets[selectedCntElement.i].direction = pattern.bullets[selectedCntElement.i].direction == "L" ? "R" : "L";
-        } else {
-          iziToast.warning({
-            title: "Reflect Horizontally Failed",
-            message: "No element is selected for reflection.",
-          });
         }
+      } else {
+        iziToast.warning({
+          title: "Reflect Horizontally Failed",
+          message: "No element is selected for reflection.",
+        });
       }
     } else if (e.code == "Slash") {
       changeSplit(true);
