@@ -3068,6 +3068,11 @@ document.onkeydown = (e) => {
           pattern.patterns[selectedCntElement.i].y *= -1;
         } else if (selectedCntElement.v1 == 1) {
           pattern.bullets[selectedCntElement.i].location *= -1;
+        } else {
+          iziToast.warning({
+            title: "Reflect Horizontally Failed",
+            message: "Horizontal reflection is not supported for triggers.",
+          });
         }
       } else {
         iziToast.warning({
@@ -3081,6 +3086,11 @@ document.onkeydown = (e) => {
           pattern.patterns[selectedCntElement.i].x *= -1;
         } else if (selectedCntElement.v1 == 1) {
           pattern.bullets[selectedCntElement.i].direction = pattern.bullets[selectedCntElement.i].direction == "L" ? "R" : "L";
+        } else {
+          iziToast.warning({
+            title: "Reflect Horizontally Failed",
+            message: "Horizontal reflection is not supported for triggers.",
+          });
         }
       } else {
         iziToast.warning({
