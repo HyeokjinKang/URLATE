@@ -2972,17 +2972,20 @@ const reflection = (dir) => {
       }
       changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
       patternChanged();
+      return 1;
     } else {
       iziToast.warning({
         title: "Reflection Failed",
         message: "Reflection is not supported for triggers.",
       });
+      return 0;
     }
   } else {
     iziToast.warning({
       title: "Reflection Failed",
       message: "No element is selected for reflection.",
     });
+    return 0;
   }
 };
 
@@ -3094,8 +3097,9 @@ document.onkeydown = (e) => {
     } else if (e.code == "KeyH") {
       reflection(0);
     } else if (e.code == "KeyR") {
-      reflection(0);
-      reflection(1);
+      if (!ctrlDown) {
+        if (reflection(0)) reflection(1);
+      }
     } else if (e.code == "Slash") {
       changeSplit(true);
     } else if (e.code == "KeyG") {
