@@ -237,7 +237,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
 });
 
 const loadModel = async () => {
-  model = await nsfw.load(`${config.project.nsfw}/quant_nsfw_mobilenet/`);
+  model = await nsfw.load(`${config.project.nsfw}/mobilenet_v2/`);
 };
 
 // Handle unhandled promise rejections
