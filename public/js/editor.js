@@ -3094,8 +3094,10 @@ document.onkeydown = (e) => {
     } else if (e.code == "KeyH") {
       reflection(0);
     } else if (e.code == "KeyR") {
-      reflection(0);
-      reflection(1);
+      if (!ctrlDown) {
+        reflection(0);
+        reflection(1);
+      }
     } else if (e.code == "Slash") {
       changeSplit(true);
     } else if (e.code == "KeyG") {
