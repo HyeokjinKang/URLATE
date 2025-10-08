@@ -1309,7 +1309,7 @@ const profileUpdate = async (uid, isMe) => {
     let rank = Number(profile.rank);
     profile = profile.user;
     const editable = document.getElementsByClassName("editable");
-    const reportBtn = document.getElementById("profileReportBtn");
+    const reportBtn = document.querySelector(".reportBtn");
     if (isMe) {
       aliasNum = profile.alias;
       ownedAlias = new Set(JSON.parse(profile.ownedAlias));
@@ -1508,9 +1508,17 @@ const showProfileBackground = (event) => {
 const reportProfile = (event) => {
   event.stopPropagation();
   
+  // Create options HTML for report reasons
+  const reasonOptions = Object.keys(reportReasons).map((key) => {
+    return `<option value="${key}">${reportReasons[key]}</option>`;
+  }).join('');
+  
   iziToast.show({
     theme: "dark",
-    title: reportConfirm,
+    title: reportSelectReason,
+    message: `<select id="reportReasonSelect" class="reportReasonSelect">
+      ${reasonOptions}
+    </select>`,
     position: "center",
     timeout: false,
     overlay: true,
@@ -1518,14 +1526,15 @@ const reportProfile = (event) => {
     progressBarColor: "#999",
     buttons: [
       [
-        "<button>Cancel</button>",
+        `<button>${cancelText}</button>`,
         (instance, toast) => {
           instance.hide({ transitionOut: "fadeOut" }, toast, "cancel");
         },
       ],
       [
-        "<button>Report</button>",
+        `<button>${reportText}</button>`,
         (instance, toast) => {
+          const selectedReason = document.getElementById("reportReasonSelect")?.value || "other";
           instance.hide({ transitionOut: "fadeOut" }, toast, "report");
           loadingShow();
           fetch(`${api}/report/profile`, {
@@ -1533,6 +1542,7 @@ const reportProfile = (event) => {
             credentials: "include",
             body: JSON.stringify({
               userid: profileid,
+              reason: selectedReason,
             }),
             headers: {
               "Content-Type": "application/json",

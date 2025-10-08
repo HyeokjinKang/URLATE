@@ -446,21 +446,13 @@ p {
   position: fixed;
   top: 6vh;
   right: calc(5vw + 5vh);
-  background-color: #ff4444;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 0.8vh 1.5vw;
-  font-size: 1.6vh;
-  font-weight: 500;
-  cursor: pointer;
   transition: all 0.3s ease;
-  font-family: inherit;
+  filter: invert(35%) sepia(0%) saturate(0%) hue-rotate(64deg) brightness(92%) contrast(96%);
 }
 
 .reportBtn:hover {
-  background-color: #cc0000;
-  transform: scale(1.05);
+  filter: invert(29%) sepia(93%) saturate(3456%) hue-rotate(347deg) brightness(98%) contrast(101%);
+  transform: scale(1.1);
 }
 
 .rankCloseBtn {
@@ -3189,6 +3181,24 @@ del {
 
 .iziToast-theme-dark > .iziToast-body > .iziToast-inputs > select {
   color: white !important;
+}
+
+.reportReasonSelect {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background-color: #2a2a2a;
+  color: white;
+  border: 1px solid #444;
+  border-radius: 5px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.reportReasonSelect:focus {
+  outline: none;
+  border-color: #666;
 }
 
 .iziToast-theme-dark > .iziToast-body > .iziToast-inputs > input {

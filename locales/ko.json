@@ -230,7 +230,15 @@
   "socket_achievement_reward": "보상",
   "socket_achievement_alias": "칭호",
   "report_profile": "프로필 신고",
-  "report_profile_confirm": "이 사용자의 프로필을 신고하시겠습니까? 부적절한 내용이 관리자에게 보고됩니다.",
+  "report_profile_select_reason": "신고 사유를 선택해주세요:",
   "report_profile_success": "프로필이 신고되었습니다.",
-  "report_profile_error": "프로필 신고에 실패했습니다. 나중에 다시 시도해주세요."
+  "report_profile_error": "프로필 신고에 실패했습니다. 나중에 다시 시도해주세요.",
+  "report_reason_inappropriate_image": "부적절한 프로필 이미지",
+  "report_reason_offensive_nickname": "불쾌한 닉네임",
+  "report_reason_offensive_bio": "불쾌한 소개/설명",
+  "report_reason_spam": "스팸 또는 광고",
+  "report_reason_harassment": "괴롭힘 또는 따돌림",
+  "report_reason_other": "기타",
+  "cancel": "취소",
+  "report": "신고"
 }

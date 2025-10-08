@@ -246,7 +246,15 @@
   "socket_achievement_alias": "Alias",
   "image_error": "Image upload failed, please check if the image capacity is less than 1MB.",
   "report_profile": "Report Profile",
-  "report_profile_confirm": "Are you sure you want to report this user's profile? This action will notify administrators of inappropriate content.",
+  "report_profile_select_reason": "Please select the reason for reporting:",
   "report_profile_success": "Profile has been reported successfully.",
-  "report_profile_error": "Failed to report profile. Please try again later."
+  "report_profile_error": "Failed to report profile. Please try again later.",
+  "report_reason_inappropriate_image": "Inappropriate Profile Image",
+  "report_reason_offensive_nickname": "Offensive Nickname",
+  "report_reason_offensive_bio": "Offensive Bio/Description",
+  "report_reason_spam": "Spam or Advertising",
+  "report_reason_harassment": "Harassment or Bullying",
+  "report_reason_other": "Other",
+  "cancel": "Cancel",
+  "report": "Report"
 }
