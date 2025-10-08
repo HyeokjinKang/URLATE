@@ -3064,10 +3064,14 @@ document.onkeydown = (e) => {
           elementPaste();
         }
       } else if (selectedCntElement.v1 !== "") {
-        if (selectedCntElement.v1 == 0) {
-          pattern.patterns[selectedCntElement.i].y *= -1;
-        } else if (selectedCntElement.v1 == 1) {
-          pattern.bullets[selectedCntElement.i].location *= -1;
+        if (selectedCntElement.v1 < 2) {
+          if (selectedCntElement.v1 == 0) {
+            pattern.patterns[selectedCntElement.i].y *= -1;
+          } else if (selectedCntElement.v1 == 1) {
+            pattern.bullets[selectedCntElement.i].location *= -1;
+          }
+          changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
+          patternChanged();
         } else {
           iziToast.warning({
             title: "Reflect Horizontally Failed",
@@ -3082,10 +3086,14 @@ document.onkeydown = (e) => {
       }
     } else if (e.code == "KeyH") {
       if (selectedCntElement.v1 !== "") {
-        if (selectedCntElement.v1 == 0) {
-          pattern.patterns[selectedCntElement.i].x *= -1;
-        } else if (selectedCntElement.v1 == 1) {
-          pattern.bullets[selectedCntElement.i].direction = pattern.bullets[selectedCntElement.i].direction == "L" ? "R" : "L";
+        if (selectedCntElement.v1 < 2) {
+          if (selectedCntElement.v1 == 0) {
+            pattern.patterns[selectedCntElement.i].x *= -1;
+          } else if (selectedCntElement.v1 == 1) {
+            pattern.bullets[selectedCntElement.i].direction = pattern.bullets[selectedCntElement.i].direction == "L" ? "R" : "L";
+          }
+          changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
+          patternChanged();
         } else {
           iziToast.warning({
             title: "Reflect Horizontally Failed",
