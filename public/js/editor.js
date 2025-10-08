@@ -2959,6 +2959,33 @@ const toggleMagnet = () => {
   magnetToggle = !magnetToggle;
 };
 
+const reflection = (dir) => {
+  // 0 : Horizontal, 1 : Vertical
+  if (selectedCntElement.v1 !== "") {
+    if (selectedCntElement.v1 < 2) {
+      if (selectedCntElement.v1 == 0) {
+        pattern.patterns[selectedCntElement.i][["x", "y"][dir]] *= -1;
+      } else if (selectedCntElement.v1 == 1) {
+        if (dir == 0) pattern.bullets[selectedCntElement.i].direction = pattern.bullets[selectedCntElement.i].direction == "L" ? "R" : "L";
+        else pattern.bullets[selectedCntElement.i].location *= -1;
+        pattern.bullets[selectedCntElement.i].angle *= -1;
+      }
+      changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
+      patternChanged();
+    } else {
+      iziToast.warning({
+        title: "Reflection Failed",
+        message: "Reflection is not supported for triggers.",
+      });
+    }
+  } else {
+    iziToast.warning({
+      title: "Reflection Failed",
+      message: "No element is selected for reflection.",
+    });
+  }
+};
+
 document.getElementById("timelineContainer").addEventListener("wheel", scrollEvent);
 window.addEventListener("wheel", globalScrollEvent);
 window.addEventListener("resize", initialize);
@@ -3063,49 +3090,12 @@ document.onkeydown = (e) => {
         } else {
           elementPaste();
         }
-      } else if (selectedCntElement.v1 !== "") {
-        if (selectedCntElement.v1 < 2) {
-          if (selectedCntElement.v1 == 0) {
-            pattern.patterns[selectedCntElement.i].y *= -1;
-          } else if (selectedCntElement.v1 == 1) {
-            pattern.bullets[selectedCntElement.i].location *= -1;
-          }
-          changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
-          patternChanged();
-        } else {
-          iziToast.warning({
-            title: "Vertical reflection Failed",
-            message: "Vertical reflection is not supported for triggers.",
-          });
-        }
-      } else {
-        iziToast.warning({
-          title: "Vertical reflection Failed",
-          message: "No element is selected for reflection.",
-        });
-      }
+      } else reflection(1);
     } else if (e.code == "KeyH") {
-      if (selectedCntElement.v1 !== "") {
-        if (selectedCntElement.v1 < 2) {
-          if (selectedCntElement.v1 == 0) {
-            pattern.patterns[selectedCntElement.i].x *= -1;
-          } else if (selectedCntElement.v1 == 1) {
-            pattern.bullets[selectedCntElement.i].direction = pattern.bullets[selectedCntElement.i].direction == "L" ? "R" : "L";
-          }
-          changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
-          patternChanged();
-        } else {
-          iziToast.warning({
-            title: "Horizontal reflection Failed",
-            message: "Horizontal reflection is not supported for triggers.",
-          });
-        }
-      } else {
-        iziToast.warning({
-          title: "Horizontal reflection Failed",
-          message: "No element is selected for reflection.",
-        });
-      }
+      reflection(0);
+    } else if (e.code == "KeyR") {
+      reflection(0);
+      reflection(1);
     } else if (e.code == "Slash") {
       changeSplit(true);
     } else if (e.code == "KeyG") {
