@@ -1309,6 +1309,7 @@ const profileUpdate = async (uid, isMe) => {
     let rank = Number(profile.rank);
     profile = profile.user;
     const editable = document.getElementsByClassName("editable");
+    const reportBtn = document.querySelector(".reportBtn");
     if (isMe) {
       aliasNum = profile.alias;
       ownedAlias = new Set(JSON.parse(profile.ownedAlias));
@@ -1316,11 +1317,13 @@ const profileUpdate = async (uid, isMe) => {
         editable[i].classList.add("clickable");
       }
       document.getElementById("profileDescription").style.opacity = "1";
+      if (reportBtn) reportBtn.style.display = "none";
     } else {
       for (let i = 0; i < editable.length; i++) {
         editable[i].classList.remove("clickable");
       }
       document.getElementById("profileDescription").style.opacity = "0";
+      if (reportBtn) reportBtn.style.display = "block";
     }
     if (profile.explicit >= 2) {
       document.getElementById("profileImageContainer").classList.add("blur");
@@ -1500,6 +1503,81 @@ const showProfileBackground = (event) => {
     profileDescription.classList.toggle("showBackground");
     profileNameContainer.classList.toggle("showBackground");
   }
+};
+
+const reportProfile = (event) => {
+  event.stopPropagation();
+  
+  // Create options HTML for report reasons
+  const reasonOptions = Object.keys(reportReasons).map((key) => {
+    return `<option value="${key}">${reportReasons[key]}</option>`;
+  }).join('');
+  
+  iziToast.show({
+    theme: "dark",
+    title: reportSelectReason,
+    message: `<select id="reportReasonSelect" class="reportReasonSelect">
+      ${reasonOptions}
+    </select>`,
+    position: "center",
+    timeout: false,
+    overlay: true,
+    zindex: 999,
+    progressBarColor: "#999",
+    buttons: [
+      [
+        `<button>${cancelText}</button>`,
+        (instance, toast) => {
+          instance.hide({ transitionOut: "fadeOut" }, toast, "cancel");
+        },
+      ],
+      [
+        `<button>${reportText}</button>`,
+        (instance, toast) => {
+          const selectedReason = document.getElementById("reportReasonSelect")?.value || "other";
+          instance.hide({ transitionOut: "fadeOut" }, toast, "report");
+          loadingShow();
+          fetch(`${api}/report/profile`, {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify({
+              userid: profileid,
+              reason: selectedReason,
+            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              loadingHide();
+              if (data.result === "success") {
+                iziToast.success({
+                  title: reportSuccess,
+                  position: "topRight",
+                  timeout: 3000,
+                });
+              } else {
+                iziToast.error({
+                  title: reportError,
+                  position: "topRight",
+                  timeout: 3000,
+                });
+              }
+            })
+            .catch((error) => {
+              loadingHide();
+              iziToast.error({
+                title: reportError,
+                position: "topRight",
+                timeout: 3000,
+              });
+              console.error("Report error:", error);
+            });
+        },
+      ],
+    ],
+  });
 };
 
 const fadeRate = (track, start, end, duration, time) => {
