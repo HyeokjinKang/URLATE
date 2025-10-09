@@ -3026,7 +3026,7 @@ document.onkeydown = (e) => {
     }
   }
   if (!isTextboxFocused) {
-    if (e.code == "Space") {
+    if (e.code == "Space" || e.code == "KeyK") {
       songPlayPause();
     } else if (e.key == "1") {
       if (document.getElementsByClassName("iziToast-overlay").length == 0) {
@@ -3082,6 +3082,10 @@ document.onkeydown = (e) => {
       toggleMagnet();
     } else if (e.code == "KeyB") {
       toggleMetronome();
+    } else if (e.code == "KeyJ") {
+      tmlScrollHorizontal(-1, 1);
+    } else if (e.code == "KeyL") {
+      tmlScrollHorizontal(1, 1);
     } else if (e.code == "Minus") {
       zoomOut();
     } else if (e.code == "Equal") {
