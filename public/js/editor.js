@@ -22,7 +22,7 @@ const cntCtx = cntCanvas.getContext("2d");
 const tmlCanvas = document.getElementById("timelineCanvas");
 const tmlCtx = tmlCanvas.getContext("2d");
 const timelinePlayController = document.getElementById("timelinePlayController");
-const epsilon = Number.EPSILON;
+const epsilon = 1e-9;
 let settings,
   tracks,
   bpm = 130,
