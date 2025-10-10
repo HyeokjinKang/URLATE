@@ -22,6 +22,7 @@ const cntCtx = cntCanvas.getContext("2d");
 const tmlCanvas = document.getElementById("timelineCanvas");
 const tmlCtx = tmlCanvas.getContext("2d");
 const timelinePlayController = document.getElementById("timelinePlayController");
+const epsilon = 1e-9;
 let settings,
   tracks,
   bpm = 130,
@@ -2758,43 +2759,18 @@ const rangeCopyCancel = () => {
   });
 };
 
-const tmlScrollLeft = () => {
+const tmlScrollHorizontal = (direction, splitBy = split) => {
   let beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm); // Get current beat from song position
-  beats = Number(beats.toPrecision(10 + (beats > 1 ? Math.ceil(Math.log10(beats)) : 0))); // Prevent floating point error
+  let targetSubdivision;
 
-  const splitCalc = Number((1 / split).toPrecision(10));
-  const decimalCalc = Number((beats % 1).toPrecision(10));
-  const numerator = Math.floor(decimalCalc / splitCalc) - 1;
-  if (numerator < 0) beats = Math.floor(beats) - 1 + (split - 1) * splitCalc;
-  else beats = Math.floor(beats) + numerator * splitCalc; // Calculate numerator / denominator(splitCalc)
-
-  // Calculate BPM change
-  const renderTriggers = pattern.triggers.slice(0, upperBound(pattern.triggers, beats));
-  bpm = pattern.information.bpm;
-  bpmsync = {
-    ms: 0,
-    beat: 0,
-  };
-  for (let i = 0; i < renderTriggers.length; i++) {
-    if (renderTriggers[i].value == 2) {
-      bpmsync.ms = bpmsync.ms + (renderTriggers[i].beat - bpmsync.beat) * (60000 / bpm);
-      bpm = renderTriggers[i].bpm;
-      bpmsync.beat = renderTriggers[i].beat;
-    }
+  if (direction > 0) {
+    targetSubdivision = Math.floor(beats * splitBy + epsilon) + direction;
+  } else {
+    targetSubdivision = Math.ceil(beats * splitBy - epsilon) + direction;
   }
-  const seek = (beats - bpmsync.beat) * (60000 / bpm) + bpmsync.ms;
-  song.seek(seek / 1000);
-};
 
-const tmlScrollRight = () => {
-  let beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm); // Get current beat from song position
-  beats = Number(beats.toPrecision(10 + (beats > 1 ? Math.ceil(Math.log10(beats)) : 0))); // Prevent floating point error
-
-  const splitCalc = Number((1 / split).toPrecision(10));
-  const decimalCalc = Number((beats % 1).toPrecision(10));
-  const numerator = Math.floor(decimalCalc / splitCalc) + 1;
-  if (numerator >= split) beats = Math.floor(beats) + 1;
-  else beats = Math.floor(beats) + numerator * splitCalc; // Calculate numerator / denominator(splitCalc)
+  const newBeats = targetSubdivision / splitBy;
+  beats = Number(newBeats.toPrecision(15));
 
   // Calculate BPM change
   const renderTriggers = pattern.triggers.slice(0, upperBound(pattern.triggers, beats));
@@ -2839,12 +2815,12 @@ const scrollEvent = (e) => {
     //UP
     if (shiftDown) tmlScrollUp();
     else if (ctrlDown) zoomIn();
-    else tmlScrollRight();
+    else tmlScrollHorizontal(1);
   } else {
     //DOWN
     if (shiftDown) tmlScrollDown();
     else if (ctrlDown) zoomOut();
-    else tmlScrollLeft();
+    else tmlScrollHorizontal(-1);
   }
   e.preventDefault();
 };
@@ -3050,7 +3026,7 @@ document.onkeydown = (e) => {
     }
   }
   if (!isTextboxFocused) {
-    if (e.code == "Space") {
+    if (e.code == "Space" || e.code == "KeyK") {
       songPlayPause();
     } else if (e.key == "1") {
       if (document.getElementsByClassName("iziToast-overlay").length == 0) {
@@ -3066,9 +3042,9 @@ document.onkeydown = (e) => {
         changeMode(2);
       }
     } else if (e.key == "ArrowLeft") {
-      tmlScrollLeft();
+      tmlScrollHorizontal(-1);
     } else if (e.key == "ArrowRight") {
-      tmlScrollRight();
+      tmlScrollHorizontal(1);
     } else if (e.key == "ArrowUp") {
       tmlScrollUp();
     } else if (e.key == "ArrowDown") {
@@ -3083,9 +3059,7 @@ document.onkeydown = (e) => {
         } else {
           elementCopy();
         }
-      } else {
-        toggleCircle();
-      }
+      } else toggleCircle();
     } else if (e.code == "KeyV") {
       if (ctrlDown) {
         if (shiftDown) {
@@ -3108,6 +3082,10 @@ document.onkeydown = (e) => {
       toggleMagnet();
     } else if (e.code == "KeyB") {
       toggleMetronome();
+    } else if (e.code == "KeyJ") {
+      tmlScrollHorizontal(-1, 1);
+    } else if (e.code == "KeyL") {
+      tmlScrollHorizontal(1, 1);
     } else if (e.code == "Minus") {
       zoomOut();
     } else if (e.code == "Equal") {
