@@ -2964,7 +2964,10 @@ window.addEventListener("wheel", globalScrollEvent);
 window.addEventListener("resize", initialize);
 
 window.addEventListener("beforeunload", (event) => {
-  if (preventUnload) event.preventDefault();
+  if (preventUnload) {
+    event.preventDefault();
+    return (event.returnValue = "");
+  }
 });
 
 window.addEventListener("blur", () => {
