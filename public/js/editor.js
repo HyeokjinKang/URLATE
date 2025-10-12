@@ -318,7 +318,6 @@ const songSelected = (isLoaded = false) => {
       Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
     },
   });
-  preventUnload = true;
   controlBtn.classList.add("timeline-play");
   controlBtn.classList.remove("timeline-pause");
   fetch(`${api}/trackCount/${pattern.information.track}`);
