@@ -144,7 +144,7 @@ const settingApply = () => {
     for (let i = 0; songSelectBox.options.length > i; i++) {
       if (songSelectBox.options[i].value == pattern.information.track) songSelectBox.selectedIndex = i;
     }
-    songSelected();
+    songSelected(true);
   }
 };
 
@@ -291,7 +291,7 @@ const dataLoaded = (event) => {
     for (let i = 0; songSelectBox.options.length > i; i++) {
       if (songSelectBox.options[i].value == pattern.information.track) songSelectBox.selectedIndex = i;
     }
-    songSelected();
+    songSelected(true);
   };
   reader.readAsText(file);
 };
