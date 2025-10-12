@@ -73,6 +73,7 @@ let gridToggle = true,
   circleToggle = false;
 let scrollTimer = 0;
 let errorCount = 0;
+let preventUnload = false;
 
 let pattern = {
   information: {
@@ -143,7 +144,7 @@ const settingApply = () => {
     for (let i = 0; songSelectBox.options.length > i; i++) {
       if (songSelectBox.options[i].value == pattern.information.track) songSelectBox.selectedIndex = i;
     }
-    songSelected(true);
+    songSelected();
   }
 };
 
@@ -290,23 +291,12 @@ const dataLoaded = (event) => {
     for (let i = 0; songSelectBox.options.length > i; i++) {
       if (songSelectBox.options[i].value == pattern.information.track) songSelectBox.selectedIndex = i;
     }
-    songSelected(true);
+    songSelected();
   };
   reader.readAsText(file);
 };
 
-const songSelected = (isLoaded, withoutSong) => {
-  if (!withoutSong) {
-    song = new Howl({
-      src: `${cdn}/tracks/${settings.sound.res}/${tracks[songSelectBox.selectedIndex].fileName}.ogg`,
-      format: ["ogg"],
-      autoplay: false,
-      loop: false,
-      onload: () => {
-        Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
-      },
-    });
-  }
+const songSelected = (isLoaded = false) => {
   if (!isLoaded) {
     pattern.information = {
       version: "1.0",
@@ -319,6 +309,16 @@ const songSelected = (isLoaded, withoutSong) => {
       offset: 0,
     };
   }
+  song = new Howl({
+    src: `${cdn}/tracks/${settings.sound.res}/${tracks[songSelectBox.selectedIndex].fileName}.ogg`,
+    format: ["ogg"],
+    autoplay: false,
+    loop: false,
+    onload: () => {
+      Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
+    },
+  });
+  preventUnload = true;
   controlBtn.classList.add("timeline-play");
   controlBtn.classList.remove("timeline-pause");
   fetch(`${api}/trackCount/${pattern.information.track}`);
@@ -1502,6 +1502,7 @@ const songPlayPause = () => {
 };
 
 const save = () => {
+  preventUnload = false;
   let trackSettingsForm = settingsPropertiesTextbox;
   pattern.information = {
     version: "1.0",
@@ -2477,6 +2478,7 @@ const changeRate = (dir = 1) => {
 };
 
 const test = () => {
+  preventUnload = false;
   let trackSettingsForm = settingsPropertiesTextbox;
   pattern.information.track = trackSettingsForm[0].value;
   pattern.information.producer = trackSettingsForm[1].value;
@@ -2555,6 +2557,7 @@ const destroyTriggerValidate = (index, isDelete) => {
 };
 
 const patternChanged = () => {
+  preventUnload = true;
   if (patternSeek != patternHistory.length - 1) {
     patternHistory.splice(patternSeek + 1, patternHistory.length - 1 - patternSeek);
   }
@@ -2961,9 +2964,8 @@ document.getElementById("timelineContainer").addEventListener("wheel", scrollEve
 window.addEventListener("wheel", globalScrollEvent);
 window.addEventListener("resize", initialize);
 
-window.addEventListener("beforeunload", (e) => {
-  (e || window.event).returnValue = rusure;
-  return rusure;
+window.addEventListener("beforeunload", (event) => {
+  if (preventUnload) event.preventDefault();
 });
 
 window.addEventListener("blur", () => {
