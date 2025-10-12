@@ -136,7 +136,7 @@
       d = function () {
         for (var t, e, n, r = arguments[0], s = 2 <= arguments.length ? J.call(arguments, 1) : [], o = 0, i = s.length; o < i; o++)
           if ((e = s[o])) for (t in e) {
-            if (t === "__proto__" || t === "constructor" || t === "prototype") continue;
+            if (K.call(e, t) && (t === "__proto__" || t === "constructor" || t === "prototype")) continue;
             if (K.call(e, t)) {
               n = e[t];
               null != r[t] && "object" == typeof r[t] && null != n && "object" == typeof n ? d(r[t], n) : (r[t] = n);
