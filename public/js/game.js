@@ -518,8 +518,8 @@ const tracksUpdate = () => {
                     tracks[i].type == 1
                       ? "<img src='/images/parts/graphicIcons/track_advanced.webp' class='songSelectionIcon'>"
                       : tracks[i].type == 2
-                      ? "<img src='/images/parts/graphicIcons/track_dlc.webp' class='songSelectionIcon'>"
-                      : ""
+                        ? "<img src='/images/parts/graphicIcons/track_dlc.webp' class='songSelectionIcon'>"
+                        : ""
                   }
                 </div>
                 <span class="songSelectionArtist">${tracks[i].producer}</span>
@@ -717,7 +717,7 @@ const songSelected = (n, refreshed, seek) => {
         selectSongContainer.scrollTop = selectSongContainer.scrollTop - (selectSongContainer.scrollTop - underLimit) - window.innerHeight * 0.09;
       }
     },
-    songSelection != -1 ? 0 : 200
+    songSelection != -1 ? 0 : 200,
   );
   if (songSelection != -1 && isOfficial) {
     document.getElementsByClassName("ranks")[songSelection].className = "ranks";
@@ -1347,8 +1347,8 @@ const profileUpdate = async (uid, isMe) => {
       count++;
       document.getElementById("profileBannerContainer").innerHTML += `
         <div class="bannerImage${isMe ? " clickable" : ""}${banners[i].indexOf("(-)") != -1 ? " hidden" : ""}" style="background-image: url('${cdn}/banners/${banners[i].replace("(-)", "")}.webp')" ${
-        isMe ? `onclick="bannerToggle(${i})"` : ""
-      }>
+          isMe ? `onclick="bannerToggle(${i})"` : ""
+        }>
           <div class="bannerHover">
             <img src="/images/parts/icons/${banners[i].indexOf("(-)") != -1 ? "eye-closed" : "eye"}.svg" class="bannerIcon">
           </div>
@@ -1515,7 +1515,7 @@ const fadeRate = (track, start, end, duration, time) => {
 };
 
 const langChanged = (e) => {
-  window.location.href = `${url}/${e.value}`;
+  window.location.href = `${url}/${encodeURIComponent(e.value)}`;
 };
 
 const logout = () => {
