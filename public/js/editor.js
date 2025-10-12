@@ -2478,10 +2478,10 @@ const changeRate = (dir = 1) => {
 
 const test = () => {
   let trackSettingsForm = settingsPropertiesTextbox;
-  pattern.track = trackSettingsForm[0].value;
-  pattern.producer = trackSettingsForm[1].value;
-  pattern.author = trackSettingsForm[2].value;
-  pattern.comment = trackSettingsForm[3].value;
+  pattern.information.track = trackSettingsForm[0].value;
+  pattern.information.producer = trackSettingsForm[1].value;
+  pattern.information.author = trackSettingsForm[2].value;
+  pattern.information.comment = trackSettingsForm[3].value;
   localStorage.pattern = JSON.stringify(pattern);
   window.location.href = `${url}/test`;
 };
