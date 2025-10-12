@@ -2477,21 +2477,13 @@ const changeRate = (dir = 1) => {
 };
 
 const test = () => {
-  iziToast.warning({
-    title: "Caution",
-    message: need2Save,
-  });
-  setTimeout(() => {
-    save();
-    let trackSettingsForm = settingsPropertiesTextbox;
-    pattern.track = trackSettingsForm[0].value;
-    pattern.producer = trackSettingsForm[1].value;
-    pattern.author = trackSettingsForm[2].value;
-    pattern.comment = trackSettingsForm[3].value;
-    localStorage.pattern = JSON.stringify(pattern);
-    window.location.href = `${url}/test`;
-  }, 500);
-  ctrlDown = false;
+  let trackSettingsForm = settingsPropertiesTextbox;
+  pattern.track = trackSettingsForm[0].value;
+  pattern.producer = trackSettingsForm[1].value;
+  pattern.author = trackSettingsForm[2].value;
+  pattern.comment = trackSettingsForm[3].value;
+  localStorage.pattern = JSON.stringify(pattern);
+  window.location.href = `${url}/test`;
 };
 
 const changeSplit = (isTriggeredByKey) => {
