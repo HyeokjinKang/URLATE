@@ -1528,7 +1528,7 @@ const retry = () => {
 };
 
 const editor = () => {
-  window.location.href = `${url}/editor${background == "0" ? "background=0" : ""}`;
+  window.location.href = `${url}/editor${background == "0" ? "?background=0" : ""}`;
 };
 
 const home = () => {

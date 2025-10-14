@@ -2486,7 +2486,7 @@ const test = () => {
   pattern.information.author = trackSettingsForm[2].value;
   pattern.information.comment = trackSettingsForm[3].value;
   localStorage.pattern = JSON.stringify(pattern);
-  window.location.href = `${url}/test${background == "0" ? "background=0" : ""}`;
+  window.location.href = `${url}/test${background == "0" ? "?background=0" : ""}`;
 };
 
 const changeSplit = (isTriggeredByKey) => {
