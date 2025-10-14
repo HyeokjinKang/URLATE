@@ -13,8 +13,28 @@ body {
   margin: 0;
   padding: 0;
   text-align: center;
-  font-family: "Montserrat", "Pretendard JP Variable", "Pretendard JP", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Hiragino Sans",
-    "Apple SD Gothic Neo", Meiryo, "Noto Sans JP", "Noto Sans KR", "Malgun Gothic", Osaka, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  font-family:
+    "Montserrat",
+    "Pretendard JP Variable",
+    "Pretendard JP",
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    Roboto,
+    "Helvetica Neue",
+    "Segoe UI",
+    "Hiragino Sans",
+    "Apple SD Gothic Neo",
+    Meiryo,
+    "Noto Sans JP",
+    "Noto Sans KR",
+    "Malgun Gothic",
+    Osaka,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    sans-serif;
   font-feature-settings: "ss05";
   letter-spacing: -0.3px;
   overflow-x: hidden;
@@ -142,8 +162,28 @@ body {
 }
 
 .metropolis {
-  font-family: "Metropolis", "Pretendard JP Variable", "Pretendard JP", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Hiragino Sans",
-    "Apple SD Gothic Neo", Meiryo, "Noto Sans JP", "Noto Sans KR", "Malgun Gothic", Osaka, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  font-family:
+    "Metropolis",
+    "Pretendard JP Variable",
+    "Pretendard JP",
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    Roboto,
+    "Helvetica Neue",
+    "Segoe UI",
+    "Hiragino Sans",
+    "Apple SD Gothic Neo",
+    Meiryo,
+    "Noto Sans JP",
+    "Noto Sans KR",
+    "Malgun Gothic",
+    Osaka,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    sans-serif;
   font-feature-settings: "ss05";
 }
 
@@ -270,7 +310,6 @@ body {
 
 #canvasContainer {
   position: initial;
-  z-index: -1;
   background-color: #fff;
   width: 60vw;
   height: 100%;
@@ -278,7 +317,6 @@ body {
 
 #canvasBackground {
   position: fixed;
-  z-index: -1;
   width: 60%;
   height: 65%;
   background-position: center;
@@ -662,8 +700,28 @@ body {
 }
 
 kbd {
-  font-family: "Metropolis", "Pretendard JP Variable", "Pretendard JP", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Hiragino Sans",
-    "Apple SD Gothic Neo", Meiryo, "Noto Sans JP", "Noto Sans KR", "Malgun Gothic", Osaka, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  font-family:
+    "Metropolis",
+    "Pretendard JP Variable",
+    "Pretendard JP",
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    Roboto,
+    "Helvetica Neue",
+    "Segoe UI",
+    "Hiragino Sans",
+    "Apple SD Gothic Neo",
+    Meiryo,
+    "Noto Sans JP",
+    "Noto Sans KR",
+    "Malgun Gothic",
+    Osaka,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    sans-serif;
   font-feature-settings: "ss05";
   font-style: italic;
   border: 1.5px solid #555;
@@ -737,8 +795,28 @@ kbd {
 }
 
 .optionValue {
-  font-family: "Montserrat", "Pretendard JP Variable", "Pretendard JP", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Hiragino Sans",
-    "Apple SD Gothic Neo", Meiryo, "Noto Sans JP", "Noto Sans KR", "Malgun Gothic", Osaka, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  font-family:
+    "Montserrat",
+    "Pretendard JP Variable",
+    "Pretendard JP",
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    Roboto,
+    "Helvetica Neue",
+    "Segoe UI",
+    "Hiragino Sans",
+    "Apple SD Gothic Neo",
+    Meiryo,
+    "Noto Sans JP",
+    "Noto Sans KR",
+    "Malgun Gothic",
+    Osaka,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    sans-serif;
   font-feature-settings: "ss05";
   font-weight: 400;
   color: #404040;
