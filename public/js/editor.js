@@ -23,6 +23,7 @@ const tmlCanvas = document.getElementById("timelineCanvas");
 const tmlCtx = tmlCanvas.getContext("2d");
 const timelinePlayController = document.getElementById("timelinePlayController");
 const epsilon = 1e-9;
+let background;
 let settings,
   tracks,
   bpm = 130,
@@ -340,7 +341,7 @@ const songSelected = (isLoaded = false) => {
   speed = pattern.information.speed;
   document.getElementById("percentage").innerText = "100%";
   rate = 1;
-  let background = new URLSearchParams(window.location.search).get("background");
+  background = new URLSearchParams(window.location.search).get("background");
   if (background !== "0") canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[songSelectBox.selectedIndex].fileName}.webp")`;
   else if (!denySkin) canvasBackground.style.backgroundColor = `black`;
   document.getElementById("songSelectionContainer").style.display = "none";
@@ -713,7 +714,7 @@ const initialize = () => {
 };
 
 const gotoMain = (isCalledByMain) => {
-  if (isCalledByMain || confirm(rusure)) {
+  if (isCalledByMain || (preventUnload && confirm("Are you sure you want to leave? There are unsaved changes."))) {
     song.stop();
     song = new Howl({
       src: ["/sounds/tick.mp3"],
@@ -1502,6 +1503,7 @@ const songPlayPause = () => {
 
 const save = () => {
   preventUnload = false;
+  songName.innerText = pattern.information.track;
   let trackSettingsForm = settingsPropertiesTextbox;
   pattern.information = {
     version: "1.0",
@@ -2484,7 +2486,7 @@ const test = () => {
   pattern.information.author = trackSettingsForm[2].value;
   pattern.information.comment = trackSettingsForm[3].value;
   localStorage.pattern = JSON.stringify(pattern);
-  window.location.href = `${url}/test`;
+  window.location.href = `${url}/test${background == "0" ? "?background=0" : ""}`;
 };
 
 const changeSplit = (isTriggeredByKey) => {
@@ -2557,6 +2559,7 @@ const destroyTriggerValidate = (index, isDelete) => {
 
 const patternChanged = () => {
   preventUnload = true;
+  songName.innerText = pattern.information.track + "*";
   if (patternSeek != patternHistory.length - 1) {
     patternHistory.splice(patternSeek + 1, patternHistory.length - 1 - patternSeek);
   }
