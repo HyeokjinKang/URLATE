@@ -13,6 +13,7 @@ const canvas = document.getElementById("componentCanvas");
 const ctx = canvas.getContext("2d");
 const missCanvas = document.getElementById("missPointCanvas");
 const missCtx = missCanvas.getContext("2d");
+let background;
 let pattern = {};
 let patternLength = 0;
 let settings, sync, song, tracks, pixelRatio, offset, bpm, speed;
@@ -180,6 +181,7 @@ const initialize = (isFirstCalled) => {
       ms: 0,
       beat: 0,
     };
+    background = new URLSearchParams(window.location.search).get("background");
     for (let i = 0; i < tracks.length; i++) {
       if (tracks[i].name == pattern.information.track) {
         document.getElementById("scoreTitle").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
@@ -187,7 +189,8 @@ const initialize = (isFirstCalled) => {
         trackName = tracks[i].name;
         fileName = tracks[i].fileName;
         document.getElementById("albumContainer").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-        document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
+        if (background !== "0") document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
+        else canvasBackground.style.backgroundColor = `black`;
         document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
         document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
         albumImg.src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.webp`;
@@ -797,7 +800,7 @@ const drawKeyInput = () => {
       canvas.height * 0.05,
       canvas.width / 100,
       canvas.width / 100,
-      [canvas.width / 700]
+      [canvas.width / 700],
     );
     ctx.fill();
     ctx.stroke();
@@ -809,7 +812,7 @@ const drawKeyInput = () => {
     ctx.fillText(
       keyInput[i].key[0],
       canvas.width * 0.08 - canvas.height / 15 + (keyInput.length - i - 1) * (canvas.width / 100 + canvas.width / 200) + canvas.width / 200 - animX,
-      canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200
+      canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200,
     );
   }
   ctx.globalAlpha = globalAlpha;
@@ -1194,28 +1197,28 @@ const calculateResult = () => {
     () => {
       canvasContainer.style.opacity = "0";
     },
-    song.playing ? 0 : 500
+    song.playing ? 0 : 500,
   );
   setTimeout(
     () => {
       floatingArrowContainer.style.display = "flex";
       floatingArrowContainer.classList.toggle("arrowFade");
     },
-    song.playing ? 0 : 1000
+    song.playing ? 0 : 1000,
   );
   setTimeout(
     () => {
       floatingResultContainer.style.display = "flex";
       floatingResultContainer.classList.toggle("resultFade");
     },
-    song.playing ? 300 : 1300
+    song.playing ? 300 : 1300,
   );
   setTimeout(
     () => {
       scoreContainer.style.opacity = "1";
       scoreContainer.style.pointerEvents = "all";
     },
-    song.playing ? 1000 : 2000
+    song.playing ? 1000 : 2000,
   );
   missCtx.beginPath();
   missCtx.fillStyle = "#FFF";
@@ -1525,7 +1528,7 @@ const retry = () => {
 };
 
 const editor = () => {
-  window.location.href = `${url}/editor`;
+  window.location.href = `${url}/editor${background == "0" ? "background=0" : ""}`;
 };
 
 const home = () => {

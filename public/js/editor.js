@@ -23,6 +23,7 @@ const tmlCanvas = document.getElementById("timelineCanvas");
 const tmlCtx = tmlCanvas.getContext("2d");
 const timelinePlayController = document.getElementById("timelinePlayController");
 const epsilon = 1e-9;
+let background;
 let settings,
   tracks,
   bpm = 130,
@@ -340,7 +341,7 @@ const songSelected = (isLoaded = false) => {
   speed = pattern.information.speed;
   document.getElementById("percentage").innerText = "100%";
   rate = 1;
-  let background = new URLSearchParams(window.location.search).get("background");
+  background = new URLSearchParams(window.location.search).get("background");
   if (background !== "0") canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[songSelectBox.selectedIndex].fileName}.webp")`;
   else if (!denySkin) canvasBackground.style.backgroundColor = `black`;
   document.getElementById("songSelectionContainer").style.display = "none";
@@ -2485,7 +2486,7 @@ const test = () => {
   pattern.information.author = trackSettingsForm[2].value;
   pattern.information.comment = trackSettingsForm[3].value;
   localStorage.pattern = JSON.stringify(pattern);
-  window.location.href = `${url}/test`;
+  window.location.href = `${url}/test${background == "0" ? "background=0" : ""}`;
 };
 
 const changeSplit = (isTriggeredByKey) => {
