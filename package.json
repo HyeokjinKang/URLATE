@@ -1,11 +1,11 @@
 {
   "repository": {
     "type": "git",
-    "url": "https://github.com/HyeokjinKang/URLATE-v3l-frontend"
+    "url": "https://github.com/HyeokjinKang/URLATE"
   },
   "name": "urlate",
-  "version": "1.0.0-beta.2",
-  "description": "Avoid & Get on the tempo, URLATE",
+  "version": "1.0.0-rc.2",
+  "description": "URLATE, Online rhythm game based on web technologies.",
   "main": "src/",
   "scripts": {
     "build": "tsc",
@@ -13,7 +13,7 @@
     "start": "supervisor dist/index.js",
     "obfuscate": "javascript-obfuscator public/js/ --output public/js/ --debug-protection false --disable-console-output true --domain-lock 'urlate.coupy.dev' --domain-lock-redirect-url 'urlate.coupy.dev' --numbers-to-expressions true --self-defending true"
   },
-  "author": "Team Croissant",
+  "author": "Coupyworks",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
     "@tensorflow/tfjs-node": "^4.22.0",
