@@ -122,6 +122,7 @@ const settingApply = () => {
   volumeMasterValue.textContent = settings.sound.volume.master * 100 + "%";
   sync = settings.sound.offset;
   denyCursor = settings.editor.denyCursor;
+  if (!denyCursor) canvasContainer.style.cursor = "none";
   denySkin = settings.editor.denySkin;
   fetch(`${api}/skin/${settings.game.skin}`, {
     method: "GET",
@@ -1466,10 +1467,12 @@ const cntRender = () => {
     }
 
     //Cursor
-    if (pointingCntElement.i === "") {
-      componentView.style.cursor = "";
-    } else {
-      componentView.style.cursor = "url('/images/parts/cursor/blueSelect.cur'), pointer";
+    if (denyCursor) {
+      if (pointingCntElement.i === "") {
+        componentView.style.cursor = "";
+      } else {
+        componentView.style.cursor = "url('/images/parts/cursor/blueSelect.cur'), pointer";
+      }
     }
   } catch (e) {
     if (e) {
