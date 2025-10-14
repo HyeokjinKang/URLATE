@@ -122,7 +122,7 @@ const settingApply = () => {
   volumeMasterValue.textContent = settings.sound.volume.master * 100 + "%";
   sync = settings.sound.offset;
   denyCursor = settings.editor.denyCursor;
-  if (!denyCursor) canvasContainer.style.cursor = "none";
+  canvasContainer.style.cursor = denyCursor ? "" : "none";
   denySkin = settings.editor.denySkin;
   fetch(`${api}/skin/${settings.game.skin}`, {
     method: "GET",
