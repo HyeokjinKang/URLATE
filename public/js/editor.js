@@ -713,7 +713,7 @@ const initialize = () => {
 };
 
 const gotoMain = (isCalledByMain) => {
-  if (isCalledByMain || confirm(rusure)) {
+  if (isCalledByMain || (preventUnload && confirm("Are you sure you want to leave? There are unsaved changes."))) {
     song.stop();
     song = new Howl({
       src: ["/sounds/tick.mp3"],
@@ -1502,6 +1502,7 @@ const songPlayPause = () => {
 
 const save = () => {
   preventUnload = false;
+  songName.innerText = pattern.information.track;
   let trackSettingsForm = settingsPropertiesTextbox;
   pattern.information = {
     version: "1.0",
@@ -2557,6 +2558,7 @@ const destroyTriggerValidate = (index, isDelete) => {
 
 const patternChanged = () => {
   preventUnload = true;
+  songName.innerText = pattern.information.track + "*";
   if (patternSeek != patternHistory.length - 1) {
     patternHistory.splice(patternSeek + 1, patternHistory.length - 1 - patternSeek);
   }
