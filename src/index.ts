@@ -11,6 +11,7 @@ import fs from "fs";
 import sharp from "sharp";
 import { logger } from "./logger";
 import { errorHandler } from "./middleware";
+import { URL } from "url";
 
 let branch;
 exec("git branch --show-current", (err, stdout, stderr) => {
@@ -172,7 +173,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
       },
     });
     const profileData: any = await profileResponse.json();
-    if (profileData.result === "success" && profileData.user[type] && !["cdn.urlate.coupy.dev", "googleusercontent"].some(domain => profileData.user[type].includes(domain))) {
+    if (profileData.result === "success" && profileData.user[type] && !["cdn.urlate.coupy.dev", "googleusercontent"].some((domain) => profileData.user[type].includes(domain))) {
       oldFileUrl = profileData.user[type];
     }
   } catch (err) {
@@ -259,7 +260,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
 
             // Verify the path is within the profiles directory and file exists
             const ROOT = fs.realpathSync(path.join(__dirname, "../public/images/profiles"));
-            
+
             if (fs.existsSync(oldFilePath)) {
               const resolvedPath = fs.realpathSync(oldFilePath);
               if (resolvedPath.startsWith(ROOT)) {
