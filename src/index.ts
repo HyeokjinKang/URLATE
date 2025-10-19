@@ -260,9 +260,10 @@ app.post("/profile/:userid/:type", async (req, res) => {
 
             // Verify the path is within the profiles directory and file exists
             const ROOT = path.join(__dirname, "../public/images/profiles");
+            const resolvedRoot = fs.realpathSync(ROOT);
             if (fs.existsSync(oldFilePath)) {
               const resolvedPath = fs.realpathSync(oldFilePath);
-              if (resolvedPath.startsWith(ROOT)) {
+              if (resolvedPath.startsWith(resolvedRoot)) {
                 fs.unlinkSync(resolvedPath);
                 logger.info(`Deleted old ${type} file`, { userid: req.params.userid, type, oldFilename });
               }
