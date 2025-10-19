@@ -156,15 +156,15 @@ app.post("/profile/:userid/:type", async (req, res) => {
   // Fetch existing profile/background URL before upload
   let oldFileUrl: string | null = null;
   try {
-    const profileResponse = await fetch(`${config.project.api}/profile/${type}?userid=${req.params.userid}`, {
+    const profileResponse = await fetch(`${config.project.api}/profile/${req.params.userid}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
     });
     const profileData: any = await profileResponse.json();
-    if (profileData.result === "success" && profileData.value) {
-      oldFileUrl = profileData.value;
+    if (profileData.result === "success" && profileData.user.picture && !profileData.user.picture.includes("https://")) {
+      oldFileUrl = profileData.user.picture;
     }
   } catch (err) {
     logger.warn("Failed to fetch existing profile data", { userid: req.params.userid, type, error: err });
