@@ -253,25 +253,31 @@ app.post("/profile/:userid/:type", async (req, res) => {
 
         // Delete old file after successful upload
         if (oldFileUrl) {
-          try {
-            // Extract filename from URL
-            const oldFilename = path.basename(new URL(oldFileUrl).pathname);
-            const oldFilePath = path.join(__dirname, "../public/images/profiles", oldFilename);
+          // Asynchronously delete the old file without blocking the response.
+          (async () => {
+            try {
+              const { realpath, unlink } = fs.promises;
+              const profilesDir = path.join(__dirname, "../public/images/profiles");
+              const rootPath = await realpath(profilesDir);
 
-            // Verify the path is within the profiles directory and file exists
-            const ROOT = fs.realpathSync(path.join(__dirname, "../public/images/profiles"));
+              const oldFilename = path.basename(new URL(oldFileUrl).pathname);
+              const oldFilePath = path.join(profilesDir, oldFilename);
 
-            if (fs.existsSync(oldFilePath)) {
-              const resolvedPath = fs.realpathSync(oldFilePath);
-              if (resolvedPath.startsWith(ROOT)) {
-                fs.unlinkSync(resolvedPath);
+              const resolvedPath = await realpath(oldFilePath);
+
+              if (resolvedPath.startsWith(rootPath)) {
+                await unlink(resolvedPath);
                 logger.info(`Deleted old ${type} file`, { userid: req.params.userid, oldFilename });
+              } else {
+                logger.warn("Skipping deletion of file outside the root directory.", { userid: req.params.userid, oldFileUrl, resolvedPath });
+              }
+            } catch (err) {
+              // It's okay if the file doesn't exist. Log other errors.
+              if (err.code !== "ENOENT") {
+                logger.warn(`Failed to delete old ${type} file`, { userid: req.params.userid, oldFileUrl, error: err });
               }
             }
-          } catch (err) {
-            // Log but don't fail the request if old file deletion fails
-            logger.warn(`Failed to delete old ${type} file`, { userid: req.params.userid, oldFileUrl, error: err });
-          }
+          })();
         }
 
         res.status(200).json({ result: "success", url: `${config.project.url}/images/profiles/${file.filename}`, explicit });
