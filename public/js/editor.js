@@ -723,7 +723,7 @@ const initialize = () => {
 };
 
 const gotoMain = (isCalledByMain) => {
-  if (isCalledByMain || (preventUnload && confirm("Are you sure you want to leave? There are unsaved changes."))) {
+  if (isCalledByMain || (preventUnload && confirm("Are you sure you want to leave? There are unsaved changes.")) || !preventUnload) {
     song.stop();
     song = new Howl({
       src: ["/sounds/tick.mp3"],
