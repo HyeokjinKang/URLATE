@@ -136,7 +136,7 @@ const upload = multer({
 
 app.post("/profile/:userid/:type", async (req, res) => {
   // Validate userid: must be numeric
-  if (!/^[0-9]*$/.test(req.params.userid)) {
+  if (!/^[0-9]+$/.test(req.params.userid)) {
     res.status(400).json({
       result: "failed",
       message: "Invalid userid format",
