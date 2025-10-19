@@ -163,8 +163,8 @@ app.post("/profile/:userid/:type", async (req, res) => {
       },
     });
     const profileData: any = await profileResponse.json();
-    if (profileData.result === "success" && profileData.user.picture && !profileData.user.picture.includes("https://")) {
-      oldFileUrl = profileData.user.picture;
+    if (profileData.result === "success" && profileData.user[type] && !profileData.user[type].includes("cdn.urlate.coupy.dev") && !profileData.user[type].includes("googleusercontent")) {
+      oldFileUrl = profileData.user[type];
     }
   } catch (err) {
     logger.warn("Failed to fetch existing profile data", { userid: req.params.userid, type, error: err });
@@ -255,12 +255,12 @@ app.post("/profile/:userid/:type", async (req, res) => {
               const resolvedPath = fs.realpathSync(oldFilePath);
               if (resolvedPath.startsWith(ROOT)) {
                 fs.unlinkSync(resolvedPath);
-                logger.info("Deleted old profile file", { userid: req.params.userid, type, oldFilename });
+                logger.info(`Deleted old ${type} file`, { userid: req.params.userid, type, oldFilename });
               }
             }
           } catch (err) {
             // Log but don't fail the request if old file deletion fails
-            logger.warn("Failed to delete old profile file", { userid: req.params.userid, type, oldFileUrl, error: err });
+            logger.warn(`Failed to delete old ${type} file`, { userid: req.params.userid, type, oldFileUrl, error: err });
           }
         }
 
