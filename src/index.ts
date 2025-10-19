@@ -152,6 +152,24 @@ app.post("/profile/:userid/:type", async (req, res) => {
     });
     return;
   }
+
+  // Fetch existing profile/background URL before upload
+  let oldFileUrl: string | null = null;
+  try {
+    const profileResponse = await fetch(`${config.project.api}/profile/${type}?userid=${req.params.userid}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const profileData: any = await profileResponse.json();
+    if (profileData.result === "success" && profileData.value) {
+      oldFileUrl = profileData.value;
+    }
+  } catch (err) {
+    logger.warn("Failed to fetch existing profile data", { userid: req.params.userid, type, error: err });
+  }
+
   upload(req, res, async (err) => {
     if (err) {
       if (err instanceof multer.MulterError) err = err.message;
@@ -222,6 +240,30 @@ app.post("/profile/:userid/:type", async (req, res) => {
           });
           return;
         }
+
+        // Delete old file after successful upload
+        if (oldFileUrl) {
+          try {
+            // Extract filename from URL
+            const urlParts = oldFileUrl.split("/");
+            const oldFilename = urlParts[urlParts.length - 1];
+            const oldFilePath = path.join(__dirname, "../public/images/profiles", oldFilename);
+
+            // Verify the path is within the profiles directory and file exists
+            const ROOT = __dirname.split("/").slice(0, -1).join("/") + "/public/images/profiles";
+            if (fs.existsSync(oldFilePath)) {
+              const resolvedPath = fs.realpathSync(oldFilePath);
+              if (resolvedPath.startsWith(ROOT)) {
+                fs.unlinkSync(resolvedPath);
+                logger.info("Deleted old profile file", { userid: req.params.userid, type, oldFilename });
+              }
+            }
+          } catch (err) {
+            // Log but don't fail the request if old file deletion fails
+            logger.warn("Failed to delete old profile file", { userid: req.params.userid, type, oldFileUrl, error: err });
+          }
+        }
+
         res.status(200).json({ result: "success", url: `${config.project.url}/images/profiles/${file.filename}`, explicit });
       })
       .catch((err) => {
