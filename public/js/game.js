@@ -1526,11 +1526,11 @@ const bannerToggle = (n) => {
   if (banners[n].indexOf("(-)") == -1) {
     banners[n] = banners[n] + "(-)";
     document.getElementsByClassName("bannerImage")[n].classList.add("hidden");
-    document.getElementsByClassName("bannerIcon")[n].src = "/iconseye-closed.svg";
+    document.getElementsByClassName("bannerIcon")[n].src = "/icons/eye-closed.svg";
   } else {
     banners[n] = banners[n].replace("(-)", "");
     document.getElementsByClassName("bannerImage")[n].classList.remove("hidden");
-    document.getElementsByClassName("bannerIcon")[n].src = "/iconseye.svg";
+    document.getElementsByClassName("bannerIcon")[n].src = "/icons/eye.svg";
   }
   fetch(`${api}/profile/banner`, {
     method: "PUT",
