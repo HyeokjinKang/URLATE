@@ -135,6 +135,15 @@ const upload = multer({
 }).single("img");
 
 app.post("/profile/:userid/:type", async (req, res) => {
+  // Validate userid: must be alphanumeric plus underscores/hyphens, 3-64 chars (example)
+  if (!/^[0-9]*$/.test(req.params.userid)) {
+    res.status(400).json({
+      result: "failed",
+      message: "Invalid userid format",
+      error: "Bad userid"
+    });
+    return;
+  }
   let type = "";
   let width = 256;
   let height = 256;
@@ -306,3 +315,4 @@ loadModel()
 
 // Add error handler middleware (must be last)
 app.use(errorHandler);
+
