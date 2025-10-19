@@ -613,6 +613,10 @@ body {
   content: url("/icons/pause-solid.svg");
 }
 
+#metronome {
+  will-change: transform;
+}
+
 #percentage {
   font-size: 1.7vh;
 }
