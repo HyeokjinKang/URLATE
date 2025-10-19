@@ -1350,7 +1350,7 @@ const profileUpdate = async (uid, isMe) => {
           isMe ? `onclick="bannerToggle(${i})"` : ""
         }>
           <div class="bannerHover">
-            <img src="/icons${banners[i].indexOf("(-)") != -1 ? "eye-closed" : "eye"}.svg" class="bannerIcon">
+            <img src="/icons/${banners[i].indexOf("(-)") != -1 ? "eye-closed" : "eye"}.svg" class="bannerIcon">
           </div>
         </div>`;
     }
