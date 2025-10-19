@@ -851,12 +851,12 @@ const updatePatterns = () => {
                         </div>
                         <div class="CPLListBottom">
                           <div class="CPLListLeft">
-                            <img src="https://img.icons8.com/material-rounded/96/000000/quote-left.png" class="CPLQuoteIcon">
+                            <img src="/icons/quote.svg" class="CPLQuoteIcon">
                             <span class="CPLQuote">${e.description}</span>
                           </div>
                           <div class="CPLListRight">
-                            <span class="CPLRankButton"><img class="CPLIcon" src="/images/parts/icons/charts.svg"></span>
-                            <span class="CPLPlayButton" onclick="UPLPlay(${i})">PLAY <img class="CPLIcon margin" src="/images/parts/icons/play.svg"></span>
+                            <span class="CPLRankButton"><img class="CPLIcon" src="/icons/charts.svg"></span>
+                            <span class="CPLPlayButton" onclick="UPLPlay(${i})">PLAY <img class="CPLIcon margin" src="/icons/play.svg"></span>
                           </div>
                         </div>
                       </div>`;
@@ -1350,7 +1350,7 @@ const profileUpdate = async (uid, isMe) => {
           isMe ? `onclick="bannerToggle(${i})"` : ""
         }>
           <div class="bannerHover">
-            <img src="/images/parts/icons/${banners[i].indexOf("(-)") != -1 ? "eye-closed" : "eye"}.svg" class="bannerIcon">
+            <img src="/icons/${banners[i].indexOf("(-)") != -1 ? "eye-closed" : "eye"}.svg" class="bannerIcon">
           </div>
         </div>`;
     }
@@ -1526,11 +1526,11 @@ const bannerToggle = (n) => {
   if (banners[n].indexOf("(-)") == -1) {
     banners[n] = banners[n] + "(-)";
     document.getElementsByClassName("bannerImage")[n].classList.add("hidden");
-    document.getElementsByClassName("bannerIcon")[n].src = "/images/parts/icons/eye-closed.svg";
+    document.getElementsByClassName("bannerIcon")[n].src = "/icons/eye-closed.svg";
   } else {
     banners[n] = banners[n].replace("(-)", "");
     document.getElementsByClassName("bannerImage")[n].classList.remove("hidden");
-    document.getElementsByClassName("bannerIcon")[n].src = "/images/parts/icons/eye.svg";
+    document.getElementsByClassName("bannerIcon")[n].src = "/icons/eye.svg";
   }
   fetch(`${api}/profile/banner`, {
     method: "PUT",
@@ -1632,31 +1632,31 @@ const showProfile = (name) => {
       document.getElementById("infoProfilePosition").textContent = info[0].position;
       document.getElementById("infoProfileImg").src = `images/credits/${info[0].profile}`;
       let innerHTML = `<div class="infoProfilePart">
-                          <img src="https://img.icons8.com/small/64/333333/comma.png" class="infoIcon">
+                          <img src="/icons/quote.svg" class="infoIcon">
                           <span id="quote">${info[0].quote}</span>
                      </div>`;
       for (let i = 1; i < info.length; i++) {
         let link = "";
-        if (info[i].icon.indexOf("soundcloud") != -1) {
+        if (info[i].icon == "soundcloud") {
           link = `https://soundcloud.com/${info[i].content}`;
-        } else if (info[i].icon.indexOf("youtube") != -1) {
+        } else if (info[i].icon == "youtube") {
           link = `https://youtube.com/@${info[i].content}`;
-        } else if (info[i].icon.indexOf("globe") != -1) {
+        } else if (info[i].icon == "safari") {
           link = `https://${info[i].content}`;
-        } else if (info[i].icon.indexOf("github") != -1) {
+        } else if (info[i].icon == "github") {
           link = `https://github.com/${info[i].content}`;
-        } else if (info[i].icon.indexOf("twitter") != -1) {
-          link = `https://twitter.com/${info[i].content}`;
-        } else if (info[i].icon.indexOf("telegram") != -1) {
+        } else if (info[i].icon == "x") {
+          link = `https://x.com/${info[i].content}`;
+        } else if (info[i].icon == "telegram-circle") {
           link = `https://t.me/${info[i].content}`;
-        } else if (info[i].icon.indexOf("instagram") != -1) {
+        } else if (info[i].icon == "instagram") {
           link = `https://www.instagram.com/${info[i].content}`;
-        } else if (info[i].icon.indexOf("email") != -1) {
+        } else if (info[i].icon == "at-sign") {
           link = `mailto:${info[i].content}`;
         }
         innerHTML += `
                     <div class="infoProfilePart">
-                        <img src="https://img.icons8.com/${info[i].icon.split("/")[0]}/64/333333/${info[i].icon.split("/")[1]}.png" class="infoIcon">
+                        <img src="/icons/${info[i].icon}.svg" class="infoIcon">
                         ${link == "" ? `<span>` : `<a class="blackLink" href="${link}" target="_blank">`}${info[i].content}${link == "" ? `</span>` : `</a>`}
                     </div>`;
       }

@@ -195,10 +195,18 @@ body {
 }
 
 #topRightBar {
-  padding-right: 2vw;
+  padding-right: 1.9vw;
   text-align: right;
   justify-content: flex-end;
   width: 30%;
+}
+
+.sidebar-expand {
+  content: url("/icons/sidebar-expand.svg");
+}
+
+.sidebar-collapse {
+  content: url("/icons/sidebar-collapse.svg");
 }
 
 .backText {
@@ -207,7 +215,7 @@ body {
 
 .icon {
   filter: invert(35%) sepia(0%) saturate(0%) hue-rotate(64deg) brightness(92%) contrast(96%);
-  width: 1vw;
+  width: 1.2vw;
 }
 
 .menuIcon {
@@ -233,18 +241,13 @@ body {
   font-weight: 500;
 }
 
-.biggerIcon {
-  width: 1.5vw;
-}
-
 .menuSelected {
   filter: invert(25%) sepia(0%) saturate(0%) hue-rotate(64deg) brightness(92%) contrast(96%);
 }
 
 .backIcon {
-  margin-bottom: -0.1vh;
-  padding-right: 5px;
-  height: 1.5vh;
+  vertical-align: text-bottom;
+  height: 2vh;
 }
 
 #horizontalLine {
@@ -603,11 +606,11 @@ body {
 }
 
 .timeline-play {
-  content: url("https://img.icons8.com/ios-glyphs/24/000000/play.png");
+  content: url("/icons/play-solid.svg");
 }
 
 .timeline-pause {
-  content: url("https://img.icons8.com/ios-glyphs/24/000000/pause.png");
+  content: url("/icons/pause-solid.svg");
 }
 
 #percentage {

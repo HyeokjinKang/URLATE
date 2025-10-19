@@ -16,6 +16,7 @@ const triggerInitBox = document.getElementById("triggerInitBox");
 const volumeOverlay = document.getElementById("volumeOverlay");
 const canvasBackground = document.getElementById("canvasBackground");
 const controlBtn = document.getElementById("controlBtn");
+const sidebarBtn = document.getElementById("sidebarBtn");
 const settingsPropertiesTextbox = trackSettings.getElementsByClassName("settingsPropertiesTextbox");
 const cntCanvas = document.getElementById("componentCanvas");
 const cntCtx = cntCanvas.getContext("2d");
@@ -361,6 +362,8 @@ const toggleSettings = () => {
     componentView.style.marginRight = "5vw";
     tmlCanvas.style.width = "100vw";
     tmlCanvas.width = window.innerWidth;
+    sidebarBtn.classList.remove("sidebar-collapse");
+    sidebarBtn.classList.add("sidebar-expand");
   } else {
     document.getElementById("settingsContainer").style.display = "flex";
     document.getElementById("timelineContainer").style.width = "80vw";
@@ -369,6 +372,8 @@ const toggleSettings = () => {
     componentView.style.marginRight = "0vw";
     tmlCanvas.style.width = "80vw";
     tmlCanvas.width = window.innerWidth * 0.8;
+    sidebarBtn.classList.remove("sidebar-expand");
+    sidebarBtn.classList.add("sidebar-collapse");
   }
   isSettingsOpened = !isSettingsOpened;
   initialize();

@@ -17,14 +17,14 @@
       <h2>Editor</h2>
       <div id="initialButtonsContainer">
         <span id="gotoGame" class="backText clickable" onclick="window.location.href = '<%= url %>/game?initialize=0'"
-          ><img src="https://img.icons8.com/ios-filled/24/000000/back.png" class="backIcon" /><%= __('goto_game') %></span
+          ><img src="/icons/nav-arrow-left.svg" class="backIcon" /><%= __('goto_game') %></span
         >
-        <span class="initialButtons clickable" onclick="newEditor()"><img src="https://img.icons8.com/ios/96/000000/edit.png" class="initialIcon clickable" />New</span>
-        <span class="initialButtons clickable" onclick="loadEditor()"><img src="https://img.icons8.com/ios/96/000000/circled-right-2.png" class="initialIcon clickable" />Load</span>
+        <span class="initialButtons clickable" onclick="newEditor()"><img src="/icons/design-pencil.svg" class="initialIcon clickable" />New</span>
+        <span class="initialButtons clickable" onclick="loadEditor()"><img src="/icons/arrow-down-right-circle.svg" class="initialIcon clickable" />Load</span>
       </div>
       <div id="songSelectionContainer">
         <div id="songSelection">
-          <span id="gotoGame" class="backText clickable" onclick="gotoMain(true)"><img src="https://img.icons8.com/ios-filled/24/000000/back.png" class="backIcon" /><%= __('cancel') %></span>
+          <span id="gotoGame" class="backText clickable" onclick="gotoMain(true)"><img src="/icons/nav-arrow-left.svg" class="backIcon" /><%= __('cancel') %></span>
           <h2>Select Song</h2>
           <select id="songSelectBox" class="clickable"></select>
           <input type="button" class="initlalButtons" value="Select" onclick="songSelected()" />
@@ -149,43 +149,43 @@
       </div>
       <div id="navbar">
         <div id="topLeftBar" class="navbarElements">
-          <span class="backText clickable" onclick="gotoMain()"><img src="https://img.icons8.com/ios-filled/24/000000/back.png" class="backIcon" /><%= __('editor_main') %></span>
+          <span class="backText clickable" onclick="gotoMain()"><img src="/icons/nav-arrow-left.svg" class="backIcon" /><%= __('editor_main') %></span>
         </div>
         <div id="topCenterBar" class="navbarElements">
           <span id="songName" class="metropolis">Song Name here</span>
         </div>
         <div id="topRightBar" class="navbarElements">
-          <img src="https://img.icons8.com/material-rounded/48/000000/horizontal-settings-mixer.png" class="icon clickable" onclick="toggleSettings()" />
+          <img src="/icons/sidebar-expand.svg" id="sidebarBtn" class="icon clickable sidebar-expand" onclick="toggleSettings()" />
         </div>
       </div>
       <div id="workingSpaceContainer">
         <div id="workingContainer">
           <div id="menuContainer">
-            <img src="https://img.icons8.com/ios-filled/48/000000/resize-four-directions.png" class="menuIcon menuSelected" onclick="changeMode(0)" />
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/edit.png" class="menuIcon biggerIcon clickable" onclick="changeMode(1)" />
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/add.png" class="menuIcon biggerIcon clickable" onclick="changeMode(2)" />
+            <img src="/icons/resize.svg" class="menuIcon menuSelected" onclick="changeMode(0)" />
+            <img src="/icons/edit-pencil-solid.svg" class="menuIcon clickable" onclick="changeMode(1)" />
+            <img src="/icons/plus-circle-solid.svg" class="menuIcon clickable" onclick="changeMode(2)" />
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/play.png" class="menuIcon clickable" onclick="test()" />
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/save.png" class="menuIcon clickable" onclick="save()" />
+            <img src="/icons/play-solid.svg" class="menuIcon clickable" onclick="test()" />
+            <img src="/icons/floppy-disk-solid.svg" class="menuIcon clickable" onclick="save()" />
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/magnet.png" class="menuIcon clickable menuSelected" onclick="toggleMagnet()" />
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/grid.png" class="menuIcon clickable menuSelected" onclick="toggleGrid()" />
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/metronome.png" class="menuIcon clickable" onclick="toggleMetronome()" />
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/final-state.png" class="menuIcon clickable" onclick="toggleCircle()" />
+            <img src="/icons/magnet-solid.svg" class="menuIcon clickable menuSelected" onclick="toggleMagnet()" />
+            <img src="/icons/orthogonal-view.svg" class="menuIcon clickable menuSelected" onclick="toggleGrid()" />
+            <img src="/icons/metronome.svg" class="menuIcon clickable" onclick="toggleMetronome()" />
+            <img src="/icons/one-point-circle.svg" class="menuIcon clickable" onclick="toggleCircle()" />
           </div>
           <div id="toolContainer">
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/copy.png" class="toolIcon clickable" onclick="elementCopy()" />
+            <img src="/icons/copy.svg" class="toolIcon clickable" onclick="elementCopy()" />
             <span class="toolText">Copy</span>
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/paste.png" class="toolIcon clickable" onclick="elementPaste()" />
+            <img src="/icons/paste-clipboard.svg" class="toolIcon clickable" onclick="elementPaste()" />
             <span class="toolText">Paste</span>
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/copy-2.png" class="toolIcon clickable" onclick="rangeCopy()" />
+            <img src="/icons/keyframes.svg" class="toolIcon clickable" onclick="rangeCopy()" />
             <span class="toolText">Range<br />Copy</span>
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/paste-special.png" class="toolIcon clickable" onclick="rangePaste()" />
+            <img src="/icons/transition-right.svg" class="toolIcon clickable" onclick="rangePaste()" />
             <span class="toolText">Range<br />Paste</span>
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/arrow.png" class="toolIcon clickable" onclick="moveTo()" />
+            <img src="/icons/dot-arrow-right.svg" class="toolIcon clickable" onclick="moveTo()" />
             <span class="toolText">Move</span>
-            <img src="https://img.icons8.com/ios-glyphs/48/000000/question-mark.png" class="toolIcon clickable" onmouseover="showHelp()" onmouseout="hideHelp()" />
+            <img src="/icons/question-mark.svg" class="toolIcon clickable" onmouseover="showHelp()" onmouseout="hideHelp()" />
             <span class="toolText">Shortcuts</span>
           </div>
           <div id="componentView" onmousemove="trackMousePos(event)" onmousedown="compClicked()">
@@ -462,12 +462,12 @@
       </div>
       <canvas id="timelineCanvas" width="100%" height="100%"> </canvas>
       <div id="timelineZoomController" class="controllers">
-        <img src="https://img.icons8.com/ios-glyphs/24/000000/zoom-in.png" class="clickable timeline-icon" onclick="zoomIn()" />
-        <img src="https://img.icons8.com/ios-glyphs/24/000000/zoom-out.png" class="clickable timeline-icon" onclick="zoomOut()" />
+        <img src="/icons/zoom-in.svg" class="clickable timeline-icon" onclick="zoomIn()" />
+        <img src="/icons/zoom-out.svg" class="clickable timeline-icon" onclick="zoomOut()" />
       </div>
       <div id="timelinePlayController" class="controllers">
-        <img src="https://img.icons8.com/ios-glyphs/24/000000/play.png" id="controlBtn" class="clickable timeline-play" onclick="playPauseBtn()" />
-        <img src="https://img.icons8.com/ios-glyphs/24/000000/stop.png" class="clickable timeline-icon" onclick="stopBtn()" />
+        <img src="/icons/play-solid.svg" id="controlBtn" class="clickable timeline-play" onclick="playPauseBtn()" />
+        <img src="/icons/stop-solid.svg" class="clickable timeline-icon" onclick="stopBtn()" />
         <span class="clickable" id="percentage" onclick="changeRate();">100%</span>
       </div>
       <div id="timelineSplitController" class="controllers">
