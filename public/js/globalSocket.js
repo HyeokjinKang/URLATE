@@ -7,7 +7,7 @@ const socket = io(game, {
 
 document.addEventListener("DOMContentLoaded", () => {
   const img = new Image();
-  img.src = "/images/parts/icons/medal-solid.svg";
+  img.src = "/icons/medal-solid.svg";
   const div = document.createElement("div");
   div.id = "achievementsContainer";
   body.appendChild(div);
@@ -86,7 +86,7 @@ socket.on("achievement", (data) => {
         <div class="achievementInner">
           <div class="achievementInnerLeft">
             <div class="achievementMedal">
-              <img src="/images/parts/icons/medal-solid.svg" />
+              <img src="/icons/medal-solid.svg" />
             </div>
             <div class="achievementContentVertical">
               <span class="achievementContentTitle">${achievement[`title_${lang}`]}</span>
