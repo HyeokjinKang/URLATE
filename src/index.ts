@@ -265,12 +265,12 @@ app.post("/profile/:userid/:type", async (req, res) => {
               const resolvedPath = fs.realpathSync(oldFilePath);
               if (resolvedPath.startsWith(ROOT)) {
                 fs.unlinkSync(resolvedPath);
-                logger.info(`Deleted old ${type} file`, { userid: req.params.userid, type, oldFilename });
+                logger.info(`Deleted old ${type} file`, { userid: req.params.userid, oldFilename });
               }
             }
           } catch (err) {
             // Log but don't fail the request if old file deletion fails
-            logger.warn(`Failed to delete old ${type} file`, { userid: req.params.userid, type, oldFileUrl, error: err });
+            logger.warn(`Failed to delete old ${type} file`, { userid: req.params.userid, oldFileUrl, error: err });
           }
         }
 
