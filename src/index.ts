@@ -254,8 +254,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
         if (oldFileUrl) {
           try {
             // Extract filename from URL
-            const urlParts = oldFileUrl.split("/");
-            const oldFilename = urlParts[urlParts.length - 1];
+            const oldFilename = path.basename(new URL(oldFileUrl).pathname);
             const oldFilePath = path.join(__dirname, "../public/images/profiles", oldFilename);
 
             // Verify the path is within the profiles directory and file exists
