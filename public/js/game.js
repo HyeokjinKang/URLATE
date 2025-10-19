@@ -855,8 +855,8 @@ const updatePatterns = () => {
                             <span class="CPLQuote">${e.description}</span>
                           </div>
                           <div class="CPLListRight">
-                            <span class="CPLRankButton"><img class="CPLIcon" src="/iconscharts.svg"></span>
-                            <span class="CPLPlayButton" onclick="UPLPlay(${i})">PLAY <img class="CPLIcon margin" src="/iconsplay.svg"></span>
+                            <span class="CPLRankButton"><img class="CPLIcon" src="/icons/charts.svg"></span>
+                            <span class="CPLPlayButton" onclick="UPLPlay(${i})">PLAY <img class="CPLIcon margin" src="/icons/play.svg"></span>
                           </div>
                         </div>
                       </div>`;
