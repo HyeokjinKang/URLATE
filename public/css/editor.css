@@ -233,10 +233,6 @@ body {
   font-weight: 500;
 }
 
-.biggerIcon {
-  width: 1.5vw;
-}
-
 .menuSelected {
   filter: invert(25%) sepia(0%) saturate(0%) hue-rotate(64deg) brightness(92%) contrast(96%);
 }
@@ -603,11 +599,11 @@ body {
 }
 
 .timeline-play {
-  content: url("https://img.icons8.com/ios-glyphs/24/000000/play.png");
+  content: url("/icons/play-solid.svg");
 }
 
 .timeline-pause {
-  content: url("https://img.icons8.com/ios-glyphs/24/000000/pause.png");
+  content: url("/icons/pause-solid.svg");
 }
 
 #percentage {
