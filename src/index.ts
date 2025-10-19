@@ -259,7 +259,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
             const oldFilePath = path.join(__dirname, "../public/images/profiles", oldFilename);
 
             // Verify the path is within the profiles directory and file exists
-            const ROOT = path.join(__dirname, "../public/images/profiles");
+            const ROOT = fs.realpathSync(path.join(__dirname, "../public/images/profiles"));
             const resolvedRoot = fs.realpathSync(ROOT);
             if (fs.existsSync(oldFilePath)) {
               const resolvedPath = fs.realpathSync(oldFilePath);
