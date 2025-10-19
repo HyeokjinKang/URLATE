@@ -23,7 +23,10 @@ const cntCtx = cntCanvas.getContext("2d");
 const tmlCanvas = document.getElementById("timelineCanvas");
 const tmlCtx = tmlCanvas.getContext("2d");
 const timelinePlayController = document.getElementById("timelinePlayController");
+const metronome = document.getElementById("metronome");
+const metronomeContainer = document.getElementById("metronomeContainer");
 const epsilon = 1e-9;
+let metronomeDir = 1;
 let background;
 let settings,
   tracks,
@@ -1233,6 +1236,12 @@ const cntRender = () => {
         if (prevBeat != intBeat) {
           prevBeat = intBeat;
           beep.play();
+          metronomeDir *= -1;
+          metronomeContainer.style.transform = `scaleX(${metronomeDir})`;
+          metronome.animate([{ transform: "scale(1.2)" }, { transform: "scale(1)" }], {
+            duration: 200,
+            fill: "forwards",
+          });
         }
       } else {
         prevBeat = intBeat;
