@@ -172,7 +172,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
       },
     });
     const profileData: any = await profileResponse.json();
-    if (profileData.result === "success" && profileData.user[type] && !profileData.user[type].includes("cdn.urlate.coupy.dev") && !profileData.user[type].includes("googleusercontent")) {
+    if (profileData.result === "success" && profileData.user[type] && !["cdn.urlate.coupy.dev", "googleusercontent"].some(domain => profileData.user[type].includes(domain))) {
       oldFileUrl = profileData.user[type];
     }
   } catch (err) {
