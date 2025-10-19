@@ -11,6 +11,7 @@ import fs from "fs";
 import sharp from "sharp";
 import { logger } from "./logger";
 import { errorHandler } from "./middleware";
+import { URL } from "url";
 
 let branch;
 exec("git branch --show-current", (err, stdout, stderr) => {
@@ -135,6 +136,15 @@ const upload = multer({
 }).single("img");
 
 app.post("/profile/:userid/:type", async (req, res) => {
+  // Validate userid: must be numeric
+  if (!/^[0-9]+$/.test(req.params.userid)) {
+    res.status(400).json({
+      result: "failed",
+      message: "Invalid userid format",
+      error: "Bad userid",
+    });
+    return;
+  }
   let type = "";
   let width = 256;
   let height = 256;
@@ -152,6 +162,24 @@ app.post("/profile/:userid/:type", async (req, res) => {
     });
     return;
   }
+
+  // Fetch existing profile/background URL before upload
+  let oldFileUrl: string | null = null;
+  try {
+    const profileResponse = await fetch(`${config.project.api}/profile/${req.params.userid}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const profileData: any = await profileResponse.json();
+    if (profileData.result === "success" && profileData.user && profileData.user[type] && !config.project.ignoredImageURL.some((domain) => profileData.user[type].includes(domain))) {
+      oldFileUrl = profileData.user[type];
+    }
+  } catch (err) {
+    logger.warn("Failed to fetch existing profile data", { userid: req.params.userid, type, error: err });
+  }
+
   upload(req, res, async (err) => {
     if (err) {
       if (err instanceof multer.MulterError) err = err.message;
@@ -222,6 +250,36 @@ app.post("/profile/:userid/:type", async (req, res) => {
           });
           return;
         }
+
+        // Delete old file after successful upload
+        if (oldFileUrl) {
+          // Asynchronously delete the old file without blocking the response.
+          (async () => {
+            try {
+              const { realpath, unlink } = fs.promises;
+              const profilesDir = path.join(__dirname, "../public/images/profiles");
+              const rootPath = await realpath(profilesDir);
+
+              const oldFilename = path.basename(new URL(oldFileUrl).pathname);
+              const oldFilePath = path.join(profilesDir, oldFilename);
+
+              const resolvedPath = await realpath(oldFilePath);
+
+              if (resolvedPath.startsWith(rootPath)) {
+                await unlink(resolvedPath);
+                logger.info(`Deleted old ${type} file`, { userid: req.params.userid, oldFilename });
+              } else {
+                logger.warn("Skipping deletion of file outside the root directory.", { userid: req.params.userid, oldFileUrl, resolvedPath });
+              }
+            } catch (err) {
+              // It's okay if the file doesn't exist. Log other errors.
+              if (err.code !== "ENOENT") {
+                logger.warn(`Failed to delete old ${type} file`, { userid: req.params.userid, oldFileUrl, error: err });
+              }
+            }
+          })();
+        }
+
         res.status(200).json({ result: "success", url: `${config.project.url}/images/profiles/${file.filename}`, explicit });
       })
       .catch((err) => {

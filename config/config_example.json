@@ -6,6 +6,7 @@
     "game": "https://game.example.com",
     "nsfw": "https://nsfw.example.com",
     "secretKey": "Something Random",
+    "ignoredImageURL": ["cdn.example.com", "googleusercontent"],
     "mode": "production",
     "port": 3000
   }
