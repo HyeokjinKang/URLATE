@@ -29,18 +29,18 @@
   <body oncontextmenu="return false" ondragstart="return false" onselect="return false">
     <div id="footer">
       <div id="footerLeft">
-        <img src="/images/parts/icons/return.webp" class="icon" />
+        <img src="/icons/return.webp" class="icon" />
         <span class="medium">&nbsp;&nbsp;Enter or Click to <strong>Select</strong></span>
       </div>
       <div id="footerCenter">
-        <strong id="songName"><img src="/images/parts/icons/note.webp" id="noteIcon" /><span id="songNameText">&nbsp;URLATE Theme</span></strong>
+        <strong id="songName"><img src="/icons/note.webp" id="noteIcon" /><span id="songNameText">&nbsp;URLATE Theme</span></strong>
         <span id="urlateText"><strong>URLATE</strong> LITE</span>
       </div>
       <div id="footerRight">
         <span
           ><span class="medium"
             ><%= __('more_info_1') %><a href="https://urlate.coupy.dev/info" target="_blank" rel="noopener noreferrer" class="link"><%= __('more_info_here') %></a><%= __('more_info_2') %></span
-          ><br />&copy; 2023 <strong>URLATE</strong>, All contents cannot be copied without permission.</span
+          ><br />&copy; 2025 <strong>URLATE</strong>, All contents cannot be copied without permission.</span
         >
       </div>
     </div>
@@ -74,9 +74,9 @@
       <div id="headerRight">
         <a id="noticeText" target="_blank"></a>
         <div id="line"></div>
-        <img src="https://img.icons8.com/windows/64/000000/info.png" class="icon clickable" onclick="infoScreen()" />
+        <img src="/icons/info-circle.svg" class="icon clickable" onclick="infoScreen()" />
         <div id="line"></div>
-        <img src="https://img.icons8.com/windows/64/000000/settings.png" class="icon clickable" onclick="optionScreen()" />
+        <img src="/icons/settings.svg" class="icon clickable" onclick="optionScreen()" />
       </div>
     </div>
     <div id="tutorialInformation" class="containers metropolis">
@@ -130,7 +130,7 @@
       <div id="selectBackground"></div>
       <div id="selectInnerContainer">
         <div id="visualizer"><canvas id="renderer"></canvas></div>
-        <img src="https://img.icons8.com/windows/32/FFFFFF/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+        <img src="/icons/xmark-circle-ffffff.svg" class="icon clickable closeBtn" onclick="displayClose()" />
         <div id="selectContainerTopLeft">
           <img src="/images/parts/elements/TRACKS.webp" id="tracks" />
           <div id="tracksLine"></div>
@@ -224,9 +224,9 @@
                 <span class="key">?</span>
               </div>
               <div class="selectInfoContentsContainer">
-                <img src="/images/parts/icons/AP.svg" class="medals" id="goldMedal" />
-                <img src="/images/parts/icons/FC.svg" class="medals" id="silverMedal" />
-                <img src="/images/parts/icons/CLEAR.svg" class="medals" id="checkMedal" />
+                <img src="/icons/AP.svg" class="medals" id="goldMedal" />
+                <img src="/icons/FC.svg" class="medals" id="silverMedal" />
+                <img src="/icons/CLEAR.svg" class="medals" id="checkMedal" />
               </div>
             </div>
           </div>
@@ -249,7 +249,7 @@
                 <span id="selectRankTitle"><strong>R</strong>ANKING</span>
               </div>
               <div id="selectRankTitleRightContainer">
-                <img src="https://img.icons8.com/windows/32/FFFFFF/macos-close.png" class="icon clickable rankCloseBtn" onclick="displayClose()" />
+                <img src="/icons/xmark-circle-ffffff.svg" class="icon clickable rankCloseBtn" onclick="displayClose()" />
               </div>
             </div>
             <div class="selectRank">
@@ -273,7 +273,7 @@
                 </div>
               </div>
               <div id="CPLTopRightContainer">
-                <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable rankCloseBtn" onclick="displayClose()" />
+                <img src="/icons/xmark-circle-000000.svg" class="icon clickable rankCloseBtn" onclick="displayClose()" />
               </div>
             </div>
             <div id="CPLListIndex">
@@ -290,7 +290,7 @@
       </div>
     </div>
     <div id="advancedContainer" class="containers">
-      <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+      <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" onclick="displayClose()" />
       <h1 id="rankTitle"><%= __('rank_title') %></h1>
       <table id="rankTable">
         <thead>
@@ -307,7 +307,7 @@
     </div>
     <div id="infoContainer" class="containers metropolis">
       <div id="infoProfileContainer" class="containers">
-        <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+        <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" onclick="displayClose()" />
         <div id="infoProfileLeft">
           <img src="" id="infoProfileImg" />
         </div>
@@ -319,7 +319,7 @@
           <div id="infoProfileBottom"></div>
         </div>
       </div>
-      <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+      <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" onclick="displayClose()" />
       <img src="/images/logos/URLATE_LITE.webp" id="infoLogo" />
       <br />
       <span id="license">
@@ -387,7 +387,7 @@
     </div>
     <div id="optionContainer" class="containers">
       <div id="offsetContiner" class="containers">
-        <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+        <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" onclick="displayClose()" />
         <h1 id="offsetTitle"><%= __('offset_setting') %></h1>
         <div class="offsetPreviewContainer">
           <div class="offsetViewContainer">
@@ -417,23 +417,23 @@
         <span id="offsetSubDescription"><%= __('offset_sub_description_1') %></span>
         <div id="offsetButtonContainer">
           <div class="offsetSideContainer">
-            <img src="https://img.icons8.com/metro/50/373737/collapse-arrow.png" class="icon offsetSideIcon clickable" onclick="offsetSpeedUp()" />
+            <img src="/icons/nav-arrow-up.svg" class="icon offsetSideIcon clickable" onclick="offsetSpeedUp()" />
             <span id="offsetSpeedText" class="metropolis">1x</span>
-            <img src="https://img.icons8.com/metro/50/373737/expand-arrow.png" class="icon offsetSideIcon clickable" onclick="offsetSpeedDown()" />
+            <img src="/icons/nav-arrow-down.svg" class="icon offsetSideIcon clickable" onclick="offsetSpeedDown()" />
           </div>
           <div id="offsetTapButton" onmousedown="offsetButtonDown()" onmouseup="offsetButtonUp()">
             <span id="offsetButtonText" class="metropolis">TAP</span>
           </div>
           <div class="offsetSideContainer">
-            <img src="https://img.icons8.com/metro/50/373737/plus-math.png" class="icon offsetSideIcon clickable" onclick="offsetUp()" />
-            <img src="https://img.icons8.com/metro/50/373737/minus-math.png" class="icon offsetSideIcon clickable" onclick="offsetDown()" />
+            <img src="/icons/plus.svg" class="icon offsetSideIcon clickable" onclick="offsetUp()" />
+            <img src="/icons/minus.svg" class="icon offsetSideIcon clickable" onclick="offsetDown()" />
           </div>
         </div>
         <div id="offsetResetButton" onclick="offsetReset()">
           <span id="offsetResetButtonText" class="metropolis"><%= __('reset') %></span>
         </div>
       </div>
-      <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+      <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" onclick="displayClose()" />
       <h1 class="containersTitle"><%= __('option') %></h1>
       <div id="optionElementsContainer">
         <div id="optionSelectorContainer">
@@ -632,7 +632,7 @@
       </div>
     </div>
     <div id="storeContainer" class="containers metropolis">
-      <img src="https://img.icons8.com/windows/32/000000/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+      <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" onclick="displayClose()" />
       <div id="infoInnerContainer">
         <img src="/images/urlate-v3l-transparent.webp" id="infoImg" />
         <p class="infoTitle"><%= __('info_title3') %></p>
@@ -667,7 +667,7 @@
     </div>
     <div id="profileContainer" class="containers metropolis" onclick="showProfileBackground(event)">
       <span id="profileDescription" onclick="return false"><%= __('profile_description') %></span>
-      <img src="https://img.icons8.com/windows/32/ffffff/macos-close.png" class="icon clickable closeBtn" onclick="displayClose()" />
+      <img src="/icons/xmark-circle-ffffff.svg" class="icon clickable closeBtn" onclick="displayClose()" />
       <div id="profileImageContainer"></div>
       <div id="profileNameContainer">
         <img src="" id="profileImage" class="editable opacity" onclick="changeProfile('picture')" />
@@ -677,7 +677,7 @@
       <div class="profileContentsContainer">
         <div class="profileContents">
           <div class="profileContentsTitle">
-            <img src="/images/parts/icons/rate.svg" class="profileContentsTitleIcon" />
+            <img src="/icons/rate.svg" class="profileContentsTitleIcon" />
             <span class="profileContentsTitleText"><%= __('rating') %></span>
           </div>
           <div id="profileRank">#0</div>
@@ -695,31 +695,31 @@
             </div>
           </div>
           <div id="medalContainer">
-            <img src="/images/parts/icons/AP.svg" class="profileMedals" />
+            <img src="/icons/AP.svg" class="profileMedals" />
             <span class="profileMedalText">0</span>
-            <img src="/images/parts/icons/FC.svg" class="profileMedals" />
+            <img src="/icons/FC.svg" class="profileMedals" />
             <span class="profileMedalText">0</span>
-            <img src="/images/parts/icons/CLEAR.svg" class="profileMedals" />
+            <img src="/icons/CLEAR.svg" class="profileMedals" />
             <span class="profileMedalText">0</span>
           </div>
         </div>
         <div class="profileContents">
           <div class="profileContentsTitle">
-            <img src="/images/parts/icons/medal.svg" class="profileContentsTitleIcon" />
+            <img src="/icons/medal.svg" class="profileContentsTitleIcon" />
             <span class="profileContentsTitleText"><%= __('banner') %></span>
           </div>
           <div id="profileBanner"></div>
         </div>
         <div class="profileContents">
           <div class="profileContentsTitle">
-            <img src="/images/parts/icons/star.svg" class="profileContentsTitleIcon" />
+            <img src="/icons/star.svg" class="profileContentsTitleIcon" />
             <span class="profileContentsTitleText"><%= __('bestplay') %></span>
           </div>
           <div id="profileBestPlay"></div>
         </div>
         <div class="profileContents">
           <div class="profileContentsTitle">
-            <img src="/images/parts/icons/recent.svg" class="profileContentsTitleIcon" />
+            <img src="/icons/recent.svg" class="profileContentsTitleIcon" />
             <span class="profileContentsTitleText"><%= __('recent') %></span>
           </div>
           <div id="profileRecentPlay"></div>
