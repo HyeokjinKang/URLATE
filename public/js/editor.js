@@ -2081,8 +2081,9 @@ const timelineFollowMouse = (v1, v2, i) => {
       }
       if (mouseMode == 1 && mouseX > tmlCanvas.width / 10 && mouseX < tmlCanvas.width / 1.01) {
         const beats = bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm);
-        const beatToPx = (tmlCanvas.width / 1.01 - tmlCanvas.width / 10) / (17 * zoom);
-        let calculatedBeat = beats + ((mouseX - tmlCanvas.width / 10) / beatToPx) * zoom - 1;
+        const tmlStartX = tmlCanvas.width / 10;
+        const beatToPx = (tmlCanvas.width / 1.01 - tmlStartX) / (17 * zoom);
+        let calculatedBeat = beats + (mouseX - tmlStartX) / beatToPx - zoom;
         if (calculatedBeat <= 0) calculatedBeat = 0;
         calculatedBeat = Number(calculatedBeat.toPrecision(10));
         switch (v1) {
@@ -2150,8 +2151,9 @@ const timelineAddElement = () => {
   let startY = tmlCanvas.height / 6;
   let height = tmlCanvas.height / 9;
   const beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
-  const beatToPx = (tmlCanvas.width / 1.01 - tmlCanvas.width / 10) / (17 * zoom);
-  let calculatedBeat = beats + ((mouseX - tmlCanvas.width / 10) / beatToPx) * zoom - 1;
+  const tmlStartX = tmlCanvas.width / 10;
+  const beatToPx = (tmlCanvas.width / 1.01 - tmlStartX) / (17 * zoom);
+  let calculatedBeat = beats + (mouseX - tmlStartX) / beatToPx - zoom;
   if (calculatedBeat <= 0) calculatedBeat = 0;
   calculatedBeat = Number(calculatedBeat.toPrecision(10));
   let mousePosY = mouseY - timelineYLoc;
