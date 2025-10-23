@@ -2156,6 +2156,7 @@ const timelineAddElement = () => {
   let calculatedBeat = beats + (mouseX - tmlStartX) / beatToPx - zoom;
   if (calculatedBeat <= 0) calculatedBeat = 0;
   calculatedBeat = Number(calculatedBeat.toPrecision(10));
+  calculatedBeat = magnetToggle ? Math.round(calculatedBeat * split) / split : calculatedBeat;
   let mousePosY = mouseY - timelineYLoc;
   if (mouseX > tmlCanvas.width / 10 && mouseX < tmlCanvas.width / 1.01 && mouseY > startY && mouseY < tmlCanvas.height / 1.1) {
     if (mousePosY >= startY && mousePosY <= startY + height) {
@@ -2248,6 +2249,7 @@ const compClicked = () => {
   } else if (mode == 2) {
     let beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
     beats = Number(beats.toPrecision(10));
+    beats = magnetToggle ? Math.round(beats * split) / split : beats;
     if (mouseMode != -1) {
       if (mouseX < -80 || mouseX > 80) {
         let newElement = {
