@@ -1412,22 +1412,6 @@ const cntRender = () => {
     for (let i = 0; i < renderBullets.length; i++) {
       if (!destroyedBullets.has(start + i)) {
         createdBullets.add(start + i);
-        if (!prevCreatedBullets.has(start + i)) {
-          let randomDirection = [];
-          for (let i = 0; i < 3; i++) {
-            let rx = Math.floor(Math.random() * 4) - 2;
-            let ry = Math.floor(Math.random() * 4) - 2;
-            randomDirection[i] = [rx, ry];
-          }
-          destroyParticles.push({
-            x: renderBullets[i].direction == "L" ? -100 : 100,
-            y: renderBullets[i].location,
-            w: 10,
-            n: 2,
-            d: randomDirection,
-            ms: Date.now(),
-          });
-        }
         end = upperBound(pattern.triggers, renderBullets[i].beat);
         let scanTriggers = pattern.triggers.slice(0, end);
         let baseSpeed = pattern.information.speed;
