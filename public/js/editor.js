@@ -2249,7 +2249,6 @@ const compClicked = () => {
   } else if (mode == 2) {
     let beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
     beats = Number(beats.toPrecision(10));
-    beats = magnetToggle ? Math.round(beats * split) / split : beats;
     if (mouseMode != -1) {
       if (mouseX < -80 || mouseX > 80) {
         let newElement = {
