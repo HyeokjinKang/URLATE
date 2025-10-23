@@ -715,8 +715,8 @@ const callBulletDestroy = (j) => {
   }
   p += ((beats - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
   const left = pattern.bullets[j].direction == "L";
-  let x = (left ? -1 : 1) * (100 - p);
-  let y = pattern.bullets[j].location + p * getTan(pattern.bullets[j].angle) * (left ? 1 : -1);
+  let x = (left ? 1 : -1) * (getCos(pattern.bullets[j].angle) * p - 100);
+  let y = pattern.bullets[j].location + (left ? 1 : -1) * getSin(pattern.bullets[j].angle) * p;
   let randomDirection = [];
   for (let i = 0; i < 3; i++) {
     let rx = Math.floor(Math.random() * 4) - 2;
@@ -965,6 +965,21 @@ const cntRender = () => {
       if (!destroyedBullets.has(start + i)) {
         if (!createdBullets.has(start + i)) {
           createdBullets.add(start + i);
+          let randomDirection = [];
+          for (let i = 0; i < 3; i++) {
+            let rx = Math.floor(Math.random() * 4) - 2;
+            let ry = Math.floor(Math.random() * 4) - 2;
+            randomDirection[i] = [rx, ry];
+          }
+          destroyParticles.push({
+            x: renderBullets[i].direction == "L" ? -100 : 100,
+            y: renderBullets[i].location,
+            w: 10,
+            n: 1,
+            step: 4,
+            d: randomDirection,
+            ms: Date.now(),
+          });
         }
         end = upperBound(pattern.triggers, renderBullets[i].beat);
         let scanTriggers = pattern.triggers.slice(0, end);
