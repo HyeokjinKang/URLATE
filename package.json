@@ -4,7 +4,7 @@
     "url": "https://github.com/HyeokjinKang/URLATE"
   },
   "name": "urlate",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0-rc.3",
   "description": "URLATE, Online rhythm game based on web technologies.",
   "main": "src/",
   "scripts": {
