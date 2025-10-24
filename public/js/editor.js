@@ -1043,25 +1043,31 @@ const tmlRender = () => {
         let height = tmlCanvas.height / 9;
         let w = height / 3;
         let mousePosY = mouseY - timelineYLoc;
+        // Calculate snapped beat position for preview
+        let previewBeat = beats + (mouseX - tmlStartX) / beatToPx - zoom;
+        if (previewBeat <= 0) previewBeat = 0;
+        previewBeat = Number(previewBeat.toPrecision(10));
+        previewBeat = magnetToggle ? Math.round(previewBeat * split) / split : previewBeat;
+        let previewX = tmlStartX + (previewBeat - renderStart) * beatToPx;
         tmlCtx.beginPath();
         tmlCtx.fillStyle = "#ebd534";
         if (mousePosY >= startY && mousePosY <= startY + height) {
-          tmlCtx.arc(mouseX, startY + height / 2, w, 0, 2 * Math.PI);
+          tmlCtx.arc(previewX, startY + height / 2, w, 0, 2 * Math.PI);
         } else if (mousePosY >= startY + height && mousePosY <= startY + height * (bulletsOverlapNum + 1)) {
           let mouseYLocCount = 1 + bulletsOverlapNum - Math.round(Math.round(2 * startY + height * bulletsOverlapNum - mousePosY) / height);
           let y = startY + height * mouseYLocCount + height / 2 + timelineYLoc;
-          tmlCtx.moveTo(mouseX - w, y);
-          tmlCtx.lineTo(mouseX, y + w);
-          tmlCtx.lineTo(mouseX + w, y);
-          tmlCtx.lineTo(mouseX, y - w);
-          tmlCtx.lineTo(mouseX - w, y);
+          tmlCtx.moveTo(previewX - w, y);
+          tmlCtx.lineTo(previewX, y + w);
+          tmlCtx.lineTo(previewX + w, y);
+          tmlCtx.lineTo(previewX, y - w);
+          tmlCtx.lineTo(previewX - w, y);
         } else if (mousePosY >= startY + height * (bulletsOverlapNum + 1) && mousePosY <= startY + height * (bulletsOverlapNum + 1) + height * (triggersOverlapNum - 1)) {
           let mouseYLocCount = -(1 - Math.round((mousePosY - height - height * (bulletsOverlapNum + 1)) / height));
           let y = startY + height * (bulletsOverlapNum + 1) + height * mouseYLocCount + height / 2 + timelineYLoc;
-          tmlCtx.moveTo(mouseX - w / 1.1, y - w);
-          tmlCtx.lineTo(mouseX + w / 1.1, y);
-          tmlCtx.lineTo(mouseX - w / 1.1, y + w);
-          tmlCtx.lineTo(mouseX - w / 1.1, y - w);
+          tmlCtx.moveTo(previewX - w / 1.1, y - w);
+          tmlCtx.lineTo(previewX + w / 1.1, y);
+          tmlCtx.lineTo(previewX - w / 1.1, y + w);
+          tmlCtx.lineTo(previewX - w / 1.1, y - w);
         }
         tmlCtx.fill();
       }
@@ -2156,6 +2162,7 @@ const timelineAddElement = () => {
   let calculatedBeat = beats + (mouseX - tmlStartX) / beatToPx - zoom;
   if (calculatedBeat <= 0) calculatedBeat = 0;
   calculatedBeat = Number(calculatedBeat.toPrecision(10));
+  calculatedBeat = magnetToggle ? Math.round(calculatedBeat * split) / split : calculatedBeat;
   let mousePosY = mouseY - timelineYLoc;
   if (mouseX > tmlCanvas.width / 10 && mouseX < tmlCanvas.width / 1.01 && mouseY > startY && mouseY < tmlCanvas.height / 1.1) {
     if (mousePosY >= startY && mousePosY <= startY + height) {
