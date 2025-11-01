@@ -454,7 +454,7 @@ const drawShadow = (x, y, n, d, a) => {
   }
 };
 
-const drawNote = (p, x, y, s, n, d, t, f) => {
+const drawNote = (p, x, y, s, n, d, t, f, index) => {
   if (n != 2 && p >= 130) return;
   else if (n == 2 && f >= 130) return;
   p = Math.max(p, 0);
@@ -478,9 +478,14 @@ const drawNote = (p, x, y, s, n, d, t, f) => {
     cntCtx.fillStyle = "#000";
     cntCtx.strokeStyle = "#fff";
     cntCtx.textAlign = "center";
-    cntCtx.textBaseline = "bottom";
-    cntCtx.strokeText(`(X: ${originX}, Y: ${originY})`, x, y - 1.2 * w);
-    cntCtx.fillText(`(X: ${originX}, Y: ${originY})`, x, y - 1.2 * w);
+    if (index != undefined) {
+      cntCtx.textBaseline = "bottom";
+      cntCtx.strokeText(`Note_${index}`, x, y - 1.2 * w);
+      cntCtx.fillText(`Note_${index}`, x, y - 1.2 * w);
+    }
+    cntCtx.textBaseline = "top";
+    cntCtx.strokeText(`(X: ${originX}, Y: ${originY})`, x, y + 1.2 * w);
+    cntCtx.fillText(`(X: ${originX}, Y: ${originY})`, x, y + 1.2 * w);
     cntCtx.fillStyle = `#ebd534${opacity}`;
     cntCtx.strokeStyle = `#ebd534${opacity}`;
   } else {
@@ -1405,7 +1410,7 @@ const cntRender = () => {
         cntCtx.stroke();
       }
       if (i == validNote) {
-        drawNote(p, renderNotes[i].x, renderNotes[i].y, selectedCheck(0, i), renderNotes[i].value, renderNotes[i].direction, t, f);
+        drawNote(p, renderNotes[i].x, renderNotes[i].y, selectedCheck(0, i), renderNotes[i].value, renderNotes[i].direction, t, f, i);
       } else if (i + 3 >= validNote) {
         drawShadow(renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, alpha);
       }
