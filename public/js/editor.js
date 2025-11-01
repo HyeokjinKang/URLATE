@@ -474,13 +474,13 @@ const drawNote = (p, x, y, s, n, d, t, f) => {
   if (s == true) {
     cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
     cntCtx.beginPath();
-    cntCtx.font = `400 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    cntCtx.font = `400 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     cntCtx.fillStyle = "#000";
     cntCtx.strokeStyle = "#fff";
     cntCtx.textAlign = "center";
     cntCtx.textBaseline = "bottom";
-    cntCtx.strokeText(`(X: ${originX}, Y: ${originY})`, x, y - 1.5 * w);
-    cntCtx.fillText(`(X: ${originX}, Y: ${originY})`, x, y - 1.5 * w);
+    cntCtx.strokeText(`(X: ${originX}, Y: ${originY})`, x, y - 1.2 * w);
+    cntCtx.fillText(`(X: ${originX}, Y: ${originY})`, x, y - 1.2 * w);
     cntCtx.fillStyle = `#ebd534${opacity}`;
     cntCtx.strokeStyle = `#ebd534${opacity}`;
   } else {
@@ -621,7 +621,7 @@ const drawBullet = (x, y, a, s, l, d, t, index) => {
   let w = cntCanvas.width / 80;
   if (s == true) {
     cntCtx.beginPath();
-    cntCtx.font = `400 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    cntCtx.font = `400 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     cntCtx.fillStyle = "#000";
     cntCtx.strokeStyle = "#fff";
     cntCtx.textAlign = d == "L" ? "left" : "right";
@@ -634,8 +634,8 @@ const drawBullet = (x, y, a, s, l, d, t, index) => {
     cntCtx.textBaseline = "top";
     cntCtx.strokeText(`(Angle: ${d == "L" ? a : a - 180})`, x, y + 1.5 * w);
     cntCtx.fillText(`(Angle: ${d == "L" ? a : a - 180})`, x, y + 1.5 * w);
-    cntCtx.strokeText(`(Loc: ${l})`, x, y + 1.5 * w + window.innerHeight / 40);
-    cntCtx.fillText(`(Loc: ${l})`, x, y + 1.5 * w + window.innerHeight / 40);
+    cntCtx.strokeText(`(Loc: ${l})`, x, y + 1.5 * w + cntCanvas.height / 40);
+    cntCtx.fillText(`(Loc: ${l})`, x, y + 1.5 * w + cntCanvas.height / 40);
     cntCtx.fillStyle = `#ebd534`;
     cntCtx.strokeStyle = `#ebd534`;
   } else {
@@ -783,11 +783,11 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
           }
           break;
         default:
-          cntCtx.font = `400 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+          cntCtx.font = `400 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
           cntCtx.fillStyle = "#F55";
           cntCtx.textAlign = "left";
           cntCtx.textBaseline = "top";
-          cntCtx.fillText(`trackMouseSelection:Undefined element.`, cntCanvas.width / 100, cntCanvas.height / 100 + (window.innerHeight / 30) * errorCount);
+          cntCtx.fillText(`trackMouseSelection:Undefined element.`, cntCanvas.width / 100, cntCanvas.height / 100 + (cntCanvas.height / 30) * errorCount);
           errorCount++;
           console.error(`trackMouseSelection:Undefined element.`);
       }
@@ -1119,7 +1119,7 @@ const tmlRender = () => {
     tmlCtx.fillStyle = "#F55";
     tmlCtx.textAlign = "left";
     tmlCtx.textBaseline = "top";
-    tmlCtx.fillText(e, tmlStartX, endY + (window.innerHeight / 30) * errorCount);
+    tmlCtx.fillText(e, tmlStartX, endY + (cntCanvas.height / 30) * errorCount);
     errorCount++;
     console.error(e);
   }
@@ -1374,11 +1374,11 @@ const cntRender = () => {
     let prevNoteBeat = -1;
     for (let i = 0; renderNotes.length > i; i++) {
       if (renderNotes[i].beat >= prevNoteBeat - 0.01 && renderNotes[i].beat <= prevNoteBeat + 0.01) {
-        cntCtx.font = `400 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+        cntCtx.font = `400 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
         cntCtx.fillStyle = "#F55";
         cntCtx.textAlign = "left";
         cntCtx.textBaseline = "top";
-        cntCtx.fillText(`Notes at beat ${renderNotes[i].beat} are too close.`, cntCanvas.width / 100, cntCanvas.height / 100 + (window.innerHeight / 30) * errorCount);
+        cntCtx.fillText(`Notes at beat ${renderNotes[i].beat} are too close.`, cntCanvas.width / 100, cntCanvas.height / 100 + (cntCanvas.height / 30) * errorCount);
         errorCount++;
       }
       prevNoteBeat = renderNotes[i].beat;
@@ -1496,11 +1496,11 @@ const cntRender = () => {
     }
   } catch (e) {
     if (e) {
-      cntCtx.font = `400 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      cntCtx.font = `600 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       cntCtx.fillStyle = "#F55";
       cntCtx.textAlign = "left";
       cntCtx.textBaseline = "top";
-      cntCtx.fillText(e, cntCanvas.width / 100, cntCanvas.height / 100 + (window.innerHeight / 30) * errorCount);
+      cntCtx.fillText(e, cntCanvas.width / 100, cntCanvas.height / 100 + (cntCanvas.height / 30) * errorCount);
       errorCount++;
       console.error(e);
     }
