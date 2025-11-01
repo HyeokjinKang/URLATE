@@ -788,13 +788,13 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
           }
           break;
         default:
-          cntCtx.font = `400 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+          cntCtx.font = `600 ${cntCanvas.height / 50}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
           cntCtx.fillStyle = "#F55";
           cntCtx.textAlign = "left";
           cntCtx.textBaseline = "top";
-          cntCtx.fillText(`trackMouseSelection:Undefined element.`, cntCanvas.width / 100, cntCanvas.height / 100 + (cntCanvas.height / 30) * errorCount);
+          cntCtx.fillText(`[URLATE] trackingError: Cursor pointing undefined element.`, cntCanvas.width / 100, cntCanvas.height / 100 + (cntCanvas.height / 40) * errorCount);
           errorCount++;
-          console.error(`trackMouseSelection:Undefined element.`);
+          console.error(`[URLATE] trackingError: Cursor pointing undefined element.`);
       }
     }
   } else if (mode != 2 && mouseMode == 1) {
@@ -1120,13 +1120,13 @@ const tmlRender = () => {
       timelineContainer.style.cursor = "url('/images/parts/cursor/blueSelect.cur'), pointer";
     }
   } catch (e) {
-    tmlCtx.font = `400 ${tmlCanvas.height / 15}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    tmlCtx.font = `600 ${tmlCanvas.height / 50}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     tmlCtx.fillStyle = "#F55";
     tmlCtx.textAlign = "left";
     tmlCtx.textBaseline = "top";
-    tmlCtx.fillText(e, tmlStartX, endY + (cntCanvas.height / 30) * errorCount);
+    tmlCtx.fillText(`[Runtime] ${e}`, tmlStartX, endY + (cntCanvas.height / 40) * errorCount);
     errorCount++;
-    console.error(e);
+    console.error(`[Runtime] ${e}`);
   }
 };
 
@@ -1379,12 +1379,17 @@ const cntRender = () => {
     let prevNoteBeat = -1;
     for (let i = 0; renderNotes.length > i; i++) {
       if (renderNotes[i].beat >= prevNoteBeat - 0.01 && renderNotes[i].beat <= prevNoteBeat + 0.01) {
-        cntCtx.font = `400 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+        cntCtx.font = `600 ${cntCanvas.height / 50}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
         cntCtx.fillStyle = "#F55";
         cntCtx.textAlign = "left";
         cntCtx.textBaseline = "top";
-        cntCtx.fillText(`Notes at beat ${renderNotes[i].beat} are too close.`, cntCanvas.width / 100, cntCanvas.height / 100 + (cntCanvas.height / 30) * errorCount);
+        cntCtx.fillText(
+          `[URLATE] validationError: Note_${i} of the beat ${renderNotes[i].beat} is too close to Note_${i - 1}.`,
+          cntCanvas.width / 100,
+          cntCanvas.height / 100 + (cntCanvas.height / 40) * errorCount,
+        );
         errorCount++;
+        console.error(`[URLATE] validationError: Note_${i} of the beat ${renderNotes[i].beat} is too close to Note_${i - 1}.`);
       }
       prevNoteBeat = renderNotes[i].beat;
       if (mouseMode == 0) trackMouseSelection(i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
@@ -1501,13 +1506,13 @@ const cntRender = () => {
     }
   } catch (e) {
     if (e) {
-      cntCtx.font = `600 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      cntCtx.font = `600 ${cntCanvas.height / 50}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       cntCtx.fillStyle = "#F55";
       cntCtx.textAlign = "left";
       cntCtx.textBaseline = "top";
-      cntCtx.fillText(e, cntCanvas.width / 100, cntCanvas.height / 100 + (cntCanvas.height / 30) * errorCount);
+      cntCtx.fillText(`[Runtime] ${e}`, cntCanvas.width / 100, cntCanvas.height / 100 + (cntCanvas.height / 40) * errorCount);
       errorCount++;
-      console.error(e);
+      console.error(`[Runtime] ${e}`);
     }
   }
   tmlRender();
