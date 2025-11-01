@@ -474,7 +474,7 @@ const drawNote = (p, x, y, s, n, d, t, f) => {
   if (s == true) {
     cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
     cntCtx.beginPath();
-    cntCtx.font = `400 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    cntCtx.font = `600 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     cntCtx.fillStyle = "#000";
     cntCtx.strokeStyle = "#fff";
     cntCtx.textAlign = "center";
@@ -621,7 +621,7 @@ const drawBullet = (x, y, a, s, l, d, t, index) => {
   let w = cntCanvas.width / 80;
   if (s == true) {
     cntCtx.beginPath();
-    cntCtx.font = `400 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    cntCtx.font = `600 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     cntCtx.fillStyle = "#000";
     cntCtx.strokeStyle = "#fff";
     cntCtx.textAlign = d == "L" ? "left" : "right";
