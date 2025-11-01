@@ -474,7 +474,7 @@ const drawNote = (p, x, y, s, n, d, t, f) => {
   if (s == true) {
     cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
     cntCtx.beginPath();
-    cntCtx.font = `500 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    cntCtx.font = `400 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     cntCtx.fillStyle = "#000";
     cntCtx.strokeStyle = "#fff";
     cntCtx.textAlign = "center";
@@ -621,7 +621,7 @@ const drawBullet = (x, y, a, s, l, d, t, index) => {
   let w = cntCanvas.width / 80;
   if (s == true) {
     cntCtx.beginPath();
-    cntCtx.font = `500 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    cntCtx.font = `400 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     cntCtx.fillStyle = "#000";
     cntCtx.strokeStyle = "#fff";
     cntCtx.textAlign = d == "L" ? "left" : "right";
@@ -783,7 +783,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
           }
           break;
         default:
-          cntCtx.font = `500 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+          cntCtx.font = `400 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
           cntCtx.fillStyle = "#F55";
           cntCtx.textAlign = "left";
           cntCtx.textBaseline = "top";
@@ -1074,7 +1074,7 @@ const tmlRender = () => {
     }
 
     //Sync alert text
-    tmlCtx.font = `500 ${tmlCanvas.height / 15}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    tmlCtx.font = `400 ${tmlCanvas.height / 15}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     tmlCtx.fillStyle = "#555";
     tmlCtx.textAlign = "right";
     tmlCtx.textBaseline = "top";
@@ -1115,7 +1115,7 @@ const tmlRender = () => {
       timelineContainer.style.cursor = "url('/images/parts/cursor/blueSelect.cur'), pointer";
     }
   } catch (e) {
-    tmlCtx.font = `500 ${tmlCanvas.height / 15}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    tmlCtx.font = `400 ${tmlCanvas.height / 15}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     tmlCtx.fillStyle = "#F55";
     tmlCtx.textAlign = "left";
     tmlCtx.textBaseline = "top";
@@ -1374,7 +1374,7 @@ const cntRender = () => {
     let prevNoteBeat = -1;
     for (let i = 0; renderNotes.length > i; i++) {
       if (renderNotes[i].beat >= prevNoteBeat - 0.01 && renderNotes[i].beat <= prevNoteBeat + 0.01) {
-        cntCtx.font = `500 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+        cntCtx.font = `400 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
         cntCtx.fillStyle = "#F55";
         cntCtx.textAlign = "left";
         cntCtx.textBaseline = "top";
@@ -1480,7 +1480,7 @@ const cntRender = () => {
       cntCtx.moveTo(cntCanvas.width / 2 - 15, cntCanvas.height / 2 - 15);
       cntCtx.lineTo(cntCanvas.width / 2 + 15, cntCanvas.height / 2 - 15);
       cntCtx.stroke();
-      cntCtx.font = `500 ${cntCanvas.height / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      cntCtx.font = `400 ${cntCanvas.height / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       cntCtx.textAlign = "center";
       cntCtx.textBaseline = "top";
       cntCtx.fillText("Click to add Trigger", cntCanvas.width / 2, cntCanvas.height / 2 + 10);
@@ -1496,7 +1496,7 @@ const cntRender = () => {
     }
   } catch (e) {
     if (e) {
-      cntCtx.font = `500 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      cntCtx.font = `400 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       cntCtx.fillStyle = "#F55";
       cntCtx.textAlign = "left";
       cntCtx.textBaseline = "top";
@@ -2204,7 +2204,7 @@ const timelineAddElement = () => {
         speed: speed,
         align: "center",
         valign: "middle",
-        weight: 500,
+        weight: 400,
         size: "3vh",
         duration: 4,
         x: 0,
@@ -2319,7 +2319,7 @@ const compClicked = () => {
         speed: speed,
         align: "center",
         valign: "middle",
-        weight: 500,
+        weight: 400,
         size: "1vh",
         duration: 4,
         x: 0,
