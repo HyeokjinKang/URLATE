@@ -887,6 +887,7 @@ const cntRender = () => {
         bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
         globalAlpha = renderTriggers[i].opacity;
+        ctx.globalAlpha = globalAlpha;
       } else if (renderTriggers[i].value == 4) {
         nowSpeed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
@@ -904,7 +905,6 @@ const cntRender = () => {
         calculateResult();
       }
     }
-    ctx.globalAlpha = globalAlpha;
     ctx.beginPath();
     ctx.fillStyle = "#fff";
     ctx.font = `600 ${canvas.height / 70}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;

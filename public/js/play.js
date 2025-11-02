@@ -821,7 +821,7 @@ const drawKeyInput = () => {
       canvas.height * 0.05,
       canvas.width / 100,
       canvas.width / 100,
-      [canvas.width / 700]
+      [canvas.width / 700],
     );
     ctx.fill();
     ctx.stroke();
@@ -833,7 +833,7 @@ const drawKeyInput = () => {
     ctx.fillText(
       keyInput[i].key[0],
       canvas.width * 0.08 - canvas.height / 15 + (keyInput.length - i - 1) * (canvas.width / 100 + canvas.width / 200) + canvas.width / 200 - animX,
-      canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200
+      canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200,
     );
   }
   ctx.globalAlpha = globalAlpha;
@@ -907,6 +907,7 @@ const cntRender = () => {
         bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
         globalAlpha = renderTriggers[i].opacity;
+        ctx.globalAlpha = globalAlpha;
       } else if (renderTriggers[i].value == 5) {
         if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration) {
           ctx.beginPath();
@@ -922,7 +923,6 @@ const cntRender = () => {
         calculateResult();
       }
     }
-    ctx.globalAlpha = globalAlpha;
     for (let i = 0; i < destroyParticles.length; i++) {
       if (destroyParticles[i].ms + 250 > Date.now()) {
         drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
@@ -1239,28 +1239,28 @@ const calculateResult = () => {
     () => {
       canvasContainer.style.opacity = "0";
     },
-    song.playing ? 0 : 500
+    song.playing ? 0 : 500,
   );
   setTimeout(
     () => {
       floatingArrowContainer.style.display = "flex";
       floatingArrowContainer.classList.toggle("arrowFade");
     },
-    song.playing ? 0 : 1000
+    song.playing ? 0 : 1000,
   );
   setTimeout(
     () => {
       floatingResultContainer.style.display = "flex";
       floatingResultContainer.classList.toggle("resultFade");
     },
-    song.playing ? 300 : 1300
+    song.playing ? 300 : 1300,
   );
   setTimeout(
     () => {
       scoreContainer.style.opacity = "1";
       scoreContainer.style.pointerEvents = "all";
     },
-    song.playing ? 1000 : 2000
+    song.playing ? 1000 : 2000,
   );
   missCtx.beginPath();
   missCtx.fillStyle = "#FFF";
