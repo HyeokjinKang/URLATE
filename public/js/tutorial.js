@@ -979,6 +979,28 @@ const cntRender = () => {
         drawBullet(x, y, renderBullets[i].angle + (left ? 0 : 180));
       }
     }
+
+    ctx.beginPath();
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = "#fff";
+    ctx.font = `600 ${canvas.height / 60}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(`Speed : ${nowSpeed}, BPM : ${bpm}`, canvas.width / 100, canvas.height - canvas.height / 60);
+
+    if (frameCounter) {
+      frameArray.push(1000 / (Date.now() - frameCounterMs));
+      if (frameArray.length == 10) {
+        fps =
+          frameArray.reduce((sum, current) => {
+            return sum + current;
+          }, 0) / 10;
+        frameArray = [];
+      }
+      ctx.textAlign = "right";
+      ctx.fillText(fps.toFixed(), canvas.width - canvas.width / 100, canvas.height - canvas.height / 70);
+      frameCounterMs = Date.now();
+    }
   } catch (e) {
     if (e) {
       ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
@@ -1021,23 +1043,6 @@ const cntRender = () => {
 
   if (effectMs != 0 && effectNum != -1) drawFinalEffect(effectNum);
 
-  //fps counter
-  if (frameCounter) {
-    frameArray.push(1000 / (Date.now() - frameCounterMs));
-    if (frameArray.length == 10) {
-      fps =
-        frameArray.reduce((sum, current) => {
-          return sum + current;
-        }, 0) / 10;
-      frameArray = [];
-    }
-    ctx.font = `500 ${canvas.height / 50}px Montserrat`;
-    ctx.fillStyle = "#fff";
-    ctx.textBaseline = "bottom";
-    ctx.textAlign = "right";
-    ctx.fillText(fps.toFixed(), canvas.width - canvas.width / 100, canvas.height - canvas.height / 70);
-    frameCounterMs = Date.now();
-  }
   drawCursor();
 };
 
