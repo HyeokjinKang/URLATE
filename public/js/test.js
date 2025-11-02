@@ -874,6 +874,7 @@ const cntRender = () => {
     let end = upperBound(pattern.triggers, beats);
     const renderTriggers = pattern.triggers.slice(0, end);
     let nowSpeed = pattern.information.speed;
+    let renderTexts = [];
     for (let i = 0; i < renderTriggers.length; i++) {
       if (renderTriggers[i].value == 0) {
         if (!destroyedBullets.has(renderTriggers[i].num)) {
@@ -887,29 +888,35 @@ const cntRender = () => {
         bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
         globalAlpha = renderTriggers[i].opacity;
-        ctx.globalAlpha = globalAlpha;
       } else if (renderTriggers[i].value == 4) {
         nowSpeed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
         if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration) {
-          ctx.beginPath();
-          ctx.fillStyle = "#fff";
-          ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-          if (renderTriggers[i].size.indexOf("vh") != -1)
-            ctx.font = `${renderTriggers[i].weight} ${(canvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-          ctx.textAlign = renderTriggers[i].align;
-          ctx.textBaseline = renderTriggers[i].valign;
-          ctx.fillText(renderTriggers[i].text, (canvas.width / 200) * (renderTriggers[i].x + 100), (canvas.height / 200) * (renderTriggers[i].y + 100));
+          renderTexts.push(renderTriggers[i]);
         }
       } else if (renderTriggers[i].value == 6) {
         calculateResult();
       }
     }
+
+    ctx.globalAlpha = globalAlpha;
+
+    ctx.beginPath();
+    ctx.fillStyle = "#fff";
+    for (text of renderTexts) {
+      if (text.size.indexOf("vh") != -1) ctx.font = `${text.weight} ${(canvas.height / 100) * Number(text.size.split("vh")[0])}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      else ctx.font = `${text.weight} ${text.size} Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.textAlign = text.align;
+      ctx.textBaseline = text.valign;
+      ctx.fillText(text.text, (canvas.width / 200) * (text.x + 100), (canvas.height / 200) * (text.y + 100));
+    }
+
     for (let i = 0; i < destroyParticles.length; i++) {
       if (destroyParticles[i].ms + 250 > Date.now()) {
         drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
       }
     }
+
     end = upperBound(pattern.patterns, beats + 5 / speed);
     const renderNotes = pattern.patterns.slice(0, end);
     for (let i = 0; renderNotes.length > i; i++) {
