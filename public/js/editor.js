@@ -485,10 +485,10 @@ const drawNote = (p, x, y, s, n, d, t, f, index) => {
     cntCtx.textAlign = "center";
     if (index != undefined) {
       cntCtx.textBaseline = "bottom";
-      drawOutlinedText(`Note_${index}`, x, y - 1.2 * w);
+      drawOutlinedText(cntCtx, `Note_${index}`, x, y - 1.2 * w);
     }
     cntCtx.textBaseline = "top";
-    drawOutlinedText(`(X: ${originX}, Y: ${originY})`, x, y + 1.2 * w);
+    drawOutlinedText(cntCtx, `(X: ${originX}, Y: ${originY})`, x, y + 1.2 * w);
     cntCtx.fillStyle = `#ebd534${opacity}`;
     cntCtx.strokeStyle = `#ebd534${opacity}`;
   } else {
@@ -636,11 +636,11 @@ const drawBullet = (x, y, a, s, l, d, t, index) => {
     cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
     if (index != undefined) {
       cntCtx.textBaseline = "bottom";
-      drawOutlinedText(`Bullet_${index}`, x, y - 1.5 * w);
+      drawOutlinedText(cntCtx, `Bullet_${index}`, x, y - 1.5 * w);
     }
     cntCtx.textBaseline = "top";
-    drawOutlinedText(`(Angle: ${d == "L" ? a : a - 180})`, x, y + 1.5 * w);
-    drawOutlinedText(`(Loc: ${l})`, x, y + 1.5 * w + cntCanvas.height / 40);
+    drawOutlinedText(cntCtx, `(Angle: ${d == "L" ? a : a - 180})`, x, y + 1.5 * w);
+    drawOutlinedText(cntCtx, `(Loc: ${l})`, x, y + 1.5 * w + cntCanvas.height / 40);
     cntCtx.fillStyle = `#ebd534`;
     cntCtx.strokeStyle = `#ebd534`;
   } else {
