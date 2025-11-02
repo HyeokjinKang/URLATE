@@ -454,7 +454,12 @@ const drawShadow = (x, y, n, d, a) => {
   }
 };
 
-const drawNote = (p, x, y, s, n, d, t, f) => {
+const drawOutlinedText = (ctx, text, x, y) => {
+  ctx.strokeText(text, x, y);
+  ctx.fillText(text, x, y);
+};
+
+const drawNote = (p, x, y, s, n, d, t, f, index) => {
   if (n != 2 && p >= 130) return;
   else if (n == 2 && f >= 130) return;
   p = Math.max(p, 0);
@@ -474,13 +479,16 @@ const drawNote = (p, x, y, s, n, d, t, f) => {
   if (s == true) {
     cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
     cntCtx.beginPath();
-    cntCtx.font = `500 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    cntCtx.font = `600 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     cntCtx.fillStyle = "#000";
     cntCtx.strokeStyle = "#fff";
     cntCtx.textAlign = "center";
-    cntCtx.textBaseline = "bottom";
-    cntCtx.strokeText(`(X: ${originX}, Y: ${originY})`, x, y - 1.5 * w);
-    cntCtx.fillText(`(X: ${originX}, Y: ${originY})`, x, y - 1.5 * w);
+    if (index != undefined) {
+      cntCtx.textBaseline = "bottom";
+      drawOutlinedText(`Note_${index}`, x, y - 1.2 * w);
+    }
+    cntCtx.textBaseline = "top";
+    drawOutlinedText(`(X: ${originX}, Y: ${originY})`, x, y + 1.2 * w);
     cntCtx.fillStyle = `#ebd534${opacity}`;
     cntCtx.strokeStyle = `#ebd534${opacity}`;
   } else {
@@ -621,21 +629,18 @@ const drawBullet = (x, y, a, s, l, d, t, index) => {
   let w = cntCanvas.width / 80;
   if (s == true) {
     cntCtx.beginPath();
-    cntCtx.font = `500 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    cntCtx.font = `600 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     cntCtx.fillStyle = "#000";
     cntCtx.strokeStyle = "#fff";
     cntCtx.textAlign = d == "L" ? "left" : "right";
     cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
     if (index != undefined) {
       cntCtx.textBaseline = "bottom";
-      cntCtx.strokeText(`Bullet_${index}`, x, y - 1.5 * w);
-      cntCtx.fillText(`Bullet_${index}`, x, y - 1.5 * w);
+      drawOutlinedText(`Bullet_${index}`, x, y - 1.5 * w);
     }
     cntCtx.textBaseline = "top";
-    cntCtx.strokeText(`(Angle: ${d == "L" ? a : a - 180})`, x, y + 1.5 * w);
-    cntCtx.fillText(`(Angle: ${d == "L" ? a : a - 180})`, x, y + 1.5 * w);
-    cntCtx.strokeText(`(Loc: ${l})`, x, y + 1.5 * w + window.innerHeight / 40);
-    cntCtx.fillText(`(Loc: ${l})`, x, y + 1.5 * w + window.innerHeight / 40);
+    drawOutlinedText(`(Angle: ${d == "L" ? a : a - 180})`, x, y + 1.5 * w);
+    drawOutlinedText(`(Loc: ${l})`, x, y + 1.5 * w + cntCanvas.height / 40);
     cntCtx.fillStyle = `#ebd534`;
     cntCtx.strokeStyle = `#ebd534`;
   } else {
@@ -783,13 +788,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
           }
           break;
         default:
-          cntCtx.font = `500 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-          cntCtx.fillStyle = "#F55";
-          cntCtx.textAlign = "left";
-          cntCtx.textBaseline = "top";
-          cntCtx.fillText(`trackMouseSelection:Undefined element.`, cntCanvas.width / 100, cntCanvas.height / 100 + (window.innerHeight / 30) * errorCount);
-          errorCount++;
-          console.error(`trackMouseSelection:Undefined element.`);
+          displayMessage("Warning", `[URLATE] trackingWarning: Cursor pointing unknown element.`);
       }
     }
   } else if (mode != 2 && mouseMode == 1) {
@@ -1074,7 +1073,7 @@ const tmlRender = () => {
     }
 
     //Sync alert text
-    tmlCtx.font = `500 ${tmlCanvas.height / 15}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    tmlCtx.font = `400 ${tmlCanvas.height / 15}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     tmlCtx.fillStyle = "#555";
     tmlCtx.textAlign = "right";
     tmlCtx.textBaseline = "top";
@@ -1115,14 +1114,27 @@ const tmlRender = () => {
       timelineContainer.style.cursor = "url('/images/parts/cursor/blueSelect.cur'), pointer";
     }
   } catch (e) {
-    tmlCtx.font = `500 ${tmlCanvas.height / 15}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-    tmlCtx.fillStyle = "#F55";
-    tmlCtx.textAlign = "left";
-    tmlCtx.textBaseline = "top";
-    tmlCtx.fillText(e, tmlStartX, endY + (window.innerHeight / 30) * errorCount);
-    errorCount++;
+    displayMessage("Error", `[Runtime] ${e}`);
     console.error(e);
   }
+};
+
+const displayMessage = (type, message) => {
+  switch (type) {
+    case "Error":
+      cntCtx.fillStyle = "#F55";
+      break;
+    case "Warning":
+      cntCtx.fillStyle = "#f5b427";
+      break;
+    default:
+      cntCtx.fillStyle = "#FFF";
+  }
+  cntCtx.font = `600 ${cntCanvas.height / 50}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+  cntCtx.textAlign = "left";
+  cntCtx.textBaseline = "top";
+  cntCtx.fillText(message, cntCanvas.width / 100, cntCanvas.height / 100 + (cntCanvas.height / 40) * errorCount);
+  errorCount++;
 };
 
 const callBulletDestroy = (j) => {
@@ -1374,12 +1386,7 @@ const cntRender = () => {
     let prevNoteBeat = -1;
     for (let i = 0; renderNotes.length > i; i++) {
       if (renderNotes[i].beat >= prevNoteBeat - 0.01 && renderNotes[i].beat <= prevNoteBeat + 0.01) {
-        cntCtx.font = `500 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-        cntCtx.fillStyle = "#F55";
-        cntCtx.textAlign = "left";
-        cntCtx.textBaseline = "top";
-        cntCtx.fillText(`Notes at beat ${renderNotes[i].beat} are too close.`, cntCanvas.width / 100, cntCanvas.height / 100 + (window.innerHeight / 30) * errorCount);
-        errorCount++;
+        displayMessage("Error", `[URLATE] validationError: Note_${i} of the beat ${renderNotes[i].beat} is too close to Note_${i - 1}.`);
       }
       prevNoteBeat = renderNotes[i].beat;
       if (mouseMode == 0) trackMouseSelection(i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
@@ -1405,7 +1412,7 @@ const cntRender = () => {
         cntCtx.stroke();
       }
       if (i == validNote) {
-        drawNote(p, renderNotes[i].x, renderNotes[i].y, selectedCheck(0, i), renderNotes[i].value, renderNotes[i].direction, t, f);
+        drawNote(p, renderNotes[i].x, renderNotes[i].y, selectedCheck(0, i), renderNotes[i].value, renderNotes[i].direction, t, f, i);
       } else if (i + 3 >= validNote) {
         drawShadow(renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, alpha);
       }
@@ -1480,7 +1487,7 @@ const cntRender = () => {
       cntCtx.moveTo(cntCanvas.width / 2 - 15, cntCanvas.height / 2 - 15);
       cntCtx.lineTo(cntCanvas.width / 2 + 15, cntCanvas.height / 2 - 15);
       cntCtx.stroke();
-      cntCtx.font = `500 ${cntCanvas.height / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      cntCtx.font = `400 ${cntCanvas.height / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       cntCtx.textAlign = "center";
       cntCtx.textBaseline = "top";
       cntCtx.fillText("Click to add Trigger", cntCanvas.width / 2, cntCanvas.height / 2 + 10);
@@ -1495,15 +1502,8 @@ const cntRender = () => {
       }
     }
   } catch (e) {
-    if (e) {
-      cntCtx.font = `500 ${window.innerHeight / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-      cntCtx.fillStyle = "#F55";
-      cntCtx.textAlign = "left";
-      cntCtx.textBaseline = "top";
-      cntCtx.fillText(e, cntCanvas.width / 100, cntCanvas.height / 100 + (window.innerHeight / 30) * errorCount);
-      errorCount++;
-      console.error(e);
-    }
+    displayMessage("Error", `[Runtime] ${e}`);
+    console.error(e);
   }
   tmlRender();
   if (mouseMode == 0 && !denyCursor) drawCursor();
@@ -2204,7 +2204,7 @@ const timelineAddElement = () => {
         speed: speed,
         align: "center",
         valign: "middle",
-        weight: 500,
+        weight: 400,
         size: "3vh",
         duration: 4,
         x: 0,
@@ -2319,7 +2319,7 @@ const compClicked = () => {
         speed: speed,
         align: "center",
         valign: "middle",
-        weight: 500,
+        weight: 400,
         size: "1vh",
         duration: 4,
         x: 0,
