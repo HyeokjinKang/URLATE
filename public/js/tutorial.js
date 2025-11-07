@@ -777,7 +777,7 @@ const drawKeyInput = () => {
       canvas.height * 0.05,
       canvas.width / 100,
       canvas.width / 100,
-      [canvas.width / 700]
+      [canvas.width / 700],
     );
     ctx.fill();
     ctx.stroke();
@@ -789,7 +789,7 @@ const drawKeyInput = () => {
     ctx.fillText(
       keyInput[i].key[0],
       canvas.width * 0.08 - canvas.height / 15 + (keyInput.length - i - 1) * (canvas.width / 100 + canvas.width / 200) + canvas.width / 200 - animX,
-      canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200
+      canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200,
     );
   }
   ctx.globalAlpha = globalAlpha;
@@ -850,6 +850,8 @@ const cntRender = () => {
     const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
     let end = upperBound(pattern.triggers, beats);
     const renderTriggers = pattern.triggers.slice(0, end);
+    let nowSpeed = pattern.information.speed;
+    let renderTexts = [];
     for (let i = 0; i < renderTriggers.length; i++) {
       if (renderTriggers[i].value == 0) {
         if (!destroyedBullets.has(renderTriggers[i].num)) {
@@ -863,27 +865,35 @@ const cntRender = () => {
         bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
         globalAlpha = renderTriggers[i].opacity;
+      } else if (renderTriggers[i].value == 4) {
+        nowSpeed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
         if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration && disableText == false) {
-          ctx.beginPath();
-          ctx.fillStyle = "#fff";
-          ctx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-          if (renderTriggers[i].size.indexOf("vh") != -1)
-            ctx.font = `${renderTriggers[i].weight} ${(canvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-          ctx.textAlign = renderTriggers[i].align;
-          ctx.textBaseline = renderTriggers[i].valign;
-          ctx.fillText(renderTriggers[i].text, (canvas.width / 200) * (renderTriggers[i].x + 100), (canvas.height / 200) * (renderTriggers[i].y + 100));
+          renderTexts.push(renderTriggers[i]);
         }
       } else if (renderTriggers[i].value == 6) {
         calculateResult();
       }
     }
+
     ctx.globalAlpha = globalAlpha;
+
+    ctx.beginPath();
+    ctx.fillStyle = "#fff";
+    for (text of renderTexts) {
+      if (text.size.indexOf("vh") != -1) ctx.font = `${text.weight} ${(canvas.height / 100) * Number(text.size.split("vh")[0])}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      else ctx.font = `${text.weight} ${text.size} Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.textAlign = text.align;
+      ctx.textBaseline = text.valign;
+      ctx.fillText(text.text, (canvas.width / 200) * (text.x + 100), (canvas.height / 200) * (text.y + 100));
+    }
+
     for (let i = 0; i < destroyParticles.length; i++) {
       if (destroyParticles[i].ms + 250 > Date.now()) {
         drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
       }
     }
+
     end = upperBound(pattern.patterns, beats + 5 / speed);
     const renderNotes = pattern.patterns.slice(0, end);
     for (let i = 0; renderNotes.length > i; i++) {
@@ -979,6 +989,28 @@ const cntRender = () => {
         drawBullet(x, y, renderBullets[i].angle + (left ? 0 : 180));
       }
     }
+
+    ctx.beginPath();
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = "#fff";
+    ctx.font = `600 ${canvas.height / 60}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(`Speed : ${nowSpeed}, BPM : ${bpm}`, canvas.width / 100, canvas.height - canvas.height / 60);
+
+    if (frameCounter) {
+      frameArray.push(1000 / (Date.now() - frameCounterMs));
+      if (frameArray.length == 10) {
+        fps =
+          frameArray.reduce((sum, current) => {
+            return sum + current;
+          }, 0) / 10;
+        frameArray = [];
+      }
+      ctx.textAlign = "right";
+      ctx.fillText(fps.toFixed(), canvas.width - canvas.width / 100, canvas.height - canvas.height / 70);
+      frameCounterMs = Date.now();
+    }
   } catch (e) {
     if (e) {
       ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
@@ -1021,23 +1053,6 @@ const cntRender = () => {
 
   if (effectMs != 0 && effectNum != -1) drawFinalEffect(effectNum);
 
-  //fps counter
-  if (frameCounter) {
-    frameArray.push(1000 / (Date.now() - frameCounterMs));
-    if (frameArray.length == 10) {
-      fps =
-        frameArray.reduce((sum, current) => {
-          return sum + current;
-        }, 0) / 10;
-      frameArray = [];
-    }
-    ctx.font = `500 ${canvas.height / 50}px Montserrat`;
-    ctx.fillStyle = "#fff";
-    ctx.textBaseline = "bottom";
-    ctx.textAlign = "right";
-    ctx.fillText(fps.toFixed(), canvas.width - canvas.width / 100, canvas.height - canvas.height / 70);
-    frameCounterMs = Date.now();
-  }
   drawCursor();
 };
 
@@ -1165,28 +1180,28 @@ const calculateResult = () => {
     () => {
       canvasContainer.style.opacity = "0";
     },
-    song.playing ? 0 : 500
+    song.playing ? 0 : 500,
   );
   setTimeout(
     () => {
       floatingArrowContainer.style.display = "flex";
       floatingArrowContainer.classList.toggle("arrowFade");
     },
-    song.playing ? 0 : 1000
+    song.playing ? 0 : 1000,
   );
   setTimeout(
     () => {
       floatingResultContainer.style.display = "flex";
       floatingResultContainer.classList.toggle("resultFade");
     },
-    song.playing ? 300 : 1300
+    song.playing ? 300 : 1300,
   );
   setTimeout(
     () => {
       scoreContainer.style.opacity = "1";
       scoreContainer.style.pointerEvents = "all";
     },
-    song.playing ? 1000 : 2000
+    song.playing ? 1000 : 2000,
   );
   missCtx.beginPath();
   missCtx.fillStyle = "#FFF";

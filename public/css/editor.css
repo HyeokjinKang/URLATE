@@ -328,6 +328,7 @@ body {
 }
 
 #componentCanvas {
+  will-change: transform;
   width: 100%;
   height: 100%;
 }

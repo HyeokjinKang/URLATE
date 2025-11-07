@@ -79,6 +79,7 @@ let gridToggle = true,
 let scrollTimer = 0;
 let errorCount = 0;
 let preventUnload = false;
+let globalAlpha = 1;
 
 let pattern = {
   information: {
@@ -1268,7 +1269,7 @@ const cntRender = () => {
 
     // Initialize triggers
     bpm = pattern.information.bpm;
-    cntCanvas.style.filter = `opacity(100%)`;
+    globalAlpha = 1;
     bpmsync = {
       ms: 0,
       beat: 0,
@@ -1278,6 +1279,7 @@ const cntRender = () => {
     let end = upperBound(pattern.triggers, beats);
     const renderTriggers = pattern.triggers.slice(0, end);
     let nowSpeed = pattern.information.speed;
+    let renderTexts = [];
     for (let i = 0; i < renderTriggers.length; i++) {
       if (renderTriggers[i].value == 0) {
         // Bullet Destroy
@@ -1305,36 +1307,33 @@ const cntRender = () => {
         bpm = renderTriggers[i].bpm;
         bpmsync.beat = renderTriggers[i].beat;
       } else if (renderTriggers[i].value == 3) {
-        // Opacity Change
-        // Todo: 성능 최적화 필요
-        cntCanvas.style.filter = `opacity(${renderTriggers[i].opacity * 100}%)`;
+        globalAlpha = renderTriggers[i].opacity;
       } else if (renderTriggers[i].value == 4) {
         // Speed Change
         nowSpeed = renderTriggers[i].speed;
       } else if (renderTriggers[i].value == 5) {
         // Text
         if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration) {
-          cntCtx.beginPath();
-          if (denySkin) cntCtx.fillStyle = "#111";
-          else cntCtx.fillStyle = "#fff";
-          cntCtx.font = `${renderTriggers[i].weight} ${renderTriggers[i].size} Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-          if (renderTriggers[i].size.indexOf("vh") != -1)
-            cntCtx.font = `${renderTriggers[i].weight} ${(cntCanvas.height / 100) * Number(renderTriggers[i].size.split("vh")[0])}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-          cntCtx.textAlign = renderTriggers[i].align;
-          cntCtx.textBaseline = renderTriggers[i].valign;
-          cntCtx.fillText(renderTriggers[i].text, tw * (renderTriggers[i].x + 100), th * (renderTriggers[i].y + 100));
+          renderTexts.push(renderTriggers[i]);
         }
       } else if (renderTriggers[i].value == 6) {
         // End
         song.stop();
       }
     }
+
+    cntCtx.globalAlpha = globalAlpha;
+
     cntCtx.beginPath();
-    cntCtx.fillStyle = "rgba(255, 255, 255, 0.8)";
-    cntCtx.font = `700 ${cntCanvas.height / 50}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-    cntCtx.textAlign = "center";
-    cntCtx.textBaseline = "top";
-    cntCtx.fillText(`Speed : ${nowSpeed}, BPM : ${bpm}`, cntCanvas.width / 2, cntCanvas.height / 50);
+    if (denySkin) cntCtx.fillStyle = "#111";
+    else cntCtx.fillStyle = "#fff";
+    for (text of renderTexts) {
+      if (text.size.indexOf("vh") != -1) cntCtx.font = text.weight + " " + (cntCanvas.height / 100) * Number(text.size.split("vh")[0]) + "px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
+      else cntCtx.font = text.weight + " " + text.size + " Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
+      cntCtx.textAlign = text.align;
+      cntCtx.textBaseline = text.valign;
+      cntCtx.fillText(text.text, tw * (text.x + 100), th * (text.y + 100));
+    }
 
     // Destroy Particles
     for (let i = 0; i < destroyParticles.length; i++) {
@@ -1347,38 +1346,6 @@ const cntRender = () => {
 
     // Prevent destroy infinite loop
     prevDestroyedBullets = new Set(destroyedBullets);
-
-    // Editor only - Note & Bullet location live draw (when mode is "Add")
-    if (mode == 2 && mouseMode == 0) {
-      let p = [0, 0];
-      if (mouseX < -80) {
-        p[0] = (-80 - mouseX) / 20;
-      } else if (mouseX > 80) {
-        p[1] = (mouseX - 80) / 20;
-      }
-      if (p[0] == 0 && p[1] == 0) {
-        if (circleToggle && selectedCntElement.v1 === 0) {
-          const radius = cntCanvas.width / 15;
-          const noteX = tw * (pattern.patterns[selectedCntElement.i].x + 100);
-          const noteY = th * (pattern.patterns[selectedCntElement.i].y + 100);
-          const difX = noteX - tw * (mouseX + 100);
-          const difY = noteY - th * (mouseY + 100);
-          const distance = Math.sqrt(difX * difX + difY * difY) + radius / 2;
-          const angle = calcAngleDegrees(difX, difY) + 180;
-          const newDistance = distance - (distance % radius);
-          const newX = ((noteX + newDistance * getCos(angle)) / cntCanvas.width) * 200 - 100;
-          const newY = ((noteY + newDistance * getSin(angle)) / cntCanvas.height) * 200 - 100;
-          drawNote(100, Math.round(newX), Math.round(newY), true, selectedValue, 1, 0);
-        } else if (magnetToggle) drawNote(100, mouseX - (mouseX % 5), mouseY - (mouseY % 5), true, selectedValue, 1, 0);
-        else drawNote(100, mouseX, mouseY, true, selectedValue, 1, 0);
-      } else {
-        if (p[1] == 0) {
-          drawBullet(-100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 0, true, mouseY - (mouseY % 5), "L");
-        } else {
-          drawBullet(100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 180, true, mouseY - (mouseY % 5), "R");
-        }
-      }
-    }
 
     // Note render
     end = upperBound(pattern.patterns, beats + 5 / speed);
@@ -1472,6 +1439,47 @@ const cntRender = () => {
       }
     }
     prevCreatedBullets = new Set(createdBullets);
+
+    cntCtx.globalAlpha = 1;
+
+    cntCtx.beginPath();
+    cntCtx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    cntCtx.font = `700 ${cntCanvas.height / 50}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    cntCtx.textAlign = "center";
+    cntCtx.textBaseline = "top";
+    cntCtx.fillText(`Speed : ${nowSpeed}, BPM : ${bpm}`, cntCanvas.width / 2, cntCanvas.height / 50);
+
+    // Editor only - Note & Bullet location live draw (when mode is "Add")
+    if (mode == 2 && mouseMode == 0) {
+      let p = [0, 0];
+      if (mouseX < -80) {
+        p[0] = (-80 - mouseX) / 20;
+      } else if (mouseX > 80) {
+        p[1] = (mouseX - 80) / 20;
+      }
+      if (p[0] == 0 && p[1] == 0) {
+        if (circleToggle && selectedCntElement.v1 === 0) {
+          const radius = cntCanvas.width / 15;
+          const noteX = tw * (pattern.patterns[selectedCntElement.i].x + 100);
+          const noteY = th * (pattern.patterns[selectedCntElement.i].y + 100);
+          const difX = noteX - tw * (mouseX + 100);
+          const difY = noteY - th * (mouseY + 100);
+          const distance = Math.sqrt(difX * difX + difY * difY) + radius / 2;
+          const angle = calcAngleDegrees(difX, difY) + 180;
+          const newDistance = distance - (distance % radius);
+          const newX = ((noteX + newDistance * getCos(angle)) / cntCanvas.width) * 200 - 100;
+          const newY = ((noteY + newDistance * getSin(angle)) / cntCanvas.height) * 200 - 100;
+          drawNote(100, Math.round(newX), Math.round(newY), true, selectedValue, 1, 0);
+        } else if (magnetToggle) drawNote(100, mouseX - (mouseX % 5), mouseY - (mouseY % 5), true, selectedValue, 1, 0);
+        else drawNote(100, mouseX, mouseY, true, selectedValue, 1, 0);
+      } else {
+        if (p[1] == 0) {
+          drawBullet(-100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 0, true, mouseY - (mouseY % 5), "L");
+        } else {
+          drawBullet(100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 180, true, mouseY - (mouseY % 5), "R");
+        }
+      }
+    }
 
     // Editor only - Trigger guide text (when mode is "Add")
     if (mode == 2 && mouseMode == -1) {
