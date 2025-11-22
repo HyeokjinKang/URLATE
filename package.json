@@ -8,6 +8,7 @@
   "description": "URLATE, Online rhythm game based on web technologies.",
   "main": "src/",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "build": "tsc",
     "auto-build": "tsc-watch",
     "start": "supervisor dist/index.js",
@@ -15,6 +16,14 @@
   },
   "author": "Coupyworks",
   "license": "AGPL-3.0-or-later",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@tensorflow/tfjs-node",
+      "core-js",
+      "javascript-obfuscator",
+      "sharp"
+    ]
+  },
   "dependencies": {
     "@tensorflow/tfjs-node": "^4.22.0",
     "cookie-parser": "^1.4.7",
