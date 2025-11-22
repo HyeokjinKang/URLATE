@@ -22,15 +22,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install PNPM
+        run: npm i -g pnpm
+
       - name: Install dependencies
-        run: npm install
+        run: pnpm install
 
       - name: Core file obfuscate
-        run: npm run obfuscate
+        run: pnpm run obfuscate
 
       # Runs a set of commands using the runners shell
       - name: Build
-        run: npm run build
+        run: pnpm run build
 
       - name: Tensorflow fix
         run: |

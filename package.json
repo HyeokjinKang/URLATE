@@ -8,6 +8,7 @@
   "description": "URLATE, Online rhythm game based on web technologies.",
   "main": "src/",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "build": "tsc",
     "auto-build": "tsc-watch",
     "start": "supervisor dist/index.js",
