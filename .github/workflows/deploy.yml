@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install PNPM
-        run: npm i -g pnpm
+        run: sudo npm i -g pnpm
 
       - name: Install dependencies
         run: pnpm install
