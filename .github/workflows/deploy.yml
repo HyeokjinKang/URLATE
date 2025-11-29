@@ -32,7 +32,7 @@ jobs:
         run: pnpm run obfuscate
 
       # Runs a set of commands using the runners shell
-      - name: Build
+      - name: Build project
         run: pnpm run build
 
       - name: Tensorflow fix
@@ -41,5 +41,10 @@ jobs:
           node-pre-gyp rebuild
           cd ../../../
 
-      - name: Deploy
-        run: rsync -azq --exclude=/.git/ $GITHUB_WORKSPACE URLATE-PRODUCTION:${{secrets.DEPLOY_TARGET}}
+      - name: Prepare deployment artifact
+        run: |
+          pnpm --filter=urlate deploy ./deploy
+          cp -r dist/* ./deploy/
+
+      - name: Rsync to Production
+        run: rsync -azq --exclude=/.git/ $GITHUB_WORKSPACE/deploy URLATE-PRODUCTION:${{secrets.DEPLOY_TARGET}}
