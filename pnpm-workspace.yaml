@@ -1,5 +1,7 @@
 onlyBuiltDependencies:
-  - '@tensorflow/tfjs-node'
+  - "@tensorflow/tfjs-node"
   - core-js
   - javascript-obfuscator
   - sharp
+
+injectWorkspacePackages: true
