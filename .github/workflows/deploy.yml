@@ -44,7 +44,7 @@ jobs:
       - name: Prepare deployment artifact
         run: |
           pnpm --filter=urlate deploy ./deploy
-          cp -r dist/* ./deploy/
+          cp -r dist ./deploy/
 
       - name: Rsync to Production
         run: rsync -azq --exclude=/.git/ $GITHUB_WORKSPACE/deploy URLATE-PRODUCTION:${{secrets.DEPLOY_TARGET}}
