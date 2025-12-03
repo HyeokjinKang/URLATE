@@ -20,7 +20,7 @@
     "@tensorflow/tfjs-node": "^4.22.0",
     "cookie-parser": "^1.4.7",
     "ejs": "^3.1.10",
-    "express": "^5.1.0",
+    "express": "^5.2.0",
     "i18n": "^0.15.2",
     "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
