@@ -420,8 +420,6 @@ p {
   opacity: 0;
   width: 100vw;
   height: 100vh;
-  background-image: url("/images/backgrounds/track.webp");
-  background-repeat: no-repeat;
   overflow-x: hidden;
   overflow-y: hidden;
 }
