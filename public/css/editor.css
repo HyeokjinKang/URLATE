@@ -303,10 +303,6 @@ body {
   width: 100%;
 }
 
-.bold {
-  font-weight: 700;
-}
-
 .clickable {
   cursor: url("/images/parts/cursor/blueSelect.cur"), pointer;
 }
@@ -423,10 +419,6 @@ body {
 
 .settingsPropertiesContainer {
   width: 90%;
-}
-
-#settingsTracksContainer {
-  width: 80%;
 }
 
 .settingsSemiTitle {
@@ -829,8 +821,4 @@ kbd {
   font-weight: 400;
   color: #404040;
   font-size: 2vh;
-}
-
-.hideBGA {
-  display: none;
 }
