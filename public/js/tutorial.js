@@ -145,10 +145,7 @@ const initialize = (isFirstCalled) => {
   missCanvas.width = window.innerWidth * 0.2 * pixelRatio;
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
   if (isFirstCalled) {
-    fetch(`${cdn}/URLATE-patterns/tutorial/0_${lang}.json`, {
-      method: "GET",
-      credentials: "include",
-    })
+    fetch(`${cdn}/URLATE-patterns/tutorial/0_${lang}.json`)
       .then((res) => res.json())
       .then((data) => {
         patternBackup = data;
