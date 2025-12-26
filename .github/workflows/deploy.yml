@@ -35,16 +35,16 @@ jobs:
       - name: Build project
         run: pnpm run build
 
-      - name: Tensorflow fix
-        run: |
-          cd node_modules/@tensorflow/tfjs-node/
-          node-pre-gyp rebuild
-          cd ../../../
-
       - name: Prepare deployment artifact
         run: |
           pnpm --filter=urlate deploy ./deploy
           cp -r dist ./deploy/
 
+      - name: Tensorflow fix
+        run: |
+          cd ./deploy/node_modules/@tensorflow/tfjs-node/
+          node-pre-gyp rebuild
+          cd ../../../../
+
       - name: Rsync to Production
-        run: rsync -azq --exclude=/.git/ $GITHUB_WORKSPACE/deploy/ URLATE-PRODUCTION:${{secrets.DEPLOY_TARGET}}/
+        run: rsync -azq --delete --exclude=/.git/ $GITHUB_WORKSPACE/deploy/ URLATE-PRODUCTION:${{secrets.DEPLOY_TARGET}}/
