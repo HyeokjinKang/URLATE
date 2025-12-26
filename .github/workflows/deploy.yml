@@ -47,4 +47,4 @@ jobs:
           cp -r dist ./deploy/
 
       - name: Rsync to Production
-        run: rsync -azq --exclude=/.git/ $GITHUB_WORKSPACE/deploy URLATE-PRODUCTION:${{secrets.DEPLOY_TARGET}}
+        run: rsync -azq --exclude=/.git/ $GITHUB_WORKSPACE/deploy/ URLATE-PRODUCTION:${{secrets.DEPLOY_TARGET}}/
