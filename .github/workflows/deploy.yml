@@ -48,4 +48,8 @@ jobs:
           cd ../../../../
 
       - name: Rsync to Production
-        run: rsync -azq --delete --exclude=/.git/ $GITHUB_WORKSPACE/deploy/ URLATE-PRODUCTION:${{secrets.DEPLOY_TARGET}}/
+        run: |
+          rsync -azq --delete \
+            --exclude='.git/' \
+            --exclude='config/config.json' \
+            $GITHUB_WORKSPACE/deploy/ URLATE-PRODUCTION:${{secrets.DEPLOY_TARGET}}/
