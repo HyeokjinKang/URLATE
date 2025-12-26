@@ -38,6 +38,7 @@ jobs:
       - name: Prepare deployment artifact
         run: |
           pnpm --filter=urlate deploy ./deploy
+          cp ./src/i18n.js ./dist/
           cp -r dist ./deploy/
 
       - name: Tensorflow fix
