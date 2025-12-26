@@ -171,10 +171,7 @@ const initialize = (isFirstCalled) => {
   rate = localStorage.rate;
   disableText = localStorage.disableText;
   if (isFirstCalled) {
-    fetch(`${cdn}${localStorage.patternId ? `/CPL/${localStorage.patternId}` : `/URLATE-patterns/${localStorage.songName}/${localStorage.difficultySelection}`}.json`, {
-      method: "GET",
-      credentials: "include",
-    })
+    fetch(`${cdn}${localStorage.patternId ? `/CPL/${localStorage.patternId}` : `/URLATE-patterns/${localStorage.songName}/${localStorage.difficultySelection}`}.json`)
       .then((res) => res.json())
       .then((data) => {
         patternBackup = data;
