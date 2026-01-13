@@ -31,6 +31,7 @@ let createdBullets = new Set([]);
 let destroyedBullets = new Set([]);
 let destroyedNotes = new Set([]);
 let grabbedNotes = new Set([]);
+let bulletPath;
 let mouseX = 0,
   mouseY = 0;
 let rawX = 0,
@@ -170,6 +171,13 @@ const initialize = (isFirstCalled) => {
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
   rate = localStorage.rate;
   disableText = localStorage.disableText;
+
+  const w = canvas.width / 80;
+  bulletPath = new Path2D();
+  bulletPath.arc(0, 0, w, 0.5 * Math.PI, 1.5 * Math.PI);
+  bulletPath.lineTo(w * 2, 0);
+  bulletPath.closePath();
+
   if (isFirstCalled) {
     fetch(`${cdn}${localStorage.patternId ? `/CPL/${localStorage.patternId}` : `/URLATE-patterns/${localStorage.songName}/${localStorage.difficultySelection}`}.json`)
       .then((res) => res.json())
@@ -686,15 +694,15 @@ const drawBullet = (x, y, a) => {
       ctx.strokeStyle = `#${skin.bullet.outline.color}`;
     }
   }
-  ctx.beginPath();
-  a = Math.PI * (a / 180 + 0.5);
-  ctx.arc(x, y, w, a, a + Math.PI);
-  a = a - 0.5 * Math.PI;
-  ctx.moveTo(x - w * Math.sin(a), y + w * Math.cos(a));
-  ctx.lineTo(x + w * 2 * Math.cos(a), y + w * 2 * Math.sin(a));
-  ctx.lineTo(x + w * Math.sin(a), y - w * Math.cos(a));
-  ctx.fill();
-  if (skin.bullet.outline) ctx.stroke();
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate((a * Math.PI) / 180);
+
+  ctx.fill(bulletPath);
+  if (skin.bullet.outline) ctx.stroke(bulletPath);
+
+  ctx.restore();
 };
 
 const destroyAll = (beat) => {
@@ -984,6 +992,7 @@ const cntRender = () => {
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
       if (!destroyedBullets.has(start + i)) {
+        const bullet = renderBullets[i];
         if (!createdBullets.has(start + i)) {
           createdBullets.add(start + i);
           let randomDirection = [];
@@ -993,8 +1002,8 @@ const cntRender = () => {
             randomDirection[i] = [rx, ry];
           }
           destroyParticles.push({
-            x: renderBullets[i].direction == "L" ? -100 : 100,
-            y: renderBullets[i].location,
+            x: bullet.direction == "L" ? -100 : 100,
+            y: bullet.location,
             w: 10,
             n: 1,
             step: 4,
@@ -1002,34 +1011,48 @@ const cntRender = () => {
             ms: Date.now(),
           });
         }
-        end = upperBound(pattern.triggers, renderBullets[i].beat);
+
+        end = upperBound(pattern.triggers, bullet.beat);
         let scanTriggers = pattern.triggers.slice(0, end);
         let baseSpeed = pattern.information.speed;
+
         for (let i = 0; scanTriggers.length > i; i++) {
           if (scanTriggers[i].value == 4) {
             baseSpeed = scanTriggers[i].speed;
           }
         }
 
-        let triggerStart = lowerBound(pattern.triggers, renderBullets[i].beat);
+        let triggerStart = lowerBound(pattern.triggers, bullet.beat);
         let triggerEnd = upperBound(pattern.triggers, beats);
         scanTriggers = pattern.triggers.slice(triggerStart, triggerEnd);
+
         let p = 0;
-        let prevBeat = renderBullets[i].beat;
+        let prevBeat = bullet.beat;
         let prevSpeed = baseSpeed;
+
         for (let j = 0; j < scanTriggers.length; j++) {
-          if (scanTriggers[j].value == 4) {
-            p += ((scanTriggers[j].beat - prevBeat) / (15 / prevSpeed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
-            prevBeat = scanTriggers[j].beat;
-            prevSpeed = scanTriggers[j].speed;
+          const trigger = scanTriggers[j];
+          if (trigger.value == 4) {
+            p += ((trigger.beat - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100; //15 for proper speed(lower is too fast)
+            prevBeat = trigger.beat;
+            prevSpeed = trigger.speed;
           }
         }
-        p += ((beats - prevBeat) / (15 / prevSpeed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
-        const left = renderBullets[i].direction == "L";
-        let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
-        let y = renderBullets[i].location + (left ? 1 : -1) * getSin(renderBullets[i].angle) * p;
+
+        p += ((beats - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100; //15 for proper speed(lower is too fast)
+        const isLeft = bullet.direction == "L";
+
+        const scaleX = canvas.width / 200;
+        const scaleY = canvas.height / 200;
+
+        const realAngle = isLeft ? bullet.angle : bullet.angle + 180;
+        const visualAngleRad = Math.atan2(getSin(realAngle) * scaleY, getCos(realAngle) * scaleX);
+        const visualAngle = (visualAngleRad * 180) / Math.PI;
+
+        const x = (isLeft ? -100 : 100) + getCos(realAngle) * p;
+        const y = bullet.location + getSin(realAngle) * p;
         trackMouseSelection(start + i, 1, 0, x, y);
-        drawBullet(x, y, renderBullets[i].angle + (left ? 0 : 180));
+        drawBullet(x, y, visualAngle);
       }
     }
 

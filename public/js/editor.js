@@ -105,6 +105,8 @@ let createdBullets = new Set([]);
 let prevCreatedBullets = new Set([]);
 let hitBullets = new Set([]);
 
+let bulletPath;
+
 let copySelection = { element: -2, start: -1, end: -1, beat: 0 };
 
 let prevBeat = 1;
@@ -677,15 +679,15 @@ const drawBullet = (x, y, a, s, l, d, t, index) => {
       cntCtx.strokeStyle = "#555";
     }
   }
-  cntCtx.beginPath();
-  a = Math.PI * (a / 180 + 0.5);
-  cntCtx.arc(x, y, w, a, a + Math.PI);
-  a = a - 0.5 * Math.PI;
-  cntCtx.moveTo(x - w * Math.sin(a), y + w * Math.cos(a));
-  cntCtx.lineTo(x + w * 2 * Math.cos(a), y + w * 2 * Math.sin(a));
-  cntCtx.lineTo(x + w * Math.sin(a), y - w * Math.cos(a));
-  cntCtx.fill();
-  if (skin.bullet.outline && !denySkin) cntCtx.stroke();
+
+  cntCtx.save();
+  cntCtx.translate(x, y);
+  cntCtx.rotate((a * Math.PI) / 180);
+
+  cntCtx.fill(bulletPath);
+  if (skin.bullet.outline && !denySkin) cntCtx.stroke(bulletPath);
+
+  cntCtx.restore();
 };
 
 const drawParticle = (n, x, y, j) => {
@@ -716,16 +718,24 @@ const initialize = () => {
   cntCanvas.width = (window.innerWidth * 0.6 * window.devicePixelRatio * settings.display.canvasRes) / 100;
   cntCanvas.height = (window.innerHeight * 0.65 * window.devicePixelRatio * settings.display.canvasRes) / 100;
   tmlCanvas.height = window.innerHeight * 0.27 * window.devicePixelRatio;
+
   if (isSettingsOpened) {
     tmlCanvas.width = window.innerWidth * 0.8 * window.devicePixelRatio;
   } else {
     tmlCanvas.width = window.innerWidth * window.devicePixelRatio;
   }
+
   if (tmlCanvas.height / tmlCanvas.width > 0.18) {
     timelinePlayController.style.display = "none";
   } else {
     timelinePlayController.style.display = "flex";
   }
+
+  const w = cntCanvas.width / 80;
+  bulletPath = new Path2D();
+  bulletPath.arc(0, 0, w, 0.5 * Math.PI, 1.5 * Math.PI);
+  bulletPath.lineTo(w * 2, 0);
+  bulletPath.closePath();
 };
 
 const gotoMain = (isCalledByMain) => {
@@ -1328,7 +1338,8 @@ const cntRender = () => {
     if (denySkin) cntCtx.fillStyle = "#111";
     else cntCtx.fillStyle = "#fff";
     for (text of renderTexts) {
-      if (text.size.indexOf("vh") != -1) cntCtx.font = text.weight + " " + (cntCanvas.height / 100) * Number(text.size.split("vh")[0]) + "px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
+      if (text.size.indexOf("vh") != -1)
+        cntCtx.font = text.weight + " " + (cntCanvas.height / 100) * Number(text.size.split("vh")[0]) + "px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
       else cntCtx.font = text.weight + " " + text.size + " Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
       cntCtx.textAlign = text.align;
       cntCtx.textBaseline = text.valign;
@@ -1391,7 +1402,9 @@ const cntRender = () => {
     const renderBullets = pattern.bullets.slice(start, end);
     for (let i = 0; i < renderBullets.length; i++) {
       if (!destroyedBullets.has(start + i)) {
+        const bullet = renderBullets[i];
         createdBullets.add(start + i);
+
         if (!prevCreatedBullets.has(start + i)) {
           let randomDirection = [];
           for (let i = 0; i < 3; i++) {
@@ -1399,43 +1412,59 @@ const cntRender = () => {
             let ry = Math.floor(Math.random() * 4) - 2;
             randomDirection[i] = [rx, ry];
           }
+
           destroyParticles.push({
-            x: renderBullets[i].direction == "L" ? -100 : 100,
-            y: renderBullets[i].location,
+            x: bullet.direction == "L" ? -100 : 100,
+            y: bullet.location,
             w: 10,
             n: 2,
             d: randomDirection,
             ms: Date.now(),
           });
         }
-        end = upperBound(pattern.triggers, renderBullets[i].beat);
+
+        end = upperBound(pattern.triggers, bullet.beat);
         let scanTriggers = pattern.triggers.slice(0, end);
         let baseSpeed = pattern.information.speed;
+
         for (let i = 0; scanTriggers.length > i; i++) {
           if (scanTriggers[i].value == 4) {
             baseSpeed = scanTriggers[i].speed;
           }
         }
 
-        let triggerStart = lowerBound(pattern.triggers, renderBullets[i].beat);
+        let triggerStart = lowerBound(pattern.triggers, bullet.beat);
         let triggerEnd = upperBound(pattern.triggers, beats);
         scanTriggers = pattern.triggers.slice(triggerStart, triggerEnd);
+
         let p = 0;
-        let prevBeat = renderBullets[i].beat;
+        let prevBeat = bullet.beat;
         let prevSpeed = baseSpeed;
+
         for (let j = 0; j < scanTriggers.length; j++) {
-          if (scanTriggers[j].value == 4) {
-            p += ((scanTriggers[j].beat - prevBeat) / (15 / prevSpeed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
-            prevBeat = scanTriggers[j].beat;
-            prevSpeed = scanTriggers[j].speed;
+          const trigger = scanTriggers[j];
+          if (trigger.value == 4) {
+            p += ((trigger.beat - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100; //15 for proper speed(lower is too fast)
+            prevBeat = trigger.beat;
+            prevSpeed = trigger.speed;
           }
         }
-        p += ((beats - prevBeat) / (15 / prevSpeed / renderBullets[i].speed)) * 100; //15 for proper speed(lower is too fast)
-        const left = renderBullets[i].direction == "L";
-        let x = (left ? 1 : -1) * (getCos(renderBullets[i].angle) * p - 100);
-        let y = renderBullets[i].location + (left ? 1 : -1) * getSin(renderBullets[i].angle) * p;
+
+        p += ((beats - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100; //15 for proper speed(lower is too fast)
+        const isLeft = renderBullets[i].direction == "L";
+
+        const scaleX = cntCanvas.width / 200;
+        const scaleY = cntCanvas.height / 200;
+
+        const realAngle = isLeft ? bullet.angle : bullet.angle + 180;
+        const visualAngleRad = Math.atan2(getSin(realAngle) * scaleY, getCos(realAngle) * scaleX);
+        const visualAngle = (visualAngleRad * 180) / Math.PI;
+
+        const x = (isLeft ? -100 : 100) + getCos(realAngle) * p;
+        const y = bullet.location + getSin(realAngle) * p;
+
         if (mouseMode == 0) trackMouseSelection(start + i, 1, 0, x, y);
-        drawBullet(x, y, renderBullets[i].angle + (left ? 0 : 180), selectedCheck(1, start + i), renderBullets[i].location, renderBullets[i].direction, hitBullets.has(start + i), start + i);
+        drawBullet(x, y, visualAngle, selectedCheck(1, start + i), renderBullets[i].location, renderBullets[i].direction, hitBullets.has(start + i), start + i);
       }
     }
     prevCreatedBullets = new Set(createdBullets);
