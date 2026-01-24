@@ -626,7 +626,7 @@ const changeNote = () => {
   changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
 };
 
-const drawBullet = (x, y, a, s, l, d, t, index) => {
+const drawBullet = (x, y, ra, va, s, l, d, t, index) => {
   x = (cntCanvas.width / 200) * (x + 100);
   y = (cntCanvas.height / 200) * (y + 100);
   let w = cntCanvas.width / 80;
@@ -642,7 +642,7 @@ const drawBullet = (x, y, a, s, l, d, t, index) => {
       drawOutlinedText(cntCtx, `Bullet_${index}`, x, y - 1.5 * w);
     }
     cntCtx.textBaseline = "top";
-    drawOutlinedText(cntCtx, `(Angle: ${d == "L" ? a : a - 180})`, x, y + 1.5 * w);
+    drawOutlinedText(cntCtx, `(Angle: ${d == "L" ? ra : ra - 180})`, x, y + 1.5 * w);
     drawOutlinedText(cntCtx, `(Loc: ${l})`, x, y + 1.5 * w + cntCanvas.height / 40);
     cntCtx.fillStyle = `#ebd534`;
     cntCtx.strokeStyle = `#ebd534`;
@@ -682,7 +682,7 @@ const drawBullet = (x, y, a, s, l, d, t, index) => {
 
   cntCtx.save();
   cntCtx.translate(x, y);
-  cntCtx.rotate((a * Math.PI) / 180);
+  cntCtx.rotate((va * Math.PI) / 180);
 
   cntCtx.fill(bulletPath);
   if (skin.bullet.outline && !denySkin) cntCtx.stroke(bulletPath);
@@ -1464,7 +1464,7 @@ const cntRender = () => {
         const y = bullet.location + getSin(realAngle) * p;
 
         if (mouseMode == 0) trackMouseSelection(start + i, 1, 0, x, y);
-        drawBullet(x, y, visualAngle, selectedCheck(1, start + i), renderBullets[i].location, renderBullets[i].direction, hitBullets.has(start + i), start + i);
+        drawBullet(x, y, realAngle, visualAngle, selectedCheck(1, start + i), renderBullets[i].location, renderBullets[i].direction, hitBullets.has(start + i), start + i);
       }
     }
     prevCreatedBullets = new Set(createdBullets);
@@ -1503,9 +1503,9 @@ const cntRender = () => {
         else drawNote(100, mouseX, mouseY, true, selectedValue, 1, 0);
       } else {
         if (p[1] == 0) {
-          drawBullet(-100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 0, true, mouseY - (mouseY % 5), "L");
+          drawBullet(-100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 0, 0, true, mouseY - (mouseY % 5), "L");
         } else {
-          drawBullet(100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 180, true, mouseY - (mouseY % 5), "R");
+          drawBullet(100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 180, 180, true, mouseY - (mouseY % 5), "R");
         }
       }
     }
