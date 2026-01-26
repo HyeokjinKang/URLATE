@@ -3001,6 +3001,9 @@ const reflection = (dir) => {
     if (selectedCntElement.v1 < 2) {
       if (selectedCntElement.v1 == 0) {
         pattern.patterns[selectedCntElement.i][["x", "y"][dir]] *= -1;
+        if (dir == 1 && selectedCntElement.v2 == 1) {
+          pattern.patterns[selectedCntElement.i].direction *= -1;
+        }
       } else if (selectedCntElement.v1 == 1) {
         if (dir == 0) pattern.bullets[selectedCntElement.i].direction = pattern.bullets[selectedCntElement.i].direction == "L" ? "R" : "L";
         else pattern.bullets[selectedCntElement.i].location *= -1;
