@@ -689,8 +689,7 @@ const drawBullet = (x, y, a) => {
 
 const destroyAll = (beat) => {
   const end = upperBound(pattern.bullets, beat);
-  const renderBullets = pattern.bullets.slice(0, end);
-  for (let j = 0; renderBullets.length > j; j++) {
+  for (let j = 0; j < end; j++) {
     if (!destroyedBullets.has(j)) {
       callBulletDestroy(j);
     }
@@ -701,24 +700,22 @@ const callBulletDestroy = (j) => {
   const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
   // const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
   let end = upperBound(pattern.triggers, pattern.bullets[j].beat);
-  let scanTriggers = pattern.triggers.slice(0, end);
   let baseSpeed = pattern.information.speed;
-  for (let i = 0; scanTriggers.length > i; i++) {
-    if (scanTriggers[i].value == 4) {
-      baseSpeed = scanTriggers[i].speed;
+  for (let i = 0; i < end; i++) {
+    if (pattern.triggers[i].value == 4) {
+      baseSpeed = pattern.triggers[i].speed;
     }
   }
-  let triggerStart = lowerBound(pattern.triggers, pattern.bullets[j].beat);
-  let triggerEnd = upperBound(pattern.triggers, beats);
-  scanTriggers = pattern.triggers.slice(triggerStart, triggerEnd);
+  let start = lowerBound(pattern.triggers, pattern.bullets[j].beat);
+  end = upperBound(pattern.triggers, beats);
   let p = 0;
   let prevBeat = pattern.bullets[j].beat;
   let prevSpeed = baseSpeed;
-  for (let k = 0; k < scanTriggers.length; k++) {
-    if (scanTriggers[k].value == 4) {
-      p += ((scanTriggers[k].beat - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
-      prevBeat = scanTriggers[k].beat;
-      prevSpeed = scanTriggers[k].speed;
+  for (let k = start; k < end; k++) {
+    if (pattern.triggers[k].value == 4) {
+      p += ((pattern.triggers[k].beat - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
+      prevBeat = pattern.triggers[k].beat;
+      prevSpeed = pattern.triggers[k].speed;
     }
   }
   p += ((beats - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
@@ -880,29 +877,28 @@ const cntRender = () => {
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
     const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
     let end = upperBound(pattern.triggers, beats);
-    const renderTriggers = pattern.triggers.slice(0, end);
     let nowSpeed = pattern.information.speed;
     let renderTexts = [];
-    for (let i = 0; i < renderTriggers.length; i++) {
-      if (renderTriggers[i].value == 0) {
-        if (!destroyedBullets.has(renderTriggers[i].num)) {
-          callBulletDestroy(renderTriggers[i].num);
+    for (let i = 0; i < end; i++) {
+      if (pattern.triggers[i].value == 0) {
+        if (!destroyedBullets.has(pattern.triggers[i].num)) {
+          callBulletDestroy(pattern.triggers[i].num);
         }
-      } else if (renderTriggers[i].value == 1) {
-        destroyAll(renderTriggers[i].beat);
-      } else if (renderTriggers[i].value == 2) {
-        bpmsync.ms = bpmsync.ms + (renderTriggers[i].beat - bpmsync.beat) * (60000 / bpm);
-        bpm = renderTriggers[i].bpm;
-        bpmsync.beat = renderTriggers[i].beat;
-      } else if (renderTriggers[i].value == 3) {
-        globalAlpha = renderTriggers[i].opacity;
-      } else if (renderTriggers[i].value == 4) {
-        nowSpeed = renderTriggers[i].speed;
-      } else if (renderTriggers[i].value == 5) {
-        if (renderTriggers[i].beat <= beats && beats <= renderTriggers[i].beat + renderTriggers[i].duration) {
-          renderTexts.push(renderTriggers[i]);
+      } else if (pattern.triggers[i].value == 1) {
+        destroyAll(pattern.triggers[i].beat);
+      } else if (pattern.triggers[i].value == 2) {
+        bpmsync.ms = bpmsync.ms + (pattern.triggers[i].beat - bpmsync.beat) * (60000 / bpm);
+        bpm = pattern.triggers[i].bpm;
+        bpmsync.beat = pattern.triggers[i].beat;
+      } else if (pattern.triggers[i].value == 3) {
+        globalAlpha = pattern.triggers[i].opacity;
+      } else if (pattern.triggers[i].value == 4) {
+        nowSpeed = pattern.triggers[i].speed;
+      } else if (pattern.triggers[i].value == 5) {
+        if (pattern.triggers[i].beat <= beats && beats <= pattern.triggers[i].beat + pattern.triggers[i].duration) {
+          renderTexts.push(pattern.triggers[i]);
         }
-      } else if (renderTriggers[i].value == 6) {
+      } else if (pattern.triggers[i].value == 6) {
         calculateResult();
       }
     }
@@ -926,33 +922,32 @@ const cntRender = () => {
     }
 
     end = upperBound(pattern.patterns, beats + 5 / speed);
-    const renderNotes = pattern.patterns.slice(0, end);
-    for (let i = 0; renderNotes.length > i; i++) {
-      const p = (1 - (renderNotes[i].beat - beats) / (5 / speed)) * 100;
+    for (let i = 0; i < end; i++) {
+      const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
       if (p >= 50) {
-        trackMouseSelection(i, 0, renderNotes[i].value, renderNotes[i].x, renderNotes[i].y);
+        trackMouseSelection(i, 0, pattern.patterns[i].value, pattern.patterns[i].x, pattern.patterns[i].y);
       }
     }
-    for (let i = renderNotes.length - 1; i >= 0; i--) {
-      const p = (1 - (renderNotes[i].beat - beats) / (5 / speed)) * 100;
-      const t = ((beats - renderNotes[i].beat) / renderNotes[i].duration) * 100;
-      const f = (1 - (renderNotes[i].beat + renderNotes[i].duration - beats) / (5 / speed)) * 100;
-      drawNote(p, renderNotes[i].x, renderNotes[i].y, renderNotes[i].value, renderNotes[i].direction, t, i, f);
-      if (p >= 120 && !destroyedNotes.has(i) && (renderNotes[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
+    for (let i = end - 1; i >= 0; i--) {
+      const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
+      const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
+      const f = (1 - (pattern.patterns[i].beat + pattern.patterns[i].duration - beats) / (5 / speed)) * 100;
+      drawNote(p, pattern.patterns[i].x, pattern.patterns[i].y, pattern.patterns[i].value, pattern.patterns[i].direction, t, i, f);
+      if (p >= 120 && !destroyedNotes.has(i) && (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
         calculateScore("miss", i, true);
         missParticles.push({
-          x: renderNotes[i].x,
-          y: renderNotes[i].y,
+          x: pattern.patterns[i].x,
+          y: pattern.patterns[i].y,
           s: Date.now(),
         });
         miss++;
         showOverlay();
         missPoint.push(song.seek() * 1000);
         keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
-      } else if (t >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && renderNotes[i].value == 2) {
+      } else if (t >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
-        perfectParticles.push({ x: renderNotes[i].x, y: renderNotes[i].y, s: Date.now() });
+        perfectParticles.push({ x: pattern.patterns[i].x, y: pattern.patterns[i].y, s: Date.now() });
         calculateScore("Perfect", i, true);
         keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
       }
@@ -969,12 +964,11 @@ const cntRender = () => {
     }
     let start = lowerBound(pattern.bullets, beats - 32);
     end = upperBound(pattern.bullets, beats);
-    const renderBullets = pattern.bullets.slice(start, end);
-    for (let i = 0; i < renderBullets.length; i++) {
-      if (!destroyedBullets.has(start + i)) {
-        const bullet = renderBullets[i];
-        if (!createdBullets.has(start + i)) {
-          createdBullets.add(start + i);
+    for (let i = 0; i < end; i++) {
+      if (!destroyedBullets.has(i)) {
+        const bullet = pattern.bullets[i];
+        if (!createdBullets.has(i)) {
+          createdBullets.add(i);
           let randomDirection = [];
           for (let i = 0; i < 3; i++) {
             let rx = Math.floor(Math.random() * 4) - 2;
@@ -992,26 +986,24 @@ const cntRender = () => {
           });
         }
 
-        end = upperBound(pattern.triggers, bullet.beat);
-        let scanTriggers = pattern.triggers.slice(0, end);
+        let triggerEnd = upperBound(pattern.triggers, bullet.beat);
         let baseSpeed = pattern.information.speed;
 
-        for (let i = 0; scanTriggers.length > i; i++) {
-          if (scanTriggers[i].value == 4) {
-            baseSpeed = scanTriggers[i].speed;
+        for (let i = 0; i < triggerEnd; i++) {
+          if (pattern.triggers[i].value == 4) {
+            baseSpeed = pattern.triggers[i].speed;
           }
         }
 
         let triggerStart = lowerBound(pattern.triggers, bullet.beat);
-        let triggerEnd = upperBound(pattern.triggers, beats);
-        scanTriggers = pattern.triggers.slice(triggerStart, triggerEnd);
+        triggerEnd = upperBound(pattern.triggers, beats);
 
         let p = 0;
         let prevBeat = bullet.beat;
         let prevSpeed = baseSpeed;
 
-        for (let j = 0; j < scanTriggers.length; j++) {
-          const trigger = scanTriggers[j];
+        for (let j = triggerStart; j < triggerEnd; j++) {
+          const trigger = pattern.triggers[j];
           if (trigger.value == 4) {
             p += ((trigger.beat - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100; //15 for proper speed(lower is too fast)
             prevBeat = trigger.beat;
