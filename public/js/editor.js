@@ -80,6 +80,7 @@ let scrollTimer = 0;
 let errorCount = 0;
 let preventUnload = false;
 let globalAlpha = 1;
+let isTmlUpdateNeeded = true;
 
 let pattern = {
   information: {
@@ -325,6 +326,14 @@ const songSelected = (isLoaded = false) => {
     loop: false,
     onload: () => {
       Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
+    },
+    onend: () => {
+      isTmlUpdateNeeded = true;
+      controlBtn.classList.add("timeline-play");
+      controlBtn.classList.remove("timeline-pause");
+    },
+    onstop: () => {
+      isTmlUpdateNeeded = true;
     },
   });
   controlBtn.classList.add("timeline-play");
@@ -736,6 +745,8 @@ const initialize = () => {
   bulletPath.arc(0, 0, w, 0.5 * Math.PI, 1.5 * Math.PI);
   bulletPath.lineTo(w * 2, 0);
   bulletPath.closePath();
+
+  isTmlUpdateNeeded = true;
 };
 
 const gotoMain = (isCalledByMain) => {
@@ -1542,7 +1553,12 @@ const cntRender = () => {
     displayMessage("Error", `[Runtime] ${e}`);
     console.error(e);
   }
-  tmlRender();
+
+  if (song.playing() || isTmlUpdateNeeded) {
+    tmlRender();
+    isTmlUpdateNeeded = false;
+  }
+
   if (mouseMode == 0 && !denyCursor) drawCursor();
 };
 
@@ -1982,6 +1998,7 @@ const moveTo = () => {
         (instance, toast) => {
           song.seek(s);
           instance.hide({ transitionOut: "fadeOut" }, toast, "confirm");
+          isTmlUpdateNeeded = true;
         },
         true,
       ],
@@ -2058,6 +2075,7 @@ const trackTimelineMousePos = () => {
   mouseMode = 1;
   mouseX = event.clientX * pixelRatio;
   mouseY = (event.clientY - Math.floor((window.innerHeight / 100) * 73)) * pixelRatio;
+  isTmlUpdateNeeded = true;
 };
 
 const elementFollowMouse = (v1, v2, i) => {
@@ -2513,11 +2531,13 @@ const triggerSet = (isChanged) => {
 const zoomIn = () => {
   zoom *= 0.9;
   zoom = Number(zoom.toPrecision(3));
+  isTmlUpdateNeeded = true;
 };
 
 const zoomOut = () => {
   zoom /= 0.9;
   zoom = Number(zoom.toPrecision(3));
+  isTmlUpdateNeeded = true;
 };
 
 const playPauseBtn = () => {
@@ -2576,6 +2596,8 @@ const changeSplit = (isTriggeredByKey) => {
     }
   }
   document.getElementById("split").innerText = `1/${split}`;
+
+  isTmlUpdateNeeded = true;
 };
 
 const deleteElement = () => {
@@ -2631,6 +2653,8 @@ const patternChanged = () => {
     patternHistory.splice(0, patternHistory.length - 50);
   }
   patternSeek = patternHistory.length - 1;
+
+  isTmlUpdateNeeded = true;
 };
 
 const patternUndo = () => {
@@ -2848,6 +2872,8 @@ const tmlScrollHorizontal = (direction, splitBy = split) => {
   }
   const seek = (beats - bpmsync.beat) * (60000 / bpm) + bpmsync.ms;
   song.seek(seek / 1000);
+
+  isTmlUpdateNeeded = true;
 };
 
 const tmlScrollUp = () => {
@@ -2857,6 +2883,8 @@ const tmlScrollUp = () => {
     timelineYLoc = Number(timelineYLoc.toFixed(2)) - tmlCanvas.height / 9;
     timelineScrollCount++;
   }
+
+  isTmlUpdateNeeded = true;
 };
 
 const tmlScrollDown = () => {
@@ -2864,6 +2892,8 @@ const tmlScrollDown = () => {
     timelineYLoc = Number(timelineYLoc.toFixed(2)) - tmlCanvas.height / 9;
     timelineScrollCount++;
   }
+
+  isTmlUpdateNeeded = true;
 };
 
 const scrollEvent = (e) => {
@@ -3048,8 +3078,10 @@ document.onkeyup = (e) => {
   e = e || window.event;
   if (isMac ? e.key == "Meta" : e.key == "Control") {
     ctrlDown = false;
+    isTmlUpdateNeeded = true;
   } else if (e.key == "Shift") {
     shiftDown = false;
+    isTmlUpdateNeeded = true;
   }
 };
 
@@ -3067,12 +3099,15 @@ document.onkeydown = (e) => {
         timelineScrollCount = 0;
         timelineYLoc = 0;
         song.stop();
+        isTmlUpdateNeeded = true;
       }
     }
   } else if (isMac ? e.key == "Meta" : e.key == "Control") {
     ctrlDown = true;
+    isTmlUpdateNeeded = true;
   } else if (e.key == "Shift") {
     shiftDown = true;
+    isTmlUpdateNeeded = true;
   } else if (ctrlDown) {
     if (e.code == "KeyS") {
       e.preventDefault();
