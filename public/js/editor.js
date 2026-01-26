@@ -849,13 +849,14 @@ const tmlRender = () => {
     let end = upperBound(pattern.patterns, renderEnd);
 
     //Timeline notes
-    const renderNotes = pattern.patterns.slice(start, end);
-    for (let j = 0; j < renderNotes.length; j++) {
+    for (let j = start; j < end; j++) {
       tmlCtx.beginPath();
-      let x = tmlStartX + (renderNotes[j].beat - renderStart) * beatToPx;
+      let x = tmlStartX + (pattern.patterns[j].beat - renderStart) * beatToPx;
       let y = startY + timelineYLoc + height / 2;
-      if (mouseMode == 1) trackMouseSelection(start + j, 0, renderNotes[j].value, x, y);
-      if (selectedCheck(0, start + j)) {
+
+      if (mouseMode == 1) trackMouseSelection(j, 0, pattern.patterns[j].value, x, y);
+
+      if (selectedCheck(0, j)) {
         tmlCtx.fillStyle = "#ed5b45";
       } else {
         tmlCtx.fillStyle = "#fbaf34";
@@ -867,33 +868,36 @@ const tmlRender = () => {
     //Timeline bullets
     start = lowerBound(pattern.bullets, renderStart);
     end = upperBound(pattern.bullets, renderEnd);
-    const renderBullets = pattern.bullets.slice(start, end);
+
     //Calculate overlap number
     bulletsOverlapNum = 1;
     let bulletsOverlap = {};
-    for (let i = 0; i < renderBullets.length; i++) {
-      let overlapIndex = parseInt(renderBullets[i].beat * 2);
+    for (let i = start; i < end; i++) {
+      let overlapIndex = parseInt(pattern.bullets[i].beat * 2);
       let count = 0;
       if (bulletsOverlap[overlapIndex]) {
         bulletsOverlap[overlapIndex]++;
       } else {
         bulletsOverlap[overlapIndex] = 1;
       }
-      for (let j = 0; j < renderBullets.length; j++) {
-        if (overlapIndex == parseInt(renderBullets[j].beat * 2)) {
+      for (let j = start; j < end; j++) {
+        if (overlapIndex == parseInt(pattern.bullets[j].beat * 2)) {
           count++;
         }
       }
       if (bulletsOverlapNum < count) bulletsOverlapNum = count;
     }
+
     //Draw bullets
-    for (let j = 0; j < renderBullets.length; j++) {
+    for (let j = start; j < end; j++) {
       tmlCtx.beginPath();
-      let x = tmlStartX + parseInt((renderBullets[j].beat - renderStart) * beatToPx);
-      let y = startY + timelineYLoc + height * bulletsOverlap[parseInt(renderBullets[j].beat * 2)] + height / 2;
+      let x = tmlStartX + parseInt((pattern.bullets[j].beat - renderStart) * beatToPx);
+      let y = startY + timelineYLoc + height * bulletsOverlap[parseInt(pattern.bullets[j].beat * 2)] + height / 2;
       let w = height / 3;
-      if (mouseMode == 1) trackMouseSelection(start + j, 1, 0, x, y);
-      if (selectedCheck(1, start + j)) {
+
+      if (mouseMode == 1) trackMouseSelection(j, 1, 0, x, y);
+
+      if (selectedCheck(1, j)) {
         tmlCtx.fillStyle = "#ed5b45";
       } else {
         tmlCtx.fillStyle = "#4297d4";
@@ -903,40 +907,44 @@ const tmlRender = () => {
       tmlCtx.lineTo(x + w, y);
       tmlCtx.lineTo(x, y - w);
       tmlCtx.lineTo(x - w, y);
-      bulletsOverlap[parseInt(renderBullets[j].beat * 2)]--;
+
+      bulletsOverlap[parseInt(pattern.bullets[j].beat * 2)]--;
       tmlCtx.fill();
     }
 
     //Timeline triggers
     start = lowerBound(pattern.triggers, renderStart);
     end = upperBound(pattern.triggers, renderEnd);
-    const renderTriggers = pattern.triggers.slice(start, end);
+
     //Calculate overlap number
     triggersOverlapNum = 2;
     let triggersOverlap = {};
-    for (let i = 0; i < renderTriggers.length; i++) {
-      let overlapIndex = parseInt(renderTriggers[i].beat * 2);
+    for (let i = start; i < end; i++) {
+      let overlapIndex = parseInt(pattern.triggers[i].beat * 2);
       let count = 0;
       if (triggersOverlap[overlapIndex]) {
         triggersOverlap[overlapIndex]++;
       } else {
         triggersOverlap[overlapIndex] = 1;
       }
-      for (let j = 0; j < renderTriggers.length; j++) {
-        if (overlapIndex == parseInt(renderTriggers[j].beat * 2)) {
+      for (let j = start; j < end; j++) {
+        if (overlapIndex == parseInt(pattern.triggers[j].beat * 2)) {
           count++;
         }
       }
       if (triggersOverlapNum < count + 1) triggersOverlapNum = count + 1;
     }
+
     //Draw triggers
-    for (let j = 0; j < renderTriggers.length; j++) {
+    for (let j = start; j < end; j++) {
       tmlCtx.beginPath();
-      let x = tmlStartX + parseInt((renderTriggers[j].beat - renderStart) * beatToPx);
-      let y = startY + timelineYLoc + height * (bulletsOverlapNum + triggersOverlap[parseInt(renderTriggers[j].beat * 2)]) + height / 2;
+      let x = tmlStartX + parseInt((pattern.triggers[j].beat - renderStart) * beatToPx);
+      let y = startY + timelineYLoc + height * (bulletsOverlapNum + triggersOverlap[parseInt(pattern.triggers[j].beat * 2)]) + height / 2;
       let w = height / 3;
-      if (mouseMode == 1) trackMouseSelection(start + j, 2, renderTriggers[j].value, x, y);
-      if (selectedCheck(2, start + j)) {
+
+      if (mouseMode == 1) trackMouseSelection(j, 2, pattern.triggers[j].value, x, y);
+
+      if (selectedCheck(2, j)) {
         tmlCtx.fillStyle = "#ed5b45";
       } else {
         tmlCtx.fillStyle = "#2ec90e";
@@ -945,7 +953,8 @@ const tmlRender = () => {
       tmlCtx.lineTo(x + w / 1.1, y);
       tmlCtx.lineTo(x - w / 1.1, y + w);
       tmlCtx.lineTo(x - w / 1.1, y - w);
-      triggersOverlap[parseInt(renderTriggers[j].beat * 2)]--;
+
+      triggersOverlap[parseInt(pattern.triggers[j].beat * 2)]--;
       tmlCtx.fill();
     }
 
