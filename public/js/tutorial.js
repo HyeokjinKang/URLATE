@@ -96,6 +96,8 @@ let keyPressing = {};
 let pressingKeys = [];
 let medal = 1;
 let globalAlpha = 1;
+let canvasW = 0,
+  canvasH = 0;
 const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -141,8 +143,11 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 const initialize = (isFirstCalled) => {
-  canvas.width = (window.innerWidth * pixelRatio * settings.display.canvasRes) / 100;
-  canvas.height = (window.innerHeight * pixelRatio * settings.display.canvasRes) / 100;
+  canvasW = (window.innerWidth * pixelRatio * settings.display.canvasRes) / 100;
+  canvasH = (window.innerHeight * pixelRatio * settings.display.canvasRes) / 100;
+  canvas.width = canvasW;
+  canvas.height = canvasH;
+
   missCanvas.width = window.innerWidth * 0.2 * pixelRatio;
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
 
@@ -242,7 +247,7 @@ const settingApply = () => {
 };
 
 const eraseCnt = () => {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvasW, canvasH);
 };
 
 const getJudgeStyle = (j, p, x, y) => {
@@ -288,11 +293,11 @@ const getJudgeStyle = (j, p, x, y) => {
 };
 
 const drawParticle = (n, x, y, j, d) => {
-  let cx = (canvas.width / 200) * (x + 100);
-  let cy = (canvas.height / 200) * (y + 100);
+  let cx = (canvasW / 200) * (x + 100);
+  let cy = (canvasH / 200) * (y + 100);
   if (n == 0) {
     //Destroy
-    const w = (canvas.width / 1000) * destroyParticles[j].w * (1 - (Date.now() - destroyParticles[j].ms) / 250);
+    const w = (canvasW / 1000) * destroyParticles[j].w * (1 - (Date.now() - destroyParticles[j].ms) / 250);
     for (let i = 0; i < 3; i++) {
       ctx.beginPath();
       if (skin.bullet.type == "gradient") {
@@ -306,7 +311,7 @@ const drawParticle = (n, x, y, j, d) => {
         ctx.fillStyle = `#${skin.bullet.color}`;
         ctx.strokeStyle = `#${skin.bullet.color}`;
       }
-      const step = destroyParticles[j].n * (canvas.width / 10000);
+      const step = destroyParticles[j].n * (canvasW / 10000);
       ctx.arc(cx + step * destroyParticles[j].d[i][0], cy + step * destroyParticles[j].d[i][1], w, 0, 2 * Math.PI);
       ctx.fill();
       destroyParticles[j].n += destroyParticles[j].step;
@@ -315,10 +320,10 @@ const drawParticle = (n, x, y, j, d) => {
     //Click Note
     const raf = (w, s, n) => {
       ctx.beginPath();
-      let width = canvas.width / 24;
+      let width = canvasW / 24;
       if (Date.now() - s >= 800) return;
       let p = 100 * easeOutQuad((Date.now() - s) / 800);
-      ctx.lineWidth = ((100 - p) / 100) * (canvas.width / 40);
+      ctx.lineWidth = ((100 - p) / 100) * (canvasW / 40);
       let opacity = parseInt(225 - p * 1.25);
       if (opacity <= 0) opacity = "00";
       if (skin.note[n].circle) {
@@ -348,38 +353,38 @@ const drawParticle = (n, x, y, j, d) => {
       }
       ctx.arc(cx, cy, w, 0, 2 * Math.PI);
       ctx.stroke();
-      w = canvas.width / 80 + width * (p / 100);
+      w = canvasW / 80 + width * (p / 100);
       requestAnimationFrame(() => {
         raf(w, s, n);
       });
     };
-    raf(canvas.width / 80, Date.now(), d);
+    raf(canvasW / 80, Date.now(), d);
   } else if (n == 2) {
     //Click Default
     const raf = (w, s) => {
       ctx.beginPath();
-      let width = canvas.width / 50;
+      let width = canvasW / 50;
       if (Date.now() - s >= 500) return;
       let p = 100 * easeOutQuad((Date.now() - s) / 500);
-      ctx.lineWidth = ((100 - p) / 100) * (canvas.width / 200);
+      ctx.lineWidth = ((100 - p) / 100) * (canvasW / 200);
       ctx.strokeStyle = `rgba(67, 221, 166, ${0.5 - p / 200})`;
       ctx.arc(cx, cy, w, 0, 2 * Math.PI);
       ctx.stroke();
-      w = canvas.width / 70 + canvas.width / 400 + width * (p / 100);
+      w = canvasW / 70 + canvasW / 400 + width * (p / 100);
       requestAnimationFrame(() => {
         raf(w, s);
       });
     };
-    raf(canvas.width / 70 + canvas.width / 400, Date.now());
+    raf(canvasW / 70 + canvasW / 400, Date.now());
   } else if (n == 3) {
     //Judge
     if (!hide[j.toLowerCase()]) {
       const raf = (y, s) => {
         ctx.beginPath();
         let p = easeOutQuad((Date.now() - s) / 700);
-        let newY = y - (canvas.height / 20) * p;
+        let newY = y - (canvasH / 20) * p;
         ctx.fillStyle = getJudgeStyle(j.toLowerCase(), p, cx, newY);
-        ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+        ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(j, cx, newY);
@@ -396,9 +401,9 @@ const drawParticle = (n, x, y, j, d) => {
     if (!hide.miss) {
       ctx.beginPath();
       let p = easeOutQuad((Date.now() - missParticles[j].s) / 700);
-      let newY = cy - (canvas.height / 20) * p;
+      let newY = cy - (canvasH / 20) * p;
       ctx.fillStyle = getJudgeStyle("miss", p);
-      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("Miss", cx, newY);
@@ -408,9 +413,9 @@ const drawParticle = (n, x, y, j, d) => {
     if (!hide.perfect) {
       ctx.beginPath();
       let p = easeOutQuad((Date.now() - perfectParticles[j].s) / 700);
-      let newY = cy - (canvas.height / 20) * p;
+      let newY = cy - (canvasH / 20) * p;
       ctx.fillStyle = getJudgeStyle("perfect", p, cx, newY);
-      ctx.font = `600 ${canvas.height / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("Perfect", cx, newY);
@@ -422,10 +427,10 @@ const drawNote = (p, x, y, n, d, t, index, f) => {
   if (n != 2 && p >= 130) return;
   else if (n == 2 && f >= 130) return;
   p = Math.max(p, 0);
-  x = (canvas.width / 200) * (x + 100);
-  y = (canvas.height / 200) * (y + 100);
+  x = (canvasW / 200) * (x + 100);
+  y = (canvasH / 200) * (y + 100);
   n = n == undefined ? 0 : n;
-  let w = canvas.width / 40;
+  let w = canvasW / 40;
   let opacity = 255;
   if (n != 2 && p >= 100) {
     opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
@@ -457,7 +462,7 @@ const drawNote = (p, x, y, n, d, t, index, f) => {
       ctx.strokeStyle = `#${skin.note[n].circle.color}${opacity}`;
     }
   }
-  ctx.lineWidth = Math.round(canvas.width / 300);
+  ctx.lineWidth = Math.round(canvasW / 300);
   if (n == 0) {
     ctx.beginPath();
     ctx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
@@ -475,7 +480,7 @@ const drawNote = (p, x, y, n, d, t, index, f) => {
       } else if (skin.note[n].outline.type == "color") {
         ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
       }
-      ctx.lineWidth = Math.round((canvas.width / 1000) * skin.note[n].outline.width);
+      ctx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
       ctx.stroke();
     }
     ctx.beginPath();
@@ -516,7 +521,7 @@ const drawNote = (p, x, y, n, d, t, index, f) => {
       } else if (skin.note[n].outline.type == "color") {
         ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
       }
-      ctx.lineWidth = Math.round((canvas.width / 1000) * skin.note[n].outline.width);
+      ctx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
       ctx.stroke();
     }
     ctx.beginPath();
@@ -540,7 +545,7 @@ const drawNote = (p, x, y, n, d, t, index, f) => {
       } else if (skin.note[n].outline.type == "color") {
         ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
       }
-      ctx.lineWidth = Math.round((canvas.width / 1000) * skin.note[n].outline.width);
+      ctx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
     }
     if (p <= 100) {
       ctx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
@@ -574,23 +579,23 @@ const drawNote = (p, x, y, n, d, t, index, f) => {
 
 const drawCursor = () => {
   ctx.beginPath();
-  let w = (canvas.width / 70) * cursorZoom;
+  let w = (canvasW / 70) * cursorZoom;
   if (mouseClickedMs == -1) {
     mouseClickedMs = Date.now() - 100;
   }
   if (mouseClicked) {
     if (mouseClickedMs + 10 > Date.now()) {
-      w = w + (canvas.width / 400) * (1 - (mouseClickedMs + 10 - Date.now()) / 10);
+      w = w + (canvasW / 400) * (1 - (mouseClickedMs + 10 - Date.now()) / 10);
     } else {
-      w = w + (canvas.width / 400) * 1;
+      w = w + (canvasW / 400) * 1;
     }
   } else {
     if (mouseClickedMs + 100 > Date.now()) {
-      w = w + ((canvas.width / 400) * (mouseClickedMs + 100 - Date.now())) / 100;
+      w = w + ((canvasW / 400) * (mouseClickedMs + 100 - Date.now())) / 100;
     }
   }
-  let x = (canvas.width / 200) * (mouseX + 100);
-  let y = (canvas.height / 200) * (mouseY + 100);
+  let x = (canvasW / 200) * (mouseX + 100);
+  let y = (canvasH / 200) * (mouseY + 100);
   if (skin.cursor.type == "gradient") {
     let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
     for (let i = 0; i < skin.cursor.stops.length; i++) {
@@ -603,7 +608,7 @@ const drawCursor = () => {
     ctx.shadowColor = `#${skin.cursor.color}90`;
   }
   if (skin.cursor.outline) {
-    ctx.lineWidth = Math.round((canvas.width / 1000) * skin.cursor.outline.width);
+    ctx.lineWidth = Math.round((canvasW / 1000) * skin.cursor.outline.width);
     if (skin.cursor.outline.type == "gradient") {
       let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
       for (let i = 0; i < skin.cursor.outline.stops.length; i++) {
@@ -618,15 +623,15 @@ const drawCursor = () => {
   }
   ctx.arc(x, y, w, 0, 2 * Math.PI);
   ctx.fill();
-  ctx.shadowBlur = canvas.width / 100;
+  ctx.shadowBlur = canvasW / 100;
   if (skin.cursor.outline) ctx.stroke();
   ctx.shadowBlur = 0;
 };
 
 const drawBullet = (x, y, a) => {
-  x = (canvas.width / 200) * (x + 100);
-  y = (canvas.height / 200) * (y + 100);
-  let w = canvas.width / 80;
+  x = (canvasW / 200) * (x + 100);
+  y = (canvasH / 200) * (y + 100);
+  let w = canvasW / 80;
   if (skin.bullet.type == "gradient") {
     let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
     for (let i = 0; i < skin.bullet.stops.length; i++) {
@@ -639,7 +644,7 @@ const drawBullet = (x, y, a) => {
     ctx.strokeStyle = `#${skin.bullet.color}`;
   }
   if (skin.bullet.outline) {
-    ctx.lineWidth = Math.round((canvas.width / 1000) * skin.bullet.outline.width);
+    ctx.lineWidth = Math.round((canvasW / 1000) * skin.bullet.outline.width);
     if (skin.bullet.outline.type == "gradient") {
       let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
       for (let i = 0; i < skin.bullet.outline.stops.length; i++) {
@@ -734,7 +739,7 @@ const drawKeyInput = () => {
   let animX = 0;
   if (keyInputMemoryMs + 100 >= Date.now()) {
     animDuration = 1 - easeOutQuart((Date.now() - keyInputMemoryMs) / 100);
-    animX = animDuration * (canvas.width / 100 + canvas.width / 200);
+    animX = animDuration * (canvasW / 100 + canvasW / 200);
   }
   for (let i = keyInput.length - 1; i >= (keyInput.length > 12 ? keyInput.length - 12 : 0); i--) {
     let j = i - keyInput.length + 13;
@@ -773,29 +778,23 @@ const drawKeyInput = () => {
     ctx.beginPath();
     ctx.fillStyle = color;
     ctx.strokeStyle = "#fff";
-    ctx.lineWidth = canvas.width / 800;
-    ctx.roundRect(
-      canvas.width * 0.08 - canvas.height / 15 + (keyInput.length - i - 1) * (canvas.width / 100 + canvas.width / 200) - animX,
-      canvas.height * 0.05,
-      canvas.width / 100,
-      canvas.width / 100,
-      [canvas.width / 700],
-    );
+    ctx.lineWidth = canvasW / 800;
+    ctx.roundRect(canvasW * 0.08 - canvasH / 15 + (keyInput.length - i - 1) * (canvasW / 100 + canvasW / 200) - animX, canvasH * 0.05, canvasW / 100, canvasW / 100, [canvasW / 700]);
     ctx.fill();
     ctx.stroke();
     ctx.beginPath();
     ctx.fillStyle = "#fff";
-    ctx.font = `600 ${canvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    ctx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     ctx.textBaseline = "top";
     ctx.textAlign = "center";
     ctx.fillText(
       keyInput[i].key[0],
-      canvas.width * 0.08 - canvas.height / 15 + (keyInput.length - i - 1) * (canvas.width / 100 + canvas.width / 200) + canvas.width / 200 - animX,
-      canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200,
+      canvasW * 0.08 - canvasH / 15 + (keyInput.length - i - 1) * (canvasW / 100 + canvasW / 200) + canvasW / 200 - animX,
+      canvasH * 0.05 + canvasW / 100 + canvasH / 200,
     );
   }
   ctx.globalAlpha = globalAlpha;
-  ctx.clearRect(0, 0, canvas.width * 0.08 - canvas.height / 15 - canvas.width / 800, canvas.height * 0.05 + canvas.width / 100 + canvas.height / 200 + canvas.height / 20);
+  ctx.clearRect(0, 0, canvasW * 0.08 - canvasH / 15 - canvasW / 800, canvasH * 0.05 + canvasW / 100 + canvasH / 200 + canvasH / 20);
 };
 
 const cntRender = () => {
@@ -827,21 +826,21 @@ const cntRender = () => {
       } else if (comboAlertMs + 600 <= Date.now() && comboAlertMs + 1000 > Date.now()) {
         comboOpacity = (comboAlertMs + 1000 - Date.now()) / 1200;
       }
-      fontSize = (canvas.height / 5) * easeOutSine((Date.now() - comboAlertMs) / 1000);
+      fontSize = (canvasH / 5) * easeOutSine((Date.now() - comboAlertMs) / 1000);
       ctx.beginPath();
       ctx.font = `700 ${fontSize}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       ctx.fillStyle = `rgba(200,200,200,${comboOpacity})`;
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
-      ctx.fillText(comboAlertCount, canvas.width / 2, canvas.height / 2);
+      ctx.fillText(comboAlertCount, canvasW / 2, canvasH / 2);
     }
     ctx.beginPath();
     ctx.lineJoin = "round";
     const percentage = song.seek() / song.duration();
-    const rectX = canvas.width / 2 - canvas.width / 14;
-    const rectY = canvas.height - canvas.height / 80 - canvas.height / 200;
-    const rectWidth = canvas.width / 7;
-    const rectHeight = canvas.height / 200;
+    const rectX = canvasW / 2 - canvasW / 14;
+    const rectY = canvasH - canvasH / 80 - canvasH / 200;
+    const rectWidth = canvasW / 7;
+    const rectHeight = canvasH / 200;
     ctx.lineWidth = 1;
     ctx.strokeStyle = "#fff";
     ctx.fillStyle = "#fff";
@@ -882,11 +881,11 @@ const cntRender = () => {
     ctx.beginPath();
     ctx.fillStyle = "#fff";
     for (text of renderTexts) {
-      if (text.size.indexOf("vh") != -1) ctx.font = `${text.weight} ${(canvas.height / 100) * Number(text.size.split("vh")[0])}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      if (text.size.indexOf("vh") != -1) ctx.font = `${text.weight} ${(canvasH / 100) * Number(text.size.split("vh")[0])}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       else ctx.font = `${text.weight} ${text.size} Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       ctx.textAlign = text.align;
       ctx.textBaseline = text.valign;
-      ctx.fillText(text.text, (canvas.width / 200) * (text.x + 100), (canvas.height / 200) * (text.y + 100));
+      ctx.fillText(text.text, (canvasW / 200) * (text.x + 100), (canvasH / 200) * (text.y + 100));
     }
 
     for (let i = 0; i < destroyParticles.length; i++) {
@@ -988,8 +987,8 @@ const cntRender = () => {
         p += ((beats - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100; //15 for proper speed(lower is too fast)
         const isLeft = bullet.direction == "L";
 
-        const scaleX = canvas.width / 200;
-        const scaleY = canvas.height / 200;
+        const scaleX = canvasW / 200;
+        const scaleY = canvasH / 200;
 
         const realAngle = isLeft ? bullet.angle : bullet.angle + 180;
         const visualAngleRad = Math.atan2(getSin(realAngle) * scaleY, getCos(realAngle) * scaleX);
@@ -1005,10 +1004,10 @@ const cntRender = () => {
     ctx.beginPath();
     ctx.globalAlpha = 0.5;
     ctx.fillStyle = "#fff";
-    ctx.font = `600 ${canvas.height / 60}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    ctx.font = `600 ${canvasH / 60}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
-    ctx.fillText(`Speed : ${nowSpeed}, BPM : ${bpm}`, canvas.width / 100, canvas.height - canvas.height / 60);
+    ctx.fillText(`Speed : ${nowSpeed}, BPM : ${bpm}`, canvasW / 100, canvasH - canvasH / 60);
 
     if (frameCounter) {
       frameArray.push(1000 / (Date.now() - frameCounterMs));
@@ -1020,29 +1019,29 @@ const cntRender = () => {
         frameArray = [];
       }
       ctx.textAlign = "right";
-      ctx.fillText(fps.toFixed(), canvas.width - canvas.width / 100, canvas.height - canvas.height / 70);
+      ctx.fillText(fps.toFixed(), canvasW - canvasW / 100, canvasH - canvasH / 70);
       frameCounterMs = Date.now();
     }
   } catch (e) {
     if (e) {
-      ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.font = `500 ${canvasH / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       ctx.fillStyle = "#F55";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
-      ctx.fillText(e, canvas.width / 100, canvas.height / 100);
+      ctx.fillText(e, canvasW / 100, canvasH / 100);
       console.error(e);
     }
   }
   ctx.globalAlpha = 1;
   ctx.beginPath();
   ctx.fillStyle = "#6021ff";
-  ctx.rect(canvas.width * 0.92, canvas.height * 0.05, canvas.height / 15 + canvas.width * 0.004, canvas.height / 15 + canvas.width * 0.004);
+  ctx.rect(canvasW * 0.92, canvasH * 0.05, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
   ctx.fill();
   ctx.beginPath();
   ctx.fillStyle = "#fff";
-  ctx.rect(canvas.width * 0.92 - canvas.width * 0.002, canvas.height * 0.05 - canvas.width * 0.002, canvas.height / 15 + canvas.width * 0.004, canvas.height / 15 + canvas.width * 0.004);
+  ctx.rect(canvasW * 0.92 - canvasW * 0.002, canvasH * 0.05 - canvasW * 0.002, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
   ctx.fill();
-  ctx.drawImage(albumImg, canvas.width * 0.92, canvas.height * 0.05, canvas.height / 15, canvas.height / 15);
+  ctx.drawImage(albumImg, canvasW * 0.92, canvasH * 0.05, canvasH / 15, canvasH / 15);
   if (Date.now() - scoreMs < 500) {
     displayScore += ((score - prevScore) / 500) * (Date.now() - scoreMs);
     prevScore = displayScore;
@@ -1050,15 +1049,15 @@ const cntRender = () => {
     displayScore = score;
   }
   ctx.beginPath();
-  ctx.font = `700 ${canvas.height / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+  ctx.font = `700 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
   ctx.fillStyle = "#fff";
   ctx.textAlign = "right";
   ctx.textBaseline = "top";
-  ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05);
+  ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05);
   const comboAnimation = Math.max(0, 1 - easeOutQuart(Math.min(Date.now() - comboAnimationMs, 500) / 500));
-  ctx.font = `${400 * (1 + comboAnimation * 0.5)} ${(canvas.height / 40) * (1 + comboAnimation)}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+  ctx.font = `${400 * (1 + comboAnimation * 0.5)} ${(canvasH / 40) * (1 + comboAnimation)}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
   ctx.fillStyle = "#fff";
-  ctx.fillText(`${combo}x`, canvas.width * 0.92 - canvas.width * 0.01, canvas.height * 0.05 + canvas.height / 25);
+  ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
   drawCursor();
 
   drawKeyInput();
@@ -1075,12 +1074,12 @@ const drawFinalEffect = (i) => {
   const p = easeOutQuart(Math.min(1, (Date.now() - effectMs) / duration));
   const alpha = Math.max(0, Math.min((Date.now() - effectMs) / 200, Math.min(1, (effectMs + duration - 500 - Date.now()) / 500)));
   ctx.globalAlpha = alpha;
-  let effectStartX = (-1 * canvas.width) / 5;
-  let effectFinalX = -1 * (canvas.width / 20);
+  let effectStartX = (-1 * canvasW) / 5;
+  let effectFinalX = -1 * (canvasW / 20);
   let effectX = effectStartX + (effectFinalX - effectStartX) * p;
-  let effectY = -1 * (canvas.height / 20);
-  ctx.font = `800 ${canvas.height / 5}px Montserrat`;
-  let grd = ctx.createLinearGradient(effectX, effectY, effectX, effectY + canvas.height / 5);
+  let effectY = -1 * (canvasH / 20);
+  ctx.font = `800 ${canvasH / 5}px Montserrat`;
+  let grd = ctx.createLinearGradient(effectX, effectY, effectX, effectY + canvasH / 5);
   grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
   grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
   ctx.fillStyle = grd;
@@ -1089,11 +1088,11 @@ const drawFinalEffect = (i) => {
   ctx.fillText(text, effectX, effectY);
 
   ctx.beginPath();
-  effectStartX = canvas.width + canvas.width / 5;
-  effectFinalX = canvas.width + canvas.width / 20;
+  effectStartX = canvasW + canvasW / 5;
+  effectFinalX = canvasW + canvasW / 20;
   effectX = effectStartX + (effectFinalX - effectStartX) * p;
-  effectY = canvas.height + canvas.height / 20;
-  grd = ctx.createLinearGradient(effectX, effectY - canvas.height / 5, effectX, effectY);
+  effectY = canvasH + canvasH / 20;
+  grd = ctx.createLinearGradient(effectX, effectY - canvasH / 5, effectX, effectY);
   grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
   grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
   ctx.fillStyle = grd;
@@ -1103,12 +1102,12 @@ const drawFinalEffect = (i) => {
   ctx.globalAlpha = 1;
 
   ctx.beginPath();
-  let mainTextX = canvas.width / 2;
-  let mainTextY = canvas.height / 2;
-  let mainTextSizeStart = canvas.height / 5;
-  let mainTextSizeFinal = canvas.height / 7;
-  let outlineTextSizeStart = canvas.height / 4;
-  let outlineTextSizeFinal = canvas.height / 5;
+  let mainTextX = canvasW / 2;
+  let mainTextY = canvasH / 2;
+  let mainTextSizeStart = canvasH / 5;
+  let mainTextSizeFinal = canvasH / 7;
+  let outlineTextSizeStart = canvasH / 4;
+  let outlineTextSizeFinal = canvasH / 5;
   let mainTextSize = mainTextSizeStart + (mainTextSizeFinal - mainTextSizeStart) * p;
   let outlineTextSize = outlineTextSizeStart + (outlineTextSizeFinal - outlineTextSizeStart) * p;
   ctx.textAlign = "center";
@@ -1124,7 +1123,7 @@ const drawFinalEffect = (i) => {
     ctx.strokeStyle = `rgba(240, 194, 29, ${alpha / 3})`;
   }
   ctx.font = `800 ${outlineTextSize}px Montserrat`;
-  ctx.lineWidth = canvas.height / 200;
+  ctx.lineWidth = canvasH / 200;
   ctx.strokeText(text, mainTextX, mainTextY);
   ctx.globalCompositeOperation = "destination-out";
   ctx.fillStyle = `rgb(255, 255, 255)`;
@@ -1140,7 +1139,7 @@ const drawFinalEffect = (i) => {
     ctx.strokeStyle = `rgba(240, 194, 29, ${alpha})`;
   }
   ctx.font = `800 ${mainTextSize}px Montserrat`;
-  ctx.lineWidth = canvas.height / 100;
+  ctx.lineWidth = canvasH / 100;
   ctx.strokeText(text, mainTextX, mainTextY);
   ctx.globalCompositeOperation = "destination-out";
   ctx.fillStyle = `rgb(255, 255, 255)`;
@@ -1234,7 +1233,7 @@ const calculateResult = () => {
   }
   if (missPoint.length == 0) {
     missCtx.fillStyle = "#FFF";
-    missCtx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    missCtx.font = `500 ${canvasH / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     missCtx.textAlign = "right";
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
@@ -1264,12 +1263,12 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
       case 0:
         const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
         const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
-        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvas.width / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 130) && p >= 0) {
+        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 130) && p >= 0) {
           pointingCntElement.push({ v1: v1, v2: v2, i: i });
         }
         break;
       case 1:
-        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvas.width / 80) {
+        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / 80) {
           if (!destroyedBullets.has(i)) {
             bullet++;
             missPoint.push(song.seek() * 1000);
@@ -1282,11 +1281,11 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
         }
         break;
       default:
-        ctx.font = `500 ${canvas.height / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+        ctx.font = `500 ${canvasH / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
         ctx.fillStyle = "#F55";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
-        ctx.fillText(`trackMouseSelection:Undefined element.`, canvas.width / 100, canvas.height / 100);
+        ctx.fillText(`trackMouseSelection:Undefined element.`, canvasW / 100, canvasH / 100);
         console.error(`trackMouseSelection:Undefined element.`);
     }
   }

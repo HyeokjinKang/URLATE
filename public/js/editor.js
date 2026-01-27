@@ -81,6 +81,15 @@ let errorCount = 0;
 let preventUnload = false;
 let globalAlpha = 1;
 let isTmlUpdateNeeded = true;
+let canvasContainerOW = 0,
+  canvasContainerOH = 0,
+  componentViewOW = 0,
+  menuContainerOW = 0,
+  navBarOH = 0;
+let canvasW = 0,
+  canvasH = 0,
+  tmlCanvasW = 0,
+  tmlCanvasH = 0;
 
 let pattern = {
   information: {
@@ -364,8 +373,9 @@ const songSelected = (isLoaded = false) => {
   document.getElementById("songSelectionContainer").style.display = "none";
   document.getElementById("initialScreenContainer").style.display = "none";
   document.getElementById("editorMainContainer").style.display = "initial";
-  window.requestAnimationFrame(cntRender);
+  initialize();
   patternChanged();
+  window.requestAnimationFrame(cntRender);
 };
 
 const toggleSettings = () => {
@@ -376,7 +386,7 @@ const toggleSettings = () => {
     document.getElementById("timelineSplitController").style.left = "11vw";
     componentView.style.marginRight = "5vw";
     tmlCanvas.style.width = "100vw";
-    tmlCanvas.width = window.innerWidth;
+    tmlCanvasW = window.innerWidth;
     sidebarBtn.classList.remove("sidebar-collapse");
     sidebarBtn.classList.add("sidebar-expand");
   } else {
@@ -386,7 +396,7 @@ const toggleSettings = () => {
     document.getElementById("timelineSplitController").style.left = "9vw";
     componentView.style.marginRight = "0vw";
     tmlCanvas.style.width = "80vw";
-    tmlCanvas.width = window.innerWidth * 0.8;
+    tmlCanvasW = window.innerWidth * 0.8;
     sidebarBtn.classList.remove("sidebar-expand");
     sidebarBtn.classList.add("sidebar-collapse");
   }
@@ -404,9 +414,9 @@ const changeMode = (n) => {
 
 const drawCursor = () => {
   cntCtx.beginPath();
-  let w = cntCanvas.width / 70;
-  let x = (cntCanvas.width / 200) * (mouseX + 100);
-  let y = (cntCanvas.height / 200) * (mouseY + 100);
+  let w = canvasW / 70;
+  let x = (canvasW / 200) * (mouseX + 100);
+  let y = (canvasH / 200) * (mouseY + 100);
   if (!denySkin) {
     if (skin.cursor.type == "gradient") {
       let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
@@ -418,7 +428,7 @@ const drawCursor = () => {
       cntCtx.fillStyle = `#${skin.cursor.color}`;
     }
     if (skin.cursor.outline) {
-      cntCtx.lineWidth = Math.round((cntCanvas.width / 1000) * skin.cursor.outline.width);
+      cntCtx.lineWidth = Math.round((canvasW / 1000) * skin.cursor.outline.width);
       if (skin.cursor.outline.type == "gradient") {
         let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
         for (let i = 0; i < skin.cursor.outline.stops.length; i++) {
@@ -441,10 +451,10 @@ const drawCursor = () => {
 };
 
 const drawShadow = (x, y, n, d, a) => {
-  x = (cntCanvas.width / 200) * (x + 100);
-  y = (cntCanvas.height / 200) * (y + 100);
+  x = (canvasW / 200) * (x + 100);
+  y = (canvasH / 200) * (y + 100);
   n = n == undefined ? 0 : n;
-  let w = cntCanvas.width / 40;
+  let w = canvasW / 40;
   cntCtx.beginPath();
   cntCtx.fillStyle = `rgba(255,255,255,${a})`;
   if (n != 1) {
@@ -477,10 +487,10 @@ const drawNote = (p, x, y, s, n, d, t, f, index) => {
   p = Math.max(p, 0);
   let originX = x;
   let originY = y;
-  x = (cntCanvas.width / 200) * (x + 100);
-  y = (cntCanvas.height / 200) * (y + 100);
+  x = (canvasW / 200) * (x + 100);
+  y = (canvasH / 200) * (y + 100);
   n = n == undefined ? 0 : n;
-  let w = cntCanvas.width / 40;
+  let w = canvasW / 40;
   let opacity = 255;
   if (n != 2 && p >= 100) {
     opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
@@ -489,9 +499,9 @@ const drawNote = (p, x, y, s, n, d, t, f, index) => {
   }
   opacity = opacity.toString(16).padStart(2, "0");
   if (s == true) {
-    cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
+    cntCtx.lineWidth = Math.round(canvasW / 300);
     cntCtx.beginPath();
-    cntCtx.font = `600 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    cntCtx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     cntCtx.fillStyle = "#000";
     cntCtx.strokeStyle = "#fff";
     cntCtx.textAlign = "center";
@@ -535,7 +545,7 @@ const drawNote = (p, x, y, s, n, d, t, f, index) => {
       cntCtx.strokeStyle = grd;
     }
   }
-  cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
+  cntCtx.lineWidth = Math.round(canvasW / 300);
   if (n == 0) {
     cntCtx.beginPath();
     cntCtx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
@@ -553,7 +563,7 @@ const drawNote = (p, x, y, s, n, d, t, f, index) => {
       } else if (skin.note[n].outline.type == "color") {
         cntCtx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
       }
-      cntCtx.lineWidth = Math.round((cntCanvas.width / 1000) * skin.note[n].outline.width);
+      cntCtx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
       cntCtx.stroke();
     }
   } else if (n == 1) {
@@ -588,7 +598,7 @@ const drawNote = (p, x, y, s, n, d, t, f, index) => {
       } else if (skin.note[n].outline.type == "color") {
         cntCtx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
       }
-      cntCtx.lineWidth = Math.round((cntCanvas.width / 1000) * skin.note[n].outline.width);
+      cntCtx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
       cntCtx.stroke();
     }
   } else if (n == 2) {
@@ -619,7 +629,7 @@ const drawNote = (p, x, y, s, n, d, t, f, index) => {
       } else if (skin.note[n].outline.type == "color") {
         cntCtx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
       }
-      cntCtx.lineWidth = Math.round((cntCanvas.width / 1000) * skin.note[n].outline.width);
+      cntCtx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
       cntCtx.stroke();
     }
   }
@@ -636,23 +646,23 @@ const changeNote = () => {
 };
 
 const drawBullet = (x, y, ra, va, s, l, d, t, index) => {
-  x = (cntCanvas.width / 200) * (x + 100);
-  y = (cntCanvas.height / 200) * (y + 100);
-  let w = cntCanvas.width / 80;
+  x = (canvasW / 200) * (x + 100);
+  y = (canvasH / 200) * (y + 100);
+  let w = canvasW / 80;
   if (s == true) {
     cntCtx.beginPath();
-    cntCtx.font = `600 ${cntCanvas.height / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    cntCtx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     cntCtx.fillStyle = "#000";
     cntCtx.strokeStyle = "#fff";
     cntCtx.textAlign = d == "L" ? "left" : "right";
-    cntCtx.lineWidth = Math.round(cntCanvas.width / 300);
+    cntCtx.lineWidth = Math.round(canvasW / 300);
     if (index != undefined) {
       cntCtx.textBaseline = "bottom";
       drawOutlinedText(cntCtx, `Bullet_${index}`, x, y - 1.5 * w);
     }
     cntCtx.textBaseline = "top";
     drawOutlinedText(cntCtx, `(Angle: ${d == "L" ? ra : ra - 180})`, x, y + 1.5 * w);
-    drawOutlinedText(cntCtx, `(Loc: ${l})`, x, y + 1.5 * w + cntCanvas.height / 40);
+    drawOutlinedText(cntCtx, `(Loc: ${l})`, x, y + 1.5 * w + canvasH / 40);
     cntCtx.fillStyle = `#ebd534`;
     cntCtx.strokeStyle = `#ebd534`;
   } else {
@@ -672,7 +682,7 @@ const drawBullet = (x, y, ra, va, s, l, d, t, index) => {
         cntCtx.strokeStyle = `#${skin.bullet.color}`;
       }
       if (skin.bullet.outline) {
-        cntCtx.lineWidth = Math.round((cntCanvas.width / 1000) * skin.bullet.outline.width);
+        cntCtx.lineWidth = Math.round((canvasW / 1000) * skin.bullet.outline.width);
         if (skin.bullet.outline.type == "gradient") {
           let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
           for (let i = 0; i < skin.bullet.outline.stops.length; i++) {
@@ -700,8 +710,8 @@ const drawBullet = (x, y, ra, va, s, l, d, t, index) => {
 };
 
 const drawParticle = (n, x, y, j) => {
-  let cx = (cntCanvas.width / 200) * (x + 100);
-  let cy = (cntCanvas.height / 200) * (y + 100);
+  let cx = (canvasW / 200) * (x + 100);
+  let cy = (canvasH / 200) * (y + 100);
   if (n == 0) {
     let n = destroyParticles[j].n;
     let w = destroyParticles[j].w;
@@ -716,23 +726,27 @@ const drawParticle = (n, x, y, j) => {
 };
 
 const eraseCnt = () => {
-  cntCtx.clearRect(0, 0, cntCanvas.width, cntCanvas.height);
+  cntCtx.clearRect(0, 0, canvasW, canvasH);
 };
 
 const eraseTml = () => {
-  tmlCtx.clearRect(0, 0, tmlCanvas.width, tmlCanvas.height);
+  tmlCtx.clearRect(0, 0, tmlCanvasW, tmlCanvasH);
 };
 
 const initialize = () => {
-  cntCanvas.width = (window.innerWidth * 0.6 * window.devicePixelRatio * settings.display.canvasRes) / 100;
-  cntCanvas.height = (window.innerHeight * 0.65 * window.devicePixelRatio * settings.display.canvasRes) / 100;
-  tmlCanvas.height = window.innerHeight * 0.27 * window.devicePixelRatio;
-
   if (isSettingsOpened) {
-    tmlCanvas.width = window.innerWidth * 0.8 * window.devicePixelRatio;
+    tmlCanvasW = window.innerWidth * 0.8 * window.devicePixelRatio;
   } else {
-    tmlCanvas.width = window.innerWidth * window.devicePixelRatio;
+    tmlCanvasW = window.innerWidth * window.devicePixelRatio;
   }
+  canvasW = (window.innerWidth * 0.6 * window.devicePixelRatio * settings.display.canvasRes) / 100;
+  canvasH = (window.innerHeight * 0.65 * window.devicePixelRatio * settings.display.canvasRes) / 100;
+  tmlCanvasH = window.innerHeight * 0.27 * window.devicePixelRatio;
+
+  cntCanvas.width = canvasW;
+  cntCanvas.height = canvasH;
+  tmlCanvas.width = tmlCanvasW;
+  tmlCanvas.height = tmlCanvasH;
 
   if (tmlCanvas.height / tmlCanvas.width > 0.18) {
     timelinePlayController.style.display = "none";
@@ -740,7 +754,14 @@ const initialize = () => {
     timelinePlayController.style.display = "flex";
   }
 
-  const w = cntCanvas.width / 80;
+  canvasContainerOW = canvasContainer.offsetWidth;
+  canvasContainerOH = canvasContainer.offsetHeight;
+  componentViewOW = componentView.offsetWidth;
+  menuContainerOW = menuContainer.offsetWidth;
+  navBarOH = document.getElementById("navbar").offsetHeight;
+  console.log(canvasContainerOW);
+
+  const w = canvasW / 80;
   bulletPath = new Path2D();
   bulletPath.arc(0, 0, w, 0.5 * Math.PI, 1.5 * Math.PI);
   bulletPath.lineTo(w * 2, 0);
@@ -791,18 +812,18 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
   if (mode != 2 && mouseMode == 0) {
     if (pointingCntElement.i == "") {
       const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-      const powX = ((((mouseX - x) * canvasContainer.offsetWidth) / 200) * pixelRatio * settings.display.canvasRes) / 100;
-      const powY = ((((mouseY - y) * canvasContainer.offsetHeight) / 200) * pixelRatio * settings.display.canvasRes) / 100;
+      const powX = ((((mouseX - x) * canvasContainerOW) / 200) * pixelRatio * settings.display.canvasRes) / 100;
+      const powY = ((((mouseY - y) * canvasContainerOH) / 200) * pixelRatio * settings.display.canvasRes) / 100;
       switch (v1) {
         case 0:
           const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
           const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
-          if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= cntCanvas.width / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 100) && p >= 0) {
+          if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 100) && p >= 0) {
             pointingCntElement = { v1: v1, v2: v2, i: i };
           }
           break;
         case 1:
-          if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= cntCanvas.width / (song.playing() ? 80 : 50)) {
+          if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / (song.playing() ? 80 : 50)) {
             pointingCntElement = { v1: v1, v2: v2, i: i };
             if (song.playing()) {
               hitBullets.add(i);
@@ -815,7 +836,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
     }
   } else if (mode != 2 && mouseMode == 1) {
     if (pointingCntElement.i == "") {
-      if (Math.sqrt(Math.pow(mouseX - x, 2) + Math.pow(mouseY - y, 2)) <= tmlCanvas.height / 27) {
+      if (Math.sqrt(Math.pow(mouseX - x, 2) + Math.pow(mouseY - y, 2)) <= tmlCanvasH / 27) {
         pointingCntElement = { v1: v1, v2: v2, i: i };
       }
     }
@@ -831,12 +852,12 @@ const tmlRender = () => {
     //Initialize
     eraseTml();
     const beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
-    const tmlStartX = tmlCanvas.width / 10, //timeline(element view) start X
-      startX = tmlCanvas.width / 80,
-      startY = tmlCanvas.height / 6,
-      endX = tmlCanvas.width / 1.01,
-      endY = tmlCanvas.height / 1.1,
-      height = tmlCanvas.height / 9;
+    const tmlStartX = tmlCanvasW / 10, //timeline(element view) start X
+      startX = tmlCanvasW / 80,
+      startY = tmlCanvasH / 6,
+      endX = tmlCanvasW / 1.01,
+      endY = tmlCanvasH / 1.1,
+      height = tmlCanvasH / 9;
     const renderStart = Number((beats - zoom).toPrecision(10)),
       renderEnd = Number((beats + 16 * zoom).toPrecision(10)),
       beatToPx = (endX - tmlStartX) / (renderEnd - renderStart);
@@ -970,7 +991,7 @@ const tmlRender = () => {
     tmlCtx.fillStyle = "#111";
     tmlCtx.textAlign = "left";
     tmlCtx.textBaseline = "middle";
-    tmlCtx.font = `${tmlCanvas.height / 14}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    tmlCtx.font = `${tmlCanvasH / 14}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     tmlCtx.fillText("Note", startX * 1.2 + height / 6, startY + timelineYLoc + height / 1.8);
     let i = 1;
     for (i; i <= bulletsOverlapNum; i++) {
@@ -993,9 +1014,9 @@ const tmlRender = () => {
     //Timeline time line + text
     timelineElementNum = i;
     tmlCtx.fillStyle = "#FFF";
-    tmlCtx.fillRect(0, endY, endX, tmlCanvas.height - endY);
+    tmlCtx.fillRect(0, endY, endX, tmlCanvasH - endY);
     tmlCtx.fillRect(0, 0, endX, startY);
-    tmlCtx.font = `${tmlCanvas.height / 16}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    tmlCtx.font = `${tmlCanvasH / 16}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     tmlCtx.textAlign = "center";
     tmlCtx.textBaseline = "bottom";
     tmlCtx.fillStyle = "#777";
@@ -1026,15 +1047,15 @@ const tmlRender = () => {
 
     //Timeline time text
     tmlCtx.fillStyle = "#2f91ed";
-    tmlCtx.font = `${tmlCanvas.height / 11}px Heebo`;
+    tmlCtx.font = `${tmlCanvasH / 11}px Heebo`;
     tmlCtx.textBaseline = "middle";
     let timeStartX = tmlStartX;
-    if (tmlCanvas.height / tmlCanvas.width <= 0.18) {
+    if (tmlCanvasH / tmlCanvasW <= 0.18) {
       tmlCtx.textAlign = "right";
-      if (tmlCanvas.height / tmlCanvas.width >= 0.17) {
-        tmlCtx.font = `${tmlCanvas.height / 15}px Heebo`;
-      } else if (tmlCanvas.height / tmlCanvas.width >= 0.155) {
-        tmlCtx.font = `${tmlCanvas.height / 13}px Heebo`;
+      if (tmlCanvasH / tmlCanvasW >= 0.17) {
+        tmlCtx.font = `${tmlCanvasH / 15}px Heebo`;
+      } else if (tmlCanvasH / tmlCanvasW >= 0.155) {
+        tmlCtx.font = `${tmlCanvasH / 13}px Heebo`;
       }
     } else {
       tmlCtx.textAlign = "left";
@@ -1070,7 +1091,7 @@ const tmlRender = () => {
     //Add mode yellow preview
     if (mode == 2 && mouseMode == 1) {
       if (mouseX > tmlStartX && mouseX < endX && mouseY > startY && mouseY < endY) {
-        let height = tmlCanvas.height / 9;
+        let height = tmlCanvasH / 9;
         let w = height / 3;
         let mousePosY = mouseY - timelineYLoc;
         // Calculate snapped beat position for preview
@@ -1104,11 +1125,11 @@ const tmlRender = () => {
     }
 
     //Sync alert text
-    tmlCtx.font = `400 ${tmlCanvas.height / 15}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    tmlCtx.font = `400 ${tmlCanvasH / 15}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     tmlCtx.fillStyle = "#555";
     tmlCtx.textAlign = "right";
     tmlCtx.textBaseline = "top";
-    if (tmlCanvas.width / tmlCanvas.height >= 4.9) {
+    if (tmlCanvasW / tmlCanvasH >= 4.9) {
       if (sync + offset >= 50 || sync + offset <= -50) {
         tmlCtx.fillText(syncAlert, endX, endY + 5);
       }
@@ -1136,7 +1157,7 @@ const tmlRender = () => {
 
     //Mouse cursor
     if (pointingCntElement.i === "") {
-      if (mouseX >= tmlCanvas.width / 20 && mouseX <= tmlCanvas.width / 10 && mouseY < tmlCanvas.height / 6) {
+      if (mouseX >= tmlCanvasW / 20 && mouseX <= tmlCanvasW / 10 && mouseY < tmlCanvasH / 6) {
         timelineContainer.style.cursor = "url('/images/parts/cursor/blueSelect.cur'), pointer";
       } else {
         timelineContainer.style.cursor = "";
@@ -1161,10 +1182,10 @@ const displayMessage = (type, message) => {
     default:
       cntCtx.fillStyle = "#FFF";
   }
-  cntCtx.font = `600 ${cntCanvas.height / 50}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+  cntCtx.font = `600 ${canvasH / 50}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
   cntCtx.textAlign = "left";
   cntCtx.textBaseline = "top";
-  cntCtx.fillText(message, cntCanvas.width / 100, cntCanvas.height / 100 + (cntCanvas.height / 40) * errorCount);
+  cntCtx.fillText(message, canvasW / 100, canvasH / 100 + (canvasH / 40) * errorCount);
   errorCount++;
 };
 
@@ -1225,8 +1246,8 @@ const cntRender = () => {
     createdBullets.clear();
     destroyedBullets.clear();
 
-    const tw = cntCanvas.width / 200;
-    const th = cntCanvas.height / 200;
+    const tw = canvasW / 200;
+    const th = canvasH / 200;
 
     errorCount = 0;
 
@@ -1242,11 +1263,11 @@ const cntRender = () => {
       cntCtx.beginPath();
       for (let i = -100; i <= 100; i += 10) {
         cntCtx.moveTo(x1, 0);
-        cntCtx.lineTo(x1, cntCanvas.height);
+        cntCtx.lineTo(x1, canvasH);
         cntCtx.moveTo(0, y);
-        cntCtx.lineTo(cntCanvas.width, y);
+        cntCtx.lineTo(canvasW, y);
         cntCtx.moveTo(x2, 0);
-        cntCtx.lineTo(x2, cntCanvas.height);
+        cntCtx.lineTo(x2, canvasH);
         x1 += tw * 10;
         x2 += tw * 10;
         y += th * 10;
@@ -1256,9 +1277,9 @@ const cntRender = () => {
     cntCtx.strokeStyle = "#ed3a2680";
     cntCtx.beginPath();
     cntCtx.moveTo(tw * 100, 0);
-    cntCtx.lineTo(tw * 100, cntCanvas.height);
+    cntCtx.lineTo(tw * 100, canvasH);
     cntCtx.moveTo(0, th * 100);
-    cntCtx.lineTo(cntCanvas.width, th * 100);
+    cntCtx.lineTo(canvasW, th * 100);
     cntCtx.stroke();
 
     // Circle Grid
@@ -1267,7 +1288,7 @@ const cntRender = () => {
       cntCtx.lineWidth = 2;
       for (let i = 1; i <= 10; i++) {
         cntCtx.beginPath();
-        cntCtx.arc(tw * (pattern.patterns[selectedCntElement.i].x + 100), th * (pattern.patterns[selectedCntElement.i].y + 100), (cntCanvas.width / 15) * i, 0, 2 * Math.PI);
+        cntCtx.arc(tw * (pattern.patterns[selectedCntElement.i].x + 100), th * (pattern.patterns[selectedCntElement.i].y + 100), (canvasW / 15) * i, 0, 2 * Math.PI);
         cntCtx.stroke();
       }
     }
@@ -1354,8 +1375,7 @@ const cntRender = () => {
     if (denySkin) cntCtx.fillStyle = "#111";
     else cntCtx.fillStyle = "#fff";
     for (text of renderTexts) {
-      if (text.size.indexOf("vh") != -1)
-        cntCtx.font = text.weight + " " + (cntCanvas.height / 100) * Number(text.size.split("vh")[0]) + "px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
+      if (text.size.indexOf("vh") != -1) cntCtx.font = text.weight + " " + (canvasH / 100) * Number(text.size.split("vh")[0]) + "px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
       else cntCtx.font = text.weight + " " + text.size + " Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
       cntCtx.textAlign = text.align;
       cntCtx.textBaseline = text.valign;
@@ -1397,10 +1417,10 @@ const cntRender = () => {
       else if (pattern.patterns[i].value == 2 && f < 100) validNote = i;
       const alpha = 0.4 - 0.1 * (validNote - i);
       if (i > 0) {
-        const x1 = (cntCanvas.width / 200) * (pattern.patterns[i - 1].x + 100);
-        const y1 = (cntCanvas.height / 200) * (pattern.patterns[i - 1].y + 100);
-        const x2 = (cntCanvas.width / 200) * (pattern.patterns[i].x + 100);
-        const y2 = (cntCanvas.height / 200) * (pattern.patterns[i].y + 100);
+        const x1 = (canvasW / 200) * (pattern.patterns[i - 1].x + 100);
+        const y1 = (canvasH / 200) * (pattern.patterns[i - 1].y + 100);
+        const x2 = (canvasW / 200) * (pattern.patterns[i].x + 100);
+        const y2 = (canvasH / 200) * (pattern.patterns[i].y + 100);
         cntCtx.beginPath();
         cntCtx.strokeStyle = `rgba(255,255,255,${alpha})`;
         cntCtx.lineWidth = 3;
@@ -1469,8 +1489,8 @@ const cntRender = () => {
         p += ((beats - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100; //15 for proper speed(lower is too fast)
         const isLeft = pattern.bullets[i].direction == "L";
 
-        const scaleX = cntCanvas.width / 200;
-        const scaleY = cntCanvas.height / 200;
+        const scaleX = canvasW / 200;
+        const scaleY = canvasH / 200;
 
         const realAngle = isLeft ? bullet.angle : bullet.angle + 180;
         const visualAngleRad = Math.atan2(getSin(realAngle) * scaleY, getCos(realAngle) * scaleX);
@@ -1489,10 +1509,10 @@ const cntRender = () => {
 
     cntCtx.beginPath();
     cntCtx.fillStyle = "rgba(255, 255, 255, 0.8)";
-    cntCtx.font = `700 ${cntCanvas.height / 50}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    cntCtx.font = `700 ${canvasH / 50}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
     cntCtx.textAlign = "center";
     cntCtx.textBaseline = "top";
-    cntCtx.fillText(`Speed : ${nowSpeed}, BPM : ${bpm}`, cntCanvas.width / 2, cntCanvas.height / 50);
+    cntCtx.fillText(`Speed : ${nowSpeed}, BPM : ${bpm}`, canvasW / 2, canvasH / 50);
 
     // Editor only - Note & Bullet location live draw (when mode is "Add")
     if (mode == 2 && mouseMode == 0) {
@@ -1504,7 +1524,7 @@ const cntRender = () => {
       }
       if (p[0] == 0 && p[1] == 0) {
         if (circleToggle && selectedCntElement.v1 === 0) {
-          const radius = cntCanvas.width / 15;
+          const radius = canvasW / 15;
           const noteX = tw * (pattern.patterns[selectedCntElement.i].x + 100);
           const noteY = th * (pattern.patterns[selectedCntElement.i].y + 100);
           const difX = noteX - tw * (mouseX + 100);
@@ -1512,8 +1532,8 @@ const cntRender = () => {
           const distance = Math.sqrt(difX * difX + difY * difY) + radius / 2;
           const angle = calcAngleDegrees(difX, difY) + 180;
           const newDistance = distance - (distance % radius);
-          const newX = ((noteX + newDistance * getCos(angle)) / cntCanvas.width) * 200 - 100;
-          const newY = ((noteY + newDistance * getSin(angle)) / cntCanvas.height) * 200 - 100;
+          const newX = ((noteX + newDistance * getCos(angle)) / canvasW) * 200 - 100;
+          const newY = ((noteY + newDistance * getSin(angle)) / canvasH) * 200 - 100;
           drawNote(100, Math.round(newX), Math.round(newY), true, selectedValue, 1, 0);
         } else if (magnetToggle) drawNote(100, mouseX - (mouseX % 5), mouseY - (mouseY % 5), true, selectedValue, 1, 0);
         else drawNote(100, mouseX, mouseY, true, selectedValue, 1, 0);
@@ -1529,21 +1549,21 @@ const cntRender = () => {
     // Editor only - Trigger guide text (when mode is "Add")
     if (mode == 2 && mouseMode == -1) {
       cntCtx.fillStyle = "rgba(0,0,0,0.5)";
-      cntCtx.fillRect(0, 0, cntCanvas.width, cntCanvas.height);
+      cntCtx.fillRect(0, 0, canvasW, canvasH);
       cntCtx.beginPath();
       cntCtx.fillStyle = "#FFF";
       cntCtx.strokeStyle = "#FFF";
       cntCtx.lineWidth = 4;
-      cntCtx.moveTo(cntCanvas.width / 2, cntCanvas.height / 2 - 30);
-      cntCtx.lineTo(cntCanvas.width / 2, cntCanvas.height / 2);
+      cntCtx.moveTo(canvasW / 2, canvasH / 2 - 30);
+      cntCtx.lineTo(canvasW / 2, canvasH / 2);
       cntCtx.stroke();
-      cntCtx.moveTo(cntCanvas.width / 2 - 15, cntCanvas.height / 2 - 15);
-      cntCtx.lineTo(cntCanvas.width / 2 + 15, cntCanvas.height / 2 - 15);
+      cntCtx.moveTo(canvasW / 2 - 15, canvasH / 2 - 15);
+      cntCtx.lineTo(canvasW / 2 + 15, canvasH / 2 - 15);
       cntCtx.stroke();
-      cntCtx.font = `400 ${cntCanvas.height / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      cntCtx.font = `400 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       cntCtx.textAlign = "center";
       cntCtx.textBaseline = "top";
-      cntCtx.fillText("Click to add Trigger", cntCanvas.width / 2, cntCanvas.height / 2 + 10);
+      cntCtx.fillText("Click to add Trigger", canvasW / 2, canvasH / 2 + 10);
     }
 
     //Cursor
@@ -2063,10 +2083,9 @@ const changeOffset = (e) => {
 };
 
 const trackMousePos = () => {
-  const width = parseInt((componentView.offsetWidth - canvasContainer.offsetWidth) / 2 + menuContainer.offsetWidth);
-  const height = document.getElementById("navbar").offsetHeight;
-  const x = ((event.clientX - width) / canvasContainer.offsetWidth) * 200 - 100;
-  const y = ((event.clientY - height) / canvasContainer.offsetHeight) * 200 - 100;
+  const width = parseInt((componentViewOW - canvasContainerOW) / 2 + menuContainerOW);
+  const x = ((event.clientX - width) / canvasContainerOW) * 200 - 100;
+  const y = ((event.clientY - navBarOH) / canvasContainerOH) * 200 - 100;
   if (!(x < -100 || y < -100 || x > 100 || y > 100)) {
     mouseMode = 0;
     mouseX = Math.round(x);
@@ -2145,10 +2164,10 @@ const timelineFollowMouse = (v1, v2, i) => {
         v2 = pointingCntElement.v2;
         i = pointingCntElement.i;
       }
-      if (mouseMode == 1 && mouseX > tmlCanvas.width / 10 && mouseX < tmlCanvas.width / 1.01) {
+      if (mouseMode == 1 && mouseX > tmlCanvasW / 10 && mouseX < tmlCanvasW / 1.01) {
         const beats = bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm);
-        const tmlStartX = tmlCanvas.width / 10;
-        const beatToPx = (tmlCanvas.width / 1.01 - tmlStartX) / (17 * zoom);
+        const tmlStartX = tmlCanvasW / 10;
+        const beatToPx = (tmlCanvasW / 1.01 - tmlStartX) / (17 * zoom);
         let calculatedBeat = beats + (mouseX - tmlStartX) / beatToPx - zoom;
         if (calculatedBeat <= 0) calculatedBeat = 0;
         calculatedBeat = Number(calculatedBeat.toPrecision(10));
@@ -2205,7 +2224,7 @@ const tmlClicked = () => {
 };
 
 const copySeek = () => {
-  if (mouseX < tmlCanvas.width / 10 && mouseY < tmlCanvas.height / 6) {
+  if (mouseX < tmlCanvasW / 10 && mouseY < tmlCanvasH / 6) {
     const beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
     navigator.clipboard.writeText(beats);
     copied = true;
@@ -2214,17 +2233,17 @@ const copySeek = () => {
 };
 
 const timelineAddElement = () => {
-  let startY = tmlCanvas.height / 6;
-  let height = tmlCanvas.height / 9;
+  let startY = tmlCanvasH / 6;
+  let height = tmlCanvasH / 9;
   const beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
-  const tmlStartX = tmlCanvas.width / 10;
-  const beatToPx = (tmlCanvas.width / 1.01 - tmlStartX) / (17 * zoom);
+  const tmlStartX = tmlCanvasW / 10;
+  const beatToPx = (tmlCanvasW / 1.01 - tmlStartX) / (17 * zoom);
   let calculatedBeat = beats + (mouseX - tmlStartX) / beatToPx - zoom;
   if (calculatedBeat <= 0) calculatedBeat = 0;
   calculatedBeat = Number(calculatedBeat.toPrecision(10));
   calculatedBeat = magnetToggle ? Math.round(calculatedBeat * split) / split : calculatedBeat;
   let mousePosY = mouseY - timelineYLoc;
-  if (mouseX > tmlCanvas.width / 10 && mouseX < tmlCanvas.width / 1.01 && mouseY > startY && mouseY < tmlCanvas.height / 1.1) {
+  if (mouseX > tmlCanvasW / 10 && mouseX < tmlCanvasW / 1.01 && mouseY > startY && mouseY < tmlCanvasH / 1.1) {
     if (mousePosY >= startY && mousePosY <= startY + height) {
       let newElement = { beat: calculatedBeat, value: selectedValue, direction: 1, x: 0, y: 0, duration: 4 };
       pattern.patterns.push(newElement);
@@ -2338,16 +2357,16 @@ const compClicked = () => {
         let newX = magnetToggle ? mouseX - (mouseX % 5) : mouseX;
         let newY = magnetToggle ? mouseY - (mouseY % 5) : mouseY;
         if (circleToggle && selectedCntElement.v1 === 0) {
-          const radius = cntCanvas.width / 15;
-          const noteX = (cntCanvas.width / 200) * (pattern.patterns[selectedCntElement.i].x + 100);
-          const noteY = (cntCanvas.height / 200) * (pattern.patterns[selectedCntElement.i].y + 100);
-          const difX = noteX - (cntCanvas.width / 200) * (mouseX + 100);
-          const difY = noteY - (cntCanvas.height / 200) * (mouseY + 100);
+          const radius = canvasW / 15;
+          const noteX = (canvasW / 200) * (pattern.patterns[selectedCntElement.i].x + 100);
+          const noteY = (canvasH / 200) * (pattern.patterns[selectedCntElement.i].y + 100);
+          const difX = noteX - (canvasW / 200) * (mouseX + 100);
+          const difY = noteY - (canvasH / 200) * (mouseY + 100);
           const distance = Math.sqrt(difX * difX + difY * difY) + radius / 2;
           const angle = calcAngleDegrees(difX, difY) + 180;
           const newDistance = distance - (distance % radius);
-          newX = ((noteX + newDistance * getCos(angle)) / cntCanvas.width) * 200 - 100;
-          newY = ((noteY + newDistance * getSin(angle)) / cntCanvas.height) * 200 - 100;
+          newX = ((noteX + newDistance * getCos(angle)) / canvasW) * 200 - 100;
+          newY = ((noteY + newDistance * getSin(angle)) / canvasH) * 200 - 100;
         }
         let newElement = {
           beat: beats,
@@ -2882,10 +2901,10 @@ const tmlScrollHorizontal = (direction, splitBy = split) => {
 };
 
 const tmlScrollUp = () => {
-  timelineYLoc = Number(timelineYLoc.toFixed(2)) + tmlCanvas.height / 9;
+  timelineYLoc = Number(timelineYLoc.toFixed(2)) + tmlCanvasH / 9;
   timelineScrollCount--;
   if (timelineYLoc > 1) {
-    timelineYLoc = Number(timelineYLoc.toFixed(2)) - tmlCanvas.height / 9;
+    timelineYLoc = Number(timelineYLoc.toFixed(2)) - tmlCanvasH / 9;
     timelineScrollCount++;
   }
 
@@ -2894,7 +2913,7 @@ const tmlScrollUp = () => {
 
 const tmlScrollDown = () => {
   if (timelineElementNum > 6 && timelineScrollCount < timelineElementNum) {
-    timelineYLoc = Number(timelineYLoc.toFixed(2)) - tmlCanvas.height / 9;
+    timelineYLoc = Number(timelineYLoc.toFixed(2)) - tmlCanvasH / 9;
     timelineScrollCount++;
   }
 
