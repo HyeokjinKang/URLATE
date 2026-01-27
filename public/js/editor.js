@@ -895,18 +895,16 @@ const tmlRender = () => {
     let bulletsOverlap = {};
     for (let i = start; i < end; i++) {
       let overlapIndex = parseInt(pattern.bullets[i].beat * 2);
-      let count = 0;
+
       if (bulletsOverlap[overlapIndex]) {
         bulletsOverlap[overlapIndex]++;
       } else {
         bulletsOverlap[overlapIndex] = 1;
       }
-      for (let j = start; j < end; j++) {
-        if (overlapIndex == parseInt(pattern.bullets[j].beat * 2)) {
-          count++;
-        }
+
+      if (bulletsOverlapNum < bulletsOverlap[overlapIndex]) {
+        bulletsOverlapNum = bulletsOverlap[overlapIndex];
       }
-      if (bulletsOverlapNum < count) bulletsOverlapNum = count;
     }
 
     //Draw bullets
@@ -942,18 +940,16 @@ const tmlRender = () => {
     let triggersOverlap = {};
     for (let i = start; i < end; i++) {
       let overlapIndex = parseInt(pattern.triggers[i].beat * 2);
-      let count = 0;
+
       if (triggersOverlap[overlapIndex]) {
         triggersOverlap[overlapIndex]++;
       } else {
         triggersOverlap[overlapIndex] = 1;
       }
-      for (let j = start; j < end; j++) {
-        if (overlapIndex == parseInt(pattern.triggers[j].beat * 2)) {
-          count++;
-        }
+
+      if (triggersOverlapNum < triggersOverlap[overlapIndex] + 1) {
+        triggersOverlapNum = triggersOverlap[overlapIndex] + 1;
       }
-      if (triggersOverlapNum < count + 1) triggersOverlapNum = count + 1;
     }
 
     //Draw triggers
