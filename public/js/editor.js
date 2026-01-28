@@ -1379,11 +1379,13 @@ const cntRender = () => {
     }
 
     // Destroy Particles
-    for (let i = 0; i < destroyParticles.length; i++) {
+    for (let i = destroyParticles.length - 1; i >= 0; i--) {
       if (destroyParticles[i].w > 0) {
         drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
         destroyParticles[i].w = 5 - (Date.now() - destroyParticles[i].ms) / 50;
         destroyParticles[i].n++;
+      } else {
+        destroyParticles.splice(i, 1);
       }
     }
 

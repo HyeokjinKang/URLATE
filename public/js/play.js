@@ -932,9 +932,11 @@ const cntRender = () => {
       ctx.fillText(text.text, (canvasW / 200) * (text.x + 100), (canvasH / 200) * (text.y + 100));
     }
 
-    for (let i = 0; i < destroyParticles.length; i++) {
+    for (let i = destroyParticles.length - 1; i >= 0; i--) {
       if (destroyParticles[i].ms + 250 > Date.now()) {
         drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
+      } else {
+        destroyParticles.splice(i, 1);
       }
     }
 
@@ -971,14 +973,18 @@ const cntRender = () => {
         keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
       }
     }
-    for (let i = 0; i < perfectParticles.length; i++) {
+    for (let i = perfectParticles.length - 1; i >= 0; i--) {
       if (perfectParticles[i].s + 700 > Date.now()) {
         drawParticle(5, perfectParticles[i].x, perfectParticles[i].y, i);
+      } else {
+        perfectParticles.splice(i, 1);
       }
     }
-    for (let i = 0; i < missParticles.length; i++) {
+    for (let i = missParticles.length - 1; i >= 0; i--) {
       if (missParticles[i].s + 700 > Date.now()) {
         drawParticle(4, missParticles[i].x, missParticles[i].y, i);
+      } else {
+        missParticles.splice(i, 1);
       }
     }
     let start = lowerBound(pattern.bullets, beats - 32);
