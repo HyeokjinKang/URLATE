@@ -99,7 +99,9 @@ let trackName = "";
 let medal = 1;
 let globalAlpha = 1;
 let canvasW = 0,
-  canvasH = 0;
+  canvasH = 0,
+  canvasOW = 0,
+  canvasOH = 0;
 const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -166,6 +168,9 @@ const initialize = (isFirstCalled) => {
   canvasH = (window.innerHeight * pixelRatio * settings.display.canvasRes) / 100;
   canvas.width = canvasW;
   canvas.height = canvasH;
+
+  canvasOW = canvas.offsetWidth;
+  canvasOH = canvas.offsetHeight;
 
   missCanvas.width = window.innerWidth * 0.2 * pixelRatio;
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
@@ -842,8 +847,8 @@ const cntRender = () => {
     }
     eraseCnt();
     ctx.globalAlpha = 1;
-    let mouseCalcX = ((rawX / canvas.offsetWidth) * 200 - 100) * sens;
-    let mouseCalcY = ((rawY / canvas.offsetHeight) * 200 - 100) * sens;
+    let mouseCalcX = ((rawX / canvasOW) * 200 - 100) * sens;
+    let mouseCalcY = ((rawY / canvasOH) * 200 - 100) * sens;
     mouseX = mouseCalcX >= 100 ? 100 : mouseCalcX <= -100 ? -100 : mouseCalcX;
     mouseY = mouseCalcY >= 100 ? 100 : mouseCalcY <= -100 ? -100 : mouseCalcY;
     if (isResultShowing) {
@@ -1288,8 +1293,8 @@ const calculateResult = () => {
 const trackMouseSelection = (i, v1, v2, x, y) => {
   if (song.playing()) {
     const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-    const powX = ((((mouseX - x) * canvas.offsetWidth) / 200) * pixelRatio * settings.display.canvasRes) / 100;
-    const powY = ((((mouseY - y) * canvas.offsetHeight) / 200) * pixelRatio * settings.display.canvasRes) / 100;
+    const powX = ((((mouseX - x) * canvasOW) / 200) * pixelRatio * settings.display.canvasRes) / 100;
+    const powY = ((((mouseY - y) * canvasOH) / 200) * pixelRatio * settings.display.canvasRes) / 100;
     switch (v1) {
       case 0:
         const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
