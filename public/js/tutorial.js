@@ -165,6 +165,15 @@ const initialize = (isFirstCalled) => {
         patternBackup = data;
         pattern = JSON.parse(JSON.stringify(patternBackup));
         patternLength = pattern.patterns.length;
+
+        noteMaxDuration = 0;
+        for (const note of pattern.patterns) {
+          if (note.duration && note.duration > noteMaxDuration) {
+            noteMaxDuration = note.duration;
+          }
+        }
+        noteMaxDuration += 4;
+
         offset = pattern.information.offset;
         bpm = pattern.information.bpm;
         speed = pattern.information.speed;

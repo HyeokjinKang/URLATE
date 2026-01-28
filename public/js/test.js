@@ -179,6 +179,15 @@ const initialize = (isFirstCalled) => {
   if (isFirstCalled) {
     pattern = JSON.parse(localStorage.pattern);
     patternLength = pattern.patterns.length;
+
+    noteMaxDuration = 0;
+    for (const note of pattern.patterns) {
+      if (note.duration && note.duration > noteMaxDuration) {
+        noteMaxDuration = note.duration;
+      }
+    }
+    noteMaxDuration += 4;
+
     document.getElementById("artist").textContent = pattern.information.producer;
     document.getElementById("scoreArtist").textContent = pattern.information.producer;
     document.getElementById("authorNamespace").textContent = pattern.information.author;

@@ -191,6 +191,15 @@ const initialize = (isFirstCalled) => {
         patternBackup = data;
         pattern = JSON.parse(JSON.stringify(patternBackup));
         patternLength = pattern.patterns.length;
+
+        noteMaxDuration = 0;
+        for (const note of pattern.patterns) {
+          if (note.duration && note.duration > noteMaxDuration) {
+            noteMaxDuration = note.duration;
+          }
+        }
+        noteMaxDuration += 4;
+
         document.getElementById("scoreDifficultyNum").textContent = localStorage.difficulty;
         document.getElementById("scoreDifficultyName").textContent = difficultyNames[localStorage.difficultySelection];
         document.getElementById("albumDifficulty").textContent = difficultyNames[localStorage.difficultySelection];
