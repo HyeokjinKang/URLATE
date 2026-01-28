@@ -30,6 +30,7 @@ let destroyedBullets = new Set([]);
 let destroyedNotes = new Set([]);
 let grabbedNotes = new Set([]);
 let bulletPath;
+let noteMaxDuration = 0;
 let mouseX = 0,
   mouseY = 0;
 let rawX = 0,
@@ -896,17 +897,20 @@ const cntRender = () => {
       }
     }
 
-    end = upperBound(pattern.patterns, beats + 5 / speed);
-    for (let i = 0; i < end; i++) {
-      const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
+    let renderDuration = 5 / speed;
+
+    let start = lowerBound(pattern.patterns, beats - noteMaxDuration);
+    end = upperBound(pattern.patterns, beats + renderDuration);
+    for (let i = start; i < end; i++) {
+      const p = (1 - (pattern.patterns[i].beat - beats) / renderDuration) * 100;
       if (p >= 50) {
         trackMouseSelection(i, 0, pattern.patterns[i].value, pattern.patterns[i].x, pattern.patterns[i].y);
       }
     }
-    for (let i = end - 1; i >= 0; i--) {
-      const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
+    for (let i = end - 1; i >= start; i--) {
+      const p = (1 - (pattern.patterns[i].beat - beats) / renderDuration) * 100;
       const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
-      const f = (1 - (pattern.patterns[i].beat + pattern.patterns[i].duration - beats) / (5 / speed)) * 100;
+      const f = (1 - (pattern.patterns[i].beat + pattern.patterns[i].duration - beats) / renderDuration) * 100;
       drawNote(p, pattern.patterns[i].x, pattern.patterns[i].y, pattern.patterns[i].value, pattern.patterns[i].direction, t, i, f);
       if (p >= 120 && !destroyedNotes.has(i) && (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
         calculateScore("miss", i, true);
@@ -941,7 +945,7 @@ const cntRender = () => {
         missParticles.splice(i, 1);
       }
     }
-    let start = lowerBound(pattern.bullets, beats - 32);
+    start = lowerBound(pattern.bullets, beats - 32);
     end = upperBound(pattern.bullets, beats);
     for (let i = 0; i < end; i++) {
       if (!destroyedBullets.has(i)) {

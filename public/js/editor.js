@@ -1393,11 +1393,14 @@ const cntRender = () => {
     prevDestroyedBullets = new Set(destroyedBullets);
 
     // Note render
-    end = upperBound(pattern.patterns, beats + 5 / speed);
+    let renderDuration = 5 / speed;
+
+    let start = 0; // scan from 0 because of rendering shadow of notes
+    end = upperBound(pattern.patterns, beats + renderDuration);
 
     // Mouse tracking loop
     let prevNoteBeat = -1;
-    for (let i = 0; i < end; i++) {
+    for (let i = start; i < end; i++) {
       if (pattern.patterns[i].beat >= prevNoteBeat - 0.01 && pattern.patterns[i].beat <= prevNoteBeat + 0.01) {
         displayMessage("Error", `[URLATE] validationError: Note_${i} of the beat ${pattern.patterns[i].beat} is too close to Note_${i - 1}.`);
       }
@@ -1407,10 +1410,10 @@ const cntRender = () => {
 
     // Note drawing loop
     let validNote = end;
-    for (let i = end - 1; i >= 0; i--) {
-      const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
+    for (let i = end - 1; i >= start; i--) {
+      const p = (1 - (pattern.patterns[i].beat - beats) / renderDuration) * 100;
       const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
-      const f = (1 - (pattern.patterns[i].beat + pattern.patterns[i].duration - beats) / (5 / speed)) * 100;
+      const f = (1 - (pattern.patterns[i].beat + pattern.patterns[i].duration - beats) / renderDuration) * 100;
       if (pattern.patterns[i].value != 2 && p < 101) validNote = i;
       else if (pattern.patterns[i].value == 2 && f < 100) validNote = i;
       const alpha = 0.4 - 0.1 * (validNote - i);
@@ -1434,7 +1437,7 @@ const cntRender = () => {
     }
 
     //Bullet render
-    let start = lowerBound(pattern.bullets, beats - 32);
+    start = lowerBound(pattern.bullets, beats - 32);
     end = upperBound(pattern.bullets, beats);
     for (let i = start; i < end; i++) {
       if (!destroyedBullets.has(i)) {
@@ -2668,9 +2671,12 @@ const destroyTriggerValidate = (index, isDelete) => {
 const patternChanged = () => {
   preventUnload = true;
   songName.innerText = pattern.information.track + "*";
+
+  // Clear all following history from the current midpoint.
   if (patternSeek != patternHistory.length - 1) {
     patternHistory.splice(patternSeek + 1, patternHistory.length - 1 - patternSeek);
   }
+
   patternHistory.push(eval(`(${JSON.stringify(pattern)})`));
   if (patternHistory.length > 50) {
     patternHistory.splice(0, patternHistory.length - 50);
