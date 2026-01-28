@@ -107,6 +107,7 @@ let pattern = {
   triggers: [],
 };
 let patternHistory = [];
+let pointingTmlElement = { v1: "", v2: "", i: "" };
 let pointingCntElement = { v1: "", v2: "", i: "" };
 let selectedCntElement = { v1: "", v2: "", i: "" };
 let destroyedBullets = new Set([]);
@@ -759,7 +760,6 @@ const initialize = () => {
   componentViewOW = componentView.offsetWidth;
   menuContainerOW = menuContainer.offsetWidth;
   navBarOH = document.getElementById("navbar").offsetHeight;
-  console.log(canvasContainerOW);
 
   const w = canvasW / 80;
   bulletPath = new Path2D();
@@ -835,9 +835,9 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
       }
     }
   } else if (mode != 2 && mouseMode == 1) {
-    if (pointingCntElement.i == "") {
+    if (pointingTmlElement.i == "") {
       if (Math.sqrt(Math.pow(mouseX - x, 2) + Math.pow(mouseY - y, 2)) <= tmlCanvasH / 27) {
-        pointingCntElement = { v1: v1, v2: v2, i: i };
+        pointingTmlElement = { v1: v1, v2: v2, i: i };
       }
     }
   }
@@ -1238,7 +1238,7 @@ const cntRender = () => {
 
     // Initialize
     eraseCnt();
-    pointingCntElement = { v1: "", v2: "", i: "" };
+    pointingCntElement = mouseMode == 1 ? pointingTmlElement : { v1: "", v2: "", i: "" };
     createdBullets.clear();
     destroyedBullets.clear();
 
@@ -1576,6 +1576,7 @@ const cntRender = () => {
   }
 
   if (song.playing() || isTmlUpdateNeeded) {
+    pointingTmlElement = { v1: "", v2: "", i: "" };
     tmlRender();
     isTmlUpdateNeeded = false;
   }
