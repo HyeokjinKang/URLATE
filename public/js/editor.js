@@ -1500,8 +1500,8 @@ const cntRender = () => {
         const x = (isLeft ? -100 : 100) + getCos(realAngle) * p;
         const y = bullet.location + getSin(realAngle) * p;
 
-        if (mouseMode == 0) trackMouseSelection(start + i, 1, 0, x, y);
-        drawBullet(x, y, realAngle, visualAngle, selectedCheck(1, start + i), pattern.bullets[i].location, pattern.bullets[i].direction, hitBullets.has(start + i), start + i);
+        if (mouseMode == 0) trackMouseSelection(i, 1, 0, x, y);
+        drawBullet(x, y, realAngle, visualAngle, selectedCheck(1, i), pattern.bullets[i].location, pattern.bullets[i].direction, hitBullets.has(i), i);
       }
     }
     prevCreatedBullets = new Set(createdBullets);
