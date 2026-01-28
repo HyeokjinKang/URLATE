@@ -1066,7 +1066,7 @@ const cntRender = () => {
 
         const x = (isLeft ? -100 : 100) + getCos(realAngle) * p;
         const y = bullet.location + getSin(realAngle) * p;
-        trackMouseSelection(start + i, 1, 0, x, y);
+        trackMouseSelection(i, 1, 0, x, y);
         drawBullet(x, y, visualAngle);
       }
     }
