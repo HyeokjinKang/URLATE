@@ -141,10 +141,11 @@
         alias: "<%= __('socket_achievement_alias') %>",
       };
     </script>
-    <script src="/js/howler.min.js"></script>
     <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
-    <script src="/js/playerModules.js?v=<%= ver %>"></script>
+    <script src="/lib/howler.min.js"></script>
+    <script src="/modules/utils.js?v=<%= ver %>"></script>
+    <script src="/modules/draw.js?v=<%= ver %>"></script>
+    <script src="/modules/socket.js?v=<%= ver %>"></script>
     <script src="/js/play.js?v=<%= ver %>"></script>
-    <script src="/js/globalSocket.js?v=<%= ver %>"></script>
   </body>
 </html>
