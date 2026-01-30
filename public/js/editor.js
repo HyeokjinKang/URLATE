@@ -113,7 +113,6 @@ let selectedCntElement = { v1: "", v2: "", i: "" };
 let destroyedBullets = new Set([]);
 let prevDestroyedBullets = new Set([]);
 let createdBullets = new Set([]);
-let prevCreatedBullets = new Set([]);
 let hitBullets = new Set([]);
 let explodingBullets = new Set();
 
@@ -1378,7 +1377,6 @@ const cntRender = () => {
     for (let i = start; i < end; i++) {
       if (!destroyedBullets.has(i) || explodingBullets.has(i)) {
         const bullet = pattern.bullets[i];
-        createdBullets.add(i);
 
         let triggerEnd = upperBound(pattern.triggers, bullet.beat);
         let baseSpeed = pattern.information.speed;
@@ -1418,16 +1416,17 @@ const cntRender = () => {
         const x = (isLeft ? -100 : 100) + getCos(realAngle) * p;
         const y = bullet.location + getSin(realAngle) * p;
 
-        if (!prevCreatedBullets.has(i) || explodingBullets.has(i)) {
+        if (!createdBullets.has(i) || explodingBullets.has(i)) {
           destroyParticles.push(...createExplosion(x, y, skin.bullet));
           if (explodingBullets.has(i)) continue;
         }
+
+        createdBullets.add(i);
 
         if (mouseMode == 0) trackMouseSelection(i, 1, 0, x, y);
         drawBullet(x, y, realAngle, visualAngle, selectedCheck(1, i), pattern.bullets[i].location, pattern.bullets[i].direction, hitBullets.has(i), i);
       }
     }
-    prevCreatedBullets = new Set(createdBullets);
 
     cntCtx.globalAlpha = 1;
 

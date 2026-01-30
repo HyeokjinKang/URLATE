@@ -29,6 +29,7 @@ let missParticles = [];
 let perfectParticles = [];
 let createdBullets = new Set([]);
 let destroyedBullets = new Set([]);
+let explodingBullets = new Set([]);
 let destroyedNotes = new Set([]);
 let grabbedNotes = new Set([]);
 let bulletPath;
@@ -354,28 +355,7 @@ const getJudgeStyle = (j, p, x, y) => {
 const drawParticle = (n, x, y, j, d) => {
   let cx = (canvasW / 200) * (x + 100);
   let cy = (canvasH / 200) * (y + 100);
-  if (n == 0) {
-    //Destroy
-    const w = (canvasW / 1000) * destroyParticles[j].w * (1 - (Date.now() - destroyParticles[j].ms) / 250);
-    for (let i = 0; i < 3; i++) {
-      ctx.beginPath();
-      if (skin.bullet.type == "gradient") {
-        let grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
-        for (let i = 0; i < skin.bullet.stops.length; i++) {
-          grd.addColorStop(skin.bullet.stops[i].percentage / 100, `#${skin.bullet.stops[i].color}`);
-        }
-        ctx.fillStyle = grd;
-        ctx.strokeStyle = grd;
-      } else if (skin.bullet.type == "color") {
-        ctx.fillStyle = `#${skin.bullet.color}`;
-        ctx.strokeStyle = `#${skin.bullet.color}`;
-      }
-      const step = destroyParticles[j].n * (canvasW / 10000);
-      ctx.arc(cx + step * destroyParticles[j].d[i][0], cy + step * destroyParticles[j].d[i][1], w, 0, 2 * Math.PI);
-      ctx.fill();
-      destroyParticles[j].n += destroyParticles[j].step;
-    }
-  } else if (n == 1) {
+  if (n == 1) {
     //Click Note
     const raf = (w, s, n) => {
       ctx.beginPath();
@@ -729,53 +709,10 @@ const destroyAll = (beat) => {
   const end = upperBound(pattern.bullets, beat);
   for (let j = 0; j < end; j++) {
     if (!destroyedBullets.has(j)) {
-      callBulletDestroy(j);
+      explodingBullets.add(j);
+      destroyedBullets.add(j);
     }
   }
-};
-
-const callBulletDestroy = (j) => {
-  const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-  // const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
-  let end = upperBound(pattern.triggers, pattern.bullets[j].beat);
-  let baseSpeed = pattern.information.speed;
-  for (let i = 0; i < end; i++) {
-    if (pattern.triggers[i].value == 4) {
-      baseSpeed = pattern.triggers[i].speed;
-    }
-  }
-  let start = lowerBound(pattern.triggers, pattern.bullets[j].beat);
-  end = upperBound(pattern.triggers, beats);
-  let p = 0;
-  let prevBeat = pattern.bullets[j].beat;
-  let prevSpeed = baseSpeed;
-  for (let k = start; k < end; k++) {
-    if (pattern.triggers[k].value == 4) {
-      p += ((pattern.triggers[k].beat - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
-      prevBeat = pattern.triggers[k].beat;
-      prevSpeed = pattern.triggers[k].speed;
-    }
-  }
-  p += ((beats - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
-  const left = pattern.bullets[j].direction == "L";
-  let x = (left ? 1 : -1) * (getCos(pattern.bullets[j].angle) * p - 100);
-  let y = pattern.bullets[j].location + (left ? 1 : -1) * getSin(pattern.bullets[j].angle) * p;
-  let randomDirection = [];
-  for (let i = 0; i < 3; i++) {
-    let rx = Math.floor(Math.random() * 4) - 2;
-    let ry = Math.floor(Math.random() * 4) - 2;
-    randomDirection[i] = [rx, ry];
-  }
-  destroyParticles.push({
-    x: x,
-    y: y,
-    w: 5,
-    n: 1,
-    step: 2,
-    d: randomDirection,
-    ms: Date.now(),
-  });
-  destroyedBullets.add(j);
 };
 
 const drawKeyInput = () => {
@@ -864,6 +801,7 @@ const cntRender = () => {
       initialize(false);
     }
     eraseCnt();
+    explodingBullets.clear();
     ctx.globalAlpha = 1;
     let mouseCalcX = ((rawX / canvasOW) * 200 - 100) * sens;
     let mouseCalcY = ((rawY / canvasOH) * 200 - 100) * sens;
@@ -914,7 +852,7 @@ const cntRender = () => {
     for (let i = 0; i < end; i++) {
       if (pattern.triggers[i].value == 0) {
         if (!destroyedBullets.has(pattern.triggers[i].num)) {
-          callBulletDestroy(pattern.triggers[i].num);
+          explodingBullets.add(pattern.triggers[i].num);
         }
       } else if (pattern.triggers[i].value == 1) {
         destroyAll(pattern.triggers[i].beat);
@@ -947,13 +885,7 @@ const cntRender = () => {
       ctx.fillText(text.text, (canvasW / 200) * (text.x + 100), (canvasH / 200) * (text.y + 100));
     }
 
-    for (let i = destroyParticles.length - 1; i >= 0; i--) {
-      if (destroyParticles[i].ms + 250 > Date.now()) {
-        drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
-      } else {
-        destroyParticles.splice(i, 1);
-      }
-    }
+    renderExplosions(ctx, canvasW, canvasH, destroyParticles);
 
     let renderDuration = 5 / speed;
 
@@ -1007,27 +939,9 @@ const cntRender = () => {
     }
     start = lowerBound(pattern.bullets, beats - 32);
     end = upperBound(pattern.bullets, beats);
-    for (let i = 0; i < end; i++) {
-      if (!destroyedBullets.has(i)) {
+    for (let i = start; i < end; i++) {
+      if (!destroyedBullets.has(i) || explodingBullets.has(i)) {
         const bullet = pattern.bullets[i];
-        if (!createdBullets.has(i)) {
-          createdBullets.add(i);
-          let randomDirection = [];
-          for (let i = 0; i < 3; i++) {
-            let rx = Math.floor(Math.random() * 4) - 2;
-            let ry = Math.floor(Math.random() * 4) - 2;
-            randomDirection[i] = [rx, ry];
-          }
-          destroyParticles.push({
-            x: bullet.direction == "L" ? -100 : 100,
-            y: bullet.location,
-            w: 10,
-            n: 1,
-            step: 4,
-            d: randomDirection,
-            ms: Date.now(),
-          });
-        }
 
         let triggerEnd = upperBound(pattern.triggers, bullet.beat);
         let baseSpeed = pattern.information.speed;
@@ -1066,6 +980,14 @@ const cntRender = () => {
 
         const x = (isLeft ? -100 : 100) + getCos(realAngle) * p;
         const y = bullet.location + getSin(realAngle) * p;
+
+        if (!createdBullets.has(i) || explodingBullets.has(i)) {
+          destroyParticles.push(...createExplosion(x, y, skin.bullet));
+          if (explodingBullets.has(i)) continue;
+        }
+
+        createdBullets.add(i);
+
         trackMouseSelection(i, 1, 0, x, y);
         drawBullet(x, y, visualAngle);
       }
@@ -1392,7 +1314,8 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
             missPoint.push(song.seek() * 1000);
             combo = 0;
             medalCheck(medal);
-            callBulletDestroy(i);
+            destroyParticles.push(...createExplosion(x, y, skin.bullet));
+            destroyedBullets.add(i);
             showOverlay();
             record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "bullet", song.seek() * 1000]);
             keyInput.push({ judge: "Bullet", key: "-", time: Date.now() });
@@ -1615,6 +1538,7 @@ const retry = () => {
     perfectParticles = [];
     createdBullets = new Set([]);
     destroyedBullets = new Set([]);
+    explodingBullets = new Set([]);
     destroyedNotes = new Set([]);
     grabbedNotes = new Set([]);
     score = 0;
