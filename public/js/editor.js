@@ -115,6 +115,7 @@ let prevDestroyedBullets = new Set([]);
 let createdBullets = new Set([]);
 let prevCreatedBullets = new Set([]);
 let hitBullets = new Set([]);
+let explodingBullets = new Set();
 
 let bulletPath;
 
@@ -710,22 +711,6 @@ const drawBullet = (x, y, ra, va, s, l, d, t, index) => {
   cntCtx.restore();
 };
 
-const drawParticle = (n, x, y, j) => {
-  let cx = (canvasW / 200) * (x + 100);
-  let cy = (canvasH / 200) * (y + 100);
-  if (n == 0) {
-    let n = destroyParticles[j].n;
-    let w = destroyParticles[j].w;
-    for (let i = 0; i < 3; i++) {
-      cntCtx.beginPath();
-      if (denySkin) cntCtx.fillStyle = "#222";
-      else cntCtx.fillStyle = "#fff";
-      cntCtx.arc(cx + (n * destroyParticles[j].d[i][0]) / 2, cy + (n * destroyParticles[j].d[i][1]) / 2, w, 0, 2 * Math.PI);
-      cntCtx.fill();
-    }
-  }
-};
-
 const eraseCnt = () => {
   cntCtx.clearRect(0, 0, canvasW, canvasH);
 };
@@ -1185,48 +1170,6 @@ const displayMessage = (type, message) => {
   errorCount++;
 };
 
-const callBulletDestroy = (j) => {
-  const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-  // const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
-  let end = upperBound(pattern.triggers, pattern.bullets[j].beat);
-  let baseSpeed = pattern.information.speed;
-  for (let i = 0; i < end; i++) {
-    if (pattern.triggers[i].value == 4) {
-      baseSpeed = pattern.triggers[i].speed;
-    }
-  }
-  let start = lowerBound(pattern.triggers, pattern.bullets[j].beat);
-  end = upperBound(pattern.triggers, beats);
-  let p = 0;
-  let prevBeat = pattern.bullets[j].beat;
-  let prevSpeed = baseSpeed;
-  for (let k = start; k < end; k++) {
-    if (pattern.triggers[k].value == 4) {
-      p += ((pattern.triggers[k].beat - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
-      prevBeat = pattern.triggers[k].beat;
-      prevSpeed = pattern.triggers[k].speed;
-    }
-  }
-  p += ((beats - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
-  const left = pattern.bullets[j].direction == "L";
-  let x = (left ? 1 : -1) * (getCos(pattern.bullets[j].angle) * p - 100);
-  let y = pattern.bullets[j].location + (left ? 1 : -1) * getSin(pattern.bullets[j].angle) * p;
-  let randomDirection = [];
-  for (let i = 0; i < 3; i++) {
-    let rx = Math.floor(Math.random() * 4) - 2;
-    let ry = Math.floor(Math.random() * 4) - 2;
-    randomDirection[i] = [rx, ry];
-  }
-  destroyParticles.push({
-    x: x,
-    y: y,
-    w: 5,
-    n: 1,
-    d: randomDirection,
-    ms: Date.now(),
-  });
-};
-
 const cntRender = () => {
   window.requestAnimationFrame(cntRender);
   try {
@@ -1241,6 +1184,7 @@ const cntRender = () => {
     pointingCntElement = mouseMode == 1 ? pointingTmlElement : { v1: "", v2: "", i: "" };
     createdBullets.clear();
     destroyedBullets.clear();
+    explodingBullets.clear();
 
     const tw = canvasW / 200;
     const th = canvasH / 200;
@@ -1329,7 +1273,7 @@ const cntRender = () => {
         // Bullet Destroy
         if (!destroyedBullets.has(pattern.triggers[i].num)) {
           if (!prevDestroyedBullets.has(pattern.triggers[i].num)) {
-            callBulletDestroy(pattern.triggers[i].num);
+            explodingBullets.add(pattern.triggers[i].num);
           }
           destroyedBullets.add(pattern.triggers[i].num);
         }
@@ -1339,7 +1283,7 @@ const cntRender = () => {
         for (let j = 0; j < bulletEnd; j++) {
           if (!destroyedBullets.has(j)) {
             if (!prevDestroyedBullets.has(j)) {
-              callBulletDestroy(j);
+              explodingBullets.add(j);
             }
             destroyedBullets.add(j);
           }
@@ -1378,16 +1322,8 @@ const cntRender = () => {
       cntCtx.fillText(text.text, tw * (text.x + 100), th * (text.y + 100));
     }
 
-    // Destroy Particles
-    for (let i = destroyParticles.length - 1; i >= 0; i--) {
-      if (destroyParticles[i].w > 0) {
-        drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
-        destroyParticles[i].w = 5 - (Date.now() - destroyParticles[i].ms) / 50;
-        destroyParticles[i].n++;
-      } else {
-        destroyParticles.splice(i, 1);
-      }
-    }
+    // Render Explosions
+    renderExplosions(cntCtx, canvasW, canvasH, destroyParticles);
 
     // Prevent destroy infinite loop
     prevDestroyedBullets = new Set(destroyedBullets);
@@ -1440,27 +1376,9 @@ const cntRender = () => {
     start = lowerBound(pattern.bullets, beats - 32);
     end = upperBound(pattern.bullets, beats);
     for (let i = start; i < end; i++) {
-      if (!destroyedBullets.has(i)) {
+      if (!destroyedBullets.has(i) || explodingBullets.has(i)) {
         const bullet = pattern.bullets[i];
         createdBullets.add(i);
-
-        if (!prevCreatedBullets.has(i)) {
-          let randomDirection = [];
-          for (let i = 0; i < 3; i++) {
-            let rx = Math.floor(Math.random() * 4) - 2;
-            let ry = Math.floor(Math.random() * 4) - 2;
-            randomDirection[i] = [rx, ry];
-          }
-
-          destroyParticles.push({
-            x: bullet.direction == "L" ? -100 : 100,
-            y: bullet.location,
-            w: 10,
-            n: 2,
-            d: randomDirection,
-            ms: Date.now(),
-          });
-        }
 
         let triggerEnd = upperBound(pattern.triggers, bullet.beat);
         let baseSpeed = pattern.information.speed;
@@ -1499,6 +1417,11 @@ const cntRender = () => {
 
         const x = (isLeft ? -100 : 100) + getCos(realAngle) * p;
         const y = bullet.location + getSin(realAngle) * p;
+
+        if (!prevCreatedBullets.has(i) || explodingBullets.has(i)) {
+          destroyParticles.push(...createExplosion(x, y, skin.bullet));
+          if (explodingBullets.has(i)) continue;
+        }
 
         if (mouseMode == 0) trackMouseSelection(i, 1, 0, x, y);
         drawBullet(x, y, realAngle, visualAngle, selectedCheck(1, i), pattern.bullets[i].location, pattern.bullets[i].direction, hitBullets.has(i), i);
