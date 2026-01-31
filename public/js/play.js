@@ -885,7 +885,7 @@ const cntRender = () => {
       ctx.fillText(text.text, (canvasW / 200) * (text.x + 100), (canvasH / 200) * (text.y + 100));
     }
 
-    renderExplosions(ctx, canvasW, canvasH, destroyParticles);
+    Draw.explosions(ctx, canvasW, canvasH, destroyParticles);
 
     let renderDuration = 5 / speed;
 
@@ -982,7 +982,7 @@ const cntRender = () => {
         const y = bullet.location + getSin(realAngle) * p;
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
-          destroyParticles.push(...createExplosion(x, y, skin.bullet));
+          destroyParticles.push(...Factory.createExplosion(x, y, skin.bullet));
           if (explodingBullets.has(i)) continue;
         }
 
@@ -1314,7 +1314,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
             missPoint.push(song.seek() * 1000);
             combo = 0;
             medalCheck(medal);
-            destroyParticles.push(...createExplosion(x, y, skin.bullet));
+            destroyParticles.push(...Factory.createExplosion(x, y, skin.bullet));
             destroyedBullets.add(i);
             showOverlay();
             record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "bullet", song.seek() * 1000]);

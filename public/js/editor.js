@@ -1322,7 +1322,7 @@ const cntRender = () => {
     }
 
     // Render Explosions
-    renderExplosions(cntCtx, canvasW, canvasH, destroyParticles);
+    Draw.explosions(cntCtx, canvasW, canvasH, destroyParticles);
 
     // Prevent destroy infinite loop
     prevDestroyedBullets = new Set(destroyedBullets);
@@ -1417,7 +1417,7 @@ const cntRender = () => {
         const y = bullet.location + getSin(realAngle) * p;
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
-          destroyParticles.push(...createExplosion(x, y, skin.bullet));
+          destroyParticles.push(...Factory.createExplosion(x, y, skin.bullet));
           if (explodingBullets.has(i)) continue;
         }
 
