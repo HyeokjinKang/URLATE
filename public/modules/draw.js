@@ -202,7 +202,7 @@ const Draw = {
       ctx.arc(0, 0, w, 1.5 * Math.PI, 1.5 * Math.PI + (safeP / 50) * Math.PI);
       ctx.stroke();
 
-      // 내부 채우기
+      // 타이밍 인디케이터
       ctx.beginPath();
       ctx.arc(0, 0, (w / 100) * safeP, 0, 2 * Math.PI);
       ctx.fill();
@@ -214,7 +214,7 @@ const Draw = {
         ctx.stroke();
       }
 
-      // 중앙 틴트
+      // 틴트
       ctx.beginPath();
       ctx.globalAlpha = ((0.2 * Math.min(safeP * 2, 100)) / 100) * globalAlpha;
       ctx.fillStyle = ctx.strokeStyle;
@@ -261,13 +261,11 @@ const Draw = {
       ctx.lineTo(originalValue[0] - (moveValue[0] / 100) * parr[2], originalValue[1] - (moveValue[1] / 100) * parr[2]);
       ctx.stroke();
 
-      // [Fill] 내부 채우기 (판정선에 가까울수록 차오름)
+      // 타이밍 인디케이터
       ctx.beginPath();
-      // 중심축을 따라 내려오는 선
       ctx.moveTo(0, 0 - 1.5 * d * (w / 100) * safeP);
       if (d === 1) ctx.arc(0, 0, (w / 100) * safeP, -Math.PI / 5, (Math.PI / 5) * 6);
       else ctx.arc(0, 0, (w / 100) * safeP, (-Math.PI / 5) * 6, Math.PI / 5);
-      // 다시 중심축으로 돌아감
       ctx.lineTo(0, 0 - 1.5 * d * (w / 100) * safeP);
       ctx.fill();
 
@@ -278,7 +276,7 @@ const Draw = {
         ctx.stroke();
       }
 
-      // 틴트 (중앙 입체감)
+      // 틴트
       ctx.beginPath();
       ctx.globalAlpha = ((0.2 * Math.min(safeP * 2, 100)) / 100) * globalAlpha;
       ctx.fillStyle = ctx.strokeStyle;
@@ -307,12 +305,12 @@ const Draw = {
         ctx.arc(0, 0, w, 1.5 * Math.PI, 1.5 * Math.PI + (safeP / 50) * Math.PI);
         ctx.stroke();
       } else if (!isGrabbed) {
-        // 놓침 (전체)
+        // 놓침
         ctx.arc(0, 0, w, 0, 2 * Math.PI);
         ctx.fill();
         ctx.stroke();
       } else if (tailProgress <= 100) {
-        // 잡는 중 (줄어듬)
+        // 잡는 중
         ctx.arc(0, 0, w, 1.5 * Math.PI + (tailProgress / 50) * Math.PI, 1.5 * Math.PI);
         ctx.lineTo(0, 0);
         ctx.fill();
