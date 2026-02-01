@@ -761,7 +761,7 @@ const cntRender = () => {
         createdBullets.add(i);
 
         trackMouseSelection(i, 1, 0, x, y);
-        Draw.bullet(cntCtx, { canvasW, canvasH }, skin, { x, y }, { visualAngle });
+        Draw.bullet(ctx, { canvasW, canvasH }, skin, { x, y }, { visualAngle });
       }
     }
 
