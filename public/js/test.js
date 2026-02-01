@@ -1436,13 +1436,11 @@ const checkHoldNote = (key) => {
       miss++;
       showOverlay();
       missPoint.push(song.seek() * 1000);
-      record.push([record.length, 0, 2, keyPressing[key], mouseX, mouseY, "miss(hold)", song.seek() * 1000]);
       keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
     } else {
       perfectParticles.push({ x: pattern.patterns[keyPressing[key]].x, y: pattern.patterns[keyPressing[key]].y, s: Date.now() });
       calculateScore("Perfect", keyPressing[key], true);
       keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
-      record.push([record.length, 0, 2, keyPressing[key], mouseX, mouseY, "perfect(hold)", song.seek() * 1000]);
     }
     delete keyPressing[key];
   }
