@@ -1173,7 +1173,7 @@ const cntRender = () => {
         const y = bullet.location + getSin(realAngle) * p;
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
-          if (!prevCreatedBullets.has(i) || explodingBullets.has(i)) destroyParticles.push(...Factory.createExplosion(x, y, skin.bullet));
+          if (!prevCreatedBullets.has(i) || explodingBullets.has(i)) destroyParticles.push(...Factory.createExplosions(x, y, skin.bullet));
           if (explodingBullets.has(i)) continue;
         }
 

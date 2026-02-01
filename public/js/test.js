@@ -728,7 +728,7 @@ const cntRender = () => {
         const y = bullet.location + getSin(realAngle) * p;
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
-          destroyParticles.push(...Factory.createExplosion(x, y, skin.bullet));
+          destroyParticles.push(...Factory.createExplosions(x, y, skin.bullet));
           if (explodingBullets.has(i)) continue;
         }
 
@@ -1007,7 +1007,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
             missPoint.push(song.seek() * 1000);
             combo = 0;
             medalCheck(medal);
-            destroyParticles.push(...Factory.createExplosion(x, y, skin.bullet));
+            destroyParticles.push(...Factory.createExplosions(x, y, skin.bullet));
             destroyedBullets.add(i);
             showOverlay();
             keyInput.push({ judge: "Bullet", key: "-", time: Date.now() });

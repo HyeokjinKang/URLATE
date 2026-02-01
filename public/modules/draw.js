@@ -62,7 +62,7 @@ const Factory = {
    * 폭발 효과를 위한 파티클 데이터 배열을 생성합니다.
    * @returns {Array<object>} 생성된 파티클 객체들의 배열
    */
-  createExplosion: (x, y, skin) => {
+  createExplosions: (x, y, skin) => {
     const particles = [];
     const conf = Config.EXPLODE_EFFECT;
 
