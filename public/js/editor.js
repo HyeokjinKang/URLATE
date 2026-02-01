@@ -412,44 +412,6 @@ const changeMode = (n) => {
   mode = n;
 };
 
-const drawCursor = () => {
-  cntCtx.beginPath();
-  let w = canvasW / 70;
-  let x = (canvasW / 200) * (mouseX + 100);
-  let y = (canvasH / 200) * (mouseY + 100);
-  if (!denySkin) {
-    if (skin.cursor.type == "gradient") {
-      let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-      for (let i = 0; i < skin.cursor.stops.length; i++) {
-        grd.addColorStop(skin.cursor.stops[i].percentage / 100, `#${skin.cursor.stops[i].color}`);
-      }
-      cntCtx.fillStyle = grd;
-    } else if (skin.cursor.type == "color") {
-      cntCtx.fillStyle = `#${skin.cursor.color}`;
-    }
-    if (skin.cursor.outline) {
-      cntCtx.lineWidth = Math.round((canvasW / 1000) * skin.cursor.outline.width);
-      if (skin.cursor.outline.type == "gradient") {
-        let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.cursor.outline.stops.length; i++) {
-          grd.addColorStop(skin.cursor.outline.stops[i].percentage / 100, `#${skin.cursor.outline.stops[i].color}`);
-        }
-        cntCtx.strokeStyle = grd;
-      } else if (skin.cursor.outline.type == "color") {
-        cntCtx.strokeStyle = `#${skin.cursor.outline.color}`;
-      }
-    }
-  } else {
-    let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-    grd.addColorStop(0, `rgb(174, 102, 237)`);
-    grd.addColorStop(1, `rgb(102, 183, 237)`);
-    cntCtx.fillStyle = grd;
-  }
-  cntCtx.arc(x, y, w, 0, 2 * Math.PI);
-  cntCtx.fill();
-  if (skin.cursor.outline) cntCtx.stroke();
-};
-
 const drawShadow = (x, y, n, d, a) => {
   x = (canvasW / 200) * (x + 100);
   y = (canvasH / 200) * (y + 100);
@@ -1366,7 +1328,9 @@ const cntRender = () => {
     isTmlUpdateNeeded = false;
   }
 
-  if (mouseMode == 0 && !denyCursor) drawCursor();
+  if (mouseMode == 0 && !denyCursor) {
+    Draw.cursor(cntCtx, { canvasW, canvasH }, skin, { x: mouseX, y: mouseY });
+  }
 };
 
 const songPlayPause = () => {

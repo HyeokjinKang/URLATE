@@ -413,57 +413,6 @@ const drawParticle = (n, x, y, j, d) => {
   }
 };
 
-const drawCursor = () => {
-  ctx.beginPath();
-  let w = (canvasW / 70) * cursorZoom;
-  if (mouseClickedMs == -1) {
-    mouseClickedMs = Date.now() - 100;
-  }
-  if (mouseClicked) {
-    if (mouseClickedMs + 10 > Date.now()) {
-      w = w + (canvasW / 400) * (1 - (mouseClickedMs + 10 - Date.now()) / 10);
-    } else {
-      w = w + (canvasW / 400) * 1;
-    }
-  } else {
-    if (mouseClickedMs + 100 > Date.now()) {
-      w = w + ((canvasW / 400) * (mouseClickedMs + 100 - Date.now())) / 100;
-    }
-  }
-  let x = (canvasW / 200) * (mouseX + 100);
-  let y = (canvasH / 200) * (mouseY + 100);
-  if (skin.cursor.type == "gradient") {
-    let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-    for (let i = 0; i < skin.cursor.stops.length; i++) {
-      grd.addColorStop(skin.cursor.stops[i].percentage / 100, `#${skin.cursor.stops[i].color}`);
-    }
-    ctx.shadowColor = `#${skin.cursor.stops[0].color}90`;
-    ctx.fillStyle = grd;
-  } else if (skin.cursor.type == "color") {
-    ctx.fillStyle = `#${skin.cursor.color}`;
-    ctx.shadowColor = `#${skin.cursor.color}90`;
-  }
-  if (skin.cursor.outline) {
-    ctx.lineWidth = Math.round((canvasW / 1000) * skin.cursor.outline.width);
-    if (skin.cursor.outline.type == "gradient") {
-      let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-      for (let i = 0; i < skin.cursor.outline.stops.length; i++) {
-        grd.addColorStop(skin.cursor.outline.stops[i].percentage / 100, `#${skin.cursor.outline.stops[i].color}`);
-      }
-      ctx.shadowColor = `#${skin.cursor.outline.stops[0].color}90`;
-      ctx.strokeStyle = grd;
-    } else if (skin.cursor.outline.type == "color") {
-      ctx.shadowColor = `#${skin.cursor.outline.color}90`;
-      ctx.strokeStyle = `#${skin.cursor.outline.color}`;
-    }
-  }
-  ctx.arc(x, y, w, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.shadowBlur = canvasW / 100;
-  if (skin.cursor.outline) ctx.stroke();
-  ctx.shadowBlur = 0;
-};
-
 const destroyAll = (beat) => {
   const end = upperBound(pattern.bullets, beat);
   for (let j = 0; j < end; j++) {
@@ -823,13 +772,22 @@ const cntRender = () => {
   ctx.font = `${400 * (1 + comboAnimation * 0.5)} ${(canvasH / 40) * (1 + comboAnimation)}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
   ctx.fillStyle = "#fff";
   ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
-  drawCursor();
 
   drawKeyInput();
 
   if (effectMs != 0 && effectNum != -1) drawFinalEffect(effectNum);
 
-  drawCursor();
+  Draw.cursor(
+    ctx,
+    { canvasW, canvasH },
+    skin,
+    {
+      x: mouseX,
+      y: mouseY,
+      zoom: cursorZoom,
+    },
+    { isClicked: mouseClicked != false, clickedMs: mouseClickedMs },
+  );
 };
 
 const drawFinalEffect = (i) => {

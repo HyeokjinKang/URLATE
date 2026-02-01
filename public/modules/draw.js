@@ -11,6 +11,11 @@ const Config = {
     LIFETIME: 1000,
     SIZE: 0.6,
   },
+  CURSOR: {
+    SIZE: 10 / 7,
+    ANIM_SIZE_ADDER: 1 / 4,
+    RELEASE_ANIM_LENGTH: 100,
+  },
 };
 
 /**
@@ -186,7 +191,7 @@ const Draw = {
 
     // 그리기 시작
     ctx.save();
-    ctx.translate(cx, cy); // 원점을 노트 중심으로 이동
+    ctx.translate(cx, cy);
 
     const lineWidth = Math.round(canvasW / 300);
     const outlineWidth = noteSkin.outline ? Math.round((canvasW / 1000) * noteSkin.outline.width) : 0;
@@ -448,6 +453,81 @@ const Draw = {
 
     const path = RenderCache.bullet.path;
     ctx.fill(path);
+
+    ctx.restore();
+  },
+
+  /**
+   * 마우스 커서를 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {object} skin - 유저 스킨 설정값
+   * @param {object} cursor - { x, y, zoom? }
+   * @param {object} state - { isClicked?, clickedMs? }
+   */
+  cursor: (ctx, layout, skin, cursor, state) => {
+    const { canvasW, canvasH } = layout;
+    const { x: mouseX, y: mouseY, zoom = 1 } = cursor;
+    const { isClicked = false, clickedMs = -1 } = state;
+
+    const { cx, cy } = getCanvasPos(mouseX, mouseY, canvasW, canvasH);
+    const conf = Config.CURSOR;
+
+    // 기본 크기 계산
+    let w = (canvasW / 100) * conf.SIZE * zoom;
+
+    // 클릭 애니메이션
+    if (clickedMs !== undefined && clickedMs !== -1) {
+      const now = Date.now();
+      if (isClicked) {
+        // 클릭하면 살짝 커짐
+        w = w + (canvasW / 100) * conf.ANIM_SIZE_ADDER;
+      } else {
+        // 클릭을 풀면 서서히 복귀
+        if (now < clickedMs + conf.RELEASE_ANIM_LENGTH) {
+          const progress = (clickedMs + conf.RELEASE_ANIM_LENGTH - now) / conf.RELEASE_ANIM_LENGTH;
+          w = w + (canvasW / 100) * conf.ANIM_SIZE_ADDER * progress;
+        }
+      }
+    }
+
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    // 스킨 적용
+    if (skin.cursor.type === "gradient") {
+      const grd = ctx.createLinearGradient(-w, -w, w, w);
+      for (let i = 0; i < skin.cursor.stops.length; i++) {
+        grd.addColorStop(skin.cursor.stops[i].percentage / 100, `#${skin.cursor.stops[i].color}`);
+      }
+      ctx.fillStyle = grd;
+      ctx.shadowColor = `#${skin.cursor.stops[0].color}90`;
+    } else {
+      ctx.fillStyle = `#${skin.cursor.color}`;
+      ctx.shadowColor = `#${skin.cursor.color}90`;
+    }
+
+    if (skin.cursor.outline) {
+      ctx.lineWidth = Math.round((canvasW / 1000) * skin.cursor.outline.width);
+      if (skin.cursor.outline.type === "gradient") {
+        const grd = ctx.createLinearGradient(-w, -w, w, w);
+        for (let i = 0; i < skin.cursor.outline.stops.length; i++) {
+          grd.addColorStop(skin.cursor.outline.stops[i].percentage / 100, `#${skin.cursor.outline.stops[i].color}`);
+        }
+        ctx.shadowColor = `#${skin.cursor.outline.stops[0].color}90`;
+        ctx.strokeStyle = grd;
+      } else {
+        ctx.shadowColor = `#${skin.cursor.outline.color}90`;
+        ctx.strokeStyle = `#${skin.cursor.outline.color}`;
+      }
+    }
+
+    // 그리기
+    ctx.beginPath();
+    ctx.arc(0, 0, w, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.shadowBlur = canvasW / 100;
+    if (skin.cursor.outline) ctx.stroke();
 
     ctx.restore();
   },
