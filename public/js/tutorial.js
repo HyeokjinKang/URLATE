@@ -418,160 +418,6 @@ const drawParticle = (n, x, y, j, d) => {
   }
 };
 
-const drawNote = (p, x, y, n, d, t, index, f) => {
-  if (n != 2 && p >= 130) return;
-  else if (n == 2 && f >= 130) return;
-  p = Math.max(p, 0);
-  x = (canvasW / 200) * (x + 100);
-  y = (canvasH / 200) * (y + 100);
-  n = n == undefined ? 0 : n;
-  let w = canvasW / 40;
-  let opacity = 255;
-  if (n != 2 && p >= 100) {
-    opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
-  } else if (n == 2 && p >= 100 && t >= 100 && (grabbedNotes.has(index) || grabbedNotes.has(`${index}!`))) {
-    opacity = Math.max(Math.round((255 / 30) * (130 - f)), 0);
-  } else if (n == 2 && p >= 100 && !grabbedNotes.has(index)) {
-    opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
-  }
-  opacity = opacity.toString(16).padStart(2, "0");
-  if (skin.note[n].type == "gradient") {
-    let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-    for (let i = 0; i < skin.note[n].stops.length; i++) {
-      grd.addColorStop(skin.note[n].stops[i].percentage / 100, `#${skin.note[n].stops[i].color}${opacity}`);
-    }
-    ctx.fillStyle = grd;
-    ctx.strokeStyle = grd;
-  } else if (skin.note[n].type == "color") {
-    ctx.fillStyle = `#${skin.note[n].color}${opacity}`;
-    ctx.strokeStyle = `#${skin.note[n].color}${opacity}`;
-  }
-  if (skin.note[n].circle) {
-    if (skin.note[n].circle.type == "gradient") {
-      let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-      for (let i = 0; i < skin.note[n].circle.stops.length; i++) {
-        grd.addColorStop(skin.note[n].circle.stops[i].percentage / 100, `#${skin.note[n].circle.stops[i].color}${opacity}`);
-      }
-      ctx.strokeStyle = grd;
-    } else if (skin.note[n].circle.type == "color") {
-      ctx.strokeStyle = `#${skin.note[n].circle.color}${opacity}`;
-    }
-  }
-  ctx.lineWidth = Math.round(canvasW / 300);
-  if (n == 0) {
-    ctx.beginPath();
-    ctx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(x, y, (w / 100) * p, 0, 2 * Math.PI);
-    ctx.fill();
-    if (skin.note[n].outline) {
-      if (skin.note[n].outline.type == "gradient") {
-        let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
-        }
-        ctx.strokeStyle = grd;
-      } else if (skin.note[n].outline.type == "color") {
-        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
-      }
-      ctx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
-      ctx.stroke();
-    }
-    ctx.beginPath();
-    ctx.globalAlpha = ((0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100) * globalAlpha;
-    ctx.fillStyle = ctx.strokeStyle;
-    ctx.arc(x, y, w, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.globalAlpha = globalAlpha;
-  } else if (n == 1) {
-    w = w * 0.9;
-    let parr = [p <= 20 ? p * 5 : 100, p >= 20 ? (p <= 80 ? (p - 20) * 1.66 : 100) : 0, p >= 80 ? (p <= 100 ? (p - 80) * 5 : 100) : 0];
-    ctx.beginPath();
-    let originalValue = [0, -1.5 * d * w];
-    let moveValue = [originalValue[0] - w * Math.cos(Math.PI / 5) * d, originalValue[1] + w * Math.sin(Math.PI / 5) * d];
-    ctx.moveTo(x + originalValue[0], y + originalValue[1]);
-    ctx.lineTo(x + originalValue[0] - (moveValue[0] / 100) * parr[0], y + originalValue[1] - (moveValue[1] / 100) * parr[0]);
-    ctx.moveTo(x + originalValue[0] - moveValue[0], y + originalValue[1] - moveValue[1]);
-    if (d == 1) ctx.arc(x, y, w, -Math.PI / 5, (((Math.PI / 5) * 7) / 100) * parr[1] - Math.PI / 5);
-    else ctx.arc(x, y, w, (-Math.PI / 5) * 6, (((Math.PI / 5) * 7) / 100) * parr[1] - (Math.PI / 5) * 6);
-    originalValue = [-w * Math.cos(Math.PI / 5) * d, -w * Math.sin(Math.PI / 5) * d];
-    moveValue = [originalValue[0], originalValue[1] - -1.5 * d * w];
-    ctx.moveTo(x + originalValue[0], y + originalValue[1]);
-    ctx.lineTo(x + originalValue[0] - (moveValue[0] / 100) * parr[2], y + originalValue[1] - (moveValue[1] / 100) * parr[2]);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x, y - 1.5 * d * (w / 100) * p);
-    if (d == 1) ctx.arc(x, y, (w / 100) * p, -Math.PI / 5, (Math.PI / 5) * 6);
-    else ctx.arc(x, y, (w / 100) * p, (-Math.PI / 5) * 6, Math.PI / 5);
-    ctx.lineTo(x, y - 1.5 * d * (w / 100) * p);
-    ctx.fill();
-    if (skin.note[n].outline) {
-      if (skin.note[n].outline.type == "gradient") {
-        let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
-        }
-        ctx.strokeStyle = grd;
-      } else if (skin.note[n].outline.type == "color") {
-        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
-      }
-      ctx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
-      ctx.stroke();
-    }
-    ctx.beginPath();
-    ctx.globalAlpha = ((0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100) * globalAlpha;
-    ctx.fillStyle = ctx.strokeStyle;
-    ctx.moveTo(x, y - 1.5 * d * w);
-    if (d == 1) ctx.arc(x, y, w, -Math.PI / 5, (Math.PI / 5) * 6);
-    else ctx.arc(x, y, w, (-Math.PI / 5) * 6, Math.PI / 5);
-    ctx.lineTo(x, y - 1.5 * d * w);
-    ctx.fill();
-    ctx.globalAlpha = globalAlpha;
-  } else if (n == 2) {
-    ctx.beginPath();
-    if (skin.note[n].outline) {
-      if (skin.note[n].outline.type == "gradient") {
-        let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
-        }
-        ctx.strokeStyle = grd;
-      } else if (skin.note[n].outline.type == "color") {
-        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
-      }
-      ctx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
-    }
-    if (p <= 100) {
-      ctx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
-      ctx.lineTo(x, y);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
-      ctx.stroke();
-    } else if (!grabbedNotes.has(index)) {
-      ctx.arc(x, y, w, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.stroke();
-    } else if (t <= 100) {
-      ctx.arc(x, y, w, (3 / 2) * Math.PI + (t / 50) * Math.PI, (3 / 2) * Math.PI);
-      ctx.lineTo(x, y);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(x, y, w, 0, 2 * Math.PI);
-      ctx.stroke();
-    } else {
-      ctx.arc(x, y, w, 0, 2 * Math.PI);
-      ctx.stroke();
-    }
-    ctx.globalAlpha = ((0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100) * globalAlpha;
-    ctx.fillStyle = ctx.strokeStyle;
-    ctx.arc(x, y, w, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.globalAlpha = globalAlpha;
-  }
-};
-
 const drawCursor = () => {
   ctx.beginPath();
   let w = (canvasW / 70) * cursorZoom;
@@ -854,11 +700,26 @@ const cntRender = () => {
       }
     }
     for (let i = end - 1; i >= start; i--) {
-      const p = (1 - (pattern.patterns[i].beat - beats) / renderDuration) * 100;
-      const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
-      const f = (1 - (pattern.patterns[i].beat + pattern.patterns[i].duration - beats) / renderDuration) * 100;
-      drawNote(p, pattern.patterns[i].x, pattern.patterns[i].y, pattern.patterns[i].value, pattern.patterns[i].direction, t, i, f);
-      if (p >= 120 && !destroyedNotes.has(i) && (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
+      const progress = (1 - (pattern.patterns[i].beat - beats) / renderDuration) * 100;
+      const tailProgress = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
+      const endProgress = (1 - (pattern.patterns[i].beat + pattern.patterns[i].duration - beats) / renderDuration) * 100;
+      Draw.note(
+        ctx,
+        {
+          canvasW,
+          canvasH,
+          globalAlpha,
+        },
+        skin,
+        pattern.patterns[i],
+        {
+          progress,
+          tailProgress,
+          endProgress,
+          isGrabbed: grabbedNotes.has(i),
+        },
+      );
+      if (progress >= 120 && !destroyedNotes.has(i) && (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
         calculateScore("miss", i, true);
         missParticles.push({
           x: pattern.patterns[i].x,
@@ -869,7 +730,7 @@ const cntRender = () => {
         showOverlay();
         missPoint.push(song.seek() * 1000);
         keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
-      } else if (t >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
+      } else if (tailProgress >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
         perfectParticles.push({ x: pattern.patterns[i].x, y: pattern.patterns[i].y, s: Date.now() });
