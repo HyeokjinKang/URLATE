@@ -612,6 +612,7 @@ const cntRender = () => {
       if (pattern.triggers[i].value == 0) {
         if (!destroyedBullets.has(pattern.triggers[i].num)) {
           explodingBullets.add(pattern.triggers[i].num);
+          destroyedBullets.add(pattern.triggers[i].num);
         }
       } else if (pattern.triggers[i].value == 1) {
         destroyAll(pattern.triggers[i].beat);
