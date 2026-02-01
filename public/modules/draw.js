@@ -7,9 +7,9 @@ const Config = {
   },
   EXPLODE_EFFECT: {
     COUNT: 3,
-    SPEED: 1.5,
-    LIFETIME: 200,
-    SIZE: 0.5,
+    SPEED: 30,
+    LIFETIME: 1000,
+    SIZE: 1,
   },
 };
 
@@ -63,12 +63,13 @@ const Factory = {
 
     for (let i = 0; i < conf.COUNT; i++) {
       const angle = Math.random() * Math.PI * 2;
+      const distance = conf.SPEED * (0.8 + Math.random() * 0.4);
 
       particles.push({
-        x: x,
-        y: y,
-        vx: Math.cos(angle) * conf.SPEED,
-        vy: Math.sin(angle) * conf.SPEED,
+        startX: x,
+        startY: y,
+        dx: Math.cos(angle) * distance,
+        dy: Math.sin(angle) * distance,
         createdAt: Date.now(),
         lifeTime: conf.LIFETIME,
         skin: skin,
@@ -113,13 +114,16 @@ const Draw = {
         continue;
       }
 
-      p.x += p.vx;
-      p.y += p.vy;
+      const progress = Math.min(1, elapsed / p.lifeTime);
+      const easeVal = easeOutQuart(progress);
+
+      p.x = p.startX + p.dx * easeVal;
+      p.y = p.startY + p.dy * easeVal;
 
       const cx = (canvasW / 200) * (p.x + 100);
       const cy = (canvasH / 200) * (p.y + 100);
-      const progress = elapsed / p.lifeTime;
-      const size = (canvasW / 100) * conf.SIZE * (1 - progress);
+
+      const size = (canvasW / 100) * conf.SIZE * (1 - easeVal);
 
       if (size <= 0) continue;
 
