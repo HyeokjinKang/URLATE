@@ -9,7 +9,7 @@ const Config = {
     COUNT: 3,
     SPEED: 1.5,
     LIFETIME: 200,
-    SIZE: 1,
+    SIZE: 0.5,
   },
 };
 
