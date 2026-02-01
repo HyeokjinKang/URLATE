@@ -113,6 +113,7 @@ let selectedCntElement = { v1: "", v2: "", i: "" };
 let destroyedBullets = new Set([]);
 let prevDestroyedBullets = new Set([]);
 let createdBullets = new Set([]);
+let prevCreatedBullets = new Set([]);
 let hitBullets = new Set([]);
 let explodingBullets = new Set();
 
@@ -480,160 +481,6 @@ const drawShadow = (x, y, n, d, a) => {
 const drawOutlinedText = (ctx, text, x, y) => {
   ctx.strokeText(text, x, y);
   ctx.fillText(text, x, y);
-};
-
-const drawNote = (p, x, y, s, n, d, t, f, index) => {
-  if (n != 2 && p >= 130) return;
-  else if (n == 2 && f >= 130) return;
-  p = Math.max(p, 0);
-  let originX = x;
-  let originY = y;
-  x = (canvasW / 200) * (x + 100);
-  y = (canvasH / 200) * (y + 100);
-  n = n == undefined ? 0 : n;
-  let w = canvasW / 40;
-  let opacity = 255;
-  if (n != 2 && p >= 100) {
-    opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
-  } else if (n == 2 && p >= 100 && t >= 100) {
-    opacity = Math.max(Math.round((255 / 30) * (130 - f)), 0);
-  }
-  opacity = opacity.toString(16).padStart(2, "0");
-  if (s == true) {
-    cntCtx.lineWidth = Math.round(canvasW / 300);
-    cntCtx.beginPath();
-    cntCtx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-    cntCtx.fillStyle = "#000";
-    cntCtx.strokeStyle = "#fff";
-    cntCtx.textAlign = "center";
-    if (index != undefined) {
-      cntCtx.textBaseline = "bottom";
-      drawOutlinedText(cntCtx, `Note_${index}`, x, y - 1.2 * w);
-    }
-    cntCtx.textBaseline = "top";
-    drawOutlinedText(cntCtx, `(X: ${originX}, Y: ${originY})`, x, y + 1.2 * w);
-    cntCtx.fillStyle = `#ebd534${opacity}`;
-    cntCtx.strokeStyle = `#ebd534${opacity}`;
-  } else {
-    if (!denySkin) {
-      if (skin.note[n].type == "gradient") {
-        let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.note[n].stops.length; i++) {
-          grd.addColorStop(skin.note[n].stops[i].percentage / 100, `#${skin.note[n].stops[i].color}${opacity}`);
-        }
-        cntCtx.fillStyle = grd;
-        cntCtx.strokeStyle = grd;
-      } else if (skin.note[n].type == "color") {
-        cntCtx.fillStyle = `#${skin.note[n].color}${opacity}`;
-        cntCtx.strokeStyle = `#${skin.note[n].color}${opacity}`;
-      }
-      if (skin.note[n].circle) {
-        if (skin.note[n].circle.type == "gradient") {
-          let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-          for (let i = 0; i < skin.note[n].circle.stops.length; i++) {
-            grd.addColorStop(skin.note[n].circle.stops[i].percentage / 100, `#${skin.note[n].circle.stops[i].color}${opacity}`);
-          }
-          cntCtx.strokeStyle = grd;
-        } else if (skin.note[n].circle.type == "color") {
-          cntCtx.strokeStyle = `#${skin.note[n].circle.color}${opacity}`;
-        }
-      }
-    } else {
-      let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-      grd.addColorStop(0, `${["#fb4934", "#53cddb", "#C196ED"][n]}${opacity}`);
-      grd.addColorStop(1, `${["#ebd934", "#0669ff", "#8251B6"][n]}${opacity}`);
-      cntCtx.fillStyle = grd;
-      cntCtx.strokeStyle = grd;
-    }
-  }
-  cntCtx.lineWidth = Math.round(canvasW / 300);
-  if (n == 0) {
-    cntCtx.beginPath();
-    cntCtx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
-    cntCtx.stroke();
-    cntCtx.beginPath();
-    cntCtx.arc(x, y, (w / 100) * p, 0, 2 * Math.PI);
-    cntCtx.fill();
-    if (skin.note[n].outline && !denySkin) {
-      if (skin.note[n].outline.type == "gradient") {
-        let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
-        }
-        cntCtx.strokeStyle = grd;
-      } else if (skin.note[n].outline.type == "color") {
-        cntCtx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
-      }
-      cntCtx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
-      cntCtx.stroke();
-    }
-  } else if (n == 1) {
-    w = w * 0.9;
-    let parr = [p <= 20 ? p * 5 : 100, p >= 20 ? (p <= 80 ? (p - 20) * 1.66 : 100) : 0, p >= 80 ? (p <= 100 ? (p - 80) * 5 : 100) : 0];
-    cntCtx.beginPath();
-    let originalValue = [0, -1.5 * d * w];
-    let moveValue = [originalValue[0] - w * Math.cos(Math.PI / 5) * d, originalValue[1] + w * Math.sin(Math.PI / 5) * d];
-    cntCtx.moveTo(x + originalValue[0], y + originalValue[1]);
-    cntCtx.lineTo(x + originalValue[0] - (moveValue[0] / 100) * parr[0], y + originalValue[1] - (moveValue[1] / 100) * parr[0]);
-    cntCtx.moveTo(x + originalValue[0] - moveValue[0], y + originalValue[1] - moveValue[1]);
-    if (d == 1) cntCtx.arc(x, y, w, -Math.PI / 5, (((Math.PI / 5) * 7) / 100) * parr[1] - Math.PI / 5);
-    else cntCtx.arc(x, y, w, (-Math.PI / 5) * 6, (((Math.PI / 5) * 7) / 100) * parr[1] - (Math.PI / 5) * 6);
-    originalValue = [-w * Math.cos(Math.PI / 5) * d, -w * Math.sin(Math.PI / 5) * d];
-    moveValue = [originalValue[0], originalValue[1] - -1.5 * d * w];
-    cntCtx.moveTo(x + originalValue[0], y + originalValue[1]);
-    cntCtx.lineTo(x + originalValue[0] - (moveValue[0] / 100) * parr[2], y + originalValue[1] - (moveValue[1] / 100) * parr[2]);
-    cntCtx.stroke();
-    cntCtx.beginPath();
-    cntCtx.moveTo(x, y - 1.5 * d * (w / 100) * p);
-    if (d == 1) cntCtx.arc(x, y, (w / 100) * p, -Math.PI / 5, (Math.PI / 5) * 6);
-    else cntCtx.arc(x, y, (w / 100) * p, (-Math.PI / 5) * 6, Math.PI / 5);
-    cntCtx.lineTo(x, y - 1.5 * d * (w / 100) * p);
-    cntCtx.fill();
-    if (skin.note[n].outline && !denySkin) {
-      if (skin.note[n].outline.type == "gradient") {
-        let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
-        }
-        cntCtx.strokeStyle = grd;
-      } else if (skin.note[n].outline.type == "color") {
-        cntCtx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
-      }
-      cntCtx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
-      cntCtx.stroke();
-    }
-  } else if (n == 2) {
-    cntCtx.beginPath();
-    if (p <= 100) {
-      cntCtx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
-      cntCtx.stroke();
-      cntCtx.lineTo(x, y);
-      cntCtx.fill();
-    } else if (t <= 100) {
-      cntCtx.arc(x, y, w, 0, 2 * Math.PI);
-      cntCtx.stroke();
-      cntCtx.beginPath();
-      cntCtx.arc(x, y, w, (3 / 2) * Math.PI + (t / 50) * Math.PI, (3 / 2) * Math.PI);
-      cntCtx.lineTo(x, y);
-      cntCtx.fill();
-    } else {
-      cntCtx.arc(x, y, w, 0, 2 * Math.PI);
-      cntCtx.stroke();
-    }
-    if (skin.note[n].outline && !denySkin) {
-      if (skin.note[n].outline.type == "gradient") {
-        let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
-        }
-        cntCtx.strokeStyle = grd;
-      } else if (skin.note[n].outline.type == "color") {
-        cntCtx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
-      }
-      cntCtx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
-      cntCtx.stroke();
-    }
-  }
 };
 
 const changeNote = () => {
@@ -1346,11 +1193,11 @@ const cntRender = () => {
     // Note drawing loop
     let validNote = end;
     for (let i = end - 1; i >= start; i--) {
-      const p = (1 - (pattern.patterns[i].beat - beats) / renderDuration) * 100;
-      const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
-      const f = (1 - (pattern.patterns[i].beat + pattern.patterns[i].duration - beats) / renderDuration) * 100;
-      if (pattern.patterns[i].value != 2 && p < 101) validNote = i;
-      else if (pattern.patterns[i].value == 2 && f < 100) validNote = i;
+      const progress = (1 - (pattern.patterns[i].beat - beats) / renderDuration) * 100;
+      const tailProgress = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
+      const endProgress = (1 - (pattern.patterns[i].beat + pattern.patterns[i].duration - beats) / renderDuration) * 100;
+      if (pattern.patterns[i].value != 2 && progress < 101) validNote = i;
+      else if (pattern.patterns[i].value == 2 && endProgress < 100) validNote = i;
       const alpha = 0.4 - 0.1 * (validNote - i);
       if (i > 0) {
         const x1 = (canvasW / 200) * (pattern.patterns[i - 1].x + 100);
@@ -1365,7 +1212,26 @@ const cntRender = () => {
         cntCtx.stroke();
       }
       if (i == validNote) {
-        drawNote(p, pattern.patterns[i].x, pattern.patterns[i].y, selectedCheck(0, i), pattern.patterns[i].value, pattern.patterns[i].direction, t, f, i);
+        Draw.note(
+          cntCtx,
+          {
+            canvasW,
+            canvasH,
+            globalAlpha,
+          },
+          skin,
+          {
+            ...pattern.patterns[i],
+            debugIndex: i,
+          },
+          {
+            progress,
+            tailProgress,
+            endProgress,
+            isGrabbed: progress >= 100,
+            isSelected: selectedCheck(0, i),
+          },
+        );
       } else if (i + 3 >= validNote) {
         drawShadow(pattern.patterns[i].x, pattern.patterns[i].y, pattern.patterns[i].value, pattern.patterns[i].direction, alpha);
       }
@@ -1417,7 +1283,7 @@ const cntRender = () => {
         const y = bullet.location + getSin(realAngle) * p;
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
-          destroyParticles.push(...Factory.createExplosion(x, y, skin.bullet));
+          if (!prevCreatedBullets.has(i) || explodingBullets.has(i)) destroyParticles.push(...Factory.createExplosion(x, y, skin.bullet));
           if (explodingBullets.has(i)) continue;
         }
 
@@ -1427,6 +1293,7 @@ const cntRender = () => {
         drawBullet(x, y, realAngle, visualAngle, selectedCheck(1, i), pattern.bullets[i].location, pattern.bullets[i].direction, hitBullets.has(i), i);
       }
     }
+    prevCreatedBullets = new Set(createdBullets);
 
     cntCtx.globalAlpha = 1;
 
@@ -1446,6 +1313,7 @@ const cntRender = () => {
         p[1] = (mouseX - 80) / 20;
       }
       if (p[0] == 0 && p[1] == 0) {
+        let drawX, drawY;
         if (circleToggle && selectedCntElement.v1 === 0) {
           const radius = canvasW / 15;
           const noteX = tw * (pattern.patterns[selectedCntElement.i].x + 100);
@@ -1455,11 +1323,37 @@ const cntRender = () => {
           const distance = Math.sqrt(difX * difX + difY * difY) + radius / 2;
           const angle = calcAngleDegrees(difX, difY) + 180;
           const newDistance = distance - (distance % radius);
-          const newX = ((noteX + newDistance * getCos(angle)) / canvasW) * 200 - 100;
-          const newY = ((noteY + newDistance * getSin(angle)) / canvasH) * 200 - 100;
-          drawNote(100, Math.round(newX), Math.round(newY), true, selectedValue, 1, 0);
-        } else if (magnetToggle) drawNote(100, mouseX - (mouseX % 5), mouseY - (mouseY % 5), true, selectedValue, 1, 0);
-        else drawNote(100, mouseX, mouseY, true, selectedValue, 1, 0);
+          drawX = Math.round(((noteX + newDistance * getCos(angle)) / canvasW) * 200 - 100);
+          drawY = Math.round(((noteY + newDistance * getSin(angle)) / canvasH) * 200 - 100);
+        } else if (magnetToggle) {
+          drawX = mouseX - (mouseX % 5);
+          drawY = mouseY - (mouseY % 5);
+        } else {
+          drawX = mouseX;
+          drawY = mouseY;
+        }
+        Draw.note(
+          cntCtx,
+          {
+            canvasW,
+            canvasH,
+            globalAlpha,
+          },
+          skin,
+          {
+            x: drawX,
+            y: drawY,
+            value: selectedValue,
+            direction: 1,
+          },
+          {
+            progress: 100,
+            tailProgress: 0,
+            endProgress: 0,
+            isGrabbed: true,
+            isSelected: true,
+          },
+        );
       } else {
         if (p[1] == 0) {
           drawBullet(-100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 0, 0, true, mouseY - (mouseY % 5), "L");
