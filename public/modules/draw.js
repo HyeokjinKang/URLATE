@@ -100,60 +100,6 @@ const Draw = {
   },
 
   /**
-   * 폭발 파티클 목록을 업데이트하고 화면에 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {number} canvasW
-   * @param {number} canvasH
-   * @param {Array<object>} targetArray
-   */
-  explosions: (ctx, canvasW, canvasH, targetArray) => {
-    const now = Date.now();
-    const conf = Config.EXPLODE_EFFECT;
-
-    for (let i = targetArray.length - 1; i >= 0; i--) {
-      const p = targetArray[i];
-      const elapsed = now - p.createdAt;
-
-      if (elapsed >= p.lifeTime) {
-        targetArray.splice(i, 1);
-        continue;
-      }
-
-      const progress = Math.min(1, elapsed / p.lifeTime);
-      const easeVal = easeOutQuart(progress);
-
-      p.x = p.startX + p.dx * easeVal;
-      p.y = p.startY + p.dy * easeVal;
-
-      const cx = (canvasW / 200) * (p.x + 100);
-      const cy = (canvasH / 200) * (p.y + 100);
-
-      const size = (canvasW / 100) * conf.SIZE * (1 - easeVal);
-
-      if (size <= 0) continue;
-
-      ctx.save();
-      ctx.beginPath();
-
-      const skin = p.skin;
-
-      if (skin.type === "gradient") {
-        const grd = ctx.createLinearGradient(cx - size, cy - size, size, size);
-        for (let s = 0; s < skin.stops.length; s++) {
-          grd.addColorStop(skin.stops[s].percentage / 100, `#${skin.stops[s].color}`);
-        }
-        ctx.fillStyle = grd;
-      } else {
-        ctx.fillStyle = `#${skin.color}`;
-      }
-
-      ctx.arc(cx, cy, size, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
-  },
-
-  /**
    * 노트를 그립니다.
    * @param {CanvasRenderingContext2D} ctx
    * @param {object} layout - { canvasW, canvasH, globalAlpha }
@@ -530,5 +476,59 @@ const Draw = {
     if (skin.cursor.outline) ctx.stroke();
 
     ctx.restore();
+  },
+
+  /**
+   * 폭발 파티클 목록을 업데이트하고 화면에 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {number} canvasW
+   * @param {number} canvasH
+   * @param {Array<object>} targetArray
+   */
+  explosions: (ctx, canvasW, canvasH, targetArray) => {
+    const now = Date.now();
+    const conf = Config.EXPLODE_EFFECT;
+
+    for (let i = targetArray.length - 1; i >= 0; i--) {
+      const p = targetArray[i];
+      const elapsed = now - p.createdAt;
+
+      if (elapsed >= p.lifeTime) {
+        targetArray.splice(i, 1);
+        continue;
+      }
+
+      const progress = Math.min(1, elapsed / p.lifeTime);
+      const easeVal = easeOutQuart(progress);
+
+      p.x = p.startX + p.dx * easeVal;
+      p.y = p.startY + p.dy * easeVal;
+
+      const cx = (canvasW / 200) * (p.x + 100);
+      const cy = (canvasH / 200) * (p.y + 100);
+
+      const size = (canvasW / 100) * conf.SIZE * (1 - easeVal);
+
+      if (size <= 0) continue;
+
+      ctx.save();
+      ctx.beginPath();
+
+      const skin = p.skin;
+
+      if (skin.type === "gradient") {
+        const grd = ctx.createLinearGradient(cx - size, cy - size, size, size);
+        for (let s = 0; s < skin.stops.length; s++) {
+          grd.addColorStop(skin.stops[s].percentage / 100, `#${skin.stops[s].color}`);
+        }
+        ctx.fillStyle = grd;
+      } else {
+        ctx.fillStyle = `#${skin.color}`;
+      }
+
+      ctx.arc(cx, cy, size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
   },
 };
