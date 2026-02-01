@@ -849,17 +849,7 @@ const cntRender = () => {
     ctx.globalAlpha = globalAlpha;
   }
 
-  Draw.cursor(
-    ctx,
-    { canvasW, canvasH },
-    skin,
-    {
-      x: mouseX,
-      y: mouseY,
-      zoom: cursorZoom,
-    },
-    { isClicked: mouseClicked != false, clickedMs: mouseClickedMs },
-  );
+  Draw.cursor(ctx, { canvasW, canvasH }, skin, { x: mouseX, y: mouseY, zoom: cursorZoom }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
 };
 
 const drawFinalEffect = (i) => {

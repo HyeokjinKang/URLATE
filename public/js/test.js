@@ -801,17 +801,7 @@ const cntRender = () => {
 
   if (effectMs != 0 && effectNum != -1) drawFinalEffect(effectNum);
 
-  Draw.cursor(
-    ctx,
-    { canvasW, canvasH },
-    skin,
-    {
-      x: mouseX,
-      y: mouseY,
-      zoom: cursorZoom,
-    },
-    { isClicked: mouseClicked != false, clickedMs: mouseClickedMs },
-  );
+  Draw.cursor(ctx, { canvasW, canvasH }, skin, { x: mouseX, y: mouseY, zoom: cursorZoom }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
 };
 
 const drawFinalEffect = (i) => {
