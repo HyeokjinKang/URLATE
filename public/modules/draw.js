@@ -1,5 +1,10 @@
 /** 게임 내 이펙트 및 렌더링 관련 상수/설정값을 관리합니다. */
 const Config = {
+  MATH: {
+    PI_5: Math.PI / 5,
+    COS_36: Math.cos(Math.PI / 5),
+    SIN_36: Math.sin(Math.PI / 5),
+  },
   EXPLODE_EFFECT: {
     COUNT: 3,
     SPEED: 1.5,
@@ -68,7 +73,7 @@ const Factory = {
 const Draw = {
   /**
    * 테두리가 있는 텍스트를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx의
+   * @param {CanvasRenderingContext2D} ctx
    * @param {string} text
    * @param {number} x
    * @param {number} y
@@ -225,48 +230,52 @@ const Draw = {
     // Type 1: Arrow Note (플릭)
     else if (type === 1) {
       w = w * 0.9;
-      const d = direction; // 1 or -1
 
       // 애니메이션 단계 (0~20, 20~80, 80~100 구간별 진행도)
-      let parr = [safeP <= 20 ? safeP * 5 : 100, safeP >= 20 ? (safeP <= 80 ? (safeP - 20) * 1.66 : 100) : 0, safeP >= 80 ? (safeP <= 100 ? (safeP - 80) * 5 : 100) : 0];
+      const p1 = safeP <= 20 ? safeP * 5 : 100;
+      const p2 = safeP > 20 ? Math.min((safeP - 20) * 1.66, 100) : 0;
+      const p3 = safeP > 80 ? Math.min((safeP - 80) * 5, 100) : 0;
 
-      const cosVal = Math.cos(Math.PI / 5); // 36도
-      const sinVal = Math.sin(Math.PI / 5);
+      const { PI_5, COS_36, SIN_36 } = Config.MATH;
+
+      // direction에 따라 캔버스 변형
+      ctx.save();
+      ctx.scale(direction, direction);
 
       ctx.beginPath();
 
-      // [Path 1] 꼬리 -> 왼쪽 날개
-      // 시작점: (0, -1.5dw) -> 여기서 d가 곱해지므로 방향에 따라 위/아래가 바뀜
-      let originalValue = [0, -1.5 * d * w];
+      // 날개 끝이자 원의 접점
+      const tipX = w * COS_36;
+      const tipY = -w * SIN_36;
+      const tailY = -1.5 * w; // 뾰족한 부분
 
-      // 이동 벡터 계산
-      let moveValue = [originalValue[0] - w * cosVal * d, originalValue[1] + w * sinVal * d];
+      // [Path 1] Tail(0, tailY) -> Right Tip(tipX, tipY)
+      const dx1 = tipX;
+      const dy1 = tipY - tailY;
 
-      ctx.moveTo(originalValue[0], originalValue[1]);
-      ctx.lineTo(originalValue[0] - (moveValue[0] / 100) * parr[0], originalValue[1] - (moveValue[1] / 100) * parr[0]);
-      ctx.moveTo(originalValue[0] - moveValue[0], originalValue[1] - moveValue[1]);
+      ctx.moveTo(0, tailY);
+      ctx.lineTo((dx1 / 100) * p1, tailY + (dy1 / 100) * p1);
 
-      // [Path 2] 화살표 머리 (Arc)
-      if (d === 1) {
-        ctx.arc(0, 0, w, -Math.PI / 5, (((Math.PI / 5) * 7) / 100) * parr[1] - Math.PI / 5);
-      } else {
-        ctx.arc(0, 0, w, (-Math.PI / 5) * 6, (((Math.PI / 5) * 7) / 100) * parr[1] - (Math.PI / 5) * 6);
+      // [Path 2] Arc (시계방향)
+      if (p2 > 0) {
+        const arcLen = ((PI_5 * 7) / 100) * p2;
+        ctx.arc(0, 0, w, -PI_5, -PI_5 + arcLen);
       }
 
-      // [Path 3] 오른쪽 날개 -> 꼬리 복귀
-      originalValue = [-w * cosVal * d, -w * sinVal * d];
-      moveValue = [originalValue[0], originalValue[1] - -1.5 * d * w];
+      // [Path 3] Left Tip(-tipX, tipY) -> Tail(0, tailY)
+      if (p3 > 0) {
+        const dx3 = tipX;
+        const dy3 = tailY - tipY;
 
-      ctx.moveTo(originalValue[0], originalValue[1]);
-      ctx.lineTo(originalValue[0] - (moveValue[0] / 100) * parr[2], originalValue[1] - (moveValue[1] / 100) * parr[2]);
+        ctx.lineTo(-tipX + (dx3 / 100) * p3, tipY + (dy3 / 100) * p3);
+      }
       ctx.stroke();
 
       // 타이밍 인디케이터
       ctx.beginPath();
-      ctx.moveTo(0, 0 - 1.5 * d * (w / 100) * safeP);
-      if (d === 1) ctx.arc(0, 0, (w / 100) * safeP, -Math.PI / 5, (Math.PI / 5) * 6);
-      else ctx.arc(0, 0, (w / 100) * safeP, (-Math.PI / 5) * 6, Math.PI / 5);
-      ctx.lineTo(0, 0 - 1.5 * d * (w / 100) * safeP);
+      ctx.moveTo(0, -1.5 * (w / 100) * safeP); // 중심축
+      ctx.arc(0, 0, (w / 100) * safeP, -PI_5, PI_5 * 6);
+      ctx.lineTo(0, -1.5 * (w / 100) * safeP);
       ctx.fill();
 
       // 아웃라인
@@ -280,11 +289,12 @@ const Draw = {
       ctx.beginPath();
       ctx.globalAlpha = ((0.2 * Math.min(safeP * 2, 100)) / 100) * globalAlpha;
       ctx.fillStyle = ctx.strokeStyle;
-      ctx.moveTo(0, -1.5 * d * w);
-      if (d === 1) ctx.arc(0, 0, w, -Math.PI / 5, (Math.PI / 5) * 6);
-      else ctx.arc(0, 0, w, (-Math.PI / 5) * 6, Math.PI / 5);
-      ctx.lineTo(0, -1.5 * d * w);
+      ctx.moveTo(0, -1.5 * w);
+      ctx.arc(0, 0, w, -PI_5, PI_5 * 6);
+      ctx.lineTo(0, -1.5 * w);
       ctx.fill();
+
+      ctx.restore();
       ctx.globalAlpha = globalAlpha;
     }
 
