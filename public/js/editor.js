@@ -117,8 +117,6 @@ let prevCreatedBullets = new Set([]);
 let hitBullets = new Set([]);
 let explodingBullets = new Set();
 
-let bulletPath;
-
 let copySelection = { element: -2, start: -1, end: -1, beat: 0 };
 
 let prevBeat = 1;
@@ -493,70 +491,6 @@ const changeNote = () => {
   changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
 };
 
-const drawBullet = (x, y, ra, va, s, l, d, t, index) => {
-  x = (canvasW / 200) * (x + 100);
-  y = (canvasH / 200) * (y + 100);
-  let w = canvasW / 80;
-  if (s == true) {
-    cntCtx.beginPath();
-    cntCtx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-    cntCtx.fillStyle = "#000";
-    cntCtx.strokeStyle = "#fff";
-    cntCtx.textAlign = d == "L" ? "left" : "right";
-    cntCtx.lineWidth = Math.round(canvasW / 300);
-    if (index != undefined) {
-      cntCtx.textBaseline = "bottom";
-      drawOutlinedText(cntCtx, `Bullet_${index}`, x, y - 1.5 * w);
-    }
-    cntCtx.textBaseline = "top";
-    drawOutlinedText(cntCtx, `(Angle: ${d == "L" ? ra : ra - 180})`, x, y + 1.5 * w);
-    drawOutlinedText(cntCtx, `(Loc: ${l})`, x, y + 1.5 * w + canvasH / 40);
-    cntCtx.fillStyle = `#ebd534`;
-    cntCtx.strokeStyle = `#ebd534`;
-  } else {
-    if (t) {
-      cntCtx.fillStyle = "#fb4934";
-      cntCtx.strokeStyle = "#fb4934";
-    } else if (!denySkin) {
-      if (skin.bullet.type == "gradient") {
-        let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.bullet.stops.length; i++) {
-          grd.addColorStop(skin.bullet.stops[i].percentage / 100, `#${skin.bullet.stops[i].color}`);
-        }
-        cntCtx.fillStyle = grd;
-        cntCtx.strokeStyle = grd;
-      } else if (skin.bullet.type == "color") {
-        cntCtx.fillStyle = `#${skin.bullet.color}`;
-        cntCtx.strokeStyle = `#${skin.bullet.color}`;
-      }
-      if (skin.bullet.outline) {
-        cntCtx.lineWidth = Math.round((canvasW / 1000) * skin.bullet.outline.width);
-        if (skin.bullet.outline.type == "gradient") {
-          let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-          for (let i = 0; i < skin.bullet.outline.stops.length; i++) {
-            grd.addColorStop(skin.bullet.outline.stops[i].percentage / 100, `#${skin.bullet.outline.stops[i].color}`);
-          }
-          cntCtx.strokeStyle = grd;
-        } else if (skin.bullet.outline.type == "color") {
-          cntCtx.strokeStyle = `#${skin.bullet.outline.color}`;
-        }
-      }
-    } else {
-      cntCtx.fillStyle = "#555";
-      cntCtx.strokeStyle = "#555";
-    }
-  }
-
-  cntCtx.save();
-  cntCtx.translate(x, y);
-  cntCtx.rotate((va * Math.PI) / 180);
-
-  cntCtx.fill(bulletPath);
-  if (skin.bullet.outline && !denySkin) cntCtx.stroke(bulletPath);
-
-  cntCtx.restore();
-};
-
 const eraseCnt = () => {
   cntCtx.clearRect(0, 0, canvasW, canvasH);
 };
@@ -591,12 +525,6 @@ const initialize = () => {
   componentViewOW = componentView.offsetWidth;
   menuContainerOW = menuContainer.offsetWidth;
   navBarOH = document.getElementById("navbar").offsetHeight;
-
-  const w = canvasW / 80;
-  bulletPath = new Path2D();
-  bulletPath.arc(0, 0, w, 0.5 * Math.PI, 1.5 * Math.PI);
-  bulletPath.lineTo(w * 2, 0);
-  bulletPath.closePath();
 
   isTmlUpdateNeeded = true;
 };
@@ -1290,7 +1218,24 @@ const cntRender = () => {
         createdBullets.add(i);
 
         if (mouseMode == 0) trackMouseSelection(i, 1, 0, x, y);
-        drawBullet(x, y, realAngle, visualAngle, selectedCheck(1, i), pattern.bullets[i].location, pattern.bullets[i].direction, hitBullets.has(i), i);
+        Draw.bullet(
+          cntCtx,
+          { canvasW, canvasH },
+          skin,
+          {
+            x: x,
+            y: y,
+            angle: realAngle,
+            location: pattern.bullets[i].location,
+            direction: pattern.bullets[i].direction,
+            debugIndex: i,
+          },
+          {
+            visualAngle: visualAngle,
+            isSelected: selectedCheck(1, i),
+            isHit: hitBullets.has(i),
+          },
+        );
       }
     }
     prevCreatedBullets = new Set(createdBullets);
@@ -1355,11 +1300,30 @@ const cntRender = () => {
           },
         );
       } else {
+        let drawX = 100;
+        let drawY = magnetToggle ? mouseY - (mouseY % 5) : mouseY;
+        let drawAngle = 180;
+        let drawDir = "R";
         if (p[1] == 0) {
-          drawBullet(-100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 0, 0, true, mouseY - (mouseY % 5), "L");
-        } else {
-          drawBullet(100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 180, 180, true, mouseY - (mouseY % 5), "R");
+          drawX = -100;
+          drawAngle = 0;
+          drawDir = "L";
         }
+        Draw.bullet(
+          cntCtx,
+          { canvasW, canvasH },
+          skin,
+          {
+            x: drawX,
+            y: drawY,
+            angle: drawAngle,
+            location: drawY,
+            direction: drawDir,
+          },
+          {
+            isSelected: true,
+          },
+        );
       }
     }
 

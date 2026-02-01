@@ -14,6 +14,16 @@ const Config = {
 };
 
 /**
+ * 렌더링 성능 최적화를 위해 Path2D 객체 등을 저장합니다.
+ */
+const RenderCache = {
+  bullet: {
+    path: null,
+    lastCanvasW: 0,
+  },
+};
+
+/**
  * 게임 좌표(-100 ~ 100)를 캔버스 실제 좌표(px)로 변환합니다.
  * @returns {{cx: number, cy: number}} 변환된 캔버스 좌표
  */
@@ -342,5 +352,99 @@ const Draw = {
 
     ctx.restore();
     ctx.globalAlpha = globalAlpha;
+  },
+
+  /**
+   * 총알을 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {object} skin - 유저 스킨 설정값
+   * @param {object} bullet - { x, y, angle?, location?, direction?, debugIndex? }
+   * @param {object} state - { visualAngle, isSelected?, isHit? }
+   */
+  bullet: (ctx, layout, skin, bullet, state) => {
+    const { canvasW, canvasH } = layout;
+    const { x: gameX, y: gameY, angle: realAngle } = bullet;
+    const { visualAngle, isSelected, isHit } = state;
+
+    const { cx, cy } = getCanvasPos(gameX, gameY, canvasW, canvasH);
+    const w = canvasW / 80;
+
+    // 총알 캐시 검증 및 재생성
+    if (RenderCache.bullet.lastCanvasW !== canvasW || !RenderCache.bullet.path) {
+      const path = new Path2D();
+      path.arc(0, 0, w, 0.5 * Math.PI, 1.5 * Math.PI);
+      path.lineTo(w * 2, 0);
+      path.closePath();
+
+      RenderCache.bullet.path = path;
+      RenderCache.bullet.lastCanvasW = canvasW;
+    }
+
+    // (에디터용) 선택된 객체
+    if (isSelected) {
+      ctx.beginPath();
+      ctx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.fillStyle = "#000";
+      ctx.strokeStyle = "#fff";
+      ctx.textAlign = bullet.direction === "L" ? "left" : "right";
+      ctx.lineWidth = Math.round(canvasW / 300);
+
+      if (bullet.debugIndex !== undefined) {
+        ctx.textBaseline = "bottom";
+        Draw.outlinedText(ctx, `Bullet_${bullet.debugIndex}`, cx, cy - 1.5 * w);
+      }
+      ctx.textBaseline = "top";
+      Draw.outlinedText(ctx, `(Angle: ${bullet.direction === "L" ? realAngle : realAngle - 180})`, cx, cy + 1.5 * w);
+      if (bullet.location !== undefined) {
+        Draw.outlinedText(ctx, `(Loc: ${bullet.location})`, cx, cy + 1.5 * w + canvasH / 40);
+      }
+
+      ctx.fillStyle = `#ebd534`;
+      ctx.strokeStyle = `#ebd534`;
+    }
+    // (에디터용) 피격된 개체
+    else if (isHit) {
+      ctx.fillStyle = "#fb4934";
+      ctx.strokeStyle = "#fb4934";
+    }
+    // 스킨 적용
+    else {
+      if (skin.bullet.type === "gradient") {
+        const grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
+        for (let i = 0; i < skin.bullet.stops.length; i++) {
+          grd.addColorStop(skin.bullet.stops[i].percentage / 100, `#${skin.bullet.stops[i].color}`);
+        }
+        ctx.fillStyle = grd;
+        ctx.strokeStyle = grd;
+      } else {
+        ctx.fillStyle = `#${skin.bullet.color}`;
+        ctx.strokeStyle = `#${skin.bullet.color}`;
+      }
+
+      if (skin.bullet.outline) {
+        ctx.lineWidth = Math.round((canvasW / 1000) * skin.bullet.outline.width);
+        if (skin.bullet.outline.type === "gradient") {
+          const grd = ctx.createLinearGradient(-w, -w, w, w); // 회전된 상태라 좌표 주의
+          for (let i = 0; i < skin.bullet.outline.stops.length; i++) {
+            grd.addColorStop(skin.bullet.outline.stops[i].percentage / 100, `#${skin.bullet.outline.stops[i].color}`);
+          }
+          ctx.strokeStyle = grd;
+        } else {
+          ctx.strokeStyle = `#${skin.bullet.outline.color}`;
+        }
+        ctx.stroke(path);
+      }
+    }
+
+    // 그리기 시작
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate((visualAngle * Math.PI) / 180);
+
+    const path = RenderCache.bullet.path;
+    ctx.fill(path);
+
+    ctx.restore();
   },
 };

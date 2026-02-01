@@ -30,7 +30,6 @@ let destroyedBullets = new Set([]);
 let explodingBullets = new Set([]);
 let destroyedNotes = new Set([]);
 let grabbedNotes = new Set([]);
-let bulletPath;
 let noteMaxDuration = 0;
 let mouseX = 0,
   mouseY = 0;
@@ -159,10 +158,6 @@ const initialize = (isFirstCalled) => {
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
 
   const w = canvas.width / 80;
-  bulletPath = new Path2D();
-  bulletPath.arc(0, 0, w, 0.5 * Math.PI, 1.5 * Math.PI);
-  bulletPath.lineTo(w * 2, 0);
-  bulletPath.closePath();
 
   if (isFirstCalled) {
     fetch(`${cdn}/URLATE-patterns/tutorial/0_${lang}.json`)
@@ -469,44 +464,6 @@ const drawCursor = () => {
   ctx.shadowBlur = 0;
 };
 
-const drawBullet = (x, y, a) => {
-  x = (canvasW / 200) * (x + 100);
-  y = (canvasH / 200) * (y + 100);
-  let w = canvasW / 80;
-  if (skin.bullet.type == "gradient") {
-    let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-    for (let i = 0; i < skin.bullet.stops.length; i++) {
-      grd.addColorStop(skin.bullet.stops[i].percentage / 100, `#${skin.bullet.stops[i].color}`);
-    }
-    ctx.fillStyle = grd;
-    ctx.strokeStyle = grd;
-  } else if (skin.bullet.type == "color") {
-    ctx.fillStyle = `#${skin.bullet.color}`;
-    ctx.strokeStyle = `#${skin.bullet.color}`;
-  }
-  if (skin.bullet.outline) {
-    ctx.lineWidth = Math.round((canvasW / 1000) * skin.bullet.outline.width);
-    if (skin.bullet.outline.type == "gradient") {
-      let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-      for (let i = 0; i < skin.bullet.outline.stops.length; i++) {
-        grd.addColorStop(skin.bullet.outline.stops[i].percentage / 100, `#${skin.bullet.outline.stops[i].color}`);
-      }
-      ctx.strokeStyle = grd;
-    } else if (skin.bullet.outline.type == "color") {
-      ctx.strokeStyle = `#${skin.bullet.outline.color}`;
-    }
-  }
-
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate((a * Math.PI) / 180);
-
-  ctx.fill(bulletPath);
-  if (skin.bullet.outline) ctx.stroke(bulletPath);
-
-  ctx.restore();
-};
-
 const destroyAll = (beat) => {
   const end = upperBound(pattern.bullets, beat);
   for (let j = 0; j < end; j++) {
@@ -804,7 +761,7 @@ const cntRender = () => {
         createdBullets.add(i);
 
         trackMouseSelection(i, 1, 0, x, y);
-        drawBullet(x, y, visualAngle);
+        Draw.bullet(cntCtx, { canvasW, canvasH }, skin, { x, y }, { visualAngle });
       }
     }
 
