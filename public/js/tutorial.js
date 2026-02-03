@@ -22,6 +22,7 @@ let bpmsync = {
   beat: 0,
 };
 let pointingCntElement = [{ v1: "", v2: "", i: "" }];
+let clickDefaultParticles = [];
 let destroyParticles = [];
 let missParticles = [];
 let perfectParticles = [];
@@ -349,23 +350,6 @@ const drawParticle = (n, x, y, j, d) => {
       });
     };
     raf(canvasW / 80, Date.now(), d);
-  } else if (n == 2) {
-    //Click Default
-    const raf = (w, s) => {
-      ctx.beginPath();
-      let width = canvasW / 50;
-      if (Date.now() - s >= 500) return;
-      let p = 100 * easeOutQuad((Date.now() - s) / 500);
-      ctx.lineWidth = ((100 - p) / 100) * (canvasW / 200);
-      ctx.strokeStyle = `rgba(67, 221, 166, ${0.5 - p / 200})`;
-      ctx.arc(cx, cy, w, 0, 2 * Math.PI);
-      ctx.stroke();
-      w = canvasW / 70 + canvasW / 400 + width * (p / 100);
-      requestAnimationFrame(() => {
-        raf(w, s);
-      });
-    };
-    raf(canvasW / 70 + canvasW / 400, Date.now());
   } else if (n == 3) {
     //Judge
     if (!hide[j.toLowerCase()]) {
@@ -773,6 +757,8 @@ const cntRender = () => {
   ctx.fillStyle = "#fff";
   ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
 
+  Draw.clickDefaults(ctx, { canvasW, canvasH }, skin, clickDefaultParticles);
+
   drawKeyInput();
 
   if (effectMs != 0 && effectNum != -1) drawFinalEffect(effectNum);
@@ -1070,7 +1056,7 @@ const compClicked = (isTyped, key, isWheel) => {
     }
   }
   keyInput.push({ judge: "Empty", key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
-  drawParticle(2, mouseX, mouseY);
+  clickDefaultParticles.push(Factory.createClickDefault(mouseX, mouseY, settings.game.size));
 };
 
 const compReleased = () => {
