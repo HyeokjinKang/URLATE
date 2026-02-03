@@ -5,16 +5,27 @@ const Config = {
     COS_36: Math.cos(Math.PI / 5),
     SIN_36: Math.sin(Math.PI / 5),
   },
+  CURSOR: {
+    SIZE: 100 / 7,
+    ANIM_SIZE_ADDER: 5 / 2,
+    RELEASE_ANIM_LENGTH: 100,
+  },
   EXPLODE_EFFECT: {
     COUNT: 3,
     SPEED: 30,
     LIFETIME: 1000,
-    SIZE: 0.6,
+    SIZE: 6,
   },
-  CURSOR: {
-    SIZE: 10 / 7,
-    ANIM_SIZE_ADDER: 1 / 4,
-    RELEASE_ANIM_LENGTH: 100,
+  CLICK_EFFECT: {
+    LIFETIME: 500,
+    SIZE: 20,
+    LINE_WIDTH: 5,
+  },
+  NOTE_CLICK_EFFECT: {
+    LIFETIME: 800,
+  },
+  JUDGE_TEXT_EFFECT: {
+    LIFETIME: 700,
   },
 };
 
@@ -40,20 +51,22 @@ const getCanvasPos = (x, y, canvasW, canvasH) => {
 };
 
 /** 스킨 데이터(Gradient/Color)를 분석하여 ctx의 fillStyle 또는 strokeStyle을 설정합니다. */
-const applyStyle = (ctx, skinPart, x, y, size, opacityHex, isStroke = false) => {
+const applyStyle = (ctx, skinPart, x, y, size, opacity, isStroke = false) => {
   let style;
   if (skinPart.type === "gradient") {
     const grd = ctx.createLinearGradient(x - size, y - size, x + size, y + size);
     for (let s = 0; s < skinPart.stops.length; s++) {
-      grd.addColorStop(skinPart.stops[s].percentage / 100, `#${skinPart.stops[s].color}${opacityHex}`);
+      grd.addColorStop(skinPart.stops[s].percentage / 100, hexadecimal(skinPart.stops[s].color)(opacity));
     }
     style = grd;
   } else {
-    style = `#${skinPart.color}${opacityHex}`;
+    style = hexadecimal(skinPart.color)(opacity);
   }
 
-  if (isStroke) ctx.strokeStyle = style;
-  else ctx.fillStyle = style;
+  if (isStroke) {
+    ctx.lineWidth = Math.round((canvasW / 1000) * skinPart.width);
+    ctx.strokeStyle = style;
+  } else ctx.fillStyle = style;
 };
 
 /** 캔버스에 그려질 게임 오브젝트(파티클, 노트 등)의 순수 데이터를 생성합니다. */
@@ -77,7 +90,7 @@ const Factory = {
         dy: Math.sin(angle) * distance,
         createdAt: Date.now(),
         lifeTime: conf.LIFETIME,
-        skin: skin,
+        skin,
       });
     }
 
@@ -122,27 +135,21 @@ const Draw = {
     let w = canvasW / 40;
 
     // 투명도 계산
-    let opacityVal = 255;
+    let opacityVal = 100;
     if (type !== 2 && safeP >= 100) {
-      opacityVal = Math.max(Math.round((255 / 30) * (130 - safeP)), 0);
+      opacityVal = Math.max(130 - safeP, 0) * (10 / 3);
     } else if (type === 2) {
       if (safeP >= 100 && tailProgress >= 100 && isGrabbed) {
-        opacityVal = Math.max(Math.round((255 / 30) * (130 - endProgress)), 0);
+        opacityVal = Math.max(130 - endProgress, 0) * (10 / 3);
       } else if (safeP >= 100 && !isGrabbed) {
-        opacityVal = Math.max(Math.round((255 / 30) * (130 - safeP)), 0);
+        opacityVal = Math.max(130 - safeP, 0) * (10 / 3);
       }
     }
-    const opacityHex = opacityVal.toString(16).padStart(2, "0");
     const noteSkin = skin.note[type] || skin.note[0];
 
     // 그리기 시작
     ctx.save();
     ctx.translate(cx, cy);
-
-    const lineWidth = Math.round(canvasW / 300);
-    const outlineWidth = noteSkin.outline ? Math.round((canvasW / 1000) * noteSkin.outline.width) : 0;
-
-    ctx.lineWidth = lineWidth;
 
     if (isSelected) {
       ctx.beginPath();
@@ -158,29 +165,26 @@ const Draw = {
       ctx.textBaseline = "top";
       Draw.outlinedText(ctx, `(X: ${gameX}, Y: ${gameY})`, 0, 1.2 * w);
 
-      ctx.fillStyle = `#ebd534${opacityHex}`;
-      ctx.strokeStyle = `#ebd534${opacityHex}`;
+      ctx.fillStyle = hexadecimal("#ebd534")(opacityVal);
+      ctx.strokeStyle = hexadecimal("#ebd534")(opacityVal);
     } else {
-      applyStyle(ctx, noteSkin, 0, 0, w, opacityHex, false);
-      applyStyle(ctx, noteSkin, 0, 0, w, opacityHex, true);
+      applyStyle(ctx, noteSkin, 0, 0, w, opacityVal, false);
+      applyStyle(ctx, noteSkin.indicator, 0, 0, w, opacityVal, true);
     }
 
     // Type 0: Circle Note (일반)
     if (type === 0) {
-      // 테두리
+      // 타이밍 인디케이터
       ctx.beginPath();
       ctx.arc(0, 0, w, 1.5 * Math.PI, 1.5 * Math.PI + (safeP / 50) * Math.PI);
       ctx.stroke();
 
-      // 타이밍 인디케이터
+      // 안쪽 채우기
       ctx.beginPath();
       ctx.arc(0, 0, (w / 100) * safeP, 0, 2 * Math.PI);
       ctx.fill();
-
-      // 아웃라인
       if (noteSkin.outline) {
-        applyStyle(ctx, noteSkin.outline, 0, 0, w, opacityHex, true);
-        ctx.lineWidth = outlineWidth;
+        applyStyle(ctx, noteSkin.outline, 0, 0, w, opacityVal, true);
         ctx.stroke();
       }
 
@@ -236,17 +240,14 @@ const Draw = {
       }
       ctx.stroke();
 
-      // 타이밍 인디케이터
+      // 안쪽 채우기
       ctx.beginPath();
       ctx.moveTo(0, -1.5 * (w / 100) * safeP); // 중심축
       ctx.arc(0, 0, (w / 100) * safeP, -PI_5, PI_5 * 6);
       ctx.lineTo(0, -1.5 * (w / 100) * safeP);
       ctx.fill();
-
-      // 아웃라인
       if (noteSkin.outline) {
-        applyStyle(ctx, noteSkin.outline, 0, 0, w, opacityHex, true);
-        ctx.lineWidth = Math.round((canvasW / 1000) * noteSkin.outline.width);
+        applyStyle(ctx, noteSkin.outline, 0, 0, w, opacityVal, true);
         ctx.stroke();
       }
 
@@ -265,11 +266,6 @@ const Draw = {
 
     // Type 2: Hold Note (홀드)
     else if (type === 2) {
-      if (noteSkin.outline) {
-        applyStyle(ctx, noteSkin.outline, 0, 0, w, opacityHex, true);
-        ctx.lineWidth = outlineWidth;
-      }
-
       ctx.beginPath();
       if (safeP <= 100) {
         // 생성 중
@@ -355,8 +351,8 @@ const Draw = {
         Draw.outlinedText(ctx, `(Loc: ${bullet.location})`, cx, cy + 1.5 * w + canvasH / 40);
       }
 
-      ctx.fillStyle = `#ebd534`;
-      ctx.strokeStyle = `#ebd534`;
+      ctx.fillStyle = "#ebd534";
+      ctx.strokeStyle = "#ebd534";
     }
     // (에디터용) 피격된 개체
     else if (isHit) {
@@ -365,29 +361,9 @@ const Draw = {
     }
     // 스킨 적용
     else {
-      if (skin.bullet.type === "gradient") {
-        const grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
-        for (let i = 0; i < skin.bullet.stops.length; i++) {
-          grd.addColorStop(skin.bullet.stops[i].percentage / 100, `#${skin.bullet.stops[i].color}`);
-        }
-        ctx.fillStyle = grd;
-        ctx.strokeStyle = grd;
-      } else {
-        ctx.fillStyle = `#${skin.bullet.color}`;
-        ctx.strokeStyle = `#${skin.bullet.color}`;
-      }
-
+      applyStyle(ctx, skin.bullet, 0, 0, w, 100, false);
       if (skin.bullet.outline) {
-        ctx.lineWidth = Math.round((canvasW / 1000) * skin.bullet.outline.width);
-        if (skin.bullet.outline.type === "gradient") {
-          const grd = ctx.createLinearGradient(-w, -w, w, w); // 회전된 상태라 좌표 주의
-          for (let i = 0; i < skin.bullet.outline.stops.length; i++) {
-            grd.addColorStop(skin.bullet.outline.stops[i].percentage / 100, `#${skin.bullet.outline.stops[i].color}`);
-          }
-          ctx.strokeStyle = grd;
-        } else {
-          ctx.strokeStyle = `#${skin.bullet.outline.color}`;
-        }
+        applyStyle(ctx, skin.bullet.outline, 0, 0, w, 100, true);
         ctx.stroke(path);
       }
     }
@@ -420,19 +396,19 @@ const Draw = {
     const conf = Config.CURSOR;
 
     // 기본 크기 계산
-    let w = (canvasW / 100) * conf.SIZE * zoom;
+    let w = (canvasW / 1000) * conf.SIZE * zoom;
 
     // 클릭 애니메이션
     if (clickedMs !== undefined && clickedMs !== -1) {
       const now = Date.now();
       if (isClicked) {
         // 클릭하면 살짝 커짐
-        w = w + (canvasW / 100) * conf.ANIM_SIZE_ADDER;
+        w = w + (canvasW / 1000) * conf.ANIM_SIZE_ADDER;
       } else {
         // 클릭을 풀면 서서히 복귀
         if (now < clickedMs + conf.RELEASE_ANIM_LENGTH) {
           const progress = (clickedMs + conf.RELEASE_ANIM_LENGTH - now) / conf.RELEASE_ANIM_LENGTH;
-          w = w + (canvasW / 100) * conf.ANIM_SIZE_ADDER * progress;
+          w = w + (canvasW / 1000) * conf.ANIM_SIZE_ADDER * progress;
         }
       }
     }
@@ -441,31 +417,14 @@ const Draw = {
     ctx.translate(cx, cy);
 
     // 스킨 적용
-    if (skin.cursor.type === "gradient") {
-      const grd = ctx.createLinearGradient(-w, -w, w, w);
-      for (let i = 0; i < skin.cursor.stops.length; i++) {
-        grd.addColorStop(skin.cursor.stops[i].percentage / 100, `#${skin.cursor.stops[i].color}`);
-      }
-      ctx.fillStyle = grd;
-      ctx.shadowColor = `#${skin.cursor.stops[0].color}90`;
-    } else {
-      ctx.fillStyle = `#${skin.cursor.color}`;
-      ctx.shadowColor = `#${skin.cursor.color}90`;
-    }
+    applyStyle(ctx, skin.cursor, 0, 0, w, 100, false);
+    if (skin.cursor.type === "gradient") ctx.shadowColor = hexadecimal(skin.cursor.stops[0].color)(50);
+    else ctx.shadowColor = hexadecimal(skin.cursor.color)(50);
 
     if (skin.cursor.outline) {
-      ctx.lineWidth = Math.round((canvasW / 1000) * skin.cursor.outline.width);
-      if (skin.cursor.outline.type === "gradient") {
-        const grd = ctx.createLinearGradient(-w, -w, w, w);
-        for (let i = 0; i < skin.cursor.outline.stops.length; i++) {
-          grd.addColorStop(skin.cursor.outline.stops[i].percentage / 100, `#${skin.cursor.outline.stops[i].color}`);
-        }
-        ctx.shadowColor = `#${skin.cursor.outline.stops[0].color}90`;
-        ctx.strokeStyle = grd;
-      } else {
-        ctx.shadowColor = `#${skin.cursor.outline.color}90`;
-        ctx.strokeStyle = `#${skin.cursor.outline.color}`;
-      }
+      applyStyle(ctx, skin.cursor.outline, 0, 0, w, 100, true);
+      if (skin.cursor.outline.type === "gradient") ctx.shadowColor = hexadecimal(skin.cursor.outline.stops[0].color)(50);
+      else ctx.shadowColor = hexadecimal(skin.cursor.outline.color)(50);
     }
 
     // 그리기
@@ -507,7 +466,7 @@ const Draw = {
       const cx = (canvasW / 200) * (p.x + 100);
       const cy = (canvasH / 200) * (p.y + 100);
 
-      const size = (canvasW / 100) * conf.SIZE * (1 - easeVal);
+      const size = (canvasW / 1000) * conf.SIZE * (1 - easeVal);
 
       if (size <= 0) continue;
 
@@ -519,11 +478,11 @@ const Draw = {
       if (skin.type === "gradient") {
         const grd = ctx.createLinearGradient(cx - size, cy - size, size, size);
         for (let s = 0; s < skin.stops.length; s++) {
-          grd.addColorStop(skin.stops[s].percentage / 100, `#${skin.stops[s].color}`);
+          grd.addColorStop(skin.stops[s].percentage / 100, skin.stops[s].color);
         }
         ctx.fillStyle = grd;
       } else {
-        ctx.fillStyle = `#${skin.color}`;
+        ctx.fillStyle = skin.color;
       }
 
       ctx.arc(cx, cy, size, 0, Math.PI * 2);
