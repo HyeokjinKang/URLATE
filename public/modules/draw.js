@@ -20,6 +20,7 @@ const Config = {
     LIFETIME: 500,
     SIZE: 20,
     LINE_WIDTH: 5,
+    OPACITY: 20,
   },
   NOTE_CLICK_EFFECT: {
     LIFETIME: 800,
@@ -96,6 +97,18 @@ const Factory = {
 
     return particles;
   },
+
+  /**
+   * 기본 클릭 이펙트를 위한 데이터를 생성합니다.
+   * @returns { object }
+   */
+  createClickDefault: (x, y, zoom) => ({
+    x,
+    y,
+    zoom,
+    createdAt: Date.now(),
+    lifeTime: Config.CLICK_EFFECT.LIFETIME,
+  }),
 };
 
 /** 데이터를 받아 Canvas Context(ctx)에 실제 렌더링을 수행합니다. */
@@ -435,6 +448,47 @@ const Draw = {
     if (skin.cursor.outline) ctx.stroke();
 
     ctx.restore();
+  },
+
+  /**
+   * 기본 클릭 이펙트 목록을 업데이트하고 화면에 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {object} skin - 유저 스킨 설정값
+   * @param {object} particles
+   */
+  clickDefaults: (ctx, layout, skin, particles) => {
+    const { canvasW, canvasH } = layout;
+    const now = Date.now();
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      const elapsed = now - p.createdAt;
+
+      if (elapsed >= p.lifeTime) {
+        particles.splice(i, 1);
+        continue;
+      }
+
+      const easeInProgress = easeInQuad(elapsed / p.lifeTime);
+      const easeOutProgress = easeOutQuad(elapsed / p.lifeTime);
+      const { cx, cy } = getCanvasPos(p.x, p.y, canvasW, canvasH);
+
+      const cursorW = (canvasW / 1000) * Config.CURSOR.SIZE * p.zoom + (canvasW / 1000) * Config.CURSOR.ANIM_SIZE_ADDER;
+      const effectW = (canvasW / 1000) * Config.CLICK_EFFECT.SIZE;
+      const width = cursorW + effectW * easeOutProgress;
+      const lineWidth = (1 - easeInProgress) * ((canvasW / 1000) * Config.CLICK_EFFECT.LINE_WIDTH);
+      const opacity = Config.CLICK_EFFECT.OPACITY - easeInProgress * Config.CLICK_EFFECT.OPACITY;
+      const style = skin.cursor.outline ? skin.cursor.outline : skin.cursor;
+
+      ctx.save();
+      ctx.beginPath();
+      applyStyle(ctx, style, cx, cy, width, opacity, true);
+      ctx.lineWidth = lineWidth;
+      ctx.arc(cx, cy, width, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.restore();
+    }
   },
 
   /**

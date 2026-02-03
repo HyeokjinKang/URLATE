@@ -57,6 +57,10 @@ const upperBound = (array, value) => {
   return low;
 };
 
+const easeInQuad = (x) => {
+  return x * x;
+};
+
 const easeOutQuart = (x) => {
   return 1 - Math.pow(1 - x, 4);
 };
