@@ -18,12 +18,15 @@ const Config = {
   },
   CLICK_EFFECT: {
     LIFETIME: 500,
-    SIZE: 20,
-    LINE_WIDTH: 5,
+    SIZE: 30,
+    LINE_WIDTH: 10,
     OPACITY: 20,
   },
   NOTE_CLICK_EFFECT: {
     LIFETIME: 800,
+    SIZE: 40,
+    LINE_WIDTH: 15,
+    OPACITY: 100,
   },
   JUDGE_TEXT_EFFECT: {
     LIFETIME: 700,
@@ -103,11 +106,26 @@ const Factory = {
    * @returns { object }
    */
   createClickDefault: (x, y, zoom) => ({
+    type: "default",
     x,
     y,
     zoom,
     createdAt: Date.now(),
     lifeTime: Config.CLICK_EFFECT.LIFETIME,
+  }),
+
+  /**
+   * 노트 클릭 이펙트를 위한 데이터를 생성합니다.
+   * @returns { object }
+   */
+  createClickNote: (x, y, zoom, noteType) => ({
+    type: "note",
+    x,
+    y,
+    zoom,
+    noteType,
+    createdAt: Date.now(),
+    lifeTime: Config.NOTE_CLICK_EFFECT.LIFETIME,
   }),
 };
 
@@ -451,43 +469,57 @@ const Draw = {
   },
 
   /**
-   * 기본 클릭 이펙트 목록을 업데이트하고 화면에 그립니다.
+   * 클릭 이펙트를 화면에 그립니다.
    * @param {CanvasRenderingContext2D} ctx
    * @param {object} layout - { canvasW, canvasH }
    * @param {object} skin - 유저 스킨 설정값
    * @param {object} particles
    */
-  clickDefaults: (ctx, layout, skin, particles) => {
+  clickEffects: (ctx, layout, skin, particles) => {
     const { canvasW, canvasH } = layout;
     const now = Date.now();
 
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       const elapsed = now - p.createdAt;
+      const cursorConf = Config.CURSOR;
 
       if (elapsed >= p.lifeTime) {
         particles.splice(i, 1);
         continue;
       }
 
-      const easeInProgress = easeInQuad(elapsed / p.lifeTime);
-      const easeOutProgress = easeOutQuad(elapsed / p.lifeTime);
+      const progress = elapsed / p.lifeTime;
+      const easeInProgress = easeInQuad(progress);
+      const easeOutProgress = easeOutQuad(progress);
+
       const { cx, cy } = getCanvasPos(p.x, p.y, canvasW, canvasH);
 
-      const cursorW = (canvasW / 1000) * Config.CURSOR.SIZE * p.zoom + (canvasW / 1000) * Config.CURSOR.ANIM_SIZE_ADDER;
-      const effectW = (canvasW / 1000) * Config.CLICK_EFFECT.SIZE;
-      const width = cursorW + effectW * easeOutProgress;
-      const lineWidth = (1 - easeInProgress) * ((canvasW / 1000) * Config.CLICK_EFFECT.LINE_WIDTH);
-      const opacity = Config.CLICK_EFFECT.OPACITY - easeInProgress * Config.CLICK_EFFECT.OPACITY;
-      const style = skin.cursor.outline ? skin.cursor.outline : skin.cursor;
+      let width, lineWidth, opacity, styleTarget, effectConf;
 
-      ctx.save();
-      ctx.beginPath();
-      applyStyle(ctx, style, cx, cy, width, opacity, true);
-      ctx.lineWidth = lineWidth;
-      ctx.arc(cx, cy, width, 0, 2 * Math.PI);
-      ctx.stroke();
-      ctx.restore();
+      if (p.type === "note") {
+        effectConf = Config.NOTE_CLICK_EFFECT;
+        styleTarget = skin.note[p.noteType] || skin.note[0];
+      } else {
+        effectConf = Config.CLICK_EFFECT;
+        styleTarget = skin.cursor.outline ? skin.cursor.outline : skin.cursor;
+      }
+      const startW = (canvasW / 1000) * cursorConf.SIZE * p.zoom + (canvasW / 1000) * cursorConf.ANIM_SIZE_ADDER;
+      const expandW = (canvasW / 1000) * effectConf.SIZE;
+
+      width = startW + expandW * easeOutProgress;
+      lineWidth = (1 - easeOutProgress) * ((canvasW / 1000) * effectConf.LINE_WIDTH);
+      opacity = effectConf.OPACITY - easeInProgress * effectConf.OPACITY;
+
+      if (lineWidth > 0 && opacity > 0) {
+        ctx.save();
+        ctx.beginPath();
+        applyStyle(ctx, styleTarget, cx, cy, width, opacity, true);
+        ctx.lineWidth = lineWidth;
+        ctx.arc(cx, cy, width, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.restore();
+      }
     }
   },
 

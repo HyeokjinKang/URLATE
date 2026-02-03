@@ -24,7 +24,7 @@ let bpmsync = {
   beat: 0,
 };
 let pointingCntElement = [{ v1: "", v2: "", i: "" }];
-let clickDefaultParticles = [];
+let clickParticles = [];
 let destroyParticles = [];
 let missParticles = [];
 let perfectParticles = [];
@@ -349,50 +349,7 @@ const getJudgeStyle = (j, p, x, y) => {
 const drawParticle = (n, x, y, j, d) => {
   let cx = (canvasW / 200) * (x + 100);
   let cy = (canvasH / 200) * (y + 100);
-  if (n == 1) {
-    //Click Note
-    const raf = (w, s, n) => {
-      ctx.beginPath();
-      let width = canvasW / 24;
-      if (Date.now() - s >= 800) return;
-      let p = 100 * easeOutQuad((Date.now() - s) / 800);
-      ctx.lineWidth = ((100 - p) / 100) * (canvasW / 40);
-      let opacity = parseInt(225 - p * 1.25);
-      if (opacity <= 0) opacity = "00";
-      if (skin.note[n].circle) {
-        if (skin.note[n].circle.type == "gradient") {
-          let grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
-          for (let i = 0; i < skin.note[n].circle.stops.length; i++) {
-            grd.addColorStop(skin.note[n].circle.stops[i].percentage / 100, `#${skin.note[n].circle.stops[i].color}${opacity.toString(16).padStart(2, "0")}`);
-          }
-          ctx.fillStyle = grd;
-          ctx.strokeStyle = grd;
-        } else if (skin.note[n].circle.type == "color") {
-          ctx.fillStyle = `#${skin.note[n].circle.color}${opacity.toString(16).padStart(2, "0")}`;
-          ctx.strokeStyle = `#${skin.note[n].circle.color}${opacity.toString(16).padStart(2, "0")}`;
-        }
-      } else {
-        if (skin.note[n].type == "gradient") {
-          let grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
-          for (let i = 0; i < skin.note[n].stops.length; i++) {
-            grd.addColorStop(skin.note[n].stops[i].percentage / 100, `#${skin.note[n].stops[i].color}${opacity.toString(16).padStart(2, "0")}`);
-          }
-          ctx.fillStyle = grd;
-          ctx.strokeStyle = grd;
-        } else if (skin.note[n].type == "color") {
-          ctx.fillStyle = `#${skin.note[n].color}${opacity.toString(16).padStart(2, "0")}`;
-          ctx.strokeStyle = `#${skin.note[n].color}${opacity.toString(16).padStart(2, "0")}`;
-        }
-      }
-      ctx.arc(cx, cy, w, 0, 2 * Math.PI);
-      ctx.stroke();
-      w = canvasW / 80 + width * (p / 100);
-      requestAnimationFrame(() => {
-        raf(w, s, n);
-      });
-    };
-    raf(canvasW / 80, Date.now(), d);
-  } else if (n == 3) {
+  if (n == 3) {
     //Judge
     if (!hide[j.toLowerCase()]) {
       const raf = (y, s) => {
@@ -803,7 +760,7 @@ const cntRender = () => {
   ctx.fillStyle = "#fff";
   ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
 
-  Draw.clickDefaults(ctx, { canvasW, canvasH }, skin, clickDefaultParticles);
+  Draw.clickEffects(ctx, { canvasW, canvasH }, skin, clickParticles);
 
   drawKeyInput();
 
@@ -1110,7 +1067,7 @@ const compClicked = (isTyped, key, isWheel) => {
   for (let i = 0; i < pointingCntElement.length; i++) {
     if (pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && ((pointingCntElement[i].v2 === 0) == !isWheel || pointingCntElement[i].v2 === 2)) {
       if (pointingCntElement[i].v2 == 1 && pattern.patterns[pointingCntElement[i].i].direction != key) return;
-      drawParticle(1, pattern.patterns[pointingCntElement[i].i].x, pattern.patterns[pointingCntElement[i].i].y, 0, pointingCntElement[i].v2);
+      clickParticles.push(Factory.createClickNote(pattern.patterns[pointingCntElement[i].i].x, pattern.patterns[pointingCntElement[i].i].y, settings.game.size, pointingCntElement[i].v2));
       let beat = pattern.patterns[pointingCntElement[i].i].beat;
       let perfectJudge = (1 / 6) * rate;
       let greatJudge = (1 / 3) * rate;
@@ -1150,7 +1107,7 @@ const compClicked = (isTyped, key, isWheel) => {
     }
   }
   keyInput.push({ judge: "Empty", key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
-  clickDefaultParticles.push(Factory.createClickDefault(mouseX, mouseY, settings.game.size));
+  clickParticles.push(Factory.createClickDefault(mouseX, mouseY, settings.game.size));
 };
 
 const calculateScore = (judge, i, ignoreMs) => {
