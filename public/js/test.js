@@ -24,8 +24,7 @@ let bpmsync = {
 let pointingCntElement = [{ v1: "", v2: "", i: "" }];
 let clickParticles = [];
 let destroyParticles = [];
-let missParticles = [];
-let perfectParticles = [];
+let judgeParticles = [];
 let createdBullets = new Set([]);
 let destroyedBullets = new Set([]);
 let explodingBullets = new Set([]);
@@ -286,98 +285,6 @@ const eraseCnt = () => {
   ctx.clearRect(0, 0, canvasW, canvasH);
 };
 
-const getJudgeStyle = (j, p, x, y) => {
-  p *= 100;
-  if (p <= 0) p = 0;
-  p = `${p}`.padStart(2, "0");
-  if (p <= 0) p = 0;
-  if (!judgeSkin) {
-    if (j == "miss") {
-      let grd = ctx.createLinearGradient(x - 50, y - 20, x + 50, y + 20);
-      grd.addColorStop(0, `rgba(237, 78, 50, ${1 - p / 100})`);
-      grd.addColorStop(1, `rgba(248, 175, 67, ${1 - p / 100})`);
-      return grd;
-    } else if (j == "perfect") {
-      let grd = ctx.createLinearGradient(x - 50, y - 20, x + 50, y + 20);
-      grd.addColorStop(0, `rgba(87, 209, 71, ${1 - p / 100})`);
-      grd.addColorStop(1, `rgba(67, 167, 224, ${1 - p / 100})`);
-      return grd;
-    } else if (j == "great") {
-      return `rgba(87, 209, 71, ${1 - p / 100})`;
-    } else if (j == "good") {
-      return `rgba(67, 167, 224, ${1 - p / 100})`;
-    } else if (j == "bad") {
-      return `rgba(176, 103, 90, ${1 - p / 100})`;
-    } else {
-      return `rgba(50, 50, 50, ${1 - p / 100})`;
-    }
-  } else {
-    p = parseInt(255 - p * 2.55);
-    if (p <= 0) p = 0;
-    p = p.toString(16).padStart(2, "0");
-    if (p <= 0) p = "00";
-    if (skin[j].type == "gradient") {
-      let grd = ctx.createLinearGradient(x - 50, y - 20, x + 50, y + 20);
-      for (let i = 0; i < skin[j].stops.length; i++) {
-        grd.addColorStop(skin[j].stops[i].percentage / 100, `#${skin[j].stops[i].color}${p.toString(16)}`);
-      }
-      return grd;
-    } else if (skin[j].type == "color") {
-      return `#${skin[j].color}${p.toString(16)}`;
-    }
-  }
-};
-
-const drawParticle = (n, x, y, j, d) => {
-  let cx = (canvasW / 200) * (x + 100);
-  let cy = (canvasH / 200) * (y + 100);
-  if (n == 3) {
-    //Judge
-    if (!hide[j.toLowerCase()]) {
-      const raf = (y, s) => {
-        ctx.beginPath();
-        let p = easeOutQuad((Date.now() - s) / 700);
-        let newY = y - (canvasH / 20) * p;
-        ctx.fillStyle = getJudgeStyle(j.toLowerCase(), p, cx, newY);
-        ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(j, cx, newY);
-        if (Date.now() - s <= 700) {
-          requestAnimationFrame(() => {
-            raf(cy, s);
-          });
-        }
-      };
-      raf(cy, Date.now());
-    }
-  } else if (n == 4) {
-    //judge:miss
-    if (!hide.miss) {
-      ctx.beginPath();
-      let p = easeOutQuad((Date.now() - missParticles[j].s) / 700);
-      let newY = cy - (canvasH / 20) * p;
-      ctx.fillStyle = getJudgeStyle("miss", p);
-      ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("Miss", cx, newY);
-    }
-  } else if (n == 5) {
-    //judge: perfect
-    if (!hide.perfect) {
-      ctx.beginPath();
-      let p = easeOutQuad((Date.now() - perfectParticles[j].s) / 700);
-      let newY = cy - (canvasH / 20) * p;
-      ctx.fillStyle = getJudgeStyle("perfect", p, cx, newY);
-      ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("Perfect", cx, newY);
-    }
-  }
-};
-
 const destroyAll = (beat) => {
   const end = upperBound(pattern.bullets, beat);
   for (let j = 0; j < end; j++) {
@@ -593,11 +500,7 @@ const cntRender = () => {
       );
       if (progress >= 120 && !destroyedNotes.has(i) && (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
         calculateScore("miss", i, true);
-        missParticles.push({
-          x: pattern.patterns[i].x,
-          y: pattern.patterns[i].y,
-          s: Date.now(),
-        });
+        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, settings.game.judgeSkin, settings.game.applyJudge, "Miss"));
         miss++;
         showOverlay();
         missPoint.push(song.seek() * 1000);
@@ -605,23 +508,9 @@ const cntRender = () => {
       } else if (tailProgress >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
-        perfectParticles.push({ x: pattern.patterns[i].x, y: pattern.patterns[i].y, s: Date.now() });
+        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, settings.game.judgeSkin, settings.game.applyJudge, "Perfect"));
         calculateScore("Perfect", i, true);
         keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
-      }
-    }
-    for (let i = perfectParticles.length - 1; i >= 0; i--) {
-      if (perfectParticles[i].s + 700 > Date.now()) {
-        drawParticle(5, perfectParticles[i].x, perfectParticles[i].y, i);
-      } else {
-        perfectParticles.splice(i, 1);
-      }
-    }
-    for (let i = missParticles.length - 1; i >= 0; i--) {
-      if (missParticles[i].s + 700 > Date.now()) {
-        drawParticle(4, missParticles[i].x, missParticles[i].y, i);
-      } else {
-        missParticles.splice(i, 1);
       }
     }
     start = lowerBound(pattern.bullets, beats - 32);
@@ -739,6 +628,8 @@ const cntRender = () => {
   ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
 
   Draw.clickEffects(ctx, { canvasW, canvasH }, skin, clickParticles);
+
+  Draw.judges(ctx, { canvasW, canvasH }, skin, judgeParticles);
 
   drawKeyInput();
 
@@ -1017,7 +908,7 @@ const compClicked = (isTyped, key, isWheel) => {
         keyPressing[key] = pointingCntElement[i].i;
       }
       calculateScore(judge, pointingCntElement[i].i);
-      drawParticle(3, x, y, judge);
+      judgeParticles.push(Factory.createJudge(x, y, judge, settings.game.judgeSkin, settings.game.applyJudge));
       keyInput.push({ judge, key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
       return;
     }
@@ -1156,9 +1047,9 @@ const retry = () => {
       beat: 0,
     };
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
+    clickParticles = [];
     destroyParticles = [];
-    missParticles = [];
-    perfectParticles = [];
+    judgeParticles = [];
     createdBullets = new Set([]);
     destroyedBullets = new Set([]);
     explodingBullets = new Set([]);
@@ -1320,17 +1211,13 @@ const checkHoldNote = (key) => {
       medalCheck(medal);
       pattern.patterns[keyPressing[key]].beat = beats - pattern.patterns[keyPressing[key]].duration;
       calculateScore("Miss", keyPressing[key], true);
-      missParticles.push({
-        x: pattern.patterns[keyPressing[key]].x,
-        y: pattern.patterns[keyPressing[key]].y,
-        s: Date.now(),
-      });
+      judgeParticles.push(Factory.createJudge(pattern.patterns[keyPressing[key]].x, pattern.patterns[keyPressing[key]].y, settings.game.judgeSkin, settings.game.applyJudge, "Miss"));
       miss++;
       showOverlay();
       missPoint.push(song.seek() * 1000);
       keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
     } else {
-      perfectParticles.push({ x: pattern.patterns[keyPressing[key]].x, y: pattern.patterns[keyPressing[key]].y, s: Date.now() });
+      judgeParticles.push(Factory.createJudge(pattern.patterns[keyPressing[key]].x, pattern.patterns[keyPressing[key]].y, settings.game.judgeSkin, settings.game.applyJudge, "Perfect"));
       calculateScore("Perfect", keyPressing[key], true);
       keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
     }

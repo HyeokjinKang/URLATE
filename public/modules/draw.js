@@ -28,9 +28,27 @@ const Config = {
     LINE_WIDTH: 15,
     OPACITY: 100,
   },
-  JUDGE_TEXT_EFFECT: {
-    LIFETIME: 700,
+  JUDGE_EFFECT: {
+    LIFETIME: 500,
+    DEFAULT_ANIM_Y_ADDER: 100,
+    MISS_ANIM_Y_ADDER: -50,
+    MISS_ANIM_ROTATE: 10,
   },
+};
+
+/** 기본 판정 스킨 */
+const JudgeSkin = {
+  perfect: {
+    type: "gradient",
+    stops: [
+      { percentage: 0, color: "#90F482" },
+      { percentage: 100, color: "#73AADD" },
+    ],
+  },
+  great: { type: "color", color: "#6DDA5E" },
+  good: { type: "color", color: "#63BCEE" },
+  bad: { type: "color", color: "#C19189" },
+  miss: { type: "color", color: "#F96C5A" },
 };
 
 /**
@@ -126,6 +144,24 @@ const Factory = {
     noteType,
     createdAt: Date.now(),
     lifeTime: Config.NOTE_CLICK_EFFECT.LIFETIME,
+  }),
+
+  /**
+   * 판정 텍스트 이펙트 데이터를 생성합니다.
+   * @param {number} x
+   * @param {number} y
+   * @param {string} judge
+   * @param {boolean} judgeSkin - settings.game.judgeSkin
+   * @param {object} applyJudge - settings.game.applyJudge
+   */
+  createJudge: (x, y, judge, judgeSkin, applyJudge) => ({
+    x,
+    y,
+    judge,
+    judgeSkin,
+    applyJudge,
+    createdAt: Date.now(),
+    lifeTime: Config.JUDGE_EFFECT.LIFETIME,
   }),
 };
 
@@ -469,6 +505,66 @@ const Draw = {
   },
 
   /**
+   * 판정 텍스트를 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {object} skin - 유저 스킨
+   * @param {Array<object>} particles - 판정 파티클 배열
+   */
+  judges: (ctx, layout, skin, particles) => {
+    const { canvasW, canvasH } = layout;
+    const now = Date.now();
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      const isJudgeSkin = p.judgeSkin;
+      const hide = p.applyJudge;
+      const judgeKey = p.judge.toLowerCase();
+
+      if (hide[p.judge]) {
+        if (now - p.createdAt >= p.lifeTime) particles.splice(i, 1);
+        continue;
+      }
+
+      const elapsed = now - p.createdAt;
+      if (elapsed >= p.lifeTime) {
+        particles.splice(i, 1);
+        continue;
+      }
+
+      const progress = elapsed / p.lifeTime;
+      const easeInProgress = easeInQuad(progress);
+      const easeOutProgress = easeOutQuad(progress);
+
+      const { cx, cy } = getCanvasPos(p.x, p.y, canvasW, canvasH);
+
+      const deg = judgeKey == "miss" ? Config.JUDGE_EFFECT.MISS_ANIM_ROTATE : 0;
+      const animDeg = deg * easeOutProgress;
+
+      const yAdder = judgeKey == "miss" ? Config.JUDGE_EFFECT.MISS_ANIM_Y_ADDER : Config.JUDGE_EFFECT.DEFAULT_ANIM_Y_ADDER;
+      const animY = -1 * (canvasH / 1000) * yAdder * easeOutProgress;
+
+      const opacity = 100 - easeInProgress * 100;
+
+      const skinPart = isJudgeSkin && skin[judgeKey] ? skin[judgeKey] : JudgeSkin[judgeKey];
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.translate(cx, cy + animY);
+      ctx.rotate((Math.PI * animDeg) / 180);
+
+      applyStyle(ctx, skinPart, 0, 0, 50, opacity, false);
+
+      ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(p.judge, 0, 0);
+
+      ctx.restore();
+    }
+  },
+
+  /**
    * 클릭 이펙트를 화면에 그립니다.
    * @param {CanvasRenderingContext2D} ctx
    * @param {object} layout - { canvasW, canvasH }
@@ -528,18 +624,18 @@ const Draw = {
    * @param {CanvasRenderingContext2D} ctx
    * @param {number} canvasW
    * @param {number} canvasH
-   * @param {Array<object>} targetArray
+   * @param {Array<object>} particles
    */
-  explosions: (ctx, canvasW, canvasH, targetArray) => {
+  explosions: (ctx, canvasW, canvasH, particles) => {
     const now = Date.now();
     const conf = Config.EXPLODE_EFFECT;
 
-    for (let i = targetArray.length - 1; i >= 0; i--) {
-      const p = targetArray[i];
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
       const elapsed = now - p.createdAt;
 
       if (elapsed >= p.lifeTime) {
-        targetArray.splice(i, 1);
+        particles.splice(i, 1);
         continue;
       }
 
