@@ -2,11 +2,9 @@ const numberWithCommas = (x) => {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-const hexadecimal = (color) => {
-  return (percentage) => {
-    const decimal = `0${Math.round(255 * (percentage / 100)).toString(16)}`.slice(-2).toUpperCase();
-    return color + decimal;
-  };
+const hexadecimal = (color, percentage) => {
+  const decimal = `0${Math.round(255 * (percentage / 100)).toString(16)}`.slice(-2).toUpperCase();
+  return color + decimal;
 };
 
 const getTan = (deg) => {

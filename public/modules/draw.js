@@ -97,11 +97,11 @@ const applyStyle = (ctx, skinPart, x, y, size, opacity, isStroke = false) => {
   if (skinPart.type === "gradient") {
     const grd = ctx.createLinearGradient(x - size, y - size, x + size, y + size);
     for (let s = 0; s < skinPart.stops.length; s++) {
-      grd.addColorStop(skinPart.stops[s].percentage / 100, hexadecimal(skinPart.stops[s].color)(opacity));
+      grd.addColorStop(skinPart.stops[s].percentage / 100, hexadecimal(skinPart.stops[s].color, opacity));
     }
     style = grd;
   } else {
-    style = hexadecimal(skinPart.color)(opacity);
+    style = hexadecimal(skinPart.color, opacity);
   }
 
   if (isStroke) {
@@ -249,8 +249,8 @@ const Draw = {
       ctx.textBaseline = "top";
       Draw.outlinedText(ctx, `(X: ${gameX}, Y: ${gameY})`, 0, 1.2 * w);
 
-      ctx.fillStyle = hexadecimal("#ebd534")(opacityVal);
-      ctx.strokeStyle = hexadecimal("#ebd534")(opacityVal);
+      ctx.fillStyle = hexadecimal("#ebd534", opacityVal);
+      ctx.strokeStyle = hexadecimal("#ebd534", opacityVal);
     } else {
       applyStyle(ctx, noteSkin, 0, 0, w, opacityVal, false);
       applyStyle(ctx, noteSkin.indicator, 0, 0, w, opacityVal, true);
@@ -508,13 +508,13 @@ const Draw = {
 
     // 스킨 적용
     applyStyle(ctx, skin.cursor, 0, 0, w, 100, false);
-    if (skin.cursor.type === "gradient") ctx.shadowColor = hexadecimal(skin.cursor.stops[0].color)(50);
-    else ctx.shadowColor = hexadecimal(skin.cursor.color)(50);
+    if (skin.cursor.type === "gradient") ctx.shadowColor = hexadecimal(skin.cursor.stops[0].color, 50);
+    else ctx.shadowColor = hexadecimal(skin.cursor.color, 50);
 
     if (skin.cursor.outline) {
       applyStyle(ctx, skin.cursor.outline, 0, 0, w, 100, true);
-      if (skin.cursor.outline.type === "gradient") ctx.shadowColor = hexadecimal(skin.cursor.outline.stops[0].color)(50);
-      else ctx.shadowColor = hexadecimal(skin.cursor.outline.color)(50);
+      if (skin.cursor.outline.type === "gradient") ctx.shadowColor = hexadecimal(skin.cursor.outline.stops[0].color, 50);
+      else ctx.shadowColor = hexadecimal(skin.cursor.outline.color, 50);
     }
 
     // 그리기
