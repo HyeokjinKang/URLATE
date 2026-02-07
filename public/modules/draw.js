@@ -1,3 +1,8 @@
+/**
+ * draw.js
+ * 게임의 캔버스 드로잉을 담당합니다.
+ */
+
 /** 게임 내 이펙트 및 렌더링 관련 상수/설정값을 관리합니다. */
 const Config = {
   MATH: {
@@ -150,16 +155,14 @@ const Factory = {
    * 판정 텍스트 이펙트 데이터를 생성합니다.
    * @param {number} x
    * @param {number} y
-   * @param {string} judge
    * @param {boolean} judgeSkin - settings.game.judgeSkin
-   * @param {object} applyJudge - settings.game.applyJudge
+   * @param {string} judge
    */
-  createJudge: (x, y, judge, judgeSkin, applyJudge) => ({
+  createJudge: (x, y, judgeSkin, judge) => ({
     x,
     y,
-    judge,
     judgeSkin,
-    applyJudge,
+    judge,
     createdAt: Date.now(),
     lifeTime: Config.JUDGE_EFFECT.LIFETIME,
   }),
@@ -377,13 +380,13 @@ const Draw = {
    * @param {CanvasRenderingContext2D} ctx
    * @param {object} layout - { canvasW, canvasH }
    * @param {object} skin - 유저 스킨 설정값
-   * @param {object} bullet - { x, y, angle?, location?, direction?, debugIndex? }
-   * @param {object} state - { visualAngle, isSelected?, isHit? }
+   * @param {object} bullet - { x, y, angle, location?, direction?, debugIndex? }
+   * @param {object} state - { isSelected?, isHit? }
    */
-  bullet: (ctx, layout, skin, bullet, state) => {
+  bullet: (ctx, layout, skin, bullet, state = {}) => {
     const { canvasW, canvasH } = layout;
     const { x: gameX, y: gameY, angle: realAngle } = bullet;
-    const { visualAngle, isSelected, isHit } = state;
+    const { isSelected, isHit } = state;
 
     const { cx, cy } = getCanvasPos(gameX, gameY, canvasW, canvasH);
     const w = canvasW / 80;
@@ -434,6 +437,12 @@ const Draw = {
         ctx.stroke(path);
       }
     }
+
+    // visualAngle 계산
+    const scaleX = canvasW / 200;
+    const scaleY = canvasH / 200;
+    const visualAngleRad = Math.atan2(getSin(realAngle) * scaleY, getCos(realAngle) * scaleX);
+    const visualAngle = (visualAngleRad * 180) / Math.PI;
 
     // 그리기 시작
     ctx.save();
@@ -518,19 +527,8 @@ const Draw = {
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       const isJudgeSkin = p.judgeSkin;
-      const hide = p.applyJudge;
       const judgeKey = p.judge.toLowerCase();
-
-      if (hide[p.judge]) {
-        if (now - p.createdAt >= p.lifeTime) particles.splice(i, 1);
-        continue;
-      }
-
       const elapsed = now - p.createdAt;
-      if (elapsed >= p.lifeTime) {
-        particles.splice(i, 1);
-        continue;
-      }
 
       const progress = elapsed / p.lifeTime;
       const easeInProgress = easeInQuad(progress);
@@ -579,11 +577,6 @@ const Draw = {
       const p = particles[i];
       const elapsed = now - p.createdAt;
       const cursorConf = Config.CURSOR;
-
-      if (elapsed >= p.lifeTime) {
-        particles.splice(i, 1);
-        continue;
-      }
 
       const progress = elapsed / p.lifeTime;
       const easeInProgress = easeInQuad(progress);
@@ -637,19 +630,14 @@ const Draw = {
       const p = particles[i];
       const elapsed = now - p.createdAt;
 
-      if (elapsed >= p.lifeTime) {
-        particles.splice(i, 1);
-        continue;
-      }
-
       const progress = Math.min(1, elapsed / p.lifeTime);
       const easeVal = easeOutQuart(progress);
 
-      p.x = p.startX + p.dx * easeVal;
-      p.y = p.startY + p.dy * easeVal;
+      const currentX = p.startX + p.dx * easeVal;
+      const currentY = p.startY + p.dy * easeVal;
 
-      const cx = (canvasW / 200) * (p.x + 100);
-      const cy = (canvasH / 200) * (p.y + 100);
+      const cx = (canvasW / 200) * (currentX + 100);
+      const cy = (canvasH / 200) * (currentY + 100);
 
       const size = (canvasW / 1000) * conf.SIZE * (1 - easeVal);
 

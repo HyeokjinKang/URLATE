@@ -484,8 +484,6 @@ const cntRender = () => {
       ctx.fillText(text.text, (canvasW / 200) * (text.x + 100), (canvasH / 200) * (text.y + 100));
     }
 
-    Draw.explosions(ctx, canvasW, canvasH, destroyParticles);
-
     let renderDuration = 5 / speed;
 
     let start = lowerBound(pattern.patterns, beats - noteMaxDuration);
@@ -518,7 +516,7 @@ const cntRender = () => {
       );
       if (progress >= 120 && !destroyedNotes.has(i) && (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
         calculateScore("miss", i, true);
-        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, settings.game.judgeSkin, settings.game.applyJudge, "Miss"));
+        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, settings.game.judgeSkin, "Miss"));
         miss++;
         showOverlay();
         missPoint.push(song.seek() * 1000);
@@ -527,7 +525,7 @@ const cntRender = () => {
       } else if (tailProgress >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
-        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, settings.game.judgeSkin, settings.game.applyJudge, "Perfect"));
+        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, settings.game.judgeSkin, "Perfect"));
         calculateScore("Perfect", i, true);
         record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "perfect(hold)", song.seek() * 1000]);
         keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
@@ -539,53 +537,17 @@ const cntRender = () => {
       if (!destroyedBullets.has(i) || explodingBullets.has(i)) {
         const bullet = pattern.bullets[i];
 
-        let triggerEnd = upperBound(pattern.triggers, bullet.beat);
-        let baseSpeed = pattern.information.speed;
-
-        for (let i = 0; i < triggerEnd; i++) {
-          if (pattern.triggers[i].value == 4) {
-            baseSpeed = pattern.triggers[i].speed;
-          }
-        }
-
-        let triggerStart = lowerBound(pattern.triggers, bullet.beat);
-        triggerEnd = upperBound(pattern.triggers, beats);
-
-        let p = 0;
-        let prevBeat = bullet.beat;
-        let prevSpeed = baseSpeed;
-
-        for (let j = triggerStart; j < triggerEnd; j++) {
-          const trigger = pattern.triggers[j];
-          if (trigger.value == 4) {
-            p += ((trigger.beat - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100; //15 for proper speed(lower is too fast)
-            prevBeat = trigger.beat;
-            prevSpeed = trigger.speed;
-          }
-        }
-
-        p += ((beats - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100; //15 for proper speed(lower is too fast)
-        const isLeft = bullet.direction == "L";
-
-        const scaleX = canvasW / 200;
-        const scaleY = canvasH / 200;
-
-        const realAngle = isLeft ? bullet.angle : bullet.angle + 180;
-        const visualAngleRad = Math.atan2(getSin(realAngle) * scaleY, getCos(realAngle) * scaleX);
-        const visualAngle = (visualAngleRad * 180) / Math.PI;
-
-        const x = (isLeft ? -100 : 100) + getCos(realAngle) * p;
-        const y = bullet.location + getSin(realAngle) * p;
+        const pos = Update.bulletPos(bullet, beats, pattern.triggers, pattern.information.speed);
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
-          destroyParticles.push(...Factory.createExplosions(x, y, skin.bullet));
+          destroyParticles.push(...Factory.createExplosions(pos.x, pos.y, skin.bullet));
           if (explodingBullets.has(i)) continue;
         }
-
         createdBullets.add(i);
 
-        trackMouseSelection(i, 1, 0, x, y);
-        Draw.bullet(ctx, { canvasW, canvasH }, skin, { x, y }, { visualAngle });
+        trackMouseSelection(i, 1, 0, pos.x, pos.y);
+
+        Draw.bullet(ctx, { canvasW, canvasH }, skin, pos);
       }
     }
 
@@ -649,10 +611,13 @@ const cntRender = () => {
   ctx.fillStyle = "#fff";
   ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
 
+  Update.particles(destroyParticles);
+  Update.particles(clickParticles);
+  Update.particles(judgeParticles, settings.game.applyJudge);
+
+  Draw.explosions(ctx, canvasW, canvasH, destroyParticles);
   Draw.clickEffects(ctx, { canvasW, canvasH }, skin, clickParticles);
-
   Draw.judges(ctx, { canvasW, canvasH }, skin, judgeParticles);
-
   drawKeyInput();
 
   if (effectMs != 0 && effectNum != -1) drawFinalEffect(effectNum);
@@ -991,7 +956,7 @@ const compClicked = (isTyped, key, isWheel) => {
         keyPressing[key] = pointingCntElement[i].i;
       }
       calculateScore(judge, pointingCntElement[i].i);
-      judgeParticles.push(Factory.createJudge(x, y, settings.game.judgeSkin, settings.game.applyJudge, judge));
+      judgeParticles.push(Factory.createJudge(x, y, settings.game.judgeSkin, judge));
       record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, judge, song.seek() * 1000]);
       keyInput.push({ judge, key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
       return;
@@ -1294,14 +1259,14 @@ const checkHoldNote = (key) => {
       medalCheck(medal);
       pattern.patterns[keyPressing[key]].beat = beats - pattern.patterns[keyPressing[key]].duration;
       calculateScore("Miss", keyPressing[key], true);
-      judgeParticles.push(Factory.createJudge(pattern.patterns[keyPressing[key]].x, pattern.patterns[keyPressing[key]].y, settings.game.judgeSkin, settings.game.applyJudge, "Miss"));
+      judgeParticles.push(Factory.createJudge(pattern.patterns[keyPressing[key]].x, pattern.patterns[keyPressing[key]].y, settings.game.judgeSkin, "Miss"));
       miss++;
       showOverlay();
       missPoint.push(song.seek() * 1000);
       record.push([record.length, 0, 2, keyPressing[key], mouseX, mouseY, "miss(hold)", song.seek() * 1000]);
       keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
     } else {
-      judgeParticles.push(Factory.createJudge(pattern.patterns[keyPressing[key]].x, pattern.patterns[keyPressing[key]].y, settings.game.judgeSkin, settings.game.applyJudge, "Perfect"));
+      judgeParticles.push(Factory.createJudge(pattern.patterns[keyPressing[key]].x, pattern.patterns[keyPressing[key]].y, settings.game.judgeSkin, "Perfect"));
       calculateScore("Perfect", keyPressing[key], true);
       keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
       record.push([record.length, 0, 2, keyPressing[key], mouseX, mouseY, "perfect(hold)", song.seek() * 1000]);

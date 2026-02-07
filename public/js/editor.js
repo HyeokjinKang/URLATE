@@ -438,11 +438,6 @@ const drawShadow = (x, y, n, d, a) => {
   }
 };
 
-const drawOutlinedText = (ctx, text, x, y) => {
-  ctx.strokeText(text, x, y);
-  ctx.fillText(text, x, y);
-};
-
 const changeNote = () => {
   let n = Number(pattern.patterns[selectedCntElement.i].value);
   pattern.patterns[selectedCntElement.i].value = n == 2 ? 0 : n + 1;
@@ -1058,9 +1053,6 @@ const cntRender = () => {
       cntCtx.fillText(text.text, tw * (text.x + 100), th * (text.y + 100));
     }
 
-    // Render Explosions
-    Draw.explosions(cntCtx, canvasW, canvasH, destroyParticles);
-
     // Prevent destroy infinite loop
     prevDestroyedBullets = new Set(destroyedBullets);
 
@@ -1134,66 +1126,27 @@ const cntRender = () => {
       if (!destroyedBullets.has(i) || explodingBullets.has(i)) {
         const bullet = pattern.bullets[i];
 
-        let triggerEnd = upperBound(pattern.triggers, bullet.beat);
-        let baseSpeed = pattern.information.speed;
-
-        for (let i = 0; i < triggerEnd; i++) {
-          if (pattern.triggers[i].value == 4) {
-            baseSpeed = pattern.triggers[i].speed;
-          }
-        }
-
-        let triggerStart = lowerBound(pattern.triggers, bullet.beat);
-        triggerEnd = upperBound(pattern.triggers, beats);
-
-        let p = 0;
-        let prevBeat = bullet.beat;
-        let prevSpeed = baseSpeed;
-
-        for (let j = triggerStart; j < triggerEnd; j++) {
-          const trigger = pattern.triggers[j];
-          if (trigger.value == 4) {
-            p += ((trigger.beat - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100; //15 for proper speed(lower is too fast)
-            prevBeat = trigger.beat;
-            prevSpeed = trigger.speed;
-          }
-        }
-
-        p += ((beats - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100; //15 for proper speed(lower is too fast)
-        const isLeft = pattern.bullets[i].direction == "L";
-
-        const scaleX = canvasW / 200;
-        const scaleY = canvasH / 200;
-
-        const realAngle = isLeft ? bullet.angle : bullet.angle + 180;
-        const visualAngleRad = Math.atan2(getSin(realAngle) * scaleY, getCos(realAngle) * scaleX);
-        const visualAngle = (visualAngleRad * 180) / Math.PI;
-
-        const x = (isLeft ? -100 : 100) + getCos(realAngle) * p;
-        const y = bullet.location + getSin(realAngle) * p;
+        const pos = Update.bulletPos(bullet, beats, pattern.triggers, pattern.information.speed);
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
-          if (!prevCreatedBullets.has(i) || explodingBullets.has(i)) destroyParticles.push(...Factory.createExplosions(x, y, skin.bullet));
+          if (!prevCreatedBullets.has(i) || explodingBullets.has(i)) destroyParticles.push(...Factory.createExplosions(pos.x, pos.y, skin.bullet));
           if (explodingBullets.has(i)) continue;
         }
-
         createdBullets.add(i);
 
-        if (mouseMode == 0) trackMouseSelection(i, 1, 0, x, y);
+        trackMouseSelection(i, 1, 0, pos.x, pos.y);
+
         Draw.bullet(
           cntCtx,
           { canvasW, canvasH },
           skin,
           {
-            x: x,
-            y: y,
-            angle: realAngle,
+            ...pos,
             location: pattern.bullets[i].location,
             direction: pattern.bullets[i].direction,
             debugIndex: i,
           },
           {
-            visualAngle: visualAngle,
             isSelected: selectedCheck(1, i),
             isHit: hitBullets.has(i),
           },
@@ -1288,6 +1241,10 @@ const cntRender = () => {
         );
       }
     }
+
+    Update.particles(destroyParticles);
+
+    Draw.explosions(cntCtx, canvasW, canvasH, destroyParticles);
 
     // Editor only - Trigger guide text (when mode is "Add")
     if (mode == 2 && mouseMode == -1) {
