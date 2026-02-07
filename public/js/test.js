@@ -516,92 +516,13 @@ const cntRender = () => {
   Draw.judges(ctx, { canvasW, canvasH }, skin, judgeParticles);
   Draw.keyInput(ctx, { canvasW, canvasH }, keyInput, keyInputTime);
 
-  if (effectMs != 0 && effectNum != -1) drawFinalEffect(effectNum);
+  if (effectMs != 0 && effectNum != -1) {
+    Draw.finalEffect(ctx, { canvasW, canvasH }, effectNum, effectMs);
+
+    if (Date.now() - effectMs >= 2000) effectMs = 0;
+  }
 
   Draw.cursor(ctx, { canvasW, canvasH }, skin, { x: mouseX, y: mouseY, zoom: cursorZoom }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
-};
-
-const drawFinalEffect = (i) => {
-  const duration = 2000;
-  ctx.beginPath();
-  const text = i == 0 ? "ALL PERFECT" : "FULL COMBO";
-  const p = easeOutQuart(Math.min(1, (Date.now() - effectMs) / duration));
-  const alpha = Math.max(0, Math.min((Date.now() - effectMs) / 200, Math.min(1, (effectMs + duration - 500 - Date.now()) / 500)));
-  ctx.globalAlpha = alpha;
-  let effectStartX = (-1 * canvasW) / 5;
-  let effectFinalX = -1 * (canvasW / 20);
-  let effectX = effectStartX + (effectFinalX - effectStartX) * p;
-  let effectY = -1 * (canvasH / 20);
-  ctx.font = `800 ${canvasH / 5}px Montserrat`;
-  let grd = ctx.createLinearGradient(effectX, effectY, effectX, effectY + canvasH / 5);
-  grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
-  grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
-  ctx.fillStyle = grd;
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-  ctx.fillText(text, effectX, effectY);
-
-  ctx.beginPath();
-  effectStartX = canvasW + canvasW / 5;
-  effectFinalX = canvasW + canvasW / 20;
-  effectX = effectStartX + (effectFinalX - effectStartX) * p;
-  effectY = canvasH + canvasH / 20;
-  grd = ctx.createLinearGradient(effectX, effectY - canvasH / 5, effectX, effectY);
-  grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
-  grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
-  ctx.fillStyle = grd;
-  ctx.textAlign = "right";
-  ctx.textBaseline = "bottom";
-  ctx.fillText(text, effectX, effectY);
-  ctx.globalAlpha = 1;
-
-  ctx.beginPath();
-  let mainTextX = canvasW / 2;
-  let mainTextY = canvasH / 2;
-  let mainTextSizeStart = canvasH / 5;
-  let mainTextSizeFinal = canvasH / 7;
-  let outlineTextSizeStart = canvasH / 4;
-  let outlineTextSizeFinal = canvasH / 5;
-  let mainTextSize = mainTextSizeStart + (mainTextSizeFinal - mainTextSizeStart) * p;
-  let outlineTextSize = outlineTextSizeStart + (outlineTextSizeFinal - outlineTextSizeStart) * p;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.lineJoin = "round";
-  if (i == 0) {
-    grd = ctx.createLinearGradient(mainTextX, mainTextY - outlineTextSize / 2, mainTextX, mainTextY + outlineTextSize / 2);
-    grd.addColorStop(0, `rgba(245, 129, 255, ${alpha / 3})`);
-    grd.addColorStop(0.5, `rgba(119, 182, 244, ${alpha / 3})`);
-    grd.addColorStop(1, `rgba(67, 221, 166, ${alpha / 3})`);
-    ctx.strokeStyle = grd;
-  } else if (i == 1) {
-    ctx.strokeStyle = `rgba(240, 194, 29, ${alpha / 3})`;
-  }
-  ctx.font = `800 ${outlineTextSize}px Montserrat`;
-  ctx.lineWidth = canvasH / 200;
-  ctx.strokeText(text, mainTextX, mainTextY);
-  ctx.globalCompositeOperation = "destination-out";
-  ctx.fillStyle = `rgb(255, 255, 255)`;
-  ctx.fillText(text, mainTextX, mainTextY);
-  ctx.globalCompositeOperation = "source-over";
-  if (i == 0) {
-    grd = ctx.createLinearGradient(mainTextX, mainTextY - mainTextSize / 2, mainTextX, mainTextY + mainTextSize / 2);
-    grd.addColorStop(0, `rgba(245, 129, 255, ${alpha})`);
-    grd.addColorStop(0.5, `rgba(119, 182, 244, ${alpha})`);
-    grd.addColorStop(1, `rgba(67, 221, 166, ${alpha})`);
-    ctx.strokeStyle = grd;
-  } else if (i == 1) {
-    ctx.strokeStyle = `rgba(240, 194, 29, ${alpha})`;
-  }
-  ctx.font = `800 ${mainTextSize}px Montserrat`;
-  ctx.lineWidth = canvasH / 100;
-  ctx.strokeText(text, mainTextX, mainTextY);
-  ctx.globalCompositeOperation = "destination-out";
-  ctx.fillStyle = `rgb(255, 255, 255)`;
-  ctx.fillText(text, mainTextX, mainTextY);
-  ctx.globalCompositeOperation = "source-over";
-  ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-  ctx.fillText(text, mainTextX, mainTextY);
-  if (p == 1) effectMs = 0;
 };
 
 const trackMousePos = (e) => {
@@ -851,7 +772,7 @@ const calculateScore = (judge, i, ignoreMs) => {
     comboAlertCount = combo;
   }
   if (i == patternLength - 1) {
-    destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
+    if (pattern.bullets.length) destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
     effectMs = Date.now();
     if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
       effectNum = 0;

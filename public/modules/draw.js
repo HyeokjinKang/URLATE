@@ -755,6 +755,120 @@ const Draw = {
   },
 
   /**
+   * FC / AP 이펙트를 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {number} effectNum - 0: AP / 1 : FC
+   * @param {number} effectMs - 이펙트 시작 시간
+   */
+  finalEffect: (ctx, layout, effectNum, effectMs) => {
+    const { canvasW, canvasH } = layout;
+    const duration = 2000;
+    const now = Date.now();
+
+    const text = effectNum == 0 ? "ALL PERFECT" : "FULL COMBO";
+    const p = easeOutQuart(Math.min(1, (now - effectMs) / duration));
+
+    const baseAlpha = Math.max(0, Math.min((now - effectMs) / 200, Math.min(1, (effectMs + duration - 500 - now) / 500)));
+
+    ctx.save();
+
+    // 1. 배경에 흐르는 텍스트 (화면 모서리 양 끝)
+    ctx.globalAlpha = baseAlpha;
+    ctx.font = `800 ${canvasH / 5}px Montserrat`;
+
+    // Top Left
+    let effectStartX = (-1 * canvasW) / 5;
+    let effectFinalX = -1 * (canvasW / 20);
+    let effectX = effectStartX + (effectFinalX - effectStartX) * p;
+    let effectY = -1 * (canvasH / 20);
+
+    let grd = ctx.createLinearGradient(effectX, effectY, effectX, effectY + canvasH / 5);
+    grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
+    grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
+    ctx.fillStyle = grd;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText(text, effectX, effectY);
+
+    // Bottom Right
+    effectStartX = canvasW + canvasW / 5;
+    effectFinalX = canvasW + canvasW / 20;
+    effectX = effectStartX + (effectFinalX - effectStartX) * p;
+    effectY = canvasH + canvasH / 20;
+
+    grd = ctx.createLinearGradient(effectX, effectY - canvasH / 5, effectX, effectY);
+    grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
+    grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
+    ctx.fillStyle = grd;
+    ctx.textAlign = "right";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(text, effectX, effectY);
+
+    // 2. 메인 중앙 텍스트
+    let mainTextX = canvasW / 2;
+    let mainTextY = canvasH / 2;
+
+    let mainTextSizeStart = canvasH / 5;
+    let mainTextSizeFinal = canvasH / 7;
+    let outlineTextSizeStart = canvasH / 4;
+    let outlineTextSizeFinal = canvasH / 5;
+    let mainTextSize = mainTextSizeStart + (mainTextSizeFinal - mainTextSizeStart) * p;
+    let outlineTextSize = outlineTextSizeStart + (outlineTextSizeFinal - outlineTextSizeStart) * p;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.lineJoin = "round";
+
+    let strokeStyle;
+    if (effectNum == 0) {
+      // All Perfect: Gradient
+      let g = ctx.createLinearGradient(mainTextX, mainTextY - outlineTextSize / 2, mainTextX, mainTextY + outlineTextSize / 2);
+      g.addColorStop(0, "#f581ff");
+      g.addColorStop(0.5, "#77B6F4");
+      g.addColorStop(1, "#43DDA6");
+      strokeStyle = g;
+    } else {
+      // Full Combo: Gold
+      strokeStyle = "#F0C21D";
+    }
+
+    // Outline Stroke
+    ctx.globalAlpha = baseAlpha / 3;
+    ctx.strokeStyle = strokeStyle;
+    ctx.font = `800 ${outlineTextSize}px Montserrat`;
+    ctx.lineWidth = canvasH / 200;
+    ctx.strokeText(text, mainTextX, mainTextY);
+
+    // Clearing Inside
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fillStyle = "#FFF";
+    ctx.fillText(text, mainTextX, mainTextY);
+    ctx.globalCompositeOperation = "source-over";
+
+    // Main Stroke
+    ctx.globalAlpha = baseAlpha;
+    ctx.strokeStyle = strokeStyle;
+    ctx.font = `800 ${mainTextSize}px Montserrat`;
+    ctx.lineWidth = canvasH / 100;
+    ctx.strokeText(text, mainTextX, mainTextY);
+
+    // Clearing Inside
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fillText(text, mainTextX, mainTextY);
+    ctx.globalCompositeOperation = "source-over";
+
+    // Main Fill
+    ctx.globalAlpha = baseAlpha;
+    ctx.fillStyle = "#FFF";
+    ctx.fillText(text, mainTextX, mainTextY);
+
+    ctx.restore();
+  },
+
+  /**
    * 에디터용: 노트 연결선을 그립니다.
    * @param {CanvasRenderingContext2D} ctx
    * @param {object} layout - { canvasW, canvasH }
