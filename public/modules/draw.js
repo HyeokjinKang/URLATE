@@ -569,7 +569,7 @@ const Draw = {
    * @param {CanvasRenderingContext2D} ctx
    * @param {object} layout - { canvasW, canvasH }
    * @param {object} skin - 유저 스킨 설정값
-   * @param {object} particles
+   * @param {Array<object>} particles
    */
   clickEffects: (ctx, layout, skin, particles) => {
     const { canvasW, canvasH } = layout;
@@ -591,7 +591,7 @@ const Draw = {
 
       const { cx, cy } = getCanvasPos(p.x, p.y, canvasW, canvasH);
 
-      let width, lineWidth, opacity, styleTarget, effectConf;
+      let styleTarget, effectConf;
 
       if (p.type === "note") {
         effectConf = Config.NOTE_CLICK_EFFECT;
@@ -600,22 +600,25 @@ const Draw = {
         effectConf = Config.CLICK_EFFECT;
         styleTarget = skin.cursor.outline ? skin.cursor.outline : skin.cursor;
       }
+
       const startW = (canvasW / 1000) * cursorConf.SIZE * p.zoom + (canvasW / 1000) * cursorConf.ANIM_SIZE_ADDER;
       const expandW = (canvasW / 1000) * effectConf.SIZE;
+      const width = startW + expandW * easeOutProgress;
+      const lineWidth = (1 - easeOutProgress) * ((canvasW / 1000) * effectConf.LINE_WIDTH);
+      const opacity = effectConf.OPACITY - easeInProgress * effectConf.OPACITY;
 
-      width = startW + expandW * easeOutProgress;
-      lineWidth = (1 - easeOutProgress) * ((canvasW / 1000) * effectConf.LINE_WIDTH);
-      opacity = effectConf.OPACITY - easeInProgress * effectConf.OPACITY;
+      if (lineWidth <= 0 || opacity <= 0 || width <= 0) continue;
 
-      if (lineWidth > 0 && opacity > 0) {
-        ctx.save();
-        ctx.beginPath();
-        applyStyle(ctx, styleTarget, cx, cy, width, opacity, true);
-        ctx.lineWidth = lineWidth;
-        ctx.arc(cx, cy, width, 0, 2 * Math.PI);
-        ctx.stroke();
-        ctx.restore();
-      }
+      ctx.save();
+      ctx.beginPath();
+
+      applyStyle(ctx, styleTarget, cx, cy, width, opacity, true);
+      ctx.lineWidth = lineWidth;
+
+      ctx.arc(cx, cy, width, 0, 2 * Math.PI);
+      ctx.stroke();
+
+      ctx.restore();
     }
   },
 
