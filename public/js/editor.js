@@ -1075,11 +1075,11 @@ const cntRender = () => {
     // Note drawing loop
     let validNote = end;
     for (let i = end - 1; i >= start; i--) {
-      const progress = (1 - (pattern.patterns[i].beat - beats) / renderDuration) * 100;
-      const tailProgress = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
-      const endProgress = (1 - (pattern.patterns[i].beat + pattern.patterns[i].duration - beats) / renderDuration) * 100;
-      if (pattern.patterns[i].value != 2 && progress < 101) validNote = i;
-      else if (pattern.patterns[i].value == 2 && endProgress < 100) validNote = i;
+      const state = Update.noteProgress(pattern.patterns[i], beats, speed);
+
+      if (pattern.patterns[i].value != 2 && state.progress < 101) validNote = i;
+      else if (pattern.patterns[i].value == 2 && state.endProgress < 100) validNote = i;
+
       const alpha = 0.4 - 0.1 * (validNote - i);
       if (i > 0) {
         const x1 = (canvasW / 200) * (pattern.patterns[i - 1].x + 100);
@@ -1096,21 +1096,15 @@ const cntRender = () => {
       if (i == validNote) {
         Draw.note(
           cntCtx,
-          {
-            canvasW,
-            canvasH,
-            globalAlpha,
-          },
+          { canvasW, canvasH, globalAlpha },
           skin,
           {
             ...pattern.patterns[i],
             debugIndex: i,
           },
           {
-            progress,
-            tailProgress,
-            endProgress,
-            isGrabbed: progress >= 100,
+            ...state,
+            isGrabbed: state.progress >= 100,
             isSelected: selectedCheck(0, i),
           },
         );

@@ -453,33 +453,21 @@ const cntRender = () => {
       }
     }
     for (let i = end - 1; i >= start; i--) {
-      const progress = (1 - (pattern.patterns[i].beat - beats) / renderDuration) * 100;
-      const tailProgress = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
-      const endProgress = (1 - (pattern.patterns[i].beat + pattern.patterns[i].duration - beats) / renderDuration) * 100;
-      Draw.note(
-        ctx,
-        {
-          canvasW,
-          canvasH,
-          globalAlpha,
-        },
-        skin,
-        pattern.patterns[i],
-        {
-          progress,
-          tailProgress,
-          endProgress,
-          isGrabbed: grabbedNotes.has(i),
-        },
-      );
-      if (progress >= 120 && !destroyedNotes.has(i) && (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
+      const state = Update.noteProgress(pattern.patterns[i], beats, speed);
+
+      Draw.note(ctx, { canvasW, canvasH, globalAlpha }, skin, pattern.patterns[i], {
+        ...state,
+        isGrabbed: grabbedNotes.has(i),
+      });
+
+      if (state.progress >= 120 && !destroyedNotes.has(i) && (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
         calculateScore("miss", i, true);
         judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, settings.game.judgeSkin, "Miss"));
         miss++;
         showOverlay();
         missPoint.push(song.seek() * 1000);
         keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
-      } else if (tailProgress >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
+      } else if (state.tailProgress >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
         judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, settings.game.judgeSkin, "Perfect"));

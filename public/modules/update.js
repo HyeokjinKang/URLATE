@@ -54,6 +54,25 @@ const Update = {
   },
 
   /**
+   * 노트의 현재 진행 상태(progress)를 계산합니다.
+   * @param {object} note - 노트 데이터
+   * @param {number} currentBeat - 현재 비트
+   * @param {number} speed - 현재 속도 (배속)
+   * @returns {{progress: number, tailProgress: number, endProgress: number}}
+   */
+  noteProgress: (note, currentBeat, speed) => {
+    const renderDuration = 5 / speed;
+
+    const progress = (1 - (note.beat - currentBeat) / renderDuration) * 100;
+
+    const tailProgress = ((currentBeat - note.beat) / note.duration) * 100;
+
+    const endProgress = (1 - (note.beat + note.duration - currentBeat) / renderDuration) * 100;
+
+    return { progress, tailProgress, endProgress };
+  },
+
+  /**
    * 수명이 다한 파티클을 배열에서 제거합니다.
    * @param {Array} particles - 파티클 배열
    * @param {object} [hideSettings] - 판정 숨김 설정 (judgeParticles 관리시에만 필요)
