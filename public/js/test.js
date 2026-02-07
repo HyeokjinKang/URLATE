@@ -90,7 +90,7 @@ let disableText = false;
 let songData = [];
 let keyInput = [];
 let keyInputMemory = 0;
-let keyInputMemoryMs = 0;
+let keyInputTime = 0;
 let effectMs = 0;
 let effectNum = -1;
 let keyPressing = {};
@@ -293,84 +293,6 @@ const destroyAll = (beat) => {
       destroyedBullets.add(j);
     }
   }
-};
-
-const drawKeyInput = () => {
-  if (keyInput.length == 0) return;
-  if (keyInput[keyInput.length - 1].time + 4000 <= Date.now()) return;
-  if (keyInputMemory != keyInput.length) {
-    keyInputMemory = keyInput.length;
-    keyInputMemoryMs = Date.now();
-  }
-  let alpha = 1;
-  if (keyInput[keyInput.length - 1].time + 3000 <= Date.now()) {
-    alpha = 1 - (Date.now() - keyInput[keyInput.length - 1].time - 3000) / 1000;
-    if (alpha <= 0) return;
-  }
-  let text = "";
-  for (let i = 0; i < keyInput.length; i++) {
-    text += keyInput[i].key;
-  }
-  let animDuration = 0;
-  let animX = 0;
-  if (keyInputMemoryMs + 100 >= Date.now()) {
-    animDuration = 1 - easeOutQuart((Date.now() - keyInputMemoryMs) / 100);
-    animX = animDuration * (canvasW / 100 + canvasW / 200);
-  }
-  for (let i = keyInput.length - 1; i >= (keyInput.length > 12 ? keyInput.length - 12 : 0); i--) {
-    let j = i - keyInput.length + 13;
-    let partAlpha = alpha;
-    if (j < 8) {
-      partAlpha *= (1 / 8) * (j + animDuration);
-    }
-    ctx.globalAlpha = partAlpha;
-    let judge = keyInput[i].judge;
-    let color = "#FFF";
-    switch (judge) {
-      case "Perfect":
-        color = "#57BEEB";
-        break;
-      case "Great":
-        color = "#73DFD2";
-        break;
-      case "Good":
-        color = "#CCE97C";
-        break;
-      case "Bad":
-        color = "#EDC77D";
-        break;
-      case "Miss":
-        color = "#F96C5A";
-        break;
-      case "Bullet":
-        color = "#E8A0A0";
-        break;
-      case "Empty":
-        color = "#ffffff00";
-        break;
-      default:
-        console.log(`drawKeyInput:${judge} isn't specified.`);
-    }
-    ctx.beginPath();
-    ctx.fillStyle = color;
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = canvasW / 800;
-    ctx.roundRect(canvasW * 0.08 - canvasH / 15 + (keyInput.length - i - 1) * (canvasW / 100 + canvasW / 200) - animX, canvasH * 0.05, canvasW / 100, canvasW / 100, [canvasW / 700]);
-    ctx.fill();
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.fillStyle = "#fff";
-    ctx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-    ctx.textBaseline = "top";
-    ctx.textAlign = "center";
-    ctx.fillText(
-      keyInput[i].key[0],
-      canvasW * 0.08 - canvasH / 15 + (keyInput.length - i - 1) * (canvasW / 100 + canvasW / 200) + canvasW / 200 - animX,
-      canvasH * 0.05 + canvasW / 100 + canvasH / 200,
-    );
-  }
-  ctx.globalAlpha = globalAlpha;
-  ctx.clearRect(0, 0, canvasW * 0.08 - canvasH / 15 - canvasW / 800, canvasH * 0.05 + canvasW / 100 + canvasH / 200 + canvasH / 20);
 };
 
 const cntRender = () => {
@@ -577,6 +499,14 @@ const cntRender = () => {
   ctx.fillStyle = "#fff";
   ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
 
+  if (keyInput.length > 0 && keyInputMemory != keyInput.length) {
+    if (keyInput.length > 12) {
+      keyInput.splice(0, keyInput.length - 12);
+    }
+    keyInputMemory = keyInput.length;
+    keyInputTime = Date.now();
+  }
+
   Update.particles(destroyParticles);
   Update.particles(clickParticles);
   Update.particles(judgeParticles, settings.game.applyJudge);
@@ -584,7 +514,7 @@ const cntRender = () => {
   Draw.explosions(ctx, canvasW, canvasH, destroyParticles);
   Draw.clickEffects(ctx, { canvasW, canvasH }, skin, clickParticles);
   Draw.judges(ctx, { canvasW, canvasH }, skin, judgeParticles);
-  drawKeyInput();
+  Draw.keyInput(ctx, { canvasW, canvasH }, keyInput, keyInputTime);
 
   if (effectMs != 0 && effectNum != -1) drawFinalEffect(effectNum);
 
@@ -1030,7 +960,7 @@ const retry = () => {
     overlayTime = 0;
     keyInput = [];
     keyInputMemory = 0;
-    keyInputMemoryMs = 0;
+    keyInputTime = 0;
     effectMs = 0;
     effectNum = -1;
     keyPressing = {};

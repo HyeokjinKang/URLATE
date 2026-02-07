@@ -90,7 +90,7 @@ let disableText = false;
 let songData = [];
 let keyInput = [];
 let keyInputMemory = 0;
-let keyInputMemoryMs = 0;
+let keyInputTime = 0;
 let effectMs = 0;
 let effectNum = -1;
 let keyPressing = {};
@@ -276,7 +276,7 @@ const drawKeyInput = () => {
   if (keyInput[keyInput.length - 1].time + 4000 <= Date.now()) return;
   if (keyInputMemory != keyInput.length) {
     keyInputMemory = keyInput.length;
-    keyInputMemoryMs = Date.now();
+    keyInputTime = Date.now();
   }
   let alpha = 1;
   if (keyInput[keyInput.length - 1].time + 3000 <= Date.now()) {
@@ -289,8 +289,8 @@ const drawKeyInput = () => {
   }
   let animDuration = 0;
   let animX = 0;
-  if (keyInputMemoryMs + 100 >= Date.now()) {
-    animDuration = 1 - easeOutQuart((Date.now() - keyInputMemoryMs) / 100);
+  if (keyInputTime + 100 >= Date.now()) {
+    animDuration = 1 - easeOutQuart((Date.now() - keyInputTime) / 100);
     animX = animDuration * (canvasW / 100 + canvasW / 200);
   }
   for (let i = keyInput.length - 1; i >= (keyInput.length > 12 ? keyInput.length - 12 : 0); i--) {
@@ -553,6 +553,14 @@ const cntRender = () => {
   ctx.fillStyle = "#fff";
   ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
 
+  if (keyInput.length > 0 && keyInputMemory != keyInput.length) {
+    if (keyInput.length > 12) {
+      keyInput.splice(0, keyInput.length - 12);
+    }
+    keyInputMemory = keyInput.length;
+    keyInputTime = Date.now();
+  }
+
   Update.particles(destroyParticles);
   Update.particles(clickParticles);
   Update.particles(judgeParticles, settings.game.applyJudge);
@@ -560,7 +568,7 @@ const cntRender = () => {
   Draw.explosions(ctx, canvasW, canvasH, destroyParticles);
   Draw.clickEffects(ctx, { canvasW, canvasH }, skin, clickParticles);
   Draw.judges(ctx, { canvasW, canvasH }, skin, judgeParticles);
-  drawKeyInput();
+  Draw.keyInput(ctx, { canvasW, canvasH }, keyInput, keyInputTime);
 
   if (effectMs != 0 && effectNum != -1) drawFinalEffect(effectNum);
 
@@ -1020,7 +1028,7 @@ const retry = () => {
     overlayTime = 0;
     keyInput = [];
     keyInputMemory = 0;
-    keyInputMemoryMs = 0;
+    keyInputTime = 0;
     effectMs = 0;
     effectNum = -1;
     keyPressing = {};

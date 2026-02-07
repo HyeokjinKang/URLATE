@@ -53,10 +53,21 @@ const JudgeSkin = {
       { percentage: 100, color: "#73AADD" },
     ],
   },
-  great: { type: "color", color: "#6DDA5E" },
-  good: { type: "color", color: "#63BCEE" },
-  bad: { type: "color", color: "#C19189" },
+  great: { type: "color", color: "#73DFD2" },
+  good: { type: "color", color: "#CCE97C" },
+  bad: { type: "color", color: "#EDC77D" },
   miss: { type: "color", color: "#F96C5A" },
+};
+
+/** keyInput 오버레이 색상표 */
+const KeyInputColors = {
+  Perfect: "#57BEEB",
+  Great: "#73DFD2",
+  Good: "#CCE97C",
+  Bad: "#EDC77D",
+  Miss: "#F96C5A",
+  Bullet: "#E8A0A0",
+  Empty: "#00000000",
 };
 
 /**
@@ -663,6 +674,82 @@ const Draw = {
 
       ctx.arc(cx, cy, size, 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
+    }
+  },
+
+  /**
+   * 키 입력 로그 오버레이를 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {Array} keyInput - 키 입력 데이터 배열
+   * @param {number} keyInputTime - 마지막 키 입력 시간
+   */
+  keyInput: (ctx, layout, keyInput, keyInputTime) => {
+    if (keyInput.length === 0) return;
+
+    // 마지막 입력 후 4초 지났으면 그리지 않음
+    if (keyInput[keyInput.length - 1].time + 4000 <= Date.now()) return;
+
+    const { canvasW, canvasH } = layout;
+    const now = Date.now();
+
+    // 마지막 입력 후 3초 뒤 페이드 아웃
+    let alpha = 1;
+    if (keyInput[keyInput.length - 1].time + 3000 <= now) {
+      alpha = 1 - (now - keyInput[keyInput.length - 1].time - 3000) / 1000;
+      if (alpha <= 0) return;
+    }
+
+    // 새 입력 발생 시 밀려나는 애니메이션
+    let animDuration = 0;
+    let animX = 0;
+    if (keyInputTime + 100 >= now) {
+      animDuration = 1 - easeOutQuart((now - keyInputTime) / 100);
+      animX = animDuration * (canvasW / 100 + canvasW / 200);
+    }
+
+    for (let i = keyInput.length - 1; i >= 0; i--) {
+      let j = i - keyInput.length + 13;
+      let partAlpha = alpha;
+
+      // 등장 애니메이션 (투명도)
+      if (j < 8) {
+        partAlpha *= (1 / 8) * (j + animDuration);
+      }
+
+      ctx.save();
+      ctx.globalAlpha = partAlpha;
+
+      const judge = keyInput[i].judge;
+      let color = KeyInputColors[judge];
+
+      // 박스 그리기
+      const boxX = canvasW * 0.08 - canvasH / 15 + (keyInput.length - i - 1) * (canvasW / 100 + canvasW / 200) - animX;
+      const boxY = canvasH * 0.05;
+      const boxSize = canvasW / 100;
+
+      ctx.beginPath();
+      ctx.fillStyle = color;
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = canvasW / 800;
+
+      ctx.roundRect(boxX, boxY, boxSize, boxSize, [canvasW / 700]);
+      ctx.fill();
+      ctx.stroke();
+
+      // 텍스트 그리기
+      ctx.beginPath();
+      ctx.fillStyle = "#fff";
+      ctx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.textBaseline = "top";
+      ctx.textAlign = "center";
+
+      const textX = boxX + canvasW / 200;
+      const textY = boxY + boxSize + canvasH / 200;
+
+      ctx.fillText(keyInput[i].key[0], textX, textY);
+
       ctx.restore();
     }
   },
