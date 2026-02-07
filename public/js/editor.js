@@ -412,32 +412,6 @@ const changeMode = (n) => {
   mode = n;
 };
 
-const drawShadow = (x, y, n, d, a) => {
-  x = (canvasW / 200) * (x + 100);
-  y = (canvasH / 200) * (y + 100);
-  n = n == undefined ? 0 : n;
-  let w = canvasW / 40;
-  cntCtx.beginPath();
-  cntCtx.fillStyle = `rgba(255,255,255,${a})`;
-  if (n != 1) {
-    cntCtx.arc(x, y, w, 0, 2 * Math.PI);
-    cntCtx.fill();
-  } else {
-    w = w * 0.9;
-    let parr = [100, 100, 100];
-    cntCtx.beginPath();
-    let originalValue = [0, -1.5 * d * w];
-    let moveValue = [originalValue[0] - w * Math.cos(Math.PI / 5) * d, originalValue[1] + w * Math.sin(Math.PI / 5) * d];
-    cntCtx.moveTo(x + originalValue[0], y + originalValue[1]);
-    cntCtx.lineTo(x + originalValue[0] - (moveValue[0] / 100) * parr[0], y + originalValue[1] - (moveValue[1] / 100) * parr[0]);
-    cntCtx.moveTo(x + originalValue[0] - moveValue[0], y + originalValue[1] - moveValue[1]);
-    if (d == 1) cntCtx.arc(x, y, w, -Math.PI / 5, (((Math.PI / 5) * 7) / 100) * parr[1] - Math.PI / 5);
-    else cntCtx.arc(x, y, w, (-Math.PI / 5) * 6, (((Math.PI / 5) * 7) / 100) * parr[1] - (Math.PI / 5) * 6);
-    cntCtx.lineTo(x, y - 1.5 * d * w);
-    cntCtx.fill();
-  }
-};
-
 const changeNote = () => {
   let n = Number(pattern.patterns[selectedCntElement.i].value);
   pattern.patterns[selectedCntElement.i].value = n == 2 ? 0 : n + 1;
@@ -1059,7 +1033,7 @@ const cntRender = () => {
     // Note render
     let renderDuration = 5 / speed;
 
-    let start = 0; // scan from 0 because of rendering shadow of notes
+    let start = 0;
     end = upperBound(pattern.patterns, beats + renderDuration);
 
     // Mouse tracking loop
@@ -1081,18 +1055,9 @@ const cntRender = () => {
       else if (pattern.patterns[i].value == 2 && state.endProgress < 100) validNote = i;
 
       const alpha = 0.4 - 0.1 * (validNote - i);
-      if (i > 0) {
-        const x1 = (canvasW / 200) * (pattern.patterns[i - 1].x + 100);
-        const y1 = (canvasH / 200) * (pattern.patterns[i - 1].y + 100);
-        const x2 = (canvasW / 200) * (pattern.patterns[i].x + 100);
-        const y2 = (canvasH / 200) * (pattern.patterns[i].y + 100);
-        cntCtx.beginPath();
-        cntCtx.strokeStyle = `rgba(255,255,255,${alpha})`;
-        cntCtx.lineWidth = 3;
-        cntCtx.moveTo(x1, y1);
-        cntCtx.lineTo(x2, y2);
-        cntCtx.stroke();
-      }
+
+      if (i > 0) Draw.noteConnector(cntCtx, { canvasW, canvasH }, pattern.patterns[i - 1], pattern.patterns[i], alpha);
+
       if (i == validNote) {
         Draw.note(
           cntCtx,
@@ -1109,7 +1074,7 @@ const cntRender = () => {
           },
         );
       } else if (i + 3 >= validNote) {
-        drawShadow(pattern.patterns[i].x, pattern.patterns[i].y, pattern.patterns[i].value, pattern.patterns[i].direction, alpha);
+        Draw.noteShadow(cntCtx, { canvasW, canvasH }, pattern.patterns[i], alpha);
       }
     }
 

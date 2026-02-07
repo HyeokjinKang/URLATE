@@ -15,6 +15,9 @@ const Config = {
     ANIM_SIZE_ADDER: 5 / 2,
     RELEASE_ANIM_LENGTH: 100,
   },
+  NOTE: {
+    WIDTH: 25,
+  },
   EXPLODE_EFFECT: {
     COUNT: 3,
     SPEED: 30,
@@ -202,7 +205,7 @@ const Draw = {
     // 공통 변수 계산
     const { cx, cy } = getCanvasPos(gameX, gameY, canvasW, canvasH);
     const safeP = Math.max(progress, 0);
-    let w = canvasW / 40;
+    let w = (canvasW / 1000) * Config.NOTE.WIDTH;
 
     // 투명도 계산
     let opacityVal = 100;
@@ -662,5 +665,75 @@ const Draw = {
       ctx.fill();
       ctx.restore();
     }
+  },
+
+  /**
+   * 에디터용: 노트 연결선을 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {object} prevNote - { x, y }
+   * @param {object} currNote - { x, y }
+   * @param {number} alpha - 0 ~ 255
+   */
+  noteConnector: (ctx, layout, prevNote, currNote, alpha) => {
+    const { canvasW, canvasH } = layout;
+    const { cx: x1, cy: y1 } = getCanvasPos(prevNote.x, prevNote.y, canvasW, canvasH);
+    const { cx: x2, cy: y2 } = getCanvasPos(currNote.x, currNote.y, canvasW, canvasH);
+
+    ctx.beginPath();
+    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+    ctx.lineWidth = 3;
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  },
+
+  /**
+   * 에디터용: 지나간 노트의 그림자(잔상)를 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout
+   * @param {object} note - { x, y, value, direction }
+   * @param {number} alpha - 투명도
+   */
+  noteShadow: (ctx, layout, note, alpha) => {
+    const { canvasW, canvasH } = layout;
+    const { x, y, value, direction } = note;
+    const { cx, cy } = getCanvasPos(x, y, canvasW, canvasH);
+
+    let w = (canvasW / 1000) * Config.NOTE.WIDTH;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+
+    // Type 0: Circle, Type 2: Hold
+    if (value !== 1) {
+      ctx.beginPath();
+      ctx.arc(0, 0, w, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    // Type 1: Arrow Note
+    else {
+      w = w * 0.9;
+      const { PI_5, COS_36, SIN_36 } = Config.MATH;
+
+      ctx.scale(direction, direction);
+
+      ctx.beginPath();
+
+      const tipX = w * COS_36;
+      const tipY = -w * SIN_36;
+      const tailY = -1.5 * w;
+
+      ctx.moveTo(0, tailY);
+      ctx.lineTo(tipX, tipY);
+      ctx.arc(0, 0, w, -PI_5, PI_5 * 6);
+      ctx.lineTo(0, tailY);
+
+      ctx.fill();
+    }
+
+    ctx.restore();
   },
 };
