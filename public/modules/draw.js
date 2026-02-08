@@ -184,6 +184,20 @@ const Factory = {
 
 /** 데이터를 받아 Canvas Context(ctx)에 실제 렌더링을 수행합니다. */
 const Draw = {
+  /** 애니메이션 상태 관리용 변수 */
+  animState: {
+    score: { current: 0, start: 0, target: 0, startTime: 0 },
+    combo: { value: 0, startTime: 0 },
+  },
+
+  /** 게임 시작 / 재시작 시 애니메이션 상태를 초기화시키는 함수 */
+  initialize: () => {
+    Draw.animState = {
+      score: { current: 0, start: 0, target: 0, startTime: 0 },
+      combo: { value: 0, startTime: 0 },
+    };
+  },
+
   /**
    * 테두리가 있는 텍스트를 그립니다.
    * @param {CanvasRenderingContext2D} ctx
@@ -755,7 +769,7 @@ const Draw = {
   },
 
   /**
-   * 하단 진행도 바(Progress Bar)를 그립니다.
+   * 하단 진행도 바 (Progress Bar)를 그립니다.
    * @param {CanvasRenderingContext2D} ctx
    * @param {object} layout - { canvasW, canvasH }
    * @param {number} percentage - 진행도 (0 ~ 1)
@@ -776,6 +790,99 @@ const Draw = {
     ctx.beginPath();
     ctx.strokeRect(rectX, rectY, rectWidth, rectHeight);
     ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
+    ctx.restore();
+  },
+
+  /**
+   * 점수판 및 앨범아트 (Score Panel)을 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {object} data - { score, combo, difficulty }
+   * @param {HTMLImageElement} albumImg
+   */
+  scorePanel: (ctx, layout, data, albumImg) => {
+    const { canvasW, canvasH } = layout;
+    const { score, combo, difficulty } = data;
+    const now = Date.now();
+
+    // 1. 점수 애니메이션 계산
+    const s = Draw.animState.score;
+
+    // 실제 점수가 바뀌었으면 목표값 갱신
+    if (score !== s.target) {
+      s.start = s.current;
+      s.target = score;
+      s.startTime = now;
+    }
+
+    // 0.5초간 카운트 업 애니메이션
+    const scoreElapsed = now - s.startTime;
+    if (scoreElapsed < 500) {
+      const progress = easeOutQuart(scoreElapsed / 500);
+      s.current = s.start + (s.target - s.start) * progress;
+    } else {
+      s.current = s.target;
+    }
+
+    // 2. 콤보 애니메이션 계산
+    const c = Draw.animState.combo;
+
+    // 콤보가 증가했으면 팝업 효과 시작
+    if (combo > c.value) {
+      c.startTime = now;
+    }
+    c.value = combo;
+
+    // 0.5초간 팝업 후 서서히 줄어듦
+    const comboElapsed = now - c.startTime;
+    let comboScale = 0;
+    if (comboElapsed < 500) {
+      comboScale = Math.max(0, 1 - easeOutQuart(comboElapsed / 500));
+    }
+
+    // 3. Rendering
+
+    ctx.save();
+
+    // (1) 배경 박스
+    ctx.beginPath();
+
+    if (difficulty === 0)
+      ctx.fillStyle = "#31A97E"; // EZ
+    else if (difficulty === 1)
+      ctx.fillStyle = "#F0C21D"; // MID
+    else if (difficulty === 2)
+      ctx.fillStyle = "#FF774B"; // HARD
+    else ctx.fillSryle = "#6021ff"; // TEST
+
+    ctx.rect(canvasW * 0.92, canvasH * 0.05, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
+    ctx.fill();
+
+    // (2) 흰색 테두리
+    ctx.beginPath();
+    ctx.fillStyle = "#fff";
+    ctx.rect(canvasW * 0.92 - canvasW * 0.002, canvasH * 0.05 - canvasW * 0.002, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
+    ctx.fill();
+
+    // (3) 앨범 아트
+    if (albumImg) {
+      ctx.drawImage(albumImg, canvasW * 0.92, canvasH * 0.05, canvasH / 15, canvasH / 15);
+    }
+
+    // (4) 점수 텍스트
+    ctx.beginPath();
+    ctx.font = `700 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "top";
+
+    ctx.fillText(numberWithCommas(`${Math.round(s.current)}`.padStart(9, "0")), canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05);
+
+    // (5) 콤보 텍스트
+    ctx.font = `${400 * (1 + comboScale * 0.5)} ${(canvasH / 40) * (1 + comboScale)}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    ctx.fillStyle = "#fff";
+    ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
+
     ctx.restore();
   },
 

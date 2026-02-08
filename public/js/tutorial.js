@@ -5,6 +5,7 @@ const rankImg = document.getElementById("rankImg");
 const floatingArrowContainer = document.getElementById("floatingArrowContainer");
 const floatingResultContainer = document.getElementById("floatingResultContainer");
 const scoreContainer = document.getElementById("scoreContainer");
+const blackOverlayContainer = document.getElementById("blackOverlayContainer");
 const colorOverlayContainer = document.getElementById("colorOverlayContainer");
 const floatingResumeContainer = document.getElementById("floatingResumeContainer");
 const volumeMasterValue = document.getElementById("volumeMasterValue");
@@ -524,6 +525,34 @@ const cntRender = () => {
       ctx.fillText(fps.toFixed(), canvasW - canvasW / 100, canvasH - canvasH / 70);
       frameCounterMs = Date.now();
     }
+
+    ctx.globalAlpha = 1;
+
+    if (keyInput.length > 0 && keyInputMemory != keyInput.length) {
+      if (keyInput.length > 12) {
+        keyInput.splice(0, keyInput.length - 12);
+      }
+      keyInputMemory = keyInput.length;
+      keyInputTime = Date.now();
+    }
+
+    Update.particles(destroyParticles);
+    Update.particles(clickParticles);
+    Update.particles(judgeParticles, settings.game.applyJudge);
+
+    Draw.explosions(ctx, canvasW, canvasH, destroyParticles);
+    Draw.clickEffects(ctx, { canvasW, canvasH }, skin, clickParticles);
+    Draw.judges(ctx, { canvasW, canvasH }, skin, judgeParticles);
+    Draw.keyInput(ctx, { canvasW, canvasH }, keyInput, keyInputTime);
+    Draw.scorePanel(ctx, { canvasW, canvasH }, { score, combo, difficulty: Number(localStorage.difficultySelection) }, albumImg);
+
+    Draw.cursor(ctx, { canvasW, canvasH }, skin, { x: mouseX, y: mouseY, zoom: cursorZoom }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
+
+    if (effectMs != 0 && effectNum != -1) {
+      Draw.finalEffect(ctx, { canvasW, canvasH }, effectNum, effectMs);
+
+      if (Date.now() - effectMs >= 2000) effectMs = 0;
+    }
   } catch (e) {
     if (e) {
       ctx.font = `500 ${canvasH / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
@@ -534,57 +563,6 @@ const cntRender = () => {
       console.error(e);
     }
   }
-  ctx.globalAlpha = 1;
-  ctx.beginPath();
-  ctx.fillStyle = "#6021ff";
-  ctx.rect(canvasW * 0.92, canvasH * 0.05, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.fillStyle = "#fff";
-  ctx.rect(canvasW * 0.92 - canvasW * 0.002, canvasH * 0.05 - canvasW * 0.002, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
-  ctx.fill();
-  ctx.drawImage(albumImg, canvasW * 0.92, canvasH * 0.05, canvasH / 15, canvasH / 15);
-  if (Date.now() - scoreMs < 500) {
-    displayScore += ((score - prevScore) / 500) * (Date.now() - scoreMs);
-    prevScore = displayScore;
-  } else {
-    displayScore = score;
-  }
-  ctx.beginPath();
-  ctx.font = `700 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-  ctx.fillStyle = "#fff";
-  ctx.textAlign = "right";
-  ctx.textBaseline = "top";
-  ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05);
-  const comboAnimation = Math.max(0, 1 - easeOutQuart(Math.min(Date.now() - comboAnimationMs, 500) / 500));
-  ctx.font = `${400 * (1 + comboAnimation * 0.5)} ${(canvasH / 40) * (1 + comboAnimation)}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-  ctx.fillStyle = "#fff";
-  ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
-
-  if (keyInput.length > 0 && keyInputMemory != keyInput.length) {
-    if (keyInput.length > 12) {
-      keyInput.splice(0, keyInput.length - 12);
-    }
-    keyInputMemory = keyInput.length;
-    keyInputTime = Date.now();
-  }
-
-  Update.particles(destroyParticles);
-  Update.particles(clickParticles);
-  Update.particles(judgeParticles, settings.game.applyJudge);
-
-  Draw.explosions(ctx, canvasW, canvasH, destroyParticles);
-  Draw.clickEffects(ctx, { canvasW, canvasH }, skin, clickParticles);
-  Draw.judges(ctx, { canvasW, canvasH }, skin, judgeParticles);
-  Draw.keyInput(ctx, { canvasW, canvasH }, keyInput, keyInputTime);
-
-  if (effectMs != 0 && effectNum != -1) {
-    Draw.finalEffect(ctx, { canvasW, canvasH }, effectNum, effectMs);
-
-    if (Date.now() - effectMs >= 2000) effectMs = 0;
-  }
-
-  Draw.cursor(ctx, { canvasW, canvasH }, skin, { x: mouseX, y: mouseY, zoom: cursorZoom }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
 };
 
 const trackMousePos = (e) => {
@@ -917,7 +895,9 @@ const resume = () => {
 const retry = () => {
   if (isResultShowing) return location.reload();
   blackOverlayContainer.classList.add("show");
+
   setTimeout(() => {
+    Draw.initialize();
     song.stop();
     pattern = JSON.parse(JSON.stringify(patternBackup));
     bpm = pattern.information.bpm;
