@@ -755,6 +755,31 @@ const Draw = {
   },
 
   /**
+   * 하단 진행도 바(Progress Bar)를 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {number} percentage - 진행도 (0 ~ 1)
+   */
+  progressBar: (ctx, layout, percentage) => {
+    const { canvasW, canvasH } = layout;
+    const rectX = canvasW / 2 - canvasW / 14;
+    const rectY = canvasH - canvasH / 80 - canvasH / 200;
+    const rectWidth = canvasW / 7;
+    const rectHeight = canvasH / 200;
+
+    ctx.save();
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#fff";
+    ctx.fillStyle = "#fff";
+
+    ctx.beginPath();
+    ctx.strokeRect(rectX, rectY, rectWidth, rectHeight);
+    ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
+    ctx.restore();
+  },
+
+  /**
    * FC / AP 이펙트를 그립니다.
    * @param {CanvasRenderingContext2D} ctx
    * @param {object} layout - { canvasW, canvasH }

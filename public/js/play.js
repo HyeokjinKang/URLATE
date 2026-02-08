@@ -33,6 +33,7 @@ let explodingBullets = new Set([]);
 let destroyedNotes = new Set([]);
 let grabbedNotes = new Set([]);
 let noteMaxDuration = 0;
+let endBeat = null;
 let mouseX = 0,
   mouseY = 0;
 let rawX = 0,
@@ -199,6 +200,9 @@ const initialize = (isFirstCalled) => {
         }
         noteMaxDuration += 4;
 
+        const findEnd = pattern.triggers.find((t) => t.value == 6);
+        endBeat = findEnd ? findEnd.beat : null;
+
         document.getElementById("scoreDifficultyNum").textContent = localStorage.difficulty;
         document.getElementById("scoreDifficultyName").textContent = difficultyNames[localStorage.difficultySelection];
         document.getElementById("albumDifficulty").textContent = difficultyNames[localStorage.difficultySelection];
@@ -320,19 +324,24 @@ const cntRender = () => {
       pixelRatio = window.devicePixelRatio;
       initialize(false);
     }
+
     eraseCnt();
     explodingBullets.clear();
     ctx.globalAlpha = 1;
+
     let mouseCalcX = ((rawX / canvasOW) * 200 - 100) * sens;
     let mouseCalcY = ((rawY / canvasOH) * 200 - 100) * sens;
     mouseX = mouseCalcX >= 100 ? 100 : mouseCalcX <= -100 ? -100 : mouseCalcX;
     mouseY = mouseCalcY >= 100 ? 100 : mouseCalcY <= -100 ? -100 : mouseCalcY;
+
     if (isResultShowing) {
       if (resultMs == 0) {
         resultMs = Date.now();
       }
     }
+
     if (resultMs != 0 && resultMs + 500 <= Date.now()) return;
+
     if (comboAlert) {
       let comboOpacity = 0;
       let fontSize = 20;
@@ -351,21 +360,20 @@ const cntRender = () => {
       ctx.textAlign = "center";
       ctx.fillText(comboAlertCount, canvasW / 2, canvasH / 2);
     }
-    ctx.beginPath();
-    ctx.lineJoin = "round";
-    const percentage = song.seek() / song.duration();
-    const rectX = canvasW / 2 - canvasW / 14;
-    const rectY = canvasH - canvasH / 80 - canvasH / 200;
-    const rectWidth = canvasW / 7;
-    const rectHeight = canvasH / 200;
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = "#fff";
-    ctx.fillStyle = "#fff";
-    ctx.strokeRect(rectX, rectY, rectWidth, rectHeight);
-    ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
+
+    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+
+    let percentage = 0;
+
+    if (endBeat !== null) percentage = beats / endBeat;
+    else percentage = song.seek() / song.duration();
+
+    percentage = Math.max(0, Math.min(1, percentage));
+    Draw.progressBar(ctx, { canvasW, canvasH }, percentage);
+
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
-    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+
     let end = upperBound(pattern.triggers, beats);
     let nowSpeed = pattern.information.speed;
     let renderTexts = [];
