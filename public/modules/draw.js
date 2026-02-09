@@ -1,3 +1,4 @@
+/* global hexadecimal, getSin, getCos, easeInQuad, easeOutQuad, easeOutQuart, numberWithCommas */
 /**
  * draw.js
  * 게임의 캔버스 드로잉을 담당합니다.
@@ -92,7 +93,8 @@ const getCanvasPos = (x, y, canvasW, canvasH) => {
 };
 
 /** 스킨 데이터(Gradient/Color)를 분석하여 ctx의 fillStyle 또는 strokeStyle을 설정합니다. */
-const applyStyle = (ctx, skinPart, x, y, size, opacity, isStroke = false) => {
+const applyStyle = (ctx, layout, skinPart, x, y, size, opacity, isStroke = false) => {
+  const { canvasW } = layout;
   let style;
   if (skinPart.type === "gradient") {
     const grd = ctx.createLinearGradient(x - size, y - size, x + size, y + size);
@@ -111,6 +113,7 @@ const applyStyle = (ctx, skinPart, x, y, size, opacity, isStroke = false) => {
 };
 
 /** 캔버스에 그려질 게임 오브젝트(파티클, 노트 등)의 순수 데이터를 생성합니다. */
+// eslint-disable-next-line no-unused-vars
 const Factory = {
   /**
    * 폭발 효과를 위한 파티클 데이터 배열을 생성합니다.
@@ -267,8 +270,8 @@ const Draw = {
       ctx.fillStyle = hexadecimal("#ebd534", opacityVal);
       ctx.strokeStyle = hexadecimal("#ebd534", opacityVal);
     } else {
-      applyStyle(ctx, noteSkin, 0, 0, w, opacityVal, false);
-      applyStyle(ctx, noteSkin.indicator, 0, 0, w, opacityVal, true);
+      applyStyle(ctx, layout, noteSkin, 0, 0, w, opacityVal, false);
+      applyStyle(ctx, layout, noteSkin.indicator, 0, 0, w, opacityVal, true);
     }
 
     // Type 0: Circle Note (일반)
@@ -283,7 +286,7 @@ const Draw = {
       ctx.arc(0, 0, (w / 100) * safeP, 0, 2 * Math.PI);
       ctx.fill();
       if (noteSkin.outline) {
-        applyStyle(ctx, noteSkin.outline, 0, 0, w, opacityVal, true);
+        applyStyle(ctx, layout, noteSkin.outline, 0, 0, w, opacityVal, true);
         ctx.stroke();
       }
 
@@ -346,7 +349,7 @@ const Draw = {
       ctx.lineTo(0, -1.5 * (w / 100) * safeP);
       ctx.fill();
       if (noteSkin.outline) {
-        applyStyle(ctx, noteSkin.outline, 0, 0, w, opacityVal, true);
+        applyStyle(ctx, layout, noteSkin.outline, 0, 0, w, opacityVal, true);
         ctx.stroke();
       }
 
@@ -460,9 +463,9 @@ const Draw = {
     }
     // 스킨 적용
     else {
-      applyStyle(ctx, skin.bullet, 0, 0, w, 100, false);
+      applyStyle(ctx, layout, skin.bullet, 0, 0, w, 100, false);
       if (skin.bullet.outline) {
-        applyStyle(ctx, skin.bullet.outline, 0, 0, w, 100, true);
+        applyStyle(ctx, layout, skin.bullet.outline, 0, 0, w, 100, true);
         ctx.stroke(path);
       }
     }
@@ -549,12 +552,12 @@ const Draw = {
     ctx.translate(cx, cy);
 
     // 스킨 적용
-    applyStyle(ctx, skin.cursor, 0, 0, w, 100, false);
+    applyStyle(ctx, layout, skin.cursor, 0, 0, w, 100, false);
     if (skin.cursor.type === "gradient") ctx.shadowColor = hexadecimal(skin.cursor.stops[0].color, 50);
     else ctx.shadowColor = hexadecimal(skin.cursor.color, 50);
 
     if (skin.cursor.outline) {
-      applyStyle(ctx, skin.cursor.outline, 0, 0, w, 100, true);
+      applyStyle(ctx, layout, skin.cursor.outline, 0, 0, w, 100, true);
       if (skin.cursor.outline.type === "gradient") ctx.shadowColor = hexadecimal(skin.cursor.outline.stops[0].color, 50);
       else ctx.shadowColor = hexadecimal(skin.cursor.outline.color, 50);
     }
@@ -607,7 +610,7 @@ const Draw = {
       ctx.translate(cx, cy + animY);
       ctx.rotate((Math.PI * animDeg) / 180);
 
-      applyStyle(ctx, skinPart, 0, 0, 50, opacity, false);
+      applyStyle(ctx, layout, skinPart, 0, 0, 50, opacity, false);
 
       ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       ctx.textAlign = "center";
@@ -661,7 +664,7 @@ const Draw = {
       ctx.save();
       ctx.beginPath();
 
-      applyStyle(ctx, styleTarget, cx, cy, width, opacity, true);
+      applyStyle(ctx, layout, styleTarget, cx, cy, width, opacity, true);
       ctx.lineWidth = lineWidth;
 
       ctx.arc(cx, cy, width, 0, 2 * Math.PI);

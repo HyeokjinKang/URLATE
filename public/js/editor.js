@@ -1,9 +1,9 @@
+/* global Howler, Howl, iziToast, Draw, Factory, Update, url, api, cdn, lowerBound, upperBound, syncAlert, timeAlert, copiedText, isMac, calcAngleDegrees, getCos, getSin, moveToAlert */
 const songSelectBox = document.getElementById("songSelectBox");
 const trackSettings = document.getElementById("trackSettings");
 const volumeMaster = document.getElementById("volumeMaster");
 const volumeMasterValue = document.getElementById("volumeMasterValue");
 const songName = document.getElementById("songName");
-const settingsBGAContainer = document.getElementById("settingsBGAContainer");
 const canvasContainer = document.getElementById("canvasContainer");
 const timelineContainer = document.getElementById("timelineContainer");
 const componentView = document.getElementById("componentView");
@@ -239,11 +239,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+// eslint-disable-next-line no-unused-vars
 const newEditor = () => {
   document.getElementById("initialButtonsContainer").style.display = "none";
   document.getElementById("songSelectionContainer").style.display = "flex";
 };
 
+// eslint-disable-next-line no-unused-vars
 const loadEditor = () => {
   let input = document.createElement("input");
   input.type = "file";
@@ -299,6 +301,7 @@ const analyzePattern = (data) => {
   };
 };
 
+// eslint-disable-next-line no-unused-vars
 const dataLoaded = (event) => {
   let file = event.target.files[0];
   let reader = new FileReader();
@@ -412,6 +415,7 @@ const changeMode = (n) => {
   mode = n;
 };
 
+// eslint-disable-next-line no-unused-vars
 const changeNote = () => {
   let n = Number(pattern.patterns[selectedCntElement.i].value);
   pattern.patterns[selectedCntElement.i].value = n == 2 ? 0 : n + 1;
@@ -460,6 +464,7 @@ const initialize = () => {
   isTmlUpdateNeeded = true;
 };
 
+// eslint-disable-next-line no-unused-vars
 const gotoMain = (isCalledByMain) => {
   if (isCalledByMain || !preventUnload || confirm("Are you sure you want to leave? There are unsaved changes.")) {
     song.stop();
@@ -505,13 +510,14 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
       const powX = ((((mouseX - x) * canvasContainerOW) / 200) * pixelRatio * settings.display.canvasRes) / 100;
       const powY = ((((mouseY - y) * canvasContainerOH) / 200) * pixelRatio * settings.display.canvasRes) / 100;
       switch (v1) {
-        case 0:
+        case 0: {
           const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
           const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
           if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 100) && p >= 0) {
             pointingCntElement = { v1: v1, v2: v2, i: i };
           }
           break;
+        }
         case 1:
           if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / (song.playing() ? 80 : 50)) {
             pointingCntElement = { v1: v1, v2: v2, i: i };
@@ -979,7 +985,7 @@ const cntRender = () => {
 
     cntCtx.globalAlpha = globalAlpha;
 
-    for (textObj of renderTexts) Draw.triggerText(cntCtx, { canvasW, canvasH }, textObj);
+    for (let textObj of renderTexts) Draw.triggerText(cntCtx, { canvasW, canvasH }, textObj);
 
     // Prevent destroy infinite loop
     prevDestroyedBullets = new Set(destroyedBullets);
@@ -1223,6 +1229,7 @@ const save = () => {
   a.click();
 };
 
+// eslint-disable-next-line no-unused-vars
 const settingsInput = (v, e) => {
   let element;
   switch (v) {
@@ -1450,6 +1457,7 @@ const settingsInput = (v, e) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const triggersInput = (v, e) => {
   switch (v) {
     case "x":
@@ -1595,6 +1603,7 @@ const triggersInput = (v, e) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const moveTo = () => {
   let s = 0;
   iziToast.info({
@@ -1611,7 +1620,7 @@ const moveTo = () => {
       [
         '<input type="number">',
         "keyup",
-        (instance, toast, input, e) => {
+        (instance, toast, input) => {
           s = Number(input.value);
         },
       ],
@@ -1630,6 +1639,7 @@ const moveTo = () => {
   });
 };
 
+// eslint-disable-next-line no-unused-vars
 const changeBPM = (e) => {
   if (isNaN(Number(e.value))) {
     iziToast.error({
@@ -1643,6 +1653,7 @@ const changeBPM = (e) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const changeSpeed = (e) => {
   if (isNaN(Number(e.value))) {
     iziToast.error({
@@ -1668,6 +1679,7 @@ const changeSpeed = (e) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const changeOffset = (e) => {
   if (isNaN(Number(e.value))) {
     iziToast.error({
@@ -1681,6 +1693,7 @@ const changeOffset = (e) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const trackMousePos = () => {
   const width = parseInt((componentViewOW - canvasContainerOW) / 2 + menuContainerOW);
   const x = ((event.clientX - width) / canvasContainerOW) * 200 - 100;
@@ -1694,6 +1707,7 @@ const trackMousePos = () => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const trackTimelineMousePos = () => {
   mouseMode = 1;
   mouseX = event.clientX * pixelRatio;
@@ -1795,6 +1809,7 @@ const timelineFollowMouse = (v1, v2, i) => {
   });
 };
 
+// eslint-disable-next-line no-unused-vars
 const tmlClicked = () => {
   if (isNaN(Number(song.seek()))) return iziToast.error({ title: "Wait..", message: "Song is not loaded." });
   if (mode == 0) {
@@ -1909,6 +1924,7 @@ const timelineAddElement = () => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const compClicked = () => {
   if (isNaN(Number(song.seek()))) return iziToast.error({ title: "Wait..", message: "Song is not loaded." });
   if (mode == 0) {
@@ -2141,6 +2157,7 @@ const changeSettingsMode = (v1, v2, i) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const triggerSet = (isChanged) => {
   pattern.triggers[selectedCntElement.i].value = (isChanged ? triggerSelectBox : triggerInitBox).selectedIndex - (isChanged ? 0 : 1);
   selectedCntElement = {
@@ -2163,10 +2180,7 @@ const zoomOut = () => {
   isTmlUpdateNeeded = true;
 };
 
-const playPauseBtn = () => {
-  songPlayPause();
-};
-
+// eslint-disable-next-line no-unused-vars
 const stopBtn = () => {
   controlBtn.classList.add("timeline-play");
   controlBtn.classList.remove("timeline-pause");
@@ -2371,10 +2385,12 @@ const elementPaste = () => {
   });
 };
 
+// eslint-disable-next-line no-unused-vars
 const showHelp = () => {
   document.getElementById("helpContainer").style.display = "flex";
 };
 
+// eslint-disable-next-line no-unused-vars
 const hideHelp = () => {
   document.getElementById("helpContainer").style.display = "none";
 };
@@ -2523,7 +2539,7 @@ const tmlScrollDown = () => {
 };
 
 const scrollEvent = (e) => {
-  let delta = 0;
+  let delta;
   if (e.deltaY != 0) delta = Math.max(-1, Math.min(1, e.deltaY));
   else delta = Math.max(-1, Math.min(1, e.deltaX));
   if (!settings.input.wheelReverse) delta *= -1;
@@ -2541,6 +2557,7 @@ const scrollEvent = (e) => {
   e.preventDefault();
 };
 
+// eslint-disable-next-line no-unused-vars
 const textFocused = () => {
   isTextboxFocused = true;
 };
@@ -2549,6 +2566,7 @@ const textBlurred = () => {
   isTextboxFocused = false;
 };
 
+// eslint-disable-next-line no-unused-vars
 const settingChanged = (e, v) => {
   if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
@@ -2575,7 +2593,7 @@ const globalScrollEvent = (e) => {
     setTimeout(() => {
       scrollTimer = 0;
     }, 50);
-    let delta = 0;
+    let delta;
     if (e.deltaY != 0) delta = Math.max(-1, Math.min(1, e.deltaY));
     else delta = Math.max(-1, Math.min(1, e.deltaX));
     if (!settings.input.wheelReverse) delta *= -1;

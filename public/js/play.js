@@ -1,5 +1,5 @@
+/* global Pace, Howler, Howl, Draw, Factory, Update, url, cdn, api, upperBound, lowerBound, numberWithCommas, easeOutSine, easeOutQuad */
 const menuContainer = document.getElementById("menuContainer");
-const canvasBackground = document.getElementById("canvasBackground");
 const canvasContainer = document.getElementById("canvasContainer");
 const rankImg = document.getElementById("rankImg");
 const floatingArrowContainer = document.getElementById("floatingArrowContainer");
@@ -41,10 +41,7 @@ let rawX = 0,
   rawY = 0;
 let score = 0,
   combo = 0,
-  displayScore = 0,
-  prevScore = 0,
-  maxCombo = 0,
-  scoreMs = 0;
+  maxCombo = 0;
 let perfect = 0;
 let great = 0;
 let good = 0;
@@ -70,7 +67,6 @@ let comboAlert = false,
   comboCount = 50;
 let comboAlertMs = 0,
   comboAlertCount = 0;
-let comboAnimationMs = 0;
 let hide = {},
   frameCounter;
 let load = 0;
@@ -90,8 +86,6 @@ let resultEffect = new Howl({
 });
 let isPaused = false;
 let rate = 1;
-let disableText = false;
-let songData = [];
 let record = [];
 let keyInput = [];
 let keyInputMemory = 0;
@@ -183,7 +177,6 @@ const initialize = (isFirstCalled) => {
   missCanvas.width = window.innerWidth * 0.2 * pixelRatio;
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
   rate = localStorage.rate;
-  disableText = localStorage.disableText;
 
   if (isFirstCalled) {
     fetch(`${cdn}${localStorage.patternId ? `/CPL/${localStorage.patternId}` : `/URLATE-patterns/${localStorage.songName}/${localStorage.difficultySelection}`}.json`)
@@ -397,7 +390,7 @@ const cntRender = () => {
 
     ctx.globalAlpha = globalAlpha;
 
-    for (textObj of renderTexts) Draw.triggerText(ctx, { canvasW, canvasH }, textObj);
+    for (let textObj of renderTexts) Draw.triggerText(ctx, { canvasW, canvasH }, textObj);
 
     let renderDuration = 5 / speed;
 
@@ -419,7 +412,7 @@ const cntRender = () => {
 
       if (state.progress >= 120 && !destroyedNotes.has(i) && (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
         calculateScore("miss", i, true);
-        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, settings.game.judgeSkin, "Miss"));
+        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Miss"));
         miss++;
         showOverlay();
         missPoint.push(song.seek() * 1000);
@@ -428,7 +421,7 @@ const cntRender = () => {
       } else if (state.tailProgress >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
-        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, settings.game.judgeSkin, "Perfect"));
+        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Perfect"));
         calculateScore("Perfect", i, true);
         record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "perfect(hold)", song.seek() * 1000]);
         keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
@@ -558,7 +551,7 @@ const calculateResult = () => {
   document.getElementById("comboText").textContent = `${maxCombo}x`;
   let accuracy = (((perfect + (great / 10) * 7 + good / 2 + (bad / 10) * 3) / (perfect + great + good + bad + miss + bullet)) * 100).toFixed(1);
   document.getElementById("accuracyText").textContent = `${accuracy}%`;
-  let rank = "";
+  let rank;
   if (accuracy >= 98 && bad == 0 && miss == 0 && bullet == 0) {
     rankImg.style.animationName = "rainbow";
     rank = "SS";
@@ -668,13 +661,14 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
     const powX = ((((mouseX - x) * canvasOW) / 200) * pixelRatio * settings.display.canvasRes) / 100;
     const powY = ((((mouseY - y) * canvasOH) / 200) * pixelRatio * settings.display.canvasRes) / 100;
     switch (v1) {
-      case 0:
+      case 0: {
         const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
         const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
         if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 130) && p >= 0) {
           pointingCntElement.push({ v1: v1, v2: v2, i: i });
         }
         break;
+      }
       case 1:
         if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / 80) {
           if (!destroyedBullets.has(i)) {
@@ -760,7 +754,7 @@ const compClicked = (isTyped, key, isWheel) => {
         keyPressing[key] = pointingCntElement[i].i;
       }
       calculateScore(judge, pointingCntElement[i].i);
-      judgeParticles.push(Factory.createJudge(x, y, settings.game.judgeSkin, judge));
+      judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge));
       record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, judge, song.seek() * 1000]);
       keyInput.push({ judge, key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
       return;
@@ -772,8 +766,6 @@ const compClicked = (isTyped, key, isWheel) => {
 
 const calculateScore = (judge, i, ignoreMs) => {
   judge = judge.toLowerCase();
-  scoreMs = Date.now();
-  prevScore = displayScore;
   destroyedNotes.add(i);
   if (!ignoreMs) {
     const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
@@ -785,12 +777,11 @@ const calculateScore = (judge, i, ignoreMs) => {
   } else {
     tick.play();
     combo++;
-    comboAnimationMs = Date.now();
     if (maxCombo < combo) {
       maxCombo = combo;
     }
     let basicScore = 100000000 / patternLength;
-    let rateCalc = rate;
+    let rateCalc;
     if (rate >= 1) {
       rateCalc = rate * 0.5 + 0.5;
     } else {
@@ -885,6 +876,7 @@ const resume = () => {
   floatingResumeContainer.style.opacity = 1;
 };
 
+// eslint-disable-next-line no-unused-vars
 const retry = () => {
   if (isResultShowing) {
     if (localStorage.record < score) localStorage.record = score;
@@ -913,10 +905,7 @@ const retry = () => {
     grabbedNotes = new Set([]);
     score = 0;
     combo = 0;
-    displayScore = 0;
-    prevScore = 0;
     maxCombo = 0;
-    scoreMs = 0;
     perfect = 0;
     great = 0;
     good = 0;
@@ -929,7 +918,6 @@ const retry = () => {
     missPoint = [];
     comboAlertMs = 0;
     comboAlertCount = 0;
-    comboAnimationMs = 0;
     overlayTime = 0;
     keyInput = [];
     record = [];
@@ -952,10 +940,12 @@ const retry = () => {
   }, 100);
 };
 
+// eslint-disable-next-line no-unused-vars
 const home = () => {
   window.location.href = `${url}/game?initialize=1`;
 };
 
+// eslint-disable-next-line no-unused-vars
 const settingChanged = (e, v) => {
   if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
@@ -985,7 +975,7 @@ const globalScrollEvent = (e) => {
     setTimeout(() => {
       scrollTimer = 0;
     }, 50);
-    let delta = 0;
+    let delta;
     if (e.deltaY != 0) delta = Math.max(-1, Math.min(1, e.deltaY));
     else delta = Math.max(-1, Math.min(1, e.deltaX));
     if (!settings.input.wheelReverse) delta *= -1;
@@ -1058,21 +1048,21 @@ const checkHoldNote = (key) => {
   mouseClicked = false;
   mouseClickedMs = date;
   if (pressingKeys.includes(key)) pressingKeys.splice(pressingKeys.indexOf(key), 1);
-  if (keyPressing.hasOwnProperty(key) && grabbedNotes.has(keyPressing[key]) && !grabbedNotes.has(`${keyPressing[key]}!`)) {
+  if (Object.hasOwn(keyPressing, key) && grabbedNotes.has(keyPressing[key]) && !grabbedNotes.has(`${keyPressing[key]}!`)) {
     grabbedNotes.delete(keyPressing[key]);
     grabbedNotes.add(`${keyPressing[key]}!`);
     if (pattern.patterns[keyPressing[key]].beat + pattern.patterns[keyPressing[key]].duration - 1 / 3 > beats) {
       medalCheck(medal);
       pattern.patterns[keyPressing[key]].beat = beats - pattern.patterns[keyPressing[key]].duration;
       calculateScore("Miss", keyPressing[key], true);
-      judgeParticles.push(Factory.createJudge(pattern.patterns[keyPressing[key]].x, pattern.patterns[keyPressing[key]].y, settings.game.judgeSkin, "Miss"));
+      judgeParticles.push(Factory.createJudge(pattern.patterns[keyPressing[key]].x, pattern.patterns[keyPressing[key]].y, judgeSkin, "Miss"));
       miss++;
       showOverlay();
       missPoint.push(song.seek() * 1000);
       record.push([record.length, 0, 2, keyPressing[key], mouseX, mouseY, "miss(hold)", song.seek() * 1000]);
       keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
     } else {
-      judgeParticles.push(Factory.createJudge(pattern.patterns[keyPressing[key]].x, pattern.patterns[keyPressing[key]].y, settings.game.judgeSkin, "Perfect"));
+      judgeParticles.push(Factory.createJudge(pattern.patterns[keyPressing[key]].x, pattern.patterns[keyPressing[key]].y, judgeSkin, "Perfect"));
       calculateScore("Perfect", keyPressing[key], true);
       keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
       record.push([record.length, 0, 2, keyPressing[key], mouseX, mouseY, "perfect(hold)", song.seek() * 1000]);

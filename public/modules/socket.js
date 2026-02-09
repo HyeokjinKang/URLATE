@@ -1,3 +1,4 @@
+/* global io, iziToast, game, api, lang, alias, socketi18n */
 const body = document.querySelector("body");
 let isErrorOccured = false;
 let achievementCount = 0;
@@ -112,7 +113,3 @@ const getReward = (type, id) => {
   if (type == "reward") return "-";
   if (type == "alias") return alias[id];
 };
-
-const ping = setInterval(() => {
-  socket.emit("ping");
-}, 5000);

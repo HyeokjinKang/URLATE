@@ -1,7 +1,10 @@
+/* global getSin, getCos, upperBound, lowerBound */
 /**
  * update.js
  * 게임의 데이터 계산, 물리 연산, 수명 관리 등 핵심 로직을 담당합니다.
  */
+
+// eslint-disable-next-line no-unused-vars
 const Update = {
   /**
    * 총알의 현재 위치(x, y)와 각도를 계산합니다.
