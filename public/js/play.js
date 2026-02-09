@@ -484,7 +484,7 @@ const cntRender = () => {
     Update.particles(clickParticles);
     Update.particles(judgeParticles, settings.game.applyJudge);
 
-    Draw.explosions(ctx, canvasW, canvasH, destroyParticles);
+    Draw.explosions(ctx, { canvasW, canvasH }, destroyParticles);
     Draw.clickEffects(ctx, { canvasW, canvasH }, skin, clickParticles);
     Draw.judges(ctx, { canvasW, canvasH }, skin, judgeParticles);
 

@@ -673,11 +673,11 @@ const Draw = {
   /**
    * 폭발 파티클 목록을 업데이트하고 화면에 그립니다.
    * @param {CanvasRenderingContext2D} ctx
-   * @param {number} canvasW
-   * @param {number} canvasH
+   * @param {object} layout - { canvasW, canvasH }
    * @param {Array<object>} particles
    */
-  explosions: (ctx, canvasW, canvasH, particles) => {
+  explosions: (ctx, layout, particles) => {
+    const { canvasW, canvasH } = layout;
     const now = Date.now();
     const conf = Config.EXPLODE_EFFECT;
 

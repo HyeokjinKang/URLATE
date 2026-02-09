@@ -1194,7 +1194,7 @@ const cntRender = () => {
 
     Update.particles(destroyParticles);
 
-    Draw.explosions(cntCtx, canvasW, canvasH, destroyParticles);
+    Draw.explosions(cntCtx, { canvasW, canvasH }, destroyParticles);
 
     // Editor only - Trigger add guide overlay (when mode is "Add")
     if (mode == 2 && mouseMode == -1) Draw.triggerAddOverlay(cntCtx, { canvasW, canvasH });
