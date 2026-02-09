@@ -1061,6 +1061,38 @@ const Draw = {
   },
 
   /**
+   * 에디터용: 트리거 추가 오버레이
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   */
+  triggerAddOverlay: (ctx, layout) => {
+    const { canvasW, canvasH } = layout;
+
+    ctx.save();
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(0, 0, canvasW, canvasH);
+
+    ctx.beginPath();
+    ctx.fillStyle = "#FFF";
+    ctx.strokeStyle = "#FFF";
+    ctx.lineWidth = 2;
+
+    const w = canvasW / 40;
+
+    ctx.moveTo(canvasW / 2, canvasH / 2 - w);
+    ctx.lineTo(canvasW / 2, canvasH / 2);
+    ctx.moveTo(canvasW / 2 - w / 2, canvasH / 2 - w / 2);
+    ctx.lineTo(canvasW / 2 + w / 2, canvasH / 2 - w / 2);
+    ctx.stroke();
+
+    ctx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText("Add trigger", canvasW / 2, canvasH / 2 + 10);
+    ctx.restore();
+  },
+
+  /**
    * 에디터용: 노트 연결선을 그립니다.
    * @param {CanvasRenderingContext2D} ctx
    * @param {object} layout - { canvasW, canvasH }

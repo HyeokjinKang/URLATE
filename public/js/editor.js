@@ -1196,25 +1196,8 @@ const cntRender = () => {
 
     Draw.explosions(cntCtx, canvasW, canvasH, destroyParticles);
 
-    // Editor only - Trigger guide text (when mode is "Add")
-    if (mode == 2 && mouseMode == -1) {
-      cntCtx.fillStyle = "rgba(0,0,0,0.5)";
-      cntCtx.fillRect(0, 0, canvasW, canvasH);
-      cntCtx.beginPath();
-      cntCtx.fillStyle = "#FFF";
-      cntCtx.strokeStyle = "#FFF";
-      cntCtx.lineWidth = 4;
-      cntCtx.moveTo(canvasW / 2, canvasH / 2 - 30);
-      cntCtx.lineTo(canvasW / 2, canvasH / 2);
-      cntCtx.stroke();
-      cntCtx.moveTo(canvasW / 2 - 15, canvasH / 2 - 15);
-      cntCtx.lineTo(canvasW / 2 + 15, canvasH / 2 - 15);
-      cntCtx.stroke();
-      cntCtx.font = `400 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-      cntCtx.textAlign = "center";
-      cntCtx.textBaseline = "top";
-      cntCtx.fillText("Click to add Trigger", canvasW / 2, canvasH / 2 + 10);
-    }
+    // Editor only - Trigger add guide overlay (when mode is "Add")
+    if (mode == 2 && mouseMode == -1) Draw.triggerAddOverlay(cntCtx, { canvasW, canvasH });
 
     //Cursor
     if (denyCursor) {
