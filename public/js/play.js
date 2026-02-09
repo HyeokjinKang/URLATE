@@ -364,14 +364,6 @@ const cntRender = () => {
 
     const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
 
-    let percentage = 0;
-
-    if (endBeat !== null) percentage = beats / endBeat;
-    else percentage = song.seek() / song.duration();
-
-    percentage = Math.max(0, Math.min(1, percentage));
-    Draw.progressBar(ctx, { canvasW, canvasH }, percentage);
-
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
 
@@ -494,6 +486,11 @@ const cntRender = () => {
       keyInputTime = Date.now();
     }
 
+    let percentage = 0;
+    if (endBeat !== null) percentage = beats / endBeat;
+    else percentage = song.seek() / song.duration();
+    percentage = Math.max(0, Math.min(1, percentage));
+
     Update.particles(destroyParticles);
     Update.particles(clickParticles);
     Update.particles(judgeParticles, settings.game.applyJudge);
@@ -501,8 +498,10 @@ const cntRender = () => {
     Draw.explosions(ctx, canvasW, canvasH, destroyParticles);
     Draw.clickEffects(ctx, { canvasW, canvasH }, skin, clickParticles);
     Draw.judges(ctx, { canvasW, canvasH }, skin, judgeParticles);
-    Draw.keyInput(ctx, { canvasW, canvasH }, keyInput, keyInputTime);
-    Draw.scorePanel(ctx, { canvasW, canvasH }, { score, combo, difficulty: Number(localStorage.difficultySelection) }, albumImg);
+
+    Draw.keyInputUI(ctx, { canvasW, canvasH }, keyInput, keyInputTime);
+    Draw.scorePanelUI(ctx, { canvasW, canvasH }, { score, combo, difficulty: Number(localStorage.difficultySelection) }, albumImg);
+    Draw.progressBarUI(ctx, { canvasW, canvasH }, percentage);
 
     Draw.cursor(ctx, { canvasW, canvasH }, skin, { x: mouseX, y: mouseY, zoom: cursorZoom }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
 

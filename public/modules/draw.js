@@ -720,200 +720,6 @@ const Draw = {
   },
 
   /**
-   * 키 입력 로그 오버레이를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
-   * @param {Array} keyInput - 키 입력 데이터 배열
-   * @param {number} keyInputTime - 마지막 키 입력 시간
-   */
-  keyInput: (ctx, layout, keyInput, keyInputTime) => {
-    if (keyInput.length === 0) return;
-
-    // 마지막 입력 후 4초 지났으면 그리지 않음
-    if (keyInput[keyInput.length - 1].time + 4000 <= Date.now()) return;
-
-    const { canvasW, canvasH } = layout;
-    const now = Date.now();
-
-    // 마지막 입력 후 3초 뒤 페이드 아웃
-    let alpha = 1;
-    if (keyInput[keyInput.length - 1].time + 3000 <= now) {
-      alpha = 1 - (now - keyInput[keyInput.length - 1].time - 3000) / 1000;
-      if (alpha <= 0) return;
-    }
-
-    // 새 입력 발생 시 밀려나는 애니메이션
-    let animDuration = 0;
-    let animX = 0;
-    if (keyInputTime + 100 >= now) {
-      animDuration = 1 - easeOutQuart((now - keyInputTime) / 100);
-      animX = animDuration * (canvasW / 100 + canvasW / 200);
-    }
-
-    for (let i = keyInput.length - 1; i >= 0; i--) {
-      let j = i - keyInput.length + 13;
-      let partAlpha = alpha;
-
-      // 등장 애니메이션 (투명도)
-      if (j < 8) {
-        partAlpha *= (1 / 8) * (j + animDuration);
-      }
-
-      ctx.save();
-      ctx.globalAlpha = partAlpha;
-
-      const judge = keyInput[i].judge;
-      let color = KeyInputColors[judge];
-
-      // 박스 그리기
-      const boxX = canvasW * 0.08 - canvasH / 15 + (keyInput.length - i - 1) * (canvasW / 100 + canvasW / 200) - animX;
-      const boxY = canvasH * 0.05;
-      const boxSize = canvasW / 100;
-
-      ctx.beginPath();
-      ctx.fillStyle = color;
-      ctx.strokeStyle = "#fff";
-      ctx.lineWidth = canvasW / 800;
-
-      ctx.roundRect(boxX, boxY, boxSize, boxSize, [canvasW / 700]);
-      ctx.fill();
-      ctx.stroke();
-
-      // 텍스트 그리기
-      ctx.beginPath();
-      ctx.fillStyle = "#fff";
-      ctx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-      ctx.textBaseline = "top";
-      ctx.textAlign = "center";
-
-      const textX = boxX + canvasW / 200;
-      const textY = boxY + boxSize + canvasH / 200;
-
-      ctx.fillText(keyInput[i].key[0], textX, textY);
-
-      ctx.restore();
-    }
-  },
-
-  /**
-   * 하단 진행도 바 (Progress Bar)를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
-   * @param {number} percentage - 진행도 (0 ~ 1)
-   */
-  progressBar: (ctx, layout, percentage) => {
-    const { canvasW, canvasH } = layout;
-    const rectX = canvasW / 2 - canvasW / 14;
-    const rectY = canvasH - canvasH / 80 - canvasH / 200;
-    const rectWidth = canvasW / 7;
-    const rectHeight = canvasH / 200;
-
-    ctx.save();
-    ctx.lineJoin = "round";
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = "#fff";
-    ctx.fillStyle = "#fff";
-
-    ctx.beginPath();
-    ctx.strokeRect(rectX, rectY, rectWidth, rectHeight);
-    ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
-    ctx.restore();
-  },
-
-  /**
-   * 점수판 및 앨범아트 (Score Panel)을 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
-   * @param {object} data - { score, combo, difficulty }
-   * @param {HTMLImageElement} albumImg
-   */
-  scorePanel: (ctx, layout, data, albumImg) => {
-    const { canvasW, canvasH } = layout;
-    const { score, combo, difficulty } = data;
-    const now = Date.now();
-
-    // 1. 점수 애니메이션 계산
-    const s = Draw.animState.score;
-
-    // 실제 점수가 바뀌었으면 목표값 갱신
-    if (score !== s.target) {
-      s.start = s.current;
-      s.target = score;
-      s.startTime = now;
-    }
-
-    // 0.5초간 카운트 업 애니메이션
-    const scoreElapsed = now - s.startTime;
-    if (scoreElapsed < 500) {
-      const progress = easeOutQuart(scoreElapsed / 500);
-      s.current = s.start + (s.target - s.start) * progress;
-    } else {
-      s.current = s.target;
-    }
-
-    // 2. 콤보 애니메이션 계산
-    const c = Draw.animState.combo;
-
-    // 콤보가 증가했으면 팝업 효과 시작
-    if (combo > c.value) {
-      c.startTime = now;
-    }
-    c.value = combo;
-
-    // 0.5초간 팝업 후 서서히 줄어듦
-    const comboElapsed = now - c.startTime;
-    let comboScale = 0;
-    if (comboElapsed < 500) {
-      comboScale = Math.max(0, 1 - easeOutQuart(comboElapsed / 500));
-    }
-
-    // 3. Rendering
-
-    ctx.save();
-
-    // (1) 배경 박스
-    ctx.beginPath();
-
-    if (difficulty === 0)
-      ctx.fillStyle = "#31A97E"; // EZ
-    else if (difficulty === 1)
-      ctx.fillStyle = "#F0C21D"; // MID
-    else if (difficulty === 2)
-      ctx.fillStyle = "#FF774B"; // HARD
-    else ctx.fillSryle = "#6021ff"; // TEST
-
-    ctx.rect(canvasW * 0.92, canvasH * 0.05, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
-    ctx.fill();
-
-    // (2) 흰색 테두리
-    ctx.beginPath();
-    ctx.fillStyle = "#fff";
-    ctx.rect(canvasW * 0.92 - canvasW * 0.002, canvasH * 0.05 - canvasW * 0.002, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
-    ctx.fill();
-
-    // (3) 앨범 아트
-    if (albumImg) {
-      ctx.drawImage(albumImg, canvasW * 0.92, canvasH * 0.05, canvasH / 15, canvasH / 15);
-    }
-
-    // (4) 점수 텍스트
-    ctx.beginPath();
-    ctx.font = `700 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-    ctx.fillStyle = "#fff";
-    ctx.textAlign = "right";
-    ctx.textBaseline = "top";
-
-    ctx.fillText(numberWithCommas(`${Math.round(s.current)}`.padStart(9, "0")), canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05);
-
-    // (5) 콤보 텍스트
-    ctx.font = `${400 * (1 + comboScale * 0.5)} ${(canvasH / 40) * (1 + comboScale)}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-    ctx.fillStyle = "#fff";
-    ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
-
-    ctx.restore();
-  },
-
-  /**
    * FC / AP 이펙트를 그립니다.
    * @param {CanvasRenderingContext2D} ctx
    * @param {object} layout - { canvasW, canvasH }
@@ -1023,6 +829,200 @@ const Draw = {
     ctx.globalAlpha = baseAlpha;
     ctx.fillStyle = "#FFF";
     ctx.fillText(text, mainTextX, mainTextY);
+
+    ctx.restore();
+  },
+
+  /**
+   * 키 입력 로그 오버레이를 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {Array} keyInput - 키 입력 데이터 배열
+   * @param {number} keyInputTime - 마지막 키 입력 시간
+   */
+  keyInputUI: (ctx, layout, keyInput, keyInputTime) => {
+    if (keyInput.length === 0) return;
+
+    // 마지막 입력 후 4초 지났으면 그리지 않음
+    if (keyInput[keyInput.length - 1].time + 4000 <= Date.now()) return;
+
+    const { canvasW, canvasH } = layout;
+    const now = Date.now();
+
+    // 마지막 입력 후 3초 뒤 페이드 아웃
+    let alpha = 1;
+    if (keyInput[keyInput.length - 1].time + 3000 <= now) {
+      alpha = 1 - (now - keyInput[keyInput.length - 1].time - 3000) / 1000;
+      if (alpha <= 0) return;
+    }
+
+    // 새 입력 발생 시 밀려나는 애니메이션
+    let animDuration = 0;
+    let animX = 0;
+    if (keyInputTime + 100 >= now) {
+      animDuration = 1 - easeOutQuart((now - keyInputTime) / 100);
+      animX = animDuration * (canvasW / 100 + canvasW / 200);
+    }
+
+    for (let i = keyInput.length - 1; i >= 0; i--) {
+      let j = i - keyInput.length + 13;
+      let partAlpha = alpha;
+
+      // 등장 애니메이션 (투명도)
+      if (j < 8) {
+        partAlpha *= (1 / 8) * (j + animDuration);
+      }
+
+      ctx.save();
+      ctx.globalAlpha = partAlpha;
+
+      const judge = keyInput[i].judge;
+      let color = KeyInputColors[judge];
+
+      // 박스 그리기
+      const boxX = canvasW * 0.08 - canvasH / 15 + (keyInput.length - i - 1) * (canvasW / 100 + canvasW / 200) - animX;
+      const boxY = canvasH * 0.05;
+      const boxSize = canvasW / 100;
+
+      ctx.beginPath();
+      ctx.fillStyle = color;
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = canvasW / 800;
+
+      ctx.roundRect(boxX, boxY, boxSize, boxSize, [canvasW / 700]);
+      ctx.fill();
+      ctx.stroke();
+
+      // 텍스트 그리기
+      ctx.beginPath();
+      ctx.fillStyle = "#fff";
+      ctx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.textBaseline = "top";
+      ctx.textAlign = "center";
+
+      const textX = boxX + canvasW / 200;
+      const textY = boxY + boxSize + canvasH / 200;
+
+      ctx.fillText(keyInput[i].key[0], textX, textY);
+
+      ctx.restore();
+    }
+  },
+
+  /**
+   * 하단 진행도 바 (Progress Bar)를 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {number} percentage - 진행도 (0 ~ 1)
+   */
+  progressBarUI: (ctx, layout, percentage) => {
+    const { canvasW, canvasH } = layout;
+    const rectX = canvasW / 2 - canvasW / 14;
+    const rectY = canvasH - canvasH / 80 - canvasH / 200;
+    const rectWidth = canvasW / 7;
+    const rectHeight = canvasH / 200;
+
+    ctx.save();
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#fff";
+    ctx.fillStyle = "#fff";
+
+    ctx.beginPath();
+    ctx.strokeRect(rectX, rectY, rectWidth, rectHeight);
+    ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
+    ctx.restore();
+  },
+
+  /**
+   * 점수판 및 앨범아트 (Score Panel)을 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {object} data - { score, combo, difficulty }
+   * @param {HTMLImageElement} albumImg
+   */
+  scorePanelUI: (ctx, layout, data, albumImg) => {
+    const { canvasW, canvasH } = layout;
+    const { score, combo, difficulty } = data;
+    const now = Date.now();
+
+    // 1. 점수 애니메이션 계산
+    const s = Draw.animState.score;
+
+    // 실제 점수가 바뀌었으면 목표값 갱신
+    if (score !== s.target) {
+      s.start = s.current;
+      s.target = score;
+      s.startTime = now;
+    }
+
+    // 0.5초간 카운트 업 애니메이션
+    const scoreElapsed = now - s.startTime;
+    if (scoreElapsed < 500) {
+      const progress = easeOutQuart(scoreElapsed / 500);
+      s.current = s.start + (s.target - s.start) * progress;
+    } else {
+      s.current = s.target;
+    }
+
+    // 2. 콤보 애니메이션 계산
+    const c = Draw.animState.combo;
+
+    // 콤보가 증가했으면 팝업 효과 시작
+    if (combo > c.value) {
+      c.startTime = now;
+    }
+    c.value = combo;
+
+    // 0.5초간 팝업 후 서서히 줄어듦
+    const comboElapsed = now - c.startTime;
+    let comboScale = 0;
+    if (comboElapsed < 500) {
+      comboScale = Math.max(0, 1 - easeOutQuart(comboElapsed / 500));
+    }
+
+    // 3. Rendering
+
+    ctx.save();
+
+    // (1) 배경 박스
+    ctx.beginPath();
+
+    if (difficulty === 0)
+      ctx.fillStyle = "#31A97E"; // EZ
+    else if (difficulty === 1)
+      ctx.fillStyle = "#F0C21D"; // MID
+    else if (difficulty === 2)
+      ctx.fillStyle = "#FF774B"; // HARD
+    else ctx.fillSryle = "#6021ff"; // TEST
+
+    ctx.rect(canvasW * 0.92, canvasH * 0.05, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
+    ctx.fill();
+
+    // (2) 흰색 테두리
+    ctx.beginPath();
+    ctx.fillStyle = "#fff";
+    ctx.rect(canvasW * 0.92 - canvasW * 0.002, canvasH * 0.05 - canvasW * 0.002, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
+    ctx.fill();
+
+    // (3) 앨범 아트
+    if (albumImg) {
+      ctx.drawImage(albumImg, canvasW * 0.92, canvasH * 0.05, canvasH / 15, canvasH / 15);
+    }
+
+    // (4) 점수 텍스트
+    ctx.beginPath();
+    ctx.font = `700 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "top";
+
+    ctx.fillText(numberWithCommas(`${Math.round(s.current)}`.padStart(9, "0")), canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05);
+
+    // (5) 콤보 텍스트
+    ctx.font = `${400 * (1 + comboScale * 0.5)} ${(canvasH / 40) * (1 + comboScale)}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    ctx.fillStyle = "#fff";
+    ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
 
     ctx.restore();
   },
