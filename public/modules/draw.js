@@ -597,9 +597,9 @@ const Draw = {
       const yAdder = judgeKey == "miss" ? Config.JUDGE_EFFECT.MISS_ANIM_Y_ADDER : Config.JUDGE_EFFECT.DEFAULT_ANIM_Y_ADDER;
       const animY = -1 * (canvasH / 1000) * yAdder * easeOutProgress;
 
-      const opacity = 100 - easeInProgress * 100;
+      const opacity = Math.max(0, 100 - easeInProgress * 100);
 
-      const skinPart = isJudgeSkin && skin[judgeKey] ? skin[judgeKey] : JudgeSkin[judgeKey];
+      const skinPart = isJudgeSkin && skin.judges[judgeKey] ? skin.judges[judgeKey] : JudgeSkin[judgeKey];
 
       ctx.save();
       ctx.beginPath();
