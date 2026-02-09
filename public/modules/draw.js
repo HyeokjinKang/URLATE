@@ -484,6 +484,33 @@ const Draw = {
   },
 
   /**
+   * 트리거로 정의된 텍스트를 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {object} textObj - pattern.trigger[i]
+   */
+  triggerText: (ctx, layout, textObj) => {
+    const { canvasW, canvasH } = layout;
+    const { text, x, y, align, valign, size, weight } = textObj;
+
+    ctx.save();
+    ctx.fillStyle = "#fff";
+
+    let fontSize;
+    if (size.indexOf("vh") != -1) fontSize = (canvasH / 100) * Number(size.split("vh")[0]) + "px";
+    else fontSize = size;
+
+    ctx.font = `${weight} ${fontSize} Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    ctx.textAlign = align;
+    ctx.textBaseline = valign;
+
+    const { cx, cy } = getCanvasPos(x, y, canvasW, canvasH);
+    ctx.fillText(text, cx, cy);
+
+    ctx.restore();
+  },
+
+  /**
    * 마우스 커서를 그립니다.
    * @param {CanvasRenderingContext2D} ctx
    * @param {object} layout - { canvasW, canvasH }

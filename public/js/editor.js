@@ -1016,16 +1016,7 @@ const cntRender = () => {
 
     cntCtx.globalAlpha = globalAlpha;
 
-    cntCtx.beginPath();
-    if (denySkin) cntCtx.fillStyle = "#111";
-    else cntCtx.fillStyle = "#fff";
-    for (text of renderTexts) {
-      if (text.size.indexOf("vh") != -1) cntCtx.font = text.weight + " " + (canvasH / 100) * Number(text.size.split("vh")[0]) + "px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
-      else cntCtx.font = text.weight + " " + text.size + " Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
-      cntCtx.textAlign = text.align;
-      cntCtx.textBaseline = text.valign;
-      cntCtx.fillText(text.text, tw * (text.x + 100), th * (text.y + 100));
-    }
+    for (textObj of renderTexts) Draw.triggerText(cntCtx, { canvasW, canvasH }, textObj);
 
     // Prevent destroy infinite loop
     prevDestroyedBullets = new Set(destroyedBullets);

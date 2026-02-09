@@ -387,15 +387,7 @@ const cntRender = () => {
 
     ctx.globalAlpha = globalAlpha;
 
-    ctx.beginPath();
-    ctx.fillStyle = "#fff";
-    for (text of renderTexts) {
-      if (text.size.indexOf("vh") != -1) ctx.font = `${text.weight} ${(canvasH / 100) * Number(text.size.split("vh")[0])}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-      else ctx.font = `${text.weight} ${text.size} Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-      ctx.textAlign = text.align;
-      ctx.textBaseline = text.valign;
-      ctx.fillText(text.text, (canvasW / 200) * (text.x + 100), (canvasH / 200) * (text.y + 100));
-    }
+    for (textObj of renderTexts) Draw.triggerText(ctx, { canvasW, canvasH }, textObj);
 
     let renderDuration = 5 / speed;
 
