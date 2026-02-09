@@ -454,14 +454,7 @@ const cntRender = () => {
       }
     }
 
-    ctx.beginPath();
-    ctx.globalAlpha = 0.5;
-    ctx.fillStyle = "#fff";
-    ctx.font = `600 ${canvasH / 60}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-    ctx.textAlign = "left";
-    ctx.textBaseline = "bottom";
-    ctx.fillText(`Speed : ${nowSpeed}, BPM : ${bpm}`, canvasW / 100, canvasH - canvasH / 60);
-
+    let displayFPS;
     if (frameCounter) {
       frameArray.push(1000 / (Date.now() - frameCounterMs));
       if (frameArray.length == 10) {
@@ -471,12 +464,9 @@ const cntRender = () => {
           }, 0) / 10;
         frameArray = [];
       }
-      ctx.textAlign = "right";
-      ctx.fillText(fps.toFixed(), canvasW - canvasW / 100, canvasH - canvasH / 70);
+      displayFPS = fps.toFixed();
       frameCounterMs = Date.now();
     }
-
-    ctx.globalAlpha = 1;
 
     if (keyInput.length > 0 && keyInputMemory != keyInput.length) {
       if (keyInput.length > 12) {
@@ -487,9 +477,8 @@ const cntRender = () => {
     }
 
     let percentage = 0;
-    if (endBeat !== null) percentage = beats / endBeat;
+    if (endBeat !== null) percentage = Math.min(1, beats / endBeat);
     else percentage = song.seek() / song.duration();
-    percentage = Math.max(0, Math.min(1, percentage));
 
     Update.particles(destroyParticles);
     Update.particles(clickParticles);
@@ -501,6 +490,7 @@ const cntRender = () => {
 
     Draw.keyInputUI(ctx, { canvasW, canvasH }, keyInput, keyInputTime);
     Draw.scorePanelUI(ctx, { canvasW, canvasH }, { score, combo, difficulty: Number(localStorage.difficultySelection) }, albumImg);
+    Draw.systemInfoUI(ctx, { canvasW, canvasH }, { speed: nowSpeed, bpm, fps: displayFPS });
     Draw.progressBarUI(ctx, { canvasW, canvasH }, percentage);
 
     Draw.cursor(ctx, { canvasW, canvasH }, skin, { x: mouseX, y: mouseY, zoom: cursorZoom }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });

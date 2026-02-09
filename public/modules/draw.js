@@ -1028,6 +1028,39 @@ const Draw = {
   },
 
   /**
+   * 시스템 정보를 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {object} info - { speed, bpm, fps }
+   */
+  systemInfoUI: (ctx, layout, info) => {
+    const { canvasW, canvasH } = layout;
+    const { speed, bpm, fps } = info;
+
+    ctx.save();
+    ctx.beginPath();
+
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = "#fff";
+    ctx.font = `600 ${canvasH / 60}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    ctx.textBaseline = "bottom";
+
+    // Speed & BPM (좌측 하단)
+    if (speed !== undefined && bpm !== undefined) {
+      ctx.textAlign = "left";
+      ctx.fillText(`Speed : ${speed}, BPM : ${bpm}`, canvasW / 100, canvasH - canvasH / 60);
+    }
+
+    // FPS (우측 하단)
+    if (fps !== undefined) {
+      ctx.textAlign = "right";
+      ctx.fillText(fps, canvasW - canvasW / 100, canvasH - canvasH / 70);
+    }
+
+    ctx.restore();
+  },
+
+  /**
    * 에디터용: 노트 연결선을 그립니다.
    * @param {CanvasRenderingContext2D} ctx
    * @param {object} layout - { canvasW, canvasH }
