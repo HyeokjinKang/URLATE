@@ -896,48 +896,6 @@ const cntRender = () => {
 
     errorCount = 0;
 
-    cntCtx.lineJoin = "round";
-
-    // Grid
-    cntCtx.lineWidth = 2;
-    if (gridToggle) {
-      let x1 = 0;
-      let x2 = tw * 5;
-      let y = 0;
-      cntCtx.strokeStyle = "#bbbbbb20";
-      cntCtx.beginPath();
-      for (let i = -100; i <= 100; i += 10) {
-        cntCtx.moveTo(x1, 0);
-        cntCtx.lineTo(x1, canvasH);
-        cntCtx.moveTo(0, y);
-        cntCtx.lineTo(canvasW, y);
-        cntCtx.moveTo(x2, 0);
-        cntCtx.lineTo(x2, canvasH);
-        x1 += tw * 10;
-        x2 += tw * 10;
-        y += th * 10;
-      }
-      cntCtx.stroke();
-    }
-    cntCtx.strokeStyle = "#ed3a2680";
-    cntCtx.beginPath();
-    cntCtx.moveTo(tw * 100, 0);
-    cntCtx.lineTo(tw * 100, canvasH);
-    cntCtx.moveTo(0, th * 100);
-    cntCtx.lineTo(canvasW, th * 100);
-    cntCtx.stroke();
-
-    // Circle Grid
-    if (circleToggle && selectedCntElement.v1 === 0) {
-      cntCtx.strokeStyle = "#88888850";
-      cntCtx.lineWidth = 2;
-      for (let i = 1; i <= 10; i++) {
-        cntCtx.beginPath();
-        cntCtx.arc(tw * (pattern.patterns[selectedCntElement.i].x + 100), th * (pattern.patterns[selectedCntElement.i].y + 100), (canvasW / 15) * i, 0, 2 * Math.PI);
-        cntCtx.stroke();
-      }
-    }
-
     // Calculate seeking position
     const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
 
@@ -968,6 +926,11 @@ const cntRender = () => {
       ms: 0,
       beat: 0,
     };
+
+    // Draw Grids
+    if (gridToggle) Draw.meshGrid(cntCtx, { canvasW, canvasH });
+    if (circleToggle && selectedCntElement.v1 === 0) Draw.radialGrid(cntCtx, { canvasW, canvasH }, pattern.patterns[selectedCntElement.i]);
+    Draw.axis(cntCtx, { canvasW, canvasH });
 
     // Track triggers from start to now
     let end = upperBound(pattern.triggers, beats);

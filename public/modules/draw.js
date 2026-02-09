@@ -255,6 +255,7 @@ const Draw = {
       ctx.fillStyle = "#000";
       ctx.strokeStyle = "#fff";
       ctx.textAlign = "center";
+      ctx.lineWidth = Math.round(canvasW / 300);
 
       if (note.debugIndex !== undefined) {
         ctx.textBaseline = "bottom";
@@ -1061,7 +1062,7 @@ const Draw = {
   },
 
   /**
-   * 에디터용: 트리거 추가 오버레이
+   * 에디터용: 트리거 추가 안내 오버레이를 그립니다.
    * @param {CanvasRenderingContext2D} ctx
    * @param {object} layout - { canvasW, canvasH }
    */
@@ -1089,6 +1090,95 @@ const Draw = {
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
     ctx.fillText("Add trigger", canvasW / 2, canvasH / 2 + 10);
+    ctx.restore();
+  },
+
+  /**
+   * 에디터용: 중앙 십자선을 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   */
+  axis: (ctx, layout) => {
+    const { canvasW, canvasH } = layout;
+    const tw = canvasW / 200;
+    const th = canvasH / 200;
+
+    ctx.save();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#ed3a2680"; // 붉은색 강조
+    ctx.beginPath();
+
+    // 세로 중앙선
+    ctx.moveTo(tw * 100, 0);
+    ctx.lineTo(tw * 100, canvasH);
+    // 가로 중앙선
+    ctx.moveTo(0, th * 100);
+    ctx.lineTo(canvasW, th * 100);
+
+    ctx.stroke();
+    ctx.restore();
+  },
+
+  /**
+   * 에디터용: 배경 모눈 격자(Mesh Grid)를 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   */
+  meshGrid: (ctx, layout) => {
+    const { canvasW, canvasH } = layout;
+    const tw = canvasW / 200;
+    const th = canvasH / 200;
+
+    ctx.save();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#bbbbbb20"; // 연한 회색
+    ctx.beginPath();
+
+    let x1 = 0,
+      x2 = tw * 5,
+      y = 0;
+
+    // 화면 밖 여유분까지 루프
+    for (let i = -100; i <= 100; i += 10) {
+      // 세로선
+      ctx.moveTo(x1, 0);
+      ctx.lineTo(x1, canvasH);
+      ctx.moveTo(x2, 0);
+      ctx.lineTo(x2, canvasH);
+      // 가로선
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvasW, y);
+
+      x1 += tw * 10;
+      x2 += tw * 10;
+      y += th * 10;
+    }
+    ctx.stroke();
+    ctx.restore();
+  },
+
+  /**
+   * 에디터용: 방사형 그리드(Radial Grid)를 그립니다.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {object} centerNote - pattern.patterns[i] (중심이 될 노트)
+   */
+  radialGrid: (ctx, layout, centerNote) => {
+    if (!centerNote) return;
+
+    const { canvasW, canvasH } = layout;
+    const { cx, cy } = getCanvasPos(centerNote.x, centerNote.y, canvasW, canvasH);
+
+    ctx.save();
+    ctx.strokeStyle = "#88888850";
+    ctx.lineWidth = 2;
+
+    for (let i = 1; i <= 10; i++) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, (canvasW / 15) * i, 0, 2 * Math.PI);
+      ctx.stroke();
+    }
+
     ctx.restore();
   },
 
