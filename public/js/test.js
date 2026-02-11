@@ -1,4 +1,21 @@
-/* global Pace, Howler, Howl, Draw, Factory, Update, url, cdn, api, upperBound, lowerBound, numberWithCommas, easeOutSine */
+/* global Pace, Howler, Howl, url, cdn, api */
+let upperBound, lowerBound, numberWithCommas, easeOutSine;
+let Factory, Updater, Renderer;
+(async () => {
+  try {
+    const [utils, factory, updater, renderer] = await Promise.all([import("../modules/utils.js"), import("../modules/factory.js"), import("../modules/updater.js"), import("../modules/renderer.js")]);
+
+    ({ upperBound, lowerBound, numberWithCommas, easeOutSine } = utils);
+    Factory = factory.default;
+    Updater = updater.default;
+    Renderer = renderer.default;
+
+    console.log("Modules are ready.");
+  } catch (err) {
+    console.error("Error occured while loading modules: ", err);
+  }
+})();
+
 const menuContainer = document.getElementById("menuContainer");
 const canvasBackground = document.getElementById("canvasBackground");
 const canvasContainer = document.getElementById("canvasContainer");
@@ -15,6 +32,7 @@ const canvas = document.getElementById("componentCanvas");
 const ctx = canvas.getContext("2d");
 const missCanvas = document.getElementById("missPointCanvas");
 const missCtx = missCanvas.getContext("2d");
+let Draw;
 let background;
 let pattern = {};
 let patternLength = 0;
@@ -165,6 +183,8 @@ const initialize = (isFirstCalled) => {
   canvas.width = canvasW;
   canvas.height = canvasH;
 
+  if (Draw) Draw.setSize({ canvasW, canvasH });
+
   canvasOW = canvas.offsetWidth;
   canvasOH = canvas.offsetHeight;
 
@@ -225,6 +245,7 @@ const initialize = (isFirstCalled) => {
       .then((data) => {
         if (data.result == "success") {
           skin = JSON.parse(data.data);
+          Draw = new Renderer(ctx, { canvasW, canvasH }, skin);
         } else {
           alert(`Error occured.\n${data.description}`);
           console.error(`Error occured.\n${data.description}`);
@@ -296,6 +317,8 @@ const destroyAll = (beat) => {
 const cntRender = () => {
   requestAnimationFrame(cntRender);
   try {
+    if (!Draw) return;
+
     if (window.devicePixelRatio != pixelRatio) {
       pixelRatio = window.devicePixelRatio;
       initialize(false);
@@ -372,7 +395,7 @@ const cntRender = () => {
 
     ctx.globalAlpha = globalAlpha;
 
-    for (let textObj of renderTexts) Draw.triggerText(ctx, { canvasW, canvasH }, textObj);
+    for (let textObj of renderTexts) Draw.triggerText(textObj);
 
     let renderDuration = 5 / speed;
 
@@ -385,10 +408,11 @@ const cntRender = () => {
       }
     }
     for (let i = end - 1; i >= start; i--) {
-      const state = Update.noteProgress(pattern.patterns[i], beats, speed);
+      const state = Updater.noteProgress(pattern.patterns[i], beats, speed);
 
-      Draw.note(ctx, { canvasW, canvasH, globalAlpha }, skin, pattern.patterns[i], {
+      Draw.note(pattern.patterns[i], {
         ...state,
+        globalAlpha,
         isGrabbed: grabbedNotes.has(i),
       });
 
@@ -413,7 +437,7 @@ const cntRender = () => {
       if (!destroyedBullets.has(i) || explodingBullets.has(i)) {
         const bullet = pattern.bullets[i];
 
-        const pos = Update.bulletPos(bullet, beats, pattern.triggers, pattern.information.speed);
+        const pos = Updater.bulletPos(bullet, beats, pattern.triggers, pattern.information.speed);
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
           destroyParticles.push(...Factory.createExplosions(pos.x, pos.y, skin.bullet));
@@ -423,7 +447,7 @@ const cntRender = () => {
 
         trackMouseSelection(i, 1, 0, pos.x, pos.y);
 
-        Draw.bullet(ctx, { canvasW, canvasH }, skin, pos);
+        Draw.bullet(pos);
       }
     }
 
@@ -453,23 +477,23 @@ const cntRender = () => {
     if (endBeat !== null) percentage = Math.min(1, beats / endBeat);
     else percentage = song.seek() / song.duration();
 
-    Update.particles(destroyParticles);
-    Update.particles(clickParticles);
-    Update.particles(judgeParticles, settings.game.applyJudge);
+    Updater.particles(destroyParticles);
+    Updater.particles(clickParticles);
+    Updater.particles(judgeParticles, settings.game.applyJudge);
 
-    Draw.explosions(ctx, { canvasW, canvasH }, destroyParticles);
-    Draw.clickEffects(ctx, { canvasW, canvasH }, skin, clickParticles);
-    Draw.judges(ctx, { canvasW, canvasH }, skin, judgeParticles);
+    Draw.explosions(destroyParticles);
+    Draw.clickEffects(clickParticles);
+    Draw.judges(judgeParticles);
 
-    Draw.keyInputUI(ctx, { canvasW, canvasH }, keyInput, keyInputTime);
-    Draw.scorePanelUI(ctx, { canvasW, canvasH }, { score, combo, difficulty: 3 }, albumImg);
-    Draw.systemInfoUI(ctx, { canvasW, canvasH }, { speed: nowSpeed, bpm, fps: displayFPS });
-    Draw.progressBarUI(ctx, { canvasW, canvasH }, percentage);
+    Draw.keyInputUI(keyInput, keyInputTime);
+    Draw.scorePanelUI({ score, combo, difficulty: 3 }, albumImg);
+    Draw.systemInfoUI({ speed: nowSpeed, bpm, fps: displayFPS });
+    Draw.progressBarUI(percentage);
 
-    Draw.cursor(ctx, { canvasW, canvasH }, skin, { x: mouseX, y: mouseY, zoom: cursorZoom }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
+    Draw.cursor({ x: mouseX, y: mouseY, zoom: cursorZoom }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
 
     if (effectMs != 0 && effectNum != -1) {
-      Draw.finalEffect(ctx, { canvasW, canvasH }, effectNum, effectMs);
+      Draw.finalEffect(effectNum, effectMs);
       if (Date.now() - effectMs >= 2000) effectMs = 0;
     }
   } catch (e) {

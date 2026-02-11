@@ -1,4 +1,21 @@
-/* global Howler, Howl, iziToast, Draw, Factory, Update, url, api, cdn, lowerBound, upperBound, syncAlert, timeAlert, copiedText, isMac, calcAngleDegrees, getCos, getSin, moveToAlert */
+/* global Howler, Howl, iziToast, url, api, cdn, syncAlert, timeAlert, copiedText, moveToAlert */
+let upperBound, lowerBound;
+let Factory, Updater, Renderer, getCos, getSin, calcAngleDegrees;
+(async () => {
+  try {
+    const [utils, factory, updater, renderer] = await Promise.all([import("../modules/utils.js"), import("../modules/factory.js"), import("../modules/updater.js"), import("../modules/renderer.js")]);
+
+    ({ upperBound, lowerBound, getCos, getSin, calcAngleDegrees } = utils);
+    Factory = factory.default;
+    Updater = updater.default;
+    Renderer = renderer.default;
+
+    console.log("Modules are ready.");
+  } catch (err) {
+    console.error("Error occured while loading modules: ", err);
+  }
+})();
+
 const songSelectBox = document.getElementById("songSelectBox");
 const trackSettings = document.getElementById("trackSettings");
 const volumeMaster = document.getElementById("volumeMaster");
@@ -25,6 +42,8 @@ const tmlCtx = tmlCanvas.getContext("2d");
 const timelinePlayController = document.getElementById("timelinePlayController");
 const metronome = document.getElementById("metronome");
 const metronomeContainer = document.getElementById("metronomeContainer");
+const isMac = navigator.userAgentData && navigator.userAgentData.platform ? navigator.userAgentData.platform === "macOS" : /Mac/.test(navigator.platform);
+let Draw;
 const epsilon = 1e-9;
 let metronomeDir = 1;
 let background;
@@ -141,30 +160,6 @@ const settingApply = () => {
   denyCursor = settings.editor.denyCursor;
   canvasContainer.style.cursor = denyCursor ? "" : "none";
   denySkin = settings.editor.denySkin;
-  fetch(`${api}/skin/${settings.game.skin}`, {
-    method: "GET",
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.result == "success") {
-        skin = JSON.parse(data.data);
-      } else {
-        alert(`Error occured.\n${data.description}`);
-        console.error(`Error occured.\n${data.description}`);
-      }
-    })
-    .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
-    });
-  if (localStorage.pattern) {
-    pattern = JSON.parse(localStorage.pattern);
-    for (let i = 0; songSelectBox.options.length > i; i++) {
-      if (songSelectBox.options[i].value == pattern.information.track) songSelectBox.selectedIndex = i;
-    }
-    songSelected(true);
-  }
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -197,8 +192,8 @@ document.addEventListener("DOMContentLoaded", () => {
               data = data.user;
               userName = data.nickname;
               settings = JSON.parse(data.settings);
+              initialize(true);
               settingApply();
-              initialize();
             } else {
               alert(`Error occured.\n${data.description}`);
               console.error(`Error occured.\n${data.description}`);
@@ -434,7 +429,7 @@ const eraseTml = () => {
   tmlCtx.clearRect(0, 0, tmlCanvasW, tmlCanvasH);
 };
 
-const initialize = () => {
+const initialize = (isFirstCalled) => {
   if (isSettingsOpened) {
     tmlCanvasW = window.innerWidth * 0.8 * window.devicePixelRatio;
   } else {
@@ -443,6 +438,8 @@ const initialize = () => {
   canvasW = (window.innerWidth * 0.6 * window.devicePixelRatio * settings.display.canvasRes) / 100;
   canvasH = (window.innerHeight * 0.65 * window.devicePixelRatio * settings.display.canvasRes) / 100;
   tmlCanvasH = window.innerHeight * 0.27 * window.devicePixelRatio;
+
+  if (Draw) Draw.setSize({ canvasW, canvasH });
 
   cntCanvas.width = canvasW;
   cntCanvas.height = canvasH;
@@ -462,6 +459,34 @@ const initialize = () => {
   navBarOH = document.getElementById("navbar").offsetHeight;
 
   isTmlUpdateNeeded = true;
+
+  if (isFirstCalled) {
+    fetch(`${api}/skin/${settings.game.skin}`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.result == "success") {
+          skin = JSON.parse(data.data);
+          Draw = new Renderer(cntCtx, { canvasW, canvasH }, skin);
+        } else {
+          alert(`Error occured.\n${data.description}`);
+          console.error(`Error occured.\n${data.description}`);
+        }
+      })
+      .catch((error) => {
+        alert(`Error occured.\n${error}`);
+        console.error(`Error occured.\n${error}`);
+      });
+    if (localStorage.pattern) {
+      pattern = JSON.parse(localStorage.pattern);
+      for (let i = 0; songSelectBox.options.length > i; i++) {
+        if (songSelectBox.options[i].value == pattern.information.track) songSelectBox.selectedIndex = i;
+      }
+      songSelected(true);
+    }
+  }
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -884,6 +909,17 @@ const displayMessage = (type, message) => {
 const cntRender = () => {
   window.requestAnimationFrame(cntRender);
   try {
+    eraseCnt();
+
+    if (!Draw) {
+      cntCtx.fillStyle = "#FFF";
+      cntCtx.font = `400 ${canvasH / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      cntCtx.textAlign = "center";
+      cntCtx.textBaseline = "middle";
+      cntCtx.fillText("Loading modules..", canvasW / 2, canvasH / 2);
+      return;
+    }
+
     // Always maintain the aspect ratio
     if (window.devicePixelRatio != pixelRatio) {
       pixelRatio = window.devicePixelRatio;
@@ -891,7 +927,6 @@ const cntRender = () => {
     }
 
     // Initialize
-    eraseCnt();
     pointingCntElement = mouseMode == 1 ? pointingTmlElement : { v1: "", v2: "", i: "" };
     createdBullets.clear();
     destroyedBullets.clear();
@@ -934,9 +969,9 @@ const cntRender = () => {
     };
 
     // Draw Grids
-    if (gridToggle) Draw.meshGrid(cntCtx, { canvasW, canvasH });
-    if (circleToggle && selectedCntElement.v1 === 0) Draw.radialGrid(cntCtx, { canvasW, canvasH }, pattern.patterns[selectedCntElement.i]);
-    Draw.axis(cntCtx, { canvasW, canvasH });
+    if (gridToggle) Draw.meshGrid();
+    if (circleToggle && selectedCntElement.v1 === 0) Draw.radialGrid(pattern.patterns[selectedCntElement.i]);
+    Draw.axis();
 
     // Track triggers from start to now
     let end = upperBound(pattern.triggers, beats);
@@ -985,7 +1020,7 @@ const cntRender = () => {
 
     cntCtx.globalAlpha = globalAlpha;
 
-    for (let textObj of renderTexts) Draw.triggerText(cntCtx, { canvasW, canvasH }, textObj);
+    for (let textObj of renderTexts) Draw.triggerText(textObj);
 
     // Prevent destroy infinite loop
     prevDestroyedBullets = new Set(destroyedBullets);
@@ -1009,32 +1044,30 @@ const cntRender = () => {
     // Note drawing loop
     let validNote = end;
     for (let i = end - 1; i >= start; i--) {
-      const state = Update.noteProgress(pattern.patterns[i], beats, speed);
+      const state = Updater.noteProgress(pattern.patterns[i], beats, speed);
 
       if (pattern.patterns[i].value != 2 && state.progress < 101) validNote = i;
       else if (pattern.patterns[i].value == 2 && state.endProgress < 100) validNote = i;
 
       const alpha = 0.4 - 0.1 * (validNote - i);
 
-      if (i > 0) Draw.noteConnector(cntCtx, { canvasW, canvasH }, pattern.patterns[i - 1], pattern.patterns[i], alpha);
+      if (i > 0) Draw.noteConnector(pattern.patterns[i - 1], pattern.patterns[i], alpha);
 
       if (i == validNote) {
         Draw.note(
-          cntCtx,
-          { canvasW, canvasH, globalAlpha },
-          skin,
           {
             ...pattern.patterns[i],
             debugIndex: i,
           },
           {
             ...state,
+            globalAlpha,
             isGrabbed: state.progress >= 100,
             isSelected: selectedCheck(0, i),
           },
         );
       } else if (i + 3 >= validNote) {
-        Draw.noteShadow(cntCtx, { canvasW, canvasH }, pattern.patterns[i], alpha);
+        Draw.noteShadow(pattern.patterns[i], alpha);
       }
     }
 
@@ -1045,7 +1078,7 @@ const cntRender = () => {
       if (!destroyedBullets.has(i) || explodingBullets.has(i)) {
         const bullet = pattern.bullets[i];
 
-        const pos = Update.bulletPos(bullet, beats, pattern.triggers, pattern.information.speed);
+        const pos = Updater.bulletPos(bullet, beats, pattern.triggers, pattern.information.speed);
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
           if (!prevCreatedBullets.has(i) || explodingBullets.has(i)) destroyParticles.push(...Factory.createExplosions(pos.x, pos.y, skin.bullet));
@@ -1056,9 +1089,6 @@ const cntRender = () => {
         trackMouseSelection(i, 1, 0, pos.x, pos.y);
 
         Draw.bullet(
-          cntCtx,
-          { canvasW, canvasH },
-          skin,
           {
             ...pos,
             location: pattern.bullets[i].location,
@@ -1112,13 +1142,6 @@ const cntRender = () => {
           drawY = mouseY;
         }
         Draw.note(
-          cntCtx,
-          {
-            canvasW,
-            canvasH,
-            globalAlpha,
-          },
-          skin,
           {
             x: drawX,
             y: drawY,
@@ -1126,6 +1149,7 @@ const cntRender = () => {
             direction: 1,
           },
           {
+            globalAlpha,
             progress: 100,
             tailProgress: 0,
             endProgress: 0,
@@ -1144,9 +1168,6 @@ const cntRender = () => {
           drawDir = "L";
         }
         Draw.bullet(
-          cntCtx,
-          { canvasW, canvasH },
-          skin,
           {
             x: drawX,
             y: drawY,
@@ -1161,12 +1182,12 @@ const cntRender = () => {
       }
     }
 
-    Update.particles(destroyParticles);
+    Updater.particles(destroyParticles);
 
-    Draw.explosions(cntCtx, { canvasW, canvasH }, destroyParticles);
+    Draw.explosions(destroyParticles);
 
     // Editor only - Trigger add guide overlay (when mode is "Add")
-    if (mode == 2 && mouseMode == -1) Draw.triggerAddOverlay(cntCtx, { canvasW, canvasH });
+    if (mode == 2 && mouseMode == -1) Draw.triggerAddOverlay();
 
     //Cursor
     if (denyCursor) {
@@ -1188,7 +1209,7 @@ const cntRender = () => {
   }
 
   if (mouseMode == 0 && !denyCursor) {
-    Draw.cursor(cntCtx, { canvasW, canvasH }, skin, { x: mouseX, y: mouseY });
+    Draw.cursor({ x: mouseX, y: mouseY });
   }
 };
 
@@ -2704,7 +2725,10 @@ const reflection = (dir) => {
 
 document.getElementById("timelineContainer").addEventListener("wheel", scrollEvent);
 window.addEventListener("wheel", globalScrollEvent);
-window.addEventListener("resize", initialize);
+
+window.addEventListener("resize", () => {
+  initialize(false);
+});
 
 window.addEventListener("beforeunload", (event) => {
   if (preventUnload) {

@@ -1,11 +1,10 @@
-/* global getSin, getCos, upperBound, lowerBound */
 /**
- * update.js
+ * updater.js
  * 게임의 데이터 계산, 물리 연산, 수명 관리 등 핵심 로직을 담당합니다.
  */
+import { getSin, getCos, upperBound, lowerBound } from "./utils.js";
 
-// eslint-disable-next-line no-unused-vars
-const Update = {
+export default class Updater {
   /**
    * 총알의 현재 위치(x, y)와 각도를 계산합니다.
    * @param {object} bullet - 총알 데이터 객체
@@ -14,7 +13,7 @@ const Update = {
    * @param {number} baseSpeed - 곡의 기본 스피드
    * @returns {{x: number, y: number, angle: number}}
    */
-  bulletPos: (bullet, currentBeat, triggers, baseSpeed) => {
+  static bulletPos(bullet, currentBeat, triggers, baseSpeed) {
     // 트리거 탐색 범위 설정
     let triggerEnd = upperBound(triggers, bullet.beat);
     let currentSpeed = baseSpeed;
@@ -54,7 +53,7 @@ const Update = {
     const y = bullet.location + getSin(angle) * p;
 
     return { x, y, angle };
-  },
+  }
 
   /**
    * 노트의 현재 진행 상태(progress)를 계산합니다.
@@ -63,7 +62,7 @@ const Update = {
    * @param {number} speed - 현재 속도 (배속)
    * @returns {{progress: number, tailProgress: number, endProgress: number}}
    */
-  noteProgress: (note, currentBeat, speed) => {
+  static noteProgress(note, currentBeat, speed) {
     const renderDuration = 5 / speed;
 
     const progress = (1 - (note.beat - currentBeat) / renderDuration) * 100;
@@ -73,14 +72,14 @@ const Update = {
     const endProgress = (1 - (note.beat + note.duration - currentBeat) / renderDuration) * 100;
 
     return { progress, tailProgress, endProgress };
-  },
+  }
 
   /**
    * 수명이 다한 파티클을 배열에서 제거합니다.
    * @param {Array} particles - 파티클 배열
    * @param {object} [hideSettings] - 판정 숨김 설정 (judgeParticles 관리시에만 필요)
    */
-  particles: (particles, hideSettings = null) => {
+  static particles(particles, hideSettings = null) {
     const now = Date.now();
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
@@ -94,5 +93,5 @@ const Update = {
         particles.splice(i, 1);
       }
     }
-  },
-};
+  }
+}

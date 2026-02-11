@@ -1,33 +1,32 @@
-/* eslint-disable no-unused-vars */
-const numberWithCommas = (x) => {
+export const numberWithCommas = (x) => {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-const hexadecimal = (color, percentage) => {
+export const hexadecimal = (color, percentage) => {
   const decimal = `0${Math.round(255 * (percentage / 100)).toString(16)}`.slice(-2).toUpperCase();
   return color + decimal;
 };
 
-const getTan = (deg) => {
+export const getTan = (deg) => {
   let rad = (deg * Math.PI) / 180;
   return Math.tan(rad);
 };
 
-const getCos = (deg) => {
+export const getCos = (deg) => {
   let rad = (deg * Math.PI) / 180;
   return Math.cos(rad);
 };
 
-const getSin = (deg) => {
+export const getSin = (deg) => {
   let rad = (deg * Math.PI) / 180;
   return Math.sin(rad);
 };
 
-const calcAngleDegrees = (x, y) => {
+export const calcAngleDegrees = (x, y) => {
   return (Math.atan2(y, x) * 180) / Math.PI;
 };
 
-const lowerBound = (array, value) => {
+export const lowerBound = (array, value) => {
   if (value < 0) value = 0;
   let low = 0;
   let high = array.length;
@@ -42,7 +41,7 @@ const lowerBound = (array, value) => {
   return low;
 };
 
-const upperBound = (array, value) => {
+export const upperBound = (array, value) => {
   let low = 0;
   let high = array.length;
   while (low < high) {
@@ -56,20 +55,18 @@ const upperBound = (array, value) => {
   return low;
 };
 
-const easeInQuad = (x) => {
+export const easeInQuad = (x) => {
   return x * x;
 };
 
-const easeOutQuart = (x) => {
+export const easeOutQuart = (x) => {
   return 1 - Math.pow(1 - x, 4);
 };
 
-const easeOutQuad = (x) => {
+export const easeOutQuad = (x) => {
   return 1 - (1 - x) * (1 - x);
 };
 
-const easeOutSine = (x) => {
+export const easeOutSine = (x) => {
   return Math.sin((x * Math.PI) / 2);
 };
-
-const isMac = navigator.userAgentData && navigator.userAgentData.platform ? navigator.userAgentData.platform === "macOS" : /Mac/.test(navigator.platform);

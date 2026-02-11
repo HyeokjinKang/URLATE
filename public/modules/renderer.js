@@ -1,237 +1,112 @@
-/* global hexadecimal, getSin, getCos, easeInQuad, easeOutQuad, easeOutQuart, numberWithCommas */
 /**
- * draw.js
+ * renderer.js
  * 게임의 캔버스 드로잉을 담당합니다.
  */
-
-/** 게임 내 이펙트 및 렌더링 관련 상수/설정값을 관리합니다. */
-const Config = {
-  MATH: {
-    PI_5: Math.PI / 5,
-    COS_36: Math.cos(Math.PI / 5),
-    SIN_36: Math.sin(Math.PI / 5),
-  },
-  CURSOR: {
-    SIZE: 100 / 7,
-    ANIM_SIZE_ADDER: 5 / 2,
-    RELEASE_ANIM_LENGTH: 100,
-  },
-  NOTE: {
-    WIDTH: 25,
-  },
-  EXPLODE_EFFECT: {
-    COUNT: 3,
-    SPEED: 30,
-    LIFETIME: 1000,
-    SIZE: 6,
-  },
-  CLICK_EFFECT: {
-    LIFETIME: 500,
-    SIZE: 30,
-    LINE_WIDTH: 10,
-    OPACITY: 20,
-  },
-  NOTE_CLICK_EFFECT: {
-    LIFETIME: 800,
-    SIZE: 40,
-    LINE_WIDTH: 15,
-    OPACITY: 100,
-  },
-  JUDGE_EFFECT: {
-    LIFETIME: 500,
-    DEFAULT_ANIM_Y_ADDER: 100,
-    MISS_ANIM_Y_ADDER: -50,
-    MISS_ANIM_ROTATE: 10,
-  },
-};
-
-/** 기본 판정 스킨 */
-const JudgeSkin = {
-  perfect: {
-    type: "gradient",
-    stops: [
-      { percentage: 0, color: "#90F482" },
-      { percentage: 100, color: "#73AADD" },
-    ],
-  },
-  great: { type: "color", color: "#73DFD2" },
-  good: { type: "color", color: "#CCE97C" },
-  bad: { type: "color", color: "#EDC77D" },
-  miss: { type: "color", color: "#F96C5A" },
-};
-
-/** keyInput 오버레이 색상표 */
-const KeyInputColors = {
-  Perfect: "#57BEEB",
-  Great: "#73DFD2",
-  Good: "#CCE97C",
-  Bad: "#EDC77D",
-  Miss: "#F96C5A",
-  Bullet: "#E8A0A0",
-  Empty: "#00000000",
-};
-
-/**
- * 렌더링 성능 최적화를 위해 Path2D 객체 등을 저장합니다.
- */
-const RenderCache = {
-  bullet: {
-    path: null,
-    lastCanvasW: 0,
-  },
-};
-
-/**
- * 게임 좌표(-100 ~ 100)를 캔버스 실제 좌표(px)로 변환합니다.
- * @returns {{cx: number, cy: number}} 변환된 캔버스 좌표
- */
-const getCanvasPos = (x, y, canvasW, canvasH) => {
-  return {
-    cx: (canvasW / 200) * (x + 100),
-    cy: (canvasH / 200) * (y + 100),
-  };
-};
-
-/** 스킨 데이터(Gradient/Color)를 분석하여 ctx의 fillStyle 또는 strokeStyle을 설정합니다. */
-const applyStyle = (ctx, layout, skinPart, x, y, size, opacity, isStroke = false) => {
-  const { canvasW } = layout;
-  let style;
-  if (skinPart.type === "gradient") {
-    const grd = ctx.createLinearGradient(x - size, y - size, x + size, y + size);
-    for (let s = 0; s < skinPart.stops.length; s++) {
-      grd.addColorStop(skinPart.stops[s].percentage / 100, hexadecimal(skinPart.stops[s].color, opacity));
-    }
-    style = grd;
-  } else {
-    style = hexadecimal(skinPart.color, opacity);
-  }
-
-  if (isStroke) {
-    ctx.lineWidth = Math.round((canvasW / 1000) * skinPart.width);
-    ctx.strokeStyle = style;
-  } else ctx.fillStyle = style;
-};
-
-/** 캔버스에 그려질 게임 오브젝트(파티클, 노트 등)의 순수 데이터를 생성합니다. */
-// eslint-disable-next-line no-unused-vars
-const Factory = {
-  /**
-   * 폭발 효과를 위한 파티클 데이터 배열을 생성합니다.
-   * @returns {Array<object>} 생성된 파티클 객체들의 배열
-   */
-  createExplosions: (x, y, skin) => {
-    const particles = [];
-    const conf = Config.EXPLODE_EFFECT;
-
-    for (let i = 0; i < conf.COUNT; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const distance = conf.SPEED * (0.8 + Math.random() * 0.4);
-
-      particles.push({
-        startX: x,
-        startY: y,
-        dx: Math.cos(angle) * distance,
-        dy: Math.sin(angle) * distance,
-        createdAt: Date.now(),
-        lifeTime: conf.LIFETIME,
-        skin,
-      });
-    }
-
-    return particles;
-  },
-
-  /**
-   * 기본 클릭 이펙트를 위한 데이터를 생성합니다.
-   * @returns { object }
-   */
-  createClickDefault: (x, y, zoom) => ({
-    type: "default",
-    x,
-    y,
-    zoom,
-    createdAt: Date.now(),
-    lifeTime: Config.CLICK_EFFECT.LIFETIME,
-  }),
-
-  /**
-   * 노트 클릭 이펙트를 위한 데이터를 생성합니다.
-   * @returns { object }
-   */
-  createClickNote: (x, y, zoom, noteType) => ({
-    type: "note",
-    x,
-    y,
-    zoom,
-    noteType,
-    createdAt: Date.now(),
-    lifeTime: Config.NOTE_CLICK_EFFECT.LIFETIME,
-  }),
-
-  /**
-   * 판정 텍스트 이펙트 데이터를 생성합니다.
-   * @param {number} x
-   * @param {number} y
-   * @param {boolean} judgeSkin - settings.game.judgeSkin
-   * @param {string} judge
-   */
-  createJudge: (x, y, judgeSkin, judge) => ({
-    x,
-    y,
-    judgeSkin,
-    judge,
-    createdAt: Date.now(),
-    lifeTime: Config.JUDGE_EFFECT.LIFETIME,
-  }),
-};
+import { Config, JudgeSkin, KeyInputColors } from "./constants.js";
+import { getSin, getCos, hexadecimal, easeInQuad, easeOutQuad, easeOutQuart, numberWithCommas } from "./utils.js";
 
 /** 데이터를 받아 Canvas Context(ctx)에 실제 렌더링을 수행합니다. */
-const Draw = {
-  /** 애니메이션 상태 관리용 변수 */
-  animState: {
-    score: { current: 0, start: 0, target: 0, startTime: 0 },
-    combo: { value: 0, startTime: 0 },
-  },
+export default class Renderer {
+  /**
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {object} layout - { canvasW, canvasH }
+   * @param {object} skin - 스킨 데이터
+   */
+  constructor(ctx, layout, skin) {
+    this.ctx = ctx;
+    this.canvasW = layout.canvasW;
+    this.canvasH = layout.canvasH;
+    this.skin = skin;
 
-  /** 게임 시작 / 재시작 시 애니메이션 상태를 초기화시키는 함수 */
-  initialize: () => {
-    Draw.animState = {
+    // 렌더링 캐시
+    this.cache = {
+      bulletPath: null,
+      lastCacheW: 0,
+    };
+
+    // 애니메이션 상태
+    this.animState = {
       score: { current: 0, start: 0, target: 0, startTime: 0 },
       combo: { value: 0, startTime: 0 },
     };
-  },
+  }
+
+  /** 내부 헬퍼: 좌표 변환 */
+  #getPos(x, y) {
+    return {
+      cx: (this.canvasW / 200) * (x + 100),
+      cy: (this.canvasH / 200) * (y + 100),
+    };
+  }
+
+  /** 내부 헬퍼: 스킨 데이터(Gradient/Color)를 분석하여 ctx의 fillStyle 또는 strokeStyle을 설정합니다. */
+  #applyStyle(skinPart, x, y, size, opacity, isStroke = false) {
+    const { ctx, canvasW } = this;
+    let style;
+    if (skinPart.type === "gradient") {
+      const grd = ctx.createLinearGradient(x - size, y - size, x + size, y + size);
+      for (let s = 0; s < skinPart.stops.length; s++) {
+        grd.addColorStop(skinPart.stops[s].percentage / 100, hexadecimal(skinPart.stops[s].color, opacity));
+      }
+      style = grd;
+    } else {
+      style = hexadecimal(skinPart.color, opacity);
+    }
+
+    if (isStroke) {
+      ctx.lineWidth = Math.round((canvasW / 1000) * skinPart.width);
+      ctx.strokeStyle = style;
+    } else ctx.fillStyle = style;
+  }
+
+  /** 화면 크기가 변경되었을 때 호출
+   * @param {object} layout - { canvasW, canvasH }
+   */
+  setSize(layout) {
+    this.canvasW = layout.canvasW;
+    this.canvasH = layout.canvasH;
+
+    // 화면 크기가 바뀌면 캐시 초기화
+    if (this.canvasW !== this.cache.lastCacheW) {
+      this.cache.bulletPath = null;
+    }
+  }
+
+  /** 점수판 애니메이션 상태 초기화 */
+  initialize() {
+    this.animState = {
+      score: { current: 0, start: 0, target: 0, startTime: 0 },
+      combo: { value: 0, startTime: 0 },
+    };
+  }
 
   /**
-   * 테두리가 있는 텍스트를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
+   * 테두리가 있는 텍스트를 그립니다. (스타일 설정 후 호출 필요)
    * @param {string} text
    * @param {number} x
    * @param {number} y
    */
-  outlinedText: (ctx, text, x, y) => {
-    ctx.strokeText(text, x, y);
-    ctx.fillText(text, x, y);
-  },
+  outlinedText(text, x, y) {
+    this.ctx.strokeText(text, x, y);
+    this.ctx.fillText(text, x, y);
+  }
 
   /**
    * 노트를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH, globalAlpha }
-   * @param {object} skin - 유저 스킨 설정값
    * @param {object} note - { x, y, value, direction, debugIndex? }
-   * @param {object} state - { progress, tailProgress, endProgress, isGrabbed, isSelected? }
+   * @param {object} state - { globalAlpha, progress, tailProgress, endProgress, isGrabbed, isSelected? }
    */
-  note: (ctx, layout, skin, note, state) => {
-    const { canvasW, canvasH, globalAlpha } = layout;
-    const { x: gameX, y: gameY, value: type, direction } = note;
-    const { progress, tailProgress, endProgress, isGrabbed, isSelected } = state;
+  note(note, state) {
+    const { ctx, canvasW, canvasH, skin } = this;
+    const { x, y, value: type, direction } = note;
+    const { globalAlpha, progress, tailProgress, endProgress, isGrabbed, isSelected } = state;
 
     // 종료된 노트는 그리지 않음
     if (type !== 2 && progress >= 130) return;
     if (type === 2 && endProgress >= 130) return;
 
     // 공통 변수 계산
-    const { cx, cy } = getCanvasPos(gameX, gameY, canvasW, canvasH);
+    const { cx, cy } = this.#getPos(x, y);
     const safeP = Math.max(progress, 0);
     let w = (canvasW / 1000) * Config.NOTE.WIDTH;
 
@@ -262,16 +137,16 @@ const Draw = {
 
       if (note.debugIndex !== undefined) {
         ctx.textBaseline = "bottom";
-        Draw.outlinedText(ctx, `Note_${note.debugIndex}`, 0, -1.2 * w);
+        this.outlinedText(`Note_${note.debugIndex}`, 0, -1.2 * w);
       }
       ctx.textBaseline = "top";
-      Draw.outlinedText(ctx, `(X: ${gameX}, Y: ${gameY})`, 0, 1.2 * w);
+      this.outlinedText(`(X: ${x}, Y: ${y})`, 0, 1.2 * w);
 
       ctx.fillStyle = hexadecimal("#ebd534", opacityVal);
       ctx.strokeStyle = hexadecimal("#ebd534", opacityVal);
     } else {
-      applyStyle(ctx, layout, noteSkin, 0, 0, w, opacityVal, false);
-      applyStyle(ctx, layout, noteSkin.indicator, 0, 0, w, opacityVal, true);
+      this.#applyStyle(noteSkin, 0, 0, w, opacityVal, false);
+      this.#applyStyle(noteSkin.indicator, 0, 0, w, opacityVal, true);
     }
 
     // Type 0: Circle Note (일반)
@@ -286,7 +161,7 @@ const Draw = {
       ctx.arc(0, 0, (w / 100) * safeP, 0, 2 * Math.PI);
       ctx.fill();
       if (noteSkin.outline) {
-        applyStyle(ctx, layout, noteSkin.outline, 0, 0, w, opacityVal, true);
+        this.#applyStyle(noteSkin.outline, 0, 0, w, opacityVal, true);
         ctx.stroke();
       }
 
@@ -349,7 +224,7 @@ const Draw = {
       ctx.lineTo(0, -1.5 * (w / 100) * safeP);
       ctx.fill();
       if (noteSkin.outline) {
-        applyStyle(ctx, layout, noteSkin.outline, 0, 0, w, opacityVal, true);
+        this.#applyStyle(noteSkin.outline, 0, 0, w, opacityVal, true);
         ctx.stroke();
       }
 
@@ -405,33 +280,30 @@ const Draw = {
 
     ctx.restore();
     ctx.globalAlpha = globalAlpha;
-  },
+  }
 
   /**
    * 총알을 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
-   * @param {object} skin - 유저 스킨 설정값
    * @param {object} bullet - { x, y, angle, location?, direction?, debugIndex? }
    * @param {object} state - { isSelected?, isHit? }
    */
-  bullet: (ctx, layout, skin, bullet, state = {}) => {
-    const { canvasW, canvasH } = layout;
-    const { x: gameX, y: gameY, angle: realAngle } = bullet;
+  bullet(bullet, state = {}) {
+    const { ctx, canvasW, canvasH, skin } = this;
+    const { x, y, angle: realAngle } = bullet;
     const { isSelected, isHit } = state;
 
-    const { cx, cy } = getCanvasPos(gameX, gameY, canvasW, canvasH);
+    const { cx, cy } = this.#getPos(x, y);
     const w = canvasW / 80;
 
     // 총알 캐시 검증 및 재생성
-    if (RenderCache.bullet.lastCanvasW !== canvasW || !RenderCache.bullet.path) {
+    if (this.cache.lastCacheW !== canvasW || !this.cache.bulletPath) {
       const path = new Path2D();
       path.arc(0, 0, w, 0.5 * Math.PI, 1.5 * Math.PI);
       path.lineTo(w * 2, 0);
       path.closePath();
 
-      RenderCache.bullet.path = path;
-      RenderCache.bullet.lastCanvasW = canvasW;
+      this.cache.bulletPath = path;
+      this.cache.lastCacheW = canvasW;
     }
 
     // (에디터용) 선택된 객체
@@ -445,12 +317,12 @@ const Draw = {
 
       if (bullet.debugIndex !== undefined) {
         ctx.textBaseline = "bottom";
-        Draw.outlinedText(ctx, `Bullet_${bullet.debugIndex}`, cx, cy - 1.5 * w);
+        this.outlinedText(`Bullet_${bullet.debugIndex}`, cx, cy - 1.5 * w);
       }
       ctx.textBaseline = "top";
-      Draw.outlinedText(ctx, `(Angle: ${bullet.direction === "L" ? realAngle : realAngle - 180})`, cx, cy + 1.5 * w);
+      this.outlinedText(`(Angle: ${bullet.direction === "L" ? realAngle : realAngle - 180})`, cx, cy + 1.5 * w);
       if (bullet.location !== undefined) {
-        Draw.outlinedText(ctx, `(Loc: ${bullet.location})`, cx, cy + 1.5 * w + canvasH / 40);
+        this.outlinedText(`(Loc: ${bullet.location})`, cx, cy + 1.5 * w + canvasH / 40);
       }
 
       ctx.fillStyle = "#ebd534";
@@ -463,9 +335,9 @@ const Draw = {
     }
     // 스킨 적용
     else {
-      applyStyle(ctx, layout, skin.bullet, 0, 0, w, 100, false);
+      this.#applyStyle(skin.bullet, 0, 0, w, 100, false);
       if (skin.bullet.outline) {
-        applyStyle(ctx, layout, skin.bullet.outline, 0, 0, w, 100, true);
+        this.#applyStyle(skin.bullet.outline, 0, 0, w, 100, true);
         ctx.stroke(path);
       }
     }
@@ -481,20 +353,18 @@ const Draw = {
     ctx.translate(cx, cy);
     ctx.rotate((visualAngle * Math.PI) / 180);
 
-    const path = RenderCache.bullet.path;
+    const path = this.cache.bulletPath;
     ctx.fill(path);
 
     ctx.restore();
-  },
+  }
 
   /**
    * 트리거로 정의된 텍스트를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
    * @param {object} textObj - pattern.trigger[i]
    */
-  triggerText: (ctx, layout, textObj) => {
-    const { canvasW, canvasH } = layout;
+  triggerText(textObj) {
+    const { ctx, canvasH } = this;
     const { text, x, y, align, valign, size, weight } = textObj;
 
     ctx.save();
@@ -508,26 +378,23 @@ const Draw = {
     ctx.textAlign = align;
     ctx.textBaseline = valign;
 
-    const { cx, cy } = getCanvasPos(x, y, canvasW, canvasH);
+    const { cx, cy } = this.#getPos(x, y);
     ctx.fillText(text, cx, cy);
 
     ctx.restore();
-  },
+  }
 
   /**
    * 마우스 커서를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
-   * @param {object} skin - 유저 스킨 설정값
    * @param {object} cursor - { x, y, zoom? }
    * @param {object} state - { isClicked?, clickedMs? }
    */
-  cursor: (ctx, layout, skin, cursor, state) => {
-    const { canvasW, canvasH } = layout;
+  cursor(cursor, state) {
+    const { ctx, canvasW, skin } = this;
     const { x: mouseX, y: mouseY, zoom = 1 } = cursor;
     const { isClicked = false, clickedMs = -1 } = state;
 
-    const { cx, cy } = getCanvasPos(mouseX, mouseY, canvasW, canvasH);
+    const { cx, cy } = this.#getPos(mouseX, mouseY);
     const conf = Config.CURSOR;
 
     // 기본 크기 계산
@@ -552,12 +419,12 @@ const Draw = {
     ctx.translate(cx, cy);
 
     // 스킨 적용
-    applyStyle(ctx, layout, skin.cursor, 0, 0, w, 100, false);
+    this.#applyStyle(skin.cursor, 0, 0, w, 100, false);
     if (skin.cursor.type === "gradient") ctx.shadowColor = hexadecimal(skin.cursor.stops[0].color, 50);
     else ctx.shadowColor = hexadecimal(skin.cursor.color, 50);
 
     if (skin.cursor.outline) {
-      applyStyle(ctx, layout, skin.cursor.outline, 0, 0, w, 100, true);
+      this.#applyStyle(skin.cursor.outline, 0, 0, w, 100, true);
       if (skin.cursor.outline.type === "gradient") ctx.shadowColor = hexadecimal(skin.cursor.outline.stops[0].color, 50);
       else ctx.shadowColor = hexadecimal(skin.cursor.outline.color, 50);
     }
@@ -570,17 +437,14 @@ const Draw = {
     if (skin.cursor.outline) ctx.stroke();
 
     ctx.restore();
-  },
+  }
 
   /**
    * 판정 텍스트를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
-   * @param {object} skin - 유저 스킨
    * @param {Array<object>} particles - 판정 파티클 배열
    */
-  judges: (ctx, layout, skin, particles) => {
-    const { canvasW, canvasH } = layout;
+  judges(particles) {
+    const { ctx, canvasH, skin } = this;
     const now = Date.now();
 
     for (let i = particles.length - 1; i >= 0; i--) {
@@ -593,7 +457,7 @@ const Draw = {
       const easeInProgress = easeInQuad(progress);
       const easeOutProgress = easeOutQuad(progress);
 
-      const { cx, cy } = getCanvasPos(p.x, p.y, canvasW, canvasH);
+      const { cx, cy } = this.#getPos(p.x, p.y);
 
       const deg = judgeKey == "miss" ? Config.JUDGE_EFFECT.MISS_ANIM_ROTATE : 0;
       const animDeg = deg * easeOutProgress;
@@ -610,7 +474,7 @@ const Draw = {
       ctx.translate(cx, cy + animY);
       ctx.rotate((Math.PI * animDeg) / 180);
 
-      applyStyle(ctx, layout, skinPart, 0, 0, 50, opacity, false);
+      this.#applyStyle(skinPart, 0, 0, 50, opacity, false);
 
       ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       ctx.textAlign = "center";
@@ -619,17 +483,14 @@ const Draw = {
 
       ctx.restore();
     }
-  },
+  }
 
   /**
    * 클릭 이펙트를 화면에 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
-   * @param {object} skin - 유저 스킨 설정값
    * @param {Array<object>} particles
    */
-  clickEffects: (ctx, layout, skin, particles) => {
-    const { canvasW, canvasH } = layout;
+  clickEffects(particles) {
+    const { ctx, canvasW, skin } = this;
     const now = Date.now();
 
     for (let i = particles.length - 1; i >= 0; i--) {
@@ -641,7 +502,7 @@ const Draw = {
       const easeInProgress = easeInQuad(progress);
       const easeOutProgress = easeOutQuad(progress);
 
-      const { cx, cy } = getCanvasPos(p.x, p.y, canvasW, canvasH);
+      const { cx, cy } = this.#getPos(p.x, p.y);
 
       let styleTarget, effectConf;
 
@@ -664,7 +525,7 @@ const Draw = {
       ctx.save();
       ctx.beginPath();
 
-      applyStyle(ctx, layout, styleTarget, cx, cy, width, opacity, true);
+      this.#applyStyle(styleTarget, cx, cy, width, opacity, true);
       ctx.lineWidth = lineWidth;
 
       ctx.arc(cx, cy, width, 0, 2 * Math.PI);
@@ -672,16 +533,14 @@ const Draw = {
 
       ctx.restore();
     }
-  },
+  }
 
   /**
    * 폭발 파티클 목록을 업데이트하고 화면에 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
    * @param {Array<object>} particles
    */
-  explosions: (ctx, layout, particles) => {
-    const { canvasW, canvasH } = layout;
+  explosions(particles) {
+    const { ctx, canvasW, canvasH } = this;
     const now = Date.now();
     const conf = Config.EXPLODE_EFFECT;
 
@@ -721,17 +580,15 @@ const Draw = {
       ctx.fill();
       ctx.restore();
     }
-  },
+  }
 
   /**
    * FC / AP 이펙트를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
    * @param {number} effectNum - 0: AP / 1 : FC
    * @param {number} effectMs - 이펙트 시작 시간
    */
-  finalEffect: (ctx, layout, effectNum, effectMs) => {
-    const { canvasW, canvasH } = layout;
+  finalEffect(effectNum, effectMs) {
+    const { ctx, canvasW, canvasH } = this;
     const duration = 2000;
     const now = Date.now();
 
@@ -835,22 +692,20 @@ const Draw = {
     ctx.fillText(text, mainTextX, mainTextY);
 
     ctx.restore();
-  },
+  }
 
   /**
    * 키 입력 로그 오버레이를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
    * @param {Array} keyInput - 키 입력 데이터 배열
    * @param {number} keyInputTime - 마지막 키 입력 시간
    */
-  keyInputUI: (ctx, layout, keyInput, keyInputTime) => {
+  keyInputUI(keyInput, keyInputTime) {
     if (keyInput.length === 0) return;
 
     // 마지막 입력 후 4초 지났으면 그리지 않음
     if (keyInput[keyInput.length - 1].time + 4000 <= Date.now()) return;
 
-    const { canvasW, canvasH } = layout;
+    const { ctx, canvasW, canvasH } = this;
     const now = Date.now();
 
     // 마지막 입력 후 3초 뒤 페이드 아웃
@@ -911,16 +766,15 @@ const Draw = {
 
       ctx.restore();
     }
-  },
+  }
 
   /**
    * 하단 진행도 바 (Progress Bar)를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
    * @param {number} percentage - 진행도 (0 ~ 1)
    */
-  progressBarUI: (ctx, layout, percentage) => {
-    const { canvasW, canvasH } = layout;
+  progressBarUI(percentage) {
+    const { ctx, canvasW, canvasH } = this;
+
     const rectX = canvasW / 2 - canvasW / 14;
     const rectY = canvasH - canvasH / 80 - canvasH / 200;
     const rectWidth = canvasW / 7;
@@ -936,22 +790,20 @@ const Draw = {
     ctx.strokeRect(rectX, rectY, rectWidth, rectHeight);
     ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
     ctx.restore();
-  },
+  }
 
   /**
    * 점수판 및 앨범아트 (Score Panel)을 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
    * @param {object} data - { score, combo, difficulty }
    * @param {HTMLImageElement} albumImg
    */
-  scorePanelUI: (ctx, layout, data, albumImg) => {
-    const { canvasW, canvasH } = layout;
+  scorePanelUI(data, albumImg) {
+    const { ctx, canvasW, canvasH } = this;
     const { score, combo, difficulty } = data;
     const now = Date.now();
 
     // 1. 점수 애니메이션 계산
-    const s = Draw.animState.score;
+    const s = this.animState.score;
 
     // 실제 점수가 바뀌었으면 목표값 갱신
     if (score !== s.target) {
@@ -970,7 +822,7 @@ const Draw = {
     }
 
     // 2. 콤보 애니메이션 계산
-    const c = Draw.animState.combo;
+    const c = this.animState.combo;
 
     // 콤보가 증가했으면 팝업 효과 시작
     if (combo > c.value) {
@@ -1029,16 +881,14 @@ const Draw = {
     ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
 
     ctx.restore();
-  },
+  }
 
   /**
    * 시스템 정보를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
    * @param {object} info - { speed, bpm, fps }
    */
-  systemInfoUI: (ctx, layout, info) => {
-    const { canvasW, canvasH } = layout;
+  systemInfoUI(info) {
+    const { ctx, canvasW, canvasH } = this;
     const { speed, bpm, fps } = info;
 
     ctx.save();
@@ -1062,15 +912,11 @@ const Draw = {
     }
 
     ctx.restore();
-  },
+  }
 
-  /**
-   * 에디터용: 트리거 추가 안내 오버레이를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
-   */
-  triggerAddOverlay: (ctx, layout) => {
-    const { canvasW, canvasH } = layout;
+  /** 에디터용: 트리거 추가 안내 오버레이를 그립니다. */
+  triggerAddOverlay() {
+    const { ctx, canvasW, canvasH } = this;
 
     ctx.save();
     ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
@@ -1094,15 +940,11 @@ const Draw = {
     ctx.textBaseline = "top";
     ctx.fillText("Add trigger", canvasW / 2, canvasH / 2 + 10);
     ctx.restore();
-  },
+  }
 
-  /**
-   * 에디터용: 중앙 십자선을 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
-   */
-  axis: (ctx, layout) => {
-    const { canvasW, canvasH } = layout;
+  /** 에디터용: 중앙 십자선을 그립니다. */
+  axis() {
+    const { ctx, canvasW, canvasH } = this;
     const tw = canvasW / 200;
     const th = canvasH / 200;
 
@@ -1120,15 +962,11 @@ const Draw = {
 
     ctx.stroke();
     ctx.restore();
-  },
+  }
 
-  /**
-   * 에디터용: 배경 모눈 격자(Mesh Grid)를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
-   */
-  meshGrid: (ctx, layout) => {
-    const { canvasW, canvasH } = layout;
+  /** 에디터용: 배경 모눈 격자(Mesh Grid)를 그립니다. */
+  meshGrid() {
+    const { ctx, canvasW, canvasH } = this;
     const tw = canvasW / 200;
     const th = canvasH / 200;
 
@@ -1158,19 +996,15 @@ const Draw = {
     }
     ctx.stroke();
     ctx.restore();
-  },
+  }
 
   /**
    * 에디터용: 방사형 그리드(Radial Grid)를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
    * @param {object} centerNote - pattern.patterns[i] (중심이 될 노트)
    */
-  radialGrid: (ctx, layout, centerNote) => {
-    if (!centerNote) return;
-
-    const { canvasW, canvasH } = layout;
-    const { cx, cy } = getCanvasPos(centerNote.x, centerNote.y, canvasW, canvasH);
+  radialGrid(centerNote) {
+    const { ctx, canvasW } = this;
+    const { cx, cy } = this.#getPos(centerNote.x, centerNote.y);
 
     ctx.save();
     ctx.strokeStyle = "#88888850";
@@ -1183,20 +1017,18 @@ const Draw = {
     }
 
     ctx.restore();
-  },
+  }
 
   /**
    * 에디터용: 노트 연결선을 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
    * @param {object} prevNote - { x, y }
    * @param {object} currNote - { x, y }
    * @param {number} alpha - 0 ~ 255
    */
-  noteConnector: (ctx, layout, prevNote, currNote, alpha) => {
-    const { canvasW, canvasH } = layout;
-    const { cx: x1, cy: y1 } = getCanvasPos(prevNote.x, prevNote.y, canvasW, canvasH);
-    const { cx: x2, cy: y2 } = getCanvasPos(currNote.x, currNote.y, canvasW, canvasH);
+  noteConnector(prevNote, currNote, alpha) {
+    const { ctx } = this;
+    const { cx: x1, cy: y1 } = this.#getPos(prevNote.x, prevNote.y);
+    const { cx: x2, cy: y2 } = this.#getPos(currNote.x, currNote.y);
 
     ctx.beginPath();
     ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
@@ -1204,19 +1036,17 @@ const Draw = {
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.stroke();
-  },
+  }
 
   /**
    * 에디터용: 지나간 노트의 그림자(잔상)를 그립니다.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout
    * @param {object} note - { x, y, value, direction }
    * @param {number} alpha - 투명도
    */
-  noteShadow: (ctx, layout, note, alpha) => {
-    const { canvasW, canvasH } = layout;
+  noteShadow(note, alpha) {
+    const { ctx, canvasW } = this;
     const { x, y, value, direction } = note;
-    const { cx, cy } = getCanvasPos(x, y, canvasW, canvasH);
+    const { cx, cy } = this.#getPos(x, y);
 
     let w = (canvasW / 1000) * Config.NOTE.WIDTH;
 
@@ -1253,5 +1083,5 @@ const Draw = {
     }
 
     ctx.restore();
-  },
-};
+  }
+}
