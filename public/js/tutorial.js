@@ -651,7 +651,7 @@ const compClicked = (isTyped, key, isWheel) => {
   mouseClickedMs = Date.now();
   const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
   for (let i = 0; i < pointingCntElement.length; i++) {
-    if (pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && ((pointingCntElement[i].v2 === 0) == !isWheel || pointingCntElement[i].v2 === 2)) {
+    if (pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && (pointingCntElement[i].v2 !== 1) == !isWheel) {
       if (pointingCntElement[i].v2 == 1 && pattern.patterns[pointingCntElement[i].i].direction != key) return;
       clickParticles.push(Factory.createClickNote(pattern.patterns[pointingCntElement[i].i].x, pattern.patterns[pointingCntElement[i].i].y, settings.game.size, pointingCntElement[i].v2));
       let beat = pattern.patterns[pointingCntElement[i].i].beat;
