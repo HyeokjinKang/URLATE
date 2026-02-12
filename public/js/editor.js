@@ -1,9 +1,26 @@
+/* global Howler, Howl, iziToast, url, api, cdn, syncAlert, timeAlert, copiedText, moveToAlert */
+let upperBound, lowerBound;
+let Factory, Updater, Renderer, getCos, getSin, calcAngleDegrees;
+(async () => {
+  try {
+    const [utils, factory, updater, renderer] = await Promise.all([import("../modules/utils.js"), import("../modules/factory.js"), import("../modules/updater.js"), import("../modules/renderer.js")]);
+
+    ({ upperBound, lowerBound, getCos, getSin, calcAngleDegrees } = utils);
+    Factory = factory.default;
+    Updater = updater.default;
+    Renderer = renderer.default;
+
+    console.log("Modules are ready.");
+  } catch (err) {
+    console.error("Error occured while loading modules: ", err);
+  }
+})();
+
 const songSelectBox = document.getElementById("songSelectBox");
 const trackSettings = document.getElementById("trackSettings");
 const volumeMaster = document.getElementById("volumeMaster");
 const volumeMasterValue = document.getElementById("volumeMasterValue");
 const songName = document.getElementById("songName");
-const settingsBGAContainer = document.getElementById("settingsBGAContainer");
 const canvasContainer = document.getElementById("canvasContainer");
 const timelineContainer = document.getElementById("timelineContainer");
 const componentView = document.getElementById("componentView");
@@ -25,6 +42,8 @@ const tmlCtx = tmlCanvas.getContext("2d");
 const timelinePlayController = document.getElementById("timelinePlayController");
 const metronome = document.getElementById("metronome");
 const metronomeContainer = document.getElementById("metronomeContainer");
+const isMac = navigator.userAgentData && navigator.userAgentData.platform ? navigator.userAgentData.platform === "macOS" : /Mac/.test(navigator.platform);
+let Draw;
 const epsilon = 1e-9;
 let metronomeDir = 1;
 let background;
@@ -115,8 +134,7 @@ let prevDestroyedBullets = new Set([]);
 let createdBullets = new Set([]);
 let prevCreatedBullets = new Set([]);
 let hitBullets = new Set([]);
-
-let bulletPath;
+let explodingBullets = new Set();
 
 let copySelection = { element: -2, start: -1, end: -1, beat: 0 };
 
@@ -142,30 +160,6 @@ const settingApply = () => {
   denyCursor = settings.editor.denyCursor;
   canvasContainer.style.cursor = denyCursor ? "" : "none";
   denySkin = settings.editor.denySkin;
-  fetch(`${api}/skin/${settings.game.skin}`, {
-    method: "GET",
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.result == "success") {
-        skin = JSON.parse(data.data);
-      } else {
-        alert(`Error occured.\n${data.description}`);
-        console.error(`Error occured.\n${data.description}`);
-      }
-    })
-    .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
-    });
-  if (localStorage.pattern) {
-    pattern = JSON.parse(localStorage.pattern);
-    for (let i = 0; songSelectBox.options.length > i; i++) {
-      if (songSelectBox.options[i].value == pattern.information.track) songSelectBox.selectedIndex = i;
-    }
-    songSelected(true);
-  }
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -198,8 +192,8 @@ document.addEventListener("DOMContentLoaded", () => {
               data = data.user;
               userName = data.nickname;
               settings = JSON.parse(data.settings);
+              initialize(true);
               settingApply();
-              initialize();
             } else {
               alert(`Error occured.\n${data.description}`);
               console.error(`Error occured.\n${data.description}`);
@@ -240,11 +234,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+// eslint-disable-next-line no-unused-vars
 const newEditor = () => {
   document.getElementById("initialButtonsContainer").style.display = "none";
   document.getElementById("songSelectionContainer").style.display = "flex";
 };
 
+// eslint-disable-next-line no-unused-vars
 const loadEditor = () => {
   let input = document.createElement("input");
   input.type = "file";
@@ -300,6 +296,7 @@ const analyzePattern = (data) => {
   };
 };
 
+// eslint-disable-next-line no-unused-vars
 const dataLoaded = (event) => {
   let file = event.target.files[0];
   let reader = new FileReader();
@@ -413,229 +410,7 @@ const changeMode = (n) => {
   mode = n;
 };
 
-const drawCursor = () => {
-  cntCtx.beginPath();
-  let w = canvasW / 70;
-  let x = (canvasW / 200) * (mouseX + 100);
-  let y = (canvasH / 200) * (mouseY + 100);
-  if (!denySkin) {
-    if (skin.cursor.type == "gradient") {
-      let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-      for (let i = 0; i < skin.cursor.stops.length; i++) {
-        grd.addColorStop(skin.cursor.stops[i].percentage / 100, `#${skin.cursor.stops[i].color}`);
-      }
-      cntCtx.fillStyle = grd;
-    } else if (skin.cursor.type == "color") {
-      cntCtx.fillStyle = `#${skin.cursor.color}`;
-    }
-    if (skin.cursor.outline) {
-      cntCtx.lineWidth = Math.round((canvasW / 1000) * skin.cursor.outline.width);
-      if (skin.cursor.outline.type == "gradient") {
-        let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.cursor.outline.stops.length; i++) {
-          grd.addColorStop(skin.cursor.outline.stops[i].percentage / 100, `#${skin.cursor.outline.stops[i].color}`);
-        }
-        cntCtx.strokeStyle = grd;
-      } else if (skin.cursor.outline.type == "color") {
-        cntCtx.strokeStyle = `#${skin.cursor.outline.color}`;
-      }
-    }
-  } else {
-    let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-    grd.addColorStop(0, `rgb(174, 102, 237)`);
-    grd.addColorStop(1, `rgb(102, 183, 237)`);
-    cntCtx.fillStyle = grd;
-  }
-  cntCtx.arc(x, y, w, 0, 2 * Math.PI);
-  cntCtx.fill();
-  if (skin.cursor.outline) cntCtx.stroke();
-};
-
-const drawShadow = (x, y, n, d, a) => {
-  x = (canvasW / 200) * (x + 100);
-  y = (canvasH / 200) * (y + 100);
-  n = n == undefined ? 0 : n;
-  let w = canvasW / 40;
-  cntCtx.beginPath();
-  cntCtx.fillStyle = `rgba(255,255,255,${a})`;
-  if (n != 1) {
-    cntCtx.arc(x, y, w, 0, 2 * Math.PI);
-    cntCtx.fill();
-  } else {
-    w = w * 0.9;
-    let parr = [100, 100, 100];
-    cntCtx.beginPath();
-    let originalValue = [0, -1.5 * d * w];
-    let moveValue = [originalValue[0] - w * Math.cos(Math.PI / 5) * d, originalValue[1] + w * Math.sin(Math.PI / 5) * d];
-    cntCtx.moveTo(x + originalValue[0], y + originalValue[1]);
-    cntCtx.lineTo(x + originalValue[0] - (moveValue[0] / 100) * parr[0], y + originalValue[1] - (moveValue[1] / 100) * parr[0]);
-    cntCtx.moveTo(x + originalValue[0] - moveValue[0], y + originalValue[1] - moveValue[1]);
-    if (d == 1) cntCtx.arc(x, y, w, -Math.PI / 5, (((Math.PI / 5) * 7) / 100) * parr[1] - Math.PI / 5);
-    else cntCtx.arc(x, y, w, (-Math.PI / 5) * 6, (((Math.PI / 5) * 7) / 100) * parr[1] - (Math.PI / 5) * 6);
-    cntCtx.lineTo(x, y - 1.5 * d * w);
-    cntCtx.fill();
-  }
-};
-
-const drawOutlinedText = (ctx, text, x, y) => {
-  ctx.strokeText(text, x, y);
-  ctx.fillText(text, x, y);
-};
-
-const drawNote = (p, x, y, s, n, d, t, f, index) => {
-  if (n != 2 && p >= 130) return;
-  else if (n == 2 && f >= 130) return;
-  p = Math.max(p, 0);
-  let originX = x;
-  let originY = y;
-  x = (canvasW / 200) * (x + 100);
-  y = (canvasH / 200) * (y + 100);
-  n = n == undefined ? 0 : n;
-  let w = canvasW / 40;
-  let opacity = 255;
-  if (n != 2 && p >= 100) {
-    opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
-  } else if (n == 2 && p >= 100 && t >= 100) {
-    opacity = Math.max(Math.round((255 / 30) * (130 - f)), 0);
-  }
-  opacity = opacity.toString(16).padStart(2, "0");
-  if (s == true) {
-    cntCtx.lineWidth = Math.round(canvasW / 300);
-    cntCtx.beginPath();
-    cntCtx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-    cntCtx.fillStyle = "#000";
-    cntCtx.strokeStyle = "#fff";
-    cntCtx.textAlign = "center";
-    if (index != undefined) {
-      cntCtx.textBaseline = "bottom";
-      drawOutlinedText(cntCtx, `Note_${index}`, x, y - 1.2 * w);
-    }
-    cntCtx.textBaseline = "top";
-    drawOutlinedText(cntCtx, `(X: ${originX}, Y: ${originY})`, x, y + 1.2 * w);
-    cntCtx.fillStyle = `#ebd534${opacity}`;
-    cntCtx.strokeStyle = `#ebd534${opacity}`;
-  } else {
-    if (!denySkin) {
-      if (skin.note[n].type == "gradient") {
-        let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.note[n].stops.length; i++) {
-          grd.addColorStop(skin.note[n].stops[i].percentage / 100, `#${skin.note[n].stops[i].color}${opacity}`);
-        }
-        cntCtx.fillStyle = grd;
-        cntCtx.strokeStyle = grd;
-      } else if (skin.note[n].type == "color") {
-        cntCtx.fillStyle = `#${skin.note[n].color}${opacity}`;
-        cntCtx.strokeStyle = `#${skin.note[n].color}${opacity}`;
-      }
-      if (skin.note[n].circle) {
-        if (skin.note[n].circle.type == "gradient") {
-          let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-          for (let i = 0; i < skin.note[n].circle.stops.length; i++) {
-            grd.addColorStop(skin.note[n].circle.stops[i].percentage / 100, `#${skin.note[n].circle.stops[i].color}${opacity}`);
-          }
-          cntCtx.strokeStyle = grd;
-        } else if (skin.note[n].circle.type == "color") {
-          cntCtx.strokeStyle = `#${skin.note[n].circle.color}${opacity}`;
-        }
-      }
-    } else {
-      let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-      grd.addColorStop(0, `${["#fb4934", "#53cddb", "#C196ED"][n]}${opacity}`);
-      grd.addColorStop(1, `${["#ebd934", "#0669ff", "#8251B6"][n]}${opacity}`);
-      cntCtx.fillStyle = grd;
-      cntCtx.strokeStyle = grd;
-    }
-  }
-  cntCtx.lineWidth = Math.round(canvasW / 300);
-  if (n == 0) {
-    cntCtx.beginPath();
-    cntCtx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
-    cntCtx.stroke();
-    cntCtx.beginPath();
-    cntCtx.arc(x, y, (w / 100) * p, 0, 2 * Math.PI);
-    cntCtx.fill();
-    if (skin.note[n].outline && !denySkin) {
-      if (skin.note[n].outline.type == "gradient") {
-        let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
-        }
-        cntCtx.strokeStyle = grd;
-      } else if (skin.note[n].outline.type == "color") {
-        cntCtx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
-      }
-      cntCtx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
-      cntCtx.stroke();
-    }
-  } else if (n == 1) {
-    w = w * 0.9;
-    let parr = [p <= 20 ? p * 5 : 100, p >= 20 ? (p <= 80 ? (p - 20) * 1.66 : 100) : 0, p >= 80 ? (p <= 100 ? (p - 80) * 5 : 100) : 0];
-    cntCtx.beginPath();
-    let originalValue = [0, -1.5 * d * w];
-    let moveValue = [originalValue[0] - w * Math.cos(Math.PI / 5) * d, originalValue[1] + w * Math.sin(Math.PI / 5) * d];
-    cntCtx.moveTo(x + originalValue[0], y + originalValue[1]);
-    cntCtx.lineTo(x + originalValue[0] - (moveValue[0] / 100) * parr[0], y + originalValue[1] - (moveValue[1] / 100) * parr[0]);
-    cntCtx.moveTo(x + originalValue[0] - moveValue[0], y + originalValue[1] - moveValue[1]);
-    if (d == 1) cntCtx.arc(x, y, w, -Math.PI / 5, (((Math.PI / 5) * 7) / 100) * parr[1] - Math.PI / 5);
-    else cntCtx.arc(x, y, w, (-Math.PI / 5) * 6, (((Math.PI / 5) * 7) / 100) * parr[1] - (Math.PI / 5) * 6);
-    originalValue = [-w * Math.cos(Math.PI / 5) * d, -w * Math.sin(Math.PI / 5) * d];
-    moveValue = [originalValue[0], originalValue[1] - -1.5 * d * w];
-    cntCtx.moveTo(x + originalValue[0], y + originalValue[1]);
-    cntCtx.lineTo(x + originalValue[0] - (moveValue[0] / 100) * parr[2], y + originalValue[1] - (moveValue[1] / 100) * parr[2]);
-    cntCtx.stroke();
-    cntCtx.beginPath();
-    cntCtx.moveTo(x, y - 1.5 * d * (w / 100) * p);
-    if (d == 1) cntCtx.arc(x, y, (w / 100) * p, -Math.PI / 5, (Math.PI / 5) * 6);
-    else cntCtx.arc(x, y, (w / 100) * p, (-Math.PI / 5) * 6, Math.PI / 5);
-    cntCtx.lineTo(x, y - 1.5 * d * (w / 100) * p);
-    cntCtx.fill();
-    if (skin.note[n].outline && !denySkin) {
-      if (skin.note[n].outline.type == "gradient") {
-        let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
-        }
-        cntCtx.strokeStyle = grd;
-      } else if (skin.note[n].outline.type == "color") {
-        cntCtx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
-      }
-      cntCtx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
-      cntCtx.stroke();
-    }
-  } else if (n == 2) {
-    cntCtx.beginPath();
-    if (p <= 100) {
-      cntCtx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
-      cntCtx.stroke();
-      cntCtx.lineTo(x, y);
-      cntCtx.fill();
-    } else if (t <= 100) {
-      cntCtx.arc(x, y, w, 0, 2 * Math.PI);
-      cntCtx.stroke();
-      cntCtx.beginPath();
-      cntCtx.arc(x, y, w, (3 / 2) * Math.PI + (t / 50) * Math.PI, (3 / 2) * Math.PI);
-      cntCtx.lineTo(x, y);
-      cntCtx.fill();
-    } else {
-      cntCtx.arc(x, y, w, 0, 2 * Math.PI);
-      cntCtx.stroke();
-    }
-    if (skin.note[n].outline && !denySkin) {
-      if (skin.note[n].outline.type == "gradient") {
-        let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
-        }
-        cntCtx.strokeStyle = grd;
-      } else if (skin.note[n].outline.type == "color") {
-        cntCtx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
-      }
-      cntCtx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
-      cntCtx.stroke();
-    }
-  }
-};
-
+// eslint-disable-next-line no-unused-vars
 const changeNote = () => {
   let n = Number(pattern.patterns[selectedCntElement.i].value);
   pattern.patterns[selectedCntElement.i].value = n == 2 ? 0 : n + 1;
@@ -646,86 +421,6 @@ const changeNote = () => {
   changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
 };
 
-const drawBullet = (x, y, ra, va, s, l, d, t, index) => {
-  x = (canvasW / 200) * (x + 100);
-  y = (canvasH / 200) * (y + 100);
-  let w = canvasW / 80;
-  if (s == true) {
-    cntCtx.beginPath();
-    cntCtx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-    cntCtx.fillStyle = "#000";
-    cntCtx.strokeStyle = "#fff";
-    cntCtx.textAlign = d == "L" ? "left" : "right";
-    cntCtx.lineWidth = Math.round(canvasW / 300);
-    if (index != undefined) {
-      cntCtx.textBaseline = "bottom";
-      drawOutlinedText(cntCtx, `Bullet_${index}`, x, y - 1.5 * w);
-    }
-    cntCtx.textBaseline = "top";
-    drawOutlinedText(cntCtx, `(Angle: ${d == "L" ? ra : ra - 180})`, x, y + 1.5 * w);
-    drawOutlinedText(cntCtx, `(Loc: ${l})`, x, y + 1.5 * w + canvasH / 40);
-    cntCtx.fillStyle = `#ebd534`;
-    cntCtx.strokeStyle = `#ebd534`;
-  } else {
-    if (t) {
-      cntCtx.fillStyle = "#fb4934";
-      cntCtx.strokeStyle = "#fb4934";
-    } else if (!denySkin) {
-      if (skin.bullet.type == "gradient") {
-        let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.bullet.stops.length; i++) {
-          grd.addColorStop(skin.bullet.stops[i].percentage / 100, `#${skin.bullet.stops[i].color}`);
-        }
-        cntCtx.fillStyle = grd;
-        cntCtx.strokeStyle = grd;
-      } else if (skin.bullet.type == "color") {
-        cntCtx.fillStyle = `#${skin.bullet.color}`;
-        cntCtx.strokeStyle = `#${skin.bullet.color}`;
-      }
-      if (skin.bullet.outline) {
-        cntCtx.lineWidth = Math.round((canvasW / 1000) * skin.bullet.outline.width);
-        if (skin.bullet.outline.type == "gradient") {
-          let grd = cntCtx.createLinearGradient(x - w, y - w, x + w, y + w);
-          for (let i = 0; i < skin.bullet.outline.stops.length; i++) {
-            grd.addColorStop(skin.bullet.outline.stops[i].percentage / 100, `#${skin.bullet.outline.stops[i].color}`);
-          }
-          cntCtx.strokeStyle = grd;
-        } else if (skin.bullet.outline.type == "color") {
-          cntCtx.strokeStyle = `#${skin.bullet.outline.color}`;
-        }
-      }
-    } else {
-      cntCtx.fillStyle = "#555";
-      cntCtx.strokeStyle = "#555";
-    }
-  }
-
-  cntCtx.save();
-  cntCtx.translate(x, y);
-  cntCtx.rotate((va * Math.PI) / 180);
-
-  cntCtx.fill(bulletPath);
-  if (skin.bullet.outline && !denySkin) cntCtx.stroke(bulletPath);
-
-  cntCtx.restore();
-};
-
-const drawParticle = (n, x, y, j) => {
-  let cx = (canvasW / 200) * (x + 100);
-  let cy = (canvasH / 200) * (y + 100);
-  if (n == 0) {
-    let n = destroyParticles[j].n;
-    let w = destroyParticles[j].w;
-    for (let i = 0; i < 3; i++) {
-      cntCtx.beginPath();
-      if (denySkin) cntCtx.fillStyle = "#222";
-      else cntCtx.fillStyle = "#fff";
-      cntCtx.arc(cx + (n * destroyParticles[j].d[i][0]) / 2, cy + (n * destroyParticles[j].d[i][1]) / 2, w, 0, 2 * Math.PI);
-      cntCtx.fill();
-    }
-  }
-};
-
 const eraseCnt = () => {
   cntCtx.clearRect(0, 0, canvasW, canvasH);
 };
@@ -734,7 +429,7 @@ const eraseTml = () => {
   tmlCtx.clearRect(0, 0, tmlCanvasW, tmlCanvasH);
 };
 
-const initialize = () => {
+const initialize = (isFirstCalled) => {
   if (isSettingsOpened) {
     tmlCanvasW = window.innerWidth * 0.8 * window.devicePixelRatio;
   } else {
@@ -743,6 +438,8 @@ const initialize = () => {
   canvasW = (window.innerWidth * 0.6 * window.devicePixelRatio * settings.display.canvasRes) / 100;
   canvasH = (window.innerHeight * 0.65 * window.devicePixelRatio * settings.display.canvasRes) / 100;
   tmlCanvasH = window.innerHeight * 0.27 * window.devicePixelRatio;
+
+  if (Draw) Draw.setSize({ canvasW, canvasH });
 
   cntCanvas.width = canvasW;
   cntCanvas.height = canvasH;
@@ -761,15 +458,38 @@ const initialize = () => {
   menuContainerOW = menuContainer.offsetWidth;
   navBarOH = document.getElementById("navbar").offsetHeight;
 
-  const w = canvasW / 80;
-  bulletPath = new Path2D();
-  bulletPath.arc(0, 0, w, 0.5 * Math.PI, 1.5 * Math.PI);
-  bulletPath.lineTo(w * 2, 0);
-  bulletPath.closePath();
-
   isTmlUpdateNeeded = true;
+
+  if (isFirstCalled) {
+    fetch(`${api}/skin/${settings.game.skin}`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.result == "success") {
+          skin = JSON.parse(data.data);
+          Draw = new Renderer(cntCtx, { canvasW, canvasH }, skin);
+        } else {
+          alert(`Error occured.\n${data.description}`);
+          console.error(`Error occured.\n${data.description}`);
+        }
+      })
+      .catch((error) => {
+        alert(`Error occured.\n${error}`);
+        console.error(`Error occured.\n${error}`);
+      });
+    if (localStorage.pattern) {
+      pattern = JSON.parse(localStorage.pattern);
+      for (let i = 0; songSelectBox.options.length > i; i++) {
+        if (songSelectBox.options[i].value == pattern.information.track) songSelectBox.selectedIndex = i;
+      }
+      songSelected(true);
+    }
+  }
 };
 
+// eslint-disable-next-line no-unused-vars
 const gotoMain = (isCalledByMain) => {
   if (isCalledByMain || !preventUnload || confirm("Are you sure you want to leave? There are unsaved changes.")) {
     song.stop();
@@ -815,13 +535,14 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
       const powX = ((((mouseX - x) * canvasContainerOW) / 200) * pixelRatio * settings.display.canvasRes) / 100;
       const powY = ((((mouseY - y) * canvasContainerOH) / 200) * pixelRatio * settings.display.canvasRes) / 100;
       switch (v1) {
-        case 0:
+        case 0: {
           const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
           const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
           if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 100) && p >= 0) {
             pointingCntElement = { v1: v1, v2: v2, i: i };
           }
           break;
+        }
         case 1:
           if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / (song.playing() ? 80 : 50)) {
             pointingCntElement = { v1: v1, v2: v2, i: i };
@@ -1185,51 +906,20 @@ const displayMessage = (type, message) => {
   errorCount++;
 };
 
-const callBulletDestroy = (j) => {
-  const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-  // const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
-  let end = upperBound(pattern.triggers, pattern.bullets[j].beat);
-  let baseSpeed = pattern.information.speed;
-  for (let i = 0; i < end; i++) {
-    if (pattern.triggers[i].value == 4) {
-      baseSpeed = pattern.triggers[i].speed;
-    }
-  }
-  let start = lowerBound(pattern.triggers, pattern.bullets[j].beat);
-  end = upperBound(pattern.triggers, beats);
-  let p = 0;
-  let prevBeat = pattern.bullets[j].beat;
-  let prevSpeed = baseSpeed;
-  for (let k = start; k < end; k++) {
-    if (pattern.triggers[k].value == 4) {
-      p += ((pattern.triggers[k].beat - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
-      prevBeat = pattern.triggers[k].beat;
-      prevSpeed = pattern.triggers[k].speed;
-    }
-  }
-  p += ((beats - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
-  const left = pattern.bullets[j].direction == "L";
-  let x = (left ? 1 : -1) * (getCos(pattern.bullets[j].angle) * p - 100);
-  let y = pattern.bullets[j].location + (left ? 1 : -1) * getSin(pattern.bullets[j].angle) * p;
-  let randomDirection = [];
-  for (let i = 0; i < 3; i++) {
-    let rx = Math.floor(Math.random() * 4) - 2;
-    let ry = Math.floor(Math.random() * 4) - 2;
-    randomDirection[i] = [rx, ry];
-  }
-  destroyParticles.push({
-    x: x,
-    y: y,
-    w: 5,
-    n: 1,
-    d: randomDirection,
-    ms: Date.now(),
-  });
-};
-
 const cntRender = () => {
   window.requestAnimationFrame(cntRender);
   try {
+    eraseCnt();
+
+    if (!Draw) {
+      cntCtx.fillStyle = "#FFF";
+      cntCtx.font = `400 ${canvasH / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      cntCtx.textAlign = "center";
+      cntCtx.textBaseline = "middle";
+      cntCtx.fillText("Loading modules..", canvasW / 2, canvasH / 2);
+      return;
+    }
+
     // Always maintain the aspect ratio
     if (window.devicePixelRatio != pixelRatio) {
       pixelRatio = window.devicePixelRatio;
@@ -1237,57 +927,15 @@ const cntRender = () => {
     }
 
     // Initialize
-    eraseCnt();
     pointingCntElement = mouseMode == 1 ? pointingTmlElement : { v1: "", v2: "", i: "" };
     createdBullets.clear();
     destroyedBullets.clear();
+    explodingBullets.clear();
 
     const tw = canvasW / 200;
     const th = canvasH / 200;
 
     errorCount = 0;
-
-    cntCtx.lineJoin = "round";
-
-    // Grid
-    cntCtx.lineWidth = 2;
-    if (gridToggle) {
-      let x1 = 0;
-      let x2 = tw * 5;
-      let y = 0;
-      cntCtx.strokeStyle = "#bbbbbb20";
-      cntCtx.beginPath();
-      for (let i = -100; i <= 100; i += 10) {
-        cntCtx.moveTo(x1, 0);
-        cntCtx.lineTo(x1, canvasH);
-        cntCtx.moveTo(0, y);
-        cntCtx.lineTo(canvasW, y);
-        cntCtx.moveTo(x2, 0);
-        cntCtx.lineTo(x2, canvasH);
-        x1 += tw * 10;
-        x2 += tw * 10;
-        y += th * 10;
-      }
-      cntCtx.stroke();
-    }
-    cntCtx.strokeStyle = "#ed3a2680";
-    cntCtx.beginPath();
-    cntCtx.moveTo(tw * 100, 0);
-    cntCtx.lineTo(tw * 100, canvasH);
-    cntCtx.moveTo(0, th * 100);
-    cntCtx.lineTo(canvasW, th * 100);
-    cntCtx.stroke();
-
-    // Circle Grid
-    if (circleToggle && selectedCntElement.v1 === 0) {
-      cntCtx.strokeStyle = "#88888850";
-      cntCtx.lineWidth = 2;
-      for (let i = 1; i <= 10; i++) {
-        cntCtx.beginPath();
-        cntCtx.arc(tw * (pattern.patterns[selectedCntElement.i].x + 100), th * (pattern.patterns[selectedCntElement.i].y + 100), (canvasW / 15) * i, 0, 2 * Math.PI);
-        cntCtx.stroke();
-      }
-    }
 
     // Calculate seeking position
     const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
@@ -1320,6 +968,11 @@ const cntRender = () => {
       beat: 0,
     };
 
+    // Draw Grids
+    if (gridToggle) Draw.meshGrid();
+    if (circleToggle && selectedCntElement.v1 === 0) Draw.radialGrid(pattern.patterns[selectedCntElement.i]);
+    Draw.axis();
+
     // Track triggers from start to now
     let end = upperBound(pattern.triggers, beats);
     let nowSpeed = pattern.information.speed;
@@ -1329,7 +982,7 @@ const cntRender = () => {
         // Bullet Destroy
         if (!destroyedBullets.has(pattern.triggers[i].num)) {
           if (!prevDestroyedBullets.has(pattern.triggers[i].num)) {
-            callBulletDestroy(pattern.triggers[i].num);
+            explodingBullets.add(pattern.triggers[i].num);
           }
           destroyedBullets.add(pattern.triggers[i].num);
         }
@@ -1339,7 +992,7 @@ const cntRender = () => {
         for (let j = 0; j < bulletEnd; j++) {
           if (!destroyedBullets.has(j)) {
             if (!prevDestroyedBullets.has(j)) {
-              callBulletDestroy(j);
+              explodingBullets.add(j);
             }
             destroyedBullets.add(j);
           }
@@ -1367,27 +1020,7 @@ const cntRender = () => {
 
     cntCtx.globalAlpha = globalAlpha;
 
-    cntCtx.beginPath();
-    if (denySkin) cntCtx.fillStyle = "#111";
-    else cntCtx.fillStyle = "#fff";
-    for (text of renderTexts) {
-      if (text.size.indexOf("vh") != -1) cntCtx.font = text.weight + " " + (canvasH / 100) * Number(text.size.split("vh")[0]) + "px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
-      else cntCtx.font = text.weight + " " + text.size + " Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
-      cntCtx.textAlign = text.align;
-      cntCtx.textBaseline = text.valign;
-      cntCtx.fillText(text.text, tw * (text.x + 100), th * (text.y + 100));
-    }
-
-    // Destroy Particles
-    for (let i = destroyParticles.length - 1; i >= 0; i--) {
-      if (destroyParticles[i].w > 0) {
-        drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
-        destroyParticles[i].w = 5 - (Date.now() - destroyParticles[i].ms) / 50;
-        destroyParticles[i].n++;
-      } else {
-        destroyParticles.splice(i, 1);
-      }
-    }
+    for (let textObj of renderTexts) Draw.triggerText(textObj);
 
     // Prevent destroy infinite loop
     prevDestroyedBullets = new Set(destroyedBullets);
@@ -1395,7 +1028,7 @@ const cntRender = () => {
     // Note render
     let renderDuration = 5 / speed;
 
-    let start = 0; // scan from 0 because of rendering shadow of notes
+    let start = 0;
     end = upperBound(pattern.patterns, beats + renderDuration);
 
     // Mouse tracking loop
@@ -1411,28 +1044,30 @@ const cntRender = () => {
     // Note drawing loop
     let validNote = end;
     for (let i = end - 1; i >= start; i--) {
-      const p = (1 - (pattern.patterns[i].beat - beats) / renderDuration) * 100;
-      const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
-      const f = (1 - (pattern.patterns[i].beat + pattern.patterns[i].duration - beats) / renderDuration) * 100;
-      if (pattern.patterns[i].value != 2 && p < 101) validNote = i;
-      else if (pattern.patterns[i].value == 2 && f < 100) validNote = i;
+      const state = Updater.noteProgress(pattern.patterns[i], beats, speed);
+
+      if (pattern.patterns[i].value != 2 && state.progress < 101) validNote = i;
+      else if (pattern.patterns[i].value == 2 && state.endProgress < 100) validNote = i;
+
       const alpha = 0.4 - 0.1 * (validNote - i);
-      if (i > 0) {
-        const x1 = (canvasW / 200) * (pattern.patterns[i - 1].x + 100);
-        const y1 = (canvasH / 200) * (pattern.patterns[i - 1].y + 100);
-        const x2 = (canvasW / 200) * (pattern.patterns[i].x + 100);
-        const y2 = (canvasH / 200) * (pattern.patterns[i].y + 100);
-        cntCtx.beginPath();
-        cntCtx.strokeStyle = `rgba(255,255,255,${alpha})`;
-        cntCtx.lineWidth = 3;
-        cntCtx.moveTo(x1, y1);
-        cntCtx.lineTo(x2, y2);
-        cntCtx.stroke();
-      }
+
+      if (i > 0) Draw.noteConnector(pattern.patterns[i - 1], pattern.patterns[i], alpha);
+
       if (i == validNote) {
-        drawNote(p, pattern.patterns[i].x, pattern.patterns[i].y, selectedCheck(0, i), pattern.patterns[i].value, pattern.patterns[i].direction, t, f, i);
+        Draw.note(
+          {
+            ...pattern.patterns[i],
+            debugIndex: i,
+          },
+          {
+            ...state,
+            globalAlpha,
+            isGrabbed: state.progress >= 100,
+            isSelected: selectedCheck(0, i),
+          },
+        );
       } else if (i + 3 >= validNote) {
-        drawShadow(pattern.patterns[i].x, pattern.patterns[i].y, pattern.patterns[i].value, pattern.patterns[i].direction, alpha);
+        Draw.noteShadow(pattern.patterns[i], alpha);
       }
     }
 
@@ -1440,68 +1075,31 @@ const cntRender = () => {
     start = lowerBound(pattern.bullets, beats - 32);
     end = upperBound(pattern.bullets, beats);
     for (let i = start; i < end; i++) {
-      if (!destroyedBullets.has(i)) {
+      if (!destroyedBullets.has(i) || explodingBullets.has(i)) {
         const bullet = pattern.bullets[i];
+
+        const pos = Updater.bulletPos(bullet, beats, pattern.triggers, pattern.information.speed);
+
+        if (!createdBullets.has(i) || explodingBullets.has(i)) {
+          if (!prevCreatedBullets.has(i) || explodingBullets.has(i)) destroyParticles.push(...Factory.createExplosions(pos.x, pos.y, skin.bullet));
+          if (explodingBullets.has(i)) continue;
+        }
         createdBullets.add(i);
 
-        if (!prevCreatedBullets.has(i)) {
-          let randomDirection = [];
-          for (let i = 0; i < 3; i++) {
-            let rx = Math.floor(Math.random() * 4) - 2;
-            let ry = Math.floor(Math.random() * 4) - 2;
-            randomDirection[i] = [rx, ry];
-          }
+        trackMouseSelection(i, 1, 0, pos.x, pos.y);
 
-          destroyParticles.push({
-            x: bullet.direction == "L" ? -100 : 100,
-            y: bullet.location,
-            w: 10,
-            n: 2,
-            d: randomDirection,
-            ms: Date.now(),
-          });
-        }
-
-        let triggerEnd = upperBound(pattern.triggers, bullet.beat);
-        let baseSpeed = pattern.information.speed;
-
-        for (let i = 0; i < triggerEnd; i++) {
-          if (pattern.triggers[i].value == 4) {
-            baseSpeed = pattern.triggers[i].speed;
-          }
-        }
-
-        let triggerStart = lowerBound(pattern.triggers, bullet.beat);
-        triggerEnd = upperBound(pattern.triggers, beats);
-
-        let p = 0;
-        let prevBeat = bullet.beat;
-        let prevSpeed = baseSpeed;
-
-        for (let j = triggerStart; j < triggerEnd; j++) {
-          const trigger = pattern.triggers[j];
-          if (trigger.value == 4) {
-            p += ((trigger.beat - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100; //15 for proper speed(lower is too fast)
-            prevBeat = trigger.beat;
-            prevSpeed = trigger.speed;
-          }
-        }
-
-        p += ((beats - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100; //15 for proper speed(lower is too fast)
-        const isLeft = pattern.bullets[i].direction == "L";
-
-        const scaleX = canvasW / 200;
-        const scaleY = canvasH / 200;
-
-        const realAngle = isLeft ? bullet.angle : bullet.angle + 180;
-        const visualAngleRad = Math.atan2(getSin(realAngle) * scaleY, getCos(realAngle) * scaleX);
-        const visualAngle = (visualAngleRad * 180) / Math.PI;
-
-        const x = (isLeft ? -100 : 100) + getCos(realAngle) * p;
-        const y = bullet.location + getSin(realAngle) * p;
-
-        if (mouseMode == 0) trackMouseSelection(i, 1, 0, x, y);
-        drawBullet(x, y, realAngle, visualAngle, selectedCheck(1, i), pattern.bullets[i].location, pattern.bullets[i].direction, hitBullets.has(i), i);
+        Draw.bullet(
+          {
+            ...pos,
+            location: pattern.bullets[i].location,
+            direction: pattern.bullets[i].direction,
+            debugIndex: i,
+          },
+          {
+            isSelected: selectedCheck(1, i),
+            isHit: hitBullets.has(i),
+          },
+        );
       }
     }
     prevCreatedBullets = new Set(createdBullets);
@@ -1524,6 +1122,7 @@ const cntRender = () => {
         p[1] = (mouseX - 80) / 20;
       }
       if (p[0] == 0 && p[1] == 0) {
+        let drawX, drawY;
         if (circleToggle && selectedCntElement.v1 === 0) {
           const radius = canvasW / 15;
           const noteX = tw * (pattern.patterns[selectedCntElement.i].x + 100);
@@ -1533,39 +1132,62 @@ const cntRender = () => {
           const distance = Math.sqrt(difX * difX + difY * difY) + radius / 2;
           const angle = calcAngleDegrees(difX, difY) + 180;
           const newDistance = distance - (distance % radius);
-          const newX = ((noteX + newDistance * getCos(angle)) / canvasW) * 200 - 100;
-          const newY = ((noteY + newDistance * getSin(angle)) / canvasH) * 200 - 100;
-          drawNote(100, Math.round(newX), Math.round(newY), true, selectedValue, 1, 0);
-        } else if (magnetToggle) drawNote(100, mouseX - (mouseX % 5), mouseY - (mouseY % 5), true, selectedValue, 1, 0);
-        else drawNote(100, mouseX, mouseY, true, selectedValue, 1, 0);
-      } else {
-        if (p[1] == 0) {
-          drawBullet(-100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 0, 0, true, mouseY - (mouseY % 5), "L");
+          drawX = Math.round(((noteX + newDistance * getCos(angle)) / canvasW) * 200 - 100);
+          drawY = Math.round(((noteY + newDistance * getSin(angle)) / canvasH) * 200 - 100);
+        } else if (magnetToggle) {
+          drawX = mouseX - (mouseX % 5);
+          drawY = mouseY - (mouseY % 5);
         } else {
-          drawBullet(100, magnetToggle ? mouseY - (mouseY % 5) : mouseY, 180, 180, true, mouseY - (mouseY % 5), "R");
+          drawX = mouseX;
+          drawY = mouseY;
         }
+        Draw.note(
+          {
+            x: drawX,
+            y: drawY,
+            value: selectedValue,
+            direction: 1,
+          },
+          {
+            globalAlpha,
+            progress: 100,
+            tailProgress: 0,
+            endProgress: 0,
+            isGrabbed: true,
+            isSelected: true,
+          },
+        );
+      } else {
+        let drawX = 100;
+        let drawY = magnetToggle ? mouseY - (mouseY % 5) : mouseY;
+        let drawAngle = 180;
+        let drawDir = "R";
+        if (p[1] == 0) {
+          drawX = -100;
+          drawAngle = 0;
+          drawDir = "L";
+        }
+        Draw.bullet(
+          {
+            x: drawX,
+            y: drawY,
+            angle: drawAngle,
+            location: drawY,
+            direction: drawDir,
+          },
+          {
+            isSelected: true,
+          },
+        );
       }
     }
 
-    // Editor only - Trigger guide text (when mode is "Add")
-    if (mode == 2 && mouseMode == -1) {
-      cntCtx.fillStyle = "rgba(0,0,0,0.5)";
-      cntCtx.fillRect(0, 0, canvasW, canvasH);
-      cntCtx.beginPath();
-      cntCtx.fillStyle = "#FFF";
-      cntCtx.strokeStyle = "#FFF";
-      cntCtx.lineWidth = 4;
-      cntCtx.moveTo(canvasW / 2, canvasH / 2 - 30);
-      cntCtx.lineTo(canvasW / 2, canvasH / 2);
-      cntCtx.stroke();
-      cntCtx.moveTo(canvasW / 2 - 15, canvasH / 2 - 15);
-      cntCtx.lineTo(canvasW / 2 + 15, canvasH / 2 - 15);
-      cntCtx.stroke();
-      cntCtx.font = `400 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-      cntCtx.textAlign = "center";
-      cntCtx.textBaseline = "top";
-      cntCtx.fillText("Click to add Trigger", canvasW / 2, canvasH / 2 + 10);
-    }
+    Updater.particles(destroyParticles);
+
+    Draw.explosions(destroyParticles);
+
+    // Editor only - Trigger add guide overlay (when mode is "Add")
+    if (mode == 2 && mouseMode == -1) Draw.triggerAddOverlay();
 
     //Cursor
     if (denyCursor) {
@@ -1586,7 +1208,9 @@ const cntRender = () => {
     isTmlUpdateNeeded = false;
   }
 
-  if (mouseMode == 0 && !denyCursor) drawCursor();
+  if (mouseMode == 0 && !denyCursor) {
+    Draw.cursor({ x: mouseX, y: mouseY });
+  }
 };
 
 const songPlayPause = () => {
@@ -1626,6 +1250,7 @@ const save = () => {
   a.click();
 };
 
+// eslint-disable-next-line no-unused-vars
 const settingsInput = (v, e) => {
   let element;
   switch (v) {
@@ -1853,6 +1478,7 @@ const settingsInput = (v, e) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const triggersInput = (v, e) => {
   switch (v) {
     case "x":
@@ -1998,6 +1624,7 @@ const triggersInput = (v, e) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const moveTo = () => {
   let s = 0;
   iziToast.info({
@@ -2014,7 +1641,7 @@ const moveTo = () => {
       [
         '<input type="number">',
         "keyup",
-        (instance, toast, input, e) => {
+        (instance, toast, input) => {
           s = Number(input.value);
         },
       ],
@@ -2033,6 +1660,7 @@ const moveTo = () => {
   });
 };
 
+// eslint-disable-next-line no-unused-vars
 const changeBPM = (e) => {
   if (isNaN(Number(e.value))) {
     iziToast.error({
@@ -2046,6 +1674,7 @@ const changeBPM = (e) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const changeSpeed = (e) => {
   if (isNaN(Number(e.value))) {
     iziToast.error({
@@ -2071,6 +1700,7 @@ const changeSpeed = (e) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const changeOffset = (e) => {
   if (isNaN(Number(e.value))) {
     iziToast.error({
@@ -2084,6 +1714,7 @@ const changeOffset = (e) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const trackMousePos = () => {
   const width = parseInt((componentViewOW - canvasContainerOW) / 2 + menuContainerOW);
   const x = ((event.clientX - width) / canvasContainerOW) * 200 - 100;
@@ -2097,6 +1728,7 @@ const trackMousePos = () => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const trackTimelineMousePos = () => {
   mouseMode = 1;
   mouseX = event.clientX * pixelRatio;
@@ -2198,6 +1830,7 @@ const timelineFollowMouse = (v1, v2, i) => {
   });
 };
 
+// eslint-disable-next-line no-unused-vars
 const tmlClicked = () => {
   if (isNaN(Number(song.seek()))) return iziToast.error({ title: "Wait..", message: "Song is not loaded." });
   if (mode == 0) {
@@ -2312,6 +1945,7 @@ const timelineAddElement = () => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const compClicked = () => {
   if (isNaN(Number(song.seek()))) return iziToast.error({ title: "Wait..", message: "Song is not loaded." });
   if (mode == 0) {
@@ -2544,6 +2178,7 @@ const changeSettingsMode = (v1, v2, i) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const triggerSet = (isChanged) => {
   pattern.triggers[selectedCntElement.i].value = (isChanged ? triggerSelectBox : triggerInitBox).selectedIndex - (isChanged ? 0 : 1);
   selectedCntElement = {
@@ -2566,10 +2201,7 @@ const zoomOut = () => {
   isTmlUpdateNeeded = true;
 };
 
-const playPauseBtn = () => {
-  songPlayPause();
-};
-
+// eslint-disable-next-line no-unused-vars
 const stopBtn = () => {
   controlBtn.classList.add("timeline-play");
   controlBtn.classList.remove("timeline-pause");
@@ -2774,10 +2406,12 @@ const elementPaste = () => {
   });
 };
 
+// eslint-disable-next-line no-unused-vars
 const showHelp = () => {
   document.getElementById("helpContainer").style.display = "flex";
 };
 
+// eslint-disable-next-line no-unused-vars
 const hideHelp = () => {
   document.getElementById("helpContainer").style.display = "none";
 };
@@ -2926,7 +2560,7 @@ const tmlScrollDown = () => {
 };
 
 const scrollEvent = (e) => {
-  let delta = 0;
+  let delta;
   if (e.deltaY != 0) delta = Math.max(-1, Math.min(1, e.deltaY));
   else delta = Math.max(-1, Math.min(1, e.deltaX));
   if (!settings.input.wheelReverse) delta *= -1;
@@ -2944,6 +2578,7 @@ const scrollEvent = (e) => {
   e.preventDefault();
 };
 
+// eslint-disable-next-line no-unused-vars
 const textFocused = () => {
   isTextboxFocused = true;
 };
@@ -2952,6 +2587,7 @@ const textBlurred = () => {
   isTextboxFocused = false;
 };
 
+// eslint-disable-next-line no-unused-vars
 const settingChanged = (e, v) => {
   if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
@@ -2978,7 +2614,7 @@ const globalScrollEvent = (e) => {
     setTimeout(() => {
       scrollTimer = 0;
     }, 50);
-    let delta = 0;
+    let delta;
     if (e.deltaY != 0) delta = Math.max(-1, Math.min(1, e.deltaY));
     else delta = Math.max(-1, Math.min(1, e.deltaX));
     if (!settings.input.wheelReverse) delta *= -1;
@@ -3089,7 +2725,10 @@ const reflection = (dir) => {
 
 document.getElementById("timelineContainer").addEventListener("wheel", scrollEvent);
 window.addEventListener("wheel", globalScrollEvent);
-window.addEventListener("resize", initialize);
+
+window.addEventListener("resize", () => {
+  initialize(false);
+});
 
 window.addEventListener("beforeunload", (event) => {
   if (preventUnload) {

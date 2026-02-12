@@ -1,3 +1,4 @@
+/* global api, projectUrl */
 document.addEventListener("DOMContentLoaded", () => {
   fetch(`${api}/auth/status`, {
     method: "GET",
@@ -34,7 +35,7 @@ document.getElementById("nickname").addEventListener(
       }
     });
   },
-  true
+  true,
 );
 
 const check = () => {

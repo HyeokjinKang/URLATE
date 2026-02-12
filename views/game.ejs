@@ -10,6 +10,7 @@
     <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
     <script>
       let introload = 0;
+
       const intro1loaded = () => {
         if (introload == 2) {
           document.getElementById("pressAnywhere").textContent = pressAnywhere;
@@ -17,6 +18,7 @@
         }
         introload++;
       };
+
       const intro2loaded = () => {
         if (introload == 2) {
           document.getElementById("pressAnywhere").textContent = pressAnywhere;
@@ -737,9 +739,6 @@
       <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" oninput="settingChanged(this, 'volumeMaster')" />
       <p class="optionValue volumeMasterValue">50%</p>
     </div>
-    <script src="/js/howler.min.js"></script>
-    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       const cdn = "<%= cdn %>";
       const url = "<%= url %>";
@@ -774,8 +773,11 @@
         alias: "<%= __('socket_achievement_alias') %>",
       };
     </script>
-    <script src="/js/iziToast.min.js"></script>
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/lib/howler.min.js"></script>
+    <script src="/lib/iziToast.min.js"></script>
+    <script src="/modules/socket.js?v=<%= ver %>"></script>
     <script src="/js/game.js?v=<%= ver %>"></script>
-    <script src="/js/globalSocket.js?v=<%= ver %>"></script>
   </body>
 </html>

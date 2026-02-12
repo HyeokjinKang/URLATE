@@ -1,4 +1,4 @@
-// const animContainer = document.getElementById("animContainer");
+/* global api, projectUrl, loginFailed */
 const safariBlocker = document.getElementById("safariBlocker");
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
@@ -6,19 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (isSafari) {
     safariBlocker.classList.remove("hide");
   }
-  if (document.location.protocol == "http:") {
-    document.location.href = document.location.href.replace("http:", "https:");
-    return;
-  }
-  // let widthWidth = window.innerWidth;
-  // let heightWidth = (window.innerHeight / 9) * 16;
-  // if (widthWidth > heightWidth) {
-  //   animContainer.style.width = `${widthWidth}px`;
-  //   animContainer.style.height = `${(widthWidth / 16) * 9}px`;
-  // } else {
-  //   animContainer.style.width = `${heightWidth}px`;
-  //   animContainer.style.height = `${(heightWidth / 16) * 9}px`;
-  // }
+
   fetch(`${api}/auth/status`, {
     method: "GET",
     credentials: "include",
@@ -36,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+// eslint-disable-next-line no-unused-vars
 function handleCredentialResponse(authResult) {
   fetch(`${api}/auth/login`, {
     method: "POST",

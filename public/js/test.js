@@ -1,3 +1,21 @@
+/* global Pace, Howler, Howl, url, cdn, api */
+let upperBound, lowerBound, numberWithCommas, easeOutSine;
+let Factory, Updater, Renderer;
+(async () => {
+  try {
+    const [utils, factory, updater, renderer] = await Promise.all([import("../modules/utils.js"), import("../modules/factory.js"), import("../modules/updater.js"), import("../modules/renderer.js")]);
+
+    ({ upperBound, lowerBound, numberWithCommas, easeOutSine } = utils);
+    Factory = factory.default;
+    Updater = updater.default;
+    Renderer = renderer.default;
+
+    console.log("Modules are ready.");
+  } catch (err) {
+    console.error("Error occured while loading modules: ", err);
+  }
+})();
+
 const menuContainer = document.getElementById("menuContainer");
 const canvasBackground = document.getElementById("canvasBackground");
 const canvasContainer = document.getElementById("canvasContainer");
@@ -5,6 +23,7 @@ const rankImg = document.getElementById("rankImg");
 const floatingArrowContainer = document.getElementById("floatingArrowContainer");
 const floatingResultContainer = document.getElementById("floatingResultContainer");
 const scoreContainer = document.getElementById("scoreContainer");
+const blackOverlayContainer = document.getElementById("blackOverlayContainer");
 const colorOverlayContainer = document.getElementById("colorOverlayContainer");
 const floatingResumeContainer = document.getElementById("floatingResumeContainer");
 const volumeMasterValue = document.getElementById("volumeMasterValue");
@@ -13,6 +32,7 @@ const canvas = document.getElementById("componentCanvas");
 const ctx = canvas.getContext("2d");
 const missCanvas = document.getElementById("missPointCanvas");
 const missCtx = missCanvas.getContext("2d");
+let Draw;
 let background;
 let pattern = {};
 let patternLength = 0;
@@ -22,25 +42,23 @@ let bpmsync = {
   beat: 0,
 };
 let pointingCntElement = [{ v1: "", v2: "", i: "" }];
+let clickParticles = [];
 let destroyParticles = [];
-let missParticles = [];
-let perfectParticles = [];
+let judgeParticles = [];
 let createdBullets = new Set([]);
 let destroyedBullets = new Set([]);
+let explodingBullets = new Set([]);
 let destroyedNotes = new Set([]);
 let grabbedNotes = new Set([]);
-let bulletPath;
 let noteMaxDuration = 0;
+let endBeat = null;
 let mouseX = 0,
   mouseY = 0;
 let rawX = 0,
   rawY = 0;
 let score = 0,
   combo = 0,
-  displayScore = 0,
-  prevScore = 0,
-  maxCombo = 0,
-  scoreMs = 0;
+  maxCombo = 0;
 let perfect = 0;
 let great = 0;
 let good = 0;
@@ -66,7 +84,6 @@ let comboAlert = false,
   comboCount = 50;
 let comboAlertMs = 0,
   comboAlertCount = 0;
-let comboAnimationMs = 0;
 let hide = {},
   frameCounter;
 let load = 0;
@@ -86,16 +103,13 @@ let resultEffect = new Howl({
 });
 let isPaused = false;
 let rate = 1;
-let disableText = false;
-let songData = [];
 let keyInput = [];
 let keyInputMemory = 0;
-let keyInputMemoryMs = 0;
+let keyInputTime = 0;
 let effectMs = 0;
 let effectNum = -1;
 let keyPressing = {};
 let pressingKeys = [];
-let trackName = "";
 let medal = 1;
 let globalAlpha = 1;
 let canvasW = 0,
@@ -169,17 +183,13 @@ const initialize = (isFirstCalled) => {
   canvas.width = canvasW;
   canvas.height = canvasH;
 
+  if (Draw) Draw.setSize({ canvasW, canvasH });
+
   canvasOW = canvas.offsetWidth;
   canvasOH = canvas.offsetHeight;
 
   missCanvas.width = window.innerWidth * 0.2 * pixelRatio;
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
-
-  const w = canvas.width / 80;
-  bulletPath = new Path2D();
-  bulletPath.arc(0, 0, w, 0.5 * Math.PI, 1.5 * Math.PI);
-  bulletPath.lineTo(w * 2, 0);
-  bulletPath.closePath();
 
   if (isFirstCalled) {
     pattern = JSON.parse(localStorage.pattern);
@@ -192,6 +202,9 @@ const initialize = (isFirstCalled) => {
       }
     }
     noteMaxDuration += 4;
+
+    const findEnd = pattern.triggers.find((t) => t.value == 6);
+    endBeat = findEnd ? findEnd.beat : null;
 
     document.getElementById("artist").textContent = pattern.information.producer;
     document.getElementById("scoreArtist").textContent = pattern.information.producer;
@@ -214,7 +227,6 @@ const initialize = (isFirstCalled) => {
       if (tracks[i].name == pattern.information.track) {
         document.getElementById("scoreTitle").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
         document.getElementById("title").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
-        trackName = tracks[i].name;
         fileName = tracks[i].fileName;
         document.getElementById("albumContainer").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
         if (background !== "0") document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
@@ -233,6 +245,7 @@ const initialize = (isFirstCalled) => {
       .then((data) => {
         if (data.result == "success") {
           skin = JSON.parse(data.data);
+          Draw = new Renderer(ctx, { canvasW, canvasH }, skin);
         } else {
           alert(`Error occured.\n${data.description}`);
           console.error(`Error occured.\n${data.description}`);
@@ -291,572 +304,43 @@ const eraseCnt = () => {
   ctx.clearRect(0, 0, canvasW, canvasH);
 };
 
-const getJudgeStyle = (j, p, x, y) => {
-  p *= 100;
-  if (p <= 0) p = 0;
-  p = `${p}`.padStart(2, "0");
-  if (p <= 0) p = 0;
-  if (!judgeSkin) {
-    if (j == "miss") {
-      let grd = ctx.createLinearGradient(x - 50, y - 20, x + 50, y + 20);
-      grd.addColorStop(0, `rgba(237, 78, 50, ${1 - p / 100})`);
-      grd.addColorStop(1, `rgba(248, 175, 67, ${1 - p / 100})`);
-      return grd;
-    } else if (j == "perfect") {
-      let grd = ctx.createLinearGradient(x - 50, y - 20, x + 50, y + 20);
-      grd.addColorStop(0, `rgba(87, 209, 71, ${1 - p / 100})`);
-      grd.addColorStop(1, `rgba(67, 167, 224, ${1 - p / 100})`);
-      return grd;
-    } else if (j == "great") {
-      return `rgba(87, 209, 71, ${1 - p / 100})`;
-    } else if (j == "good") {
-      return `rgba(67, 167, 224, ${1 - p / 100})`;
-    } else if (j == "bad") {
-      return `rgba(176, 103, 90, ${1 - p / 100})`;
-    } else {
-      return `rgba(50, 50, 50, ${1 - p / 100})`;
-    }
-  } else {
-    p = parseInt(255 - p * 2.55);
-    if (p <= 0) p = 0;
-    p = p.toString(16).padStart(2, "0");
-    if (p <= 0) p = "00";
-    if (skin[j].type == "gradient") {
-      let grd = ctx.createLinearGradient(x - 50, y - 20, x + 50, y + 20);
-      for (let i = 0; i < skin[j].stops.length; i++) {
-        grd.addColorStop(skin[j].stops[i].percentage / 100, `#${skin[j].stops[i].color}${p.toString(16)}`);
-      }
-      return grd;
-    } else if (skin[j].type == "color") {
-      return `#${skin[j].color}${p.toString(16)}`;
-    }
-  }
-};
-
-const drawParticle = (n, x, y, j, d) => {
-  let cx = (canvasW / 200) * (x + 100);
-  let cy = (canvasH / 200) * (y + 100);
-  if (n == 0) {
-    //Destroy
-    const w = (canvasW / 1000) * destroyParticles[j].w * (1 - (Date.now() - destroyParticles[j].ms) / 250);
-    for (let i = 0; i < 3; i++) {
-      ctx.beginPath();
-      if (skin.bullet.type == "gradient") {
-        let grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
-        for (let i = 0; i < skin.bullet.stops.length; i++) {
-          grd.addColorStop(skin.bullet.stops[i].percentage / 100, `#${skin.bullet.stops[i].color}`);
-        }
-        ctx.fillStyle = grd;
-        ctx.strokeStyle = grd;
-      } else if (skin.bullet.type == "color") {
-        ctx.fillStyle = `#${skin.bullet.color}`;
-        ctx.strokeStyle = `#${skin.bullet.color}`;
-      }
-      const step = destroyParticles[j].n * (canvasW / 10000);
-      ctx.arc(cx + step * destroyParticles[j].d[i][0], cy + step * destroyParticles[j].d[i][1], w, 0, 2 * Math.PI);
-      ctx.fill();
-      destroyParticles[j].n += destroyParticles[j].step;
-    }
-  } else if (n == 1) {
-    //Click Note
-    const raf = (w, s, n) => {
-      ctx.beginPath();
-      let width = canvasW / 24;
-      if (Date.now() - s >= 800) return;
-      let p = 100 * easeOutQuad((Date.now() - s) / 800);
-      ctx.lineWidth = ((100 - p) / 100) * (canvasW / 40);
-      let opacity = parseInt(225 - p * 1.25);
-      if (opacity <= 0) opacity = "00";
-      if (skin.note[n].circle) {
-        if (skin.note[n].circle.type == "gradient") {
-          let grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
-          for (let i = 0; i < skin.note[n].circle.stops.length; i++) {
-            grd.addColorStop(skin.note[n].circle.stops[i].percentage / 100, `#${skin.note[n].circle.stops[i].color}${opacity.toString(16).padStart(2, "0")}`);
-          }
-          ctx.fillStyle = grd;
-          ctx.strokeStyle = grd;
-        } else if (skin.note[n].circle.type == "color") {
-          ctx.fillStyle = `#${skin.note[n].circle.color}${opacity.toString(16).padStart(2, "0")}`;
-          ctx.strokeStyle = `#${skin.note[n].circle.color}${opacity.toString(16).padStart(2, "0")}`;
-        }
-      } else {
-        if (skin.note[n].type == "gradient") {
-          let grd = ctx.createLinearGradient(cx - w, cy - w, cx + w, cy + w);
-          for (let i = 0; i < skin.note[n].stops.length; i++) {
-            grd.addColorStop(skin.note[n].stops[i].percentage / 100, `#${skin.note[n].stops[i].color}${opacity.toString(16).padStart(2, "0")}`);
-          }
-          ctx.fillStyle = grd;
-          ctx.strokeStyle = grd;
-        } else if (skin.note[n].type == "color") {
-          ctx.fillStyle = `#${skin.note[n].color}${opacity.toString(16).padStart(2, "0")}`;
-          ctx.strokeStyle = `#${skin.note[n].color}${opacity.toString(16).padStart(2, "0")}`;
-        }
-      }
-      ctx.arc(cx, cy, w, 0, 2 * Math.PI);
-      ctx.stroke();
-      w = canvasW / 80 + width * (p / 100);
-      requestAnimationFrame(() => {
-        raf(w, s, n);
-      });
-    };
-    raf(canvasW / 80, Date.now(), d);
-  } else if (n == 2) {
-    //Click Default
-    const raf = (w, s) => {
-      ctx.beginPath();
-      let width = canvasW / 50;
-      if (Date.now() - s >= 500) return;
-      let p = 100 * easeOutQuad((Date.now() - s) / 500);
-      ctx.lineWidth = ((100 - p) / 100) * (canvasW / 200);
-      ctx.strokeStyle = `rgba(67, 221, 166, ${0.5 - p / 200})`;
-      ctx.arc(cx, cy, w, 0, 2 * Math.PI);
-      ctx.stroke();
-      w = canvasW / 70 + canvasW / 400 + width * (p / 100);
-      requestAnimationFrame(() => {
-        raf(w, s);
-      });
-    };
-    raf(canvasW / 70 + canvasW / 400, Date.now());
-  } else if (n == 3) {
-    //Judge
-    if (!hide[j.toLowerCase()]) {
-      const raf = (y, s) => {
-        ctx.beginPath();
-        let p = easeOutQuad((Date.now() - s) / 700);
-        let newY = y - (canvasH / 20) * p;
-        ctx.fillStyle = getJudgeStyle(j.toLowerCase(), p, cx, newY);
-        ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(j, cx, newY);
-        if (Date.now() - s <= 700) {
-          requestAnimationFrame(() => {
-            raf(cy, s);
-          });
-        }
-      };
-      raf(cy, Date.now());
-    }
-  } else if (n == 4) {
-    //judge:miss
-    if (!hide.miss) {
-      ctx.beginPath();
-      let p = easeOutQuad((Date.now() - missParticles[j].s) / 700);
-      let newY = cy - (canvasH / 20) * p;
-      ctx.fillStyle = getJudgeStyle("miss", p);
-      ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("Miss", cx, newY);
-    }
-  } else if (n == 5) {
-    //judge: perfect
-    if (!hide.perfect) {
-      ctx.beginPath();
-      let p = easeOutQuad((Date.now() - perfectParticles[j].s) / 700);
-      let newY = cy - (canvasH / 20) * p;
-      ctx.fillStyle = getJudgeStyle("perfect", p, cx, newY);
-      ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("Perfect", cx, newY);
-    }
-  }
-};
-
-const drawNote = (p, x, y, n, d, t, index, f) => {
-  if (n != 2 && p >= 130) return;
-  else if (n == 2 && f >= 130) return;
-  p = Math.max(p, 0);
-  x = (canvasW / 200) * (x + 100);
-  y = (canvasH / 200) * (y + 100);
-  n = n == undefined ? 0 : n;
-  let w = canvasW / 40;
-  let opacity = 255;
-  if (n != 2 && p >= 100) {
-    opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
-  } else if (n == 2 && p >= 100 && t >= 100 && (grabbedNotes.has(index) || grabbedNotes.has(`${index}!`))) {
-    opacity = Math.max(Math.round((255 / 30) * (130 - f)), 0);
-  } else if (n == 2 && p >= 100 && !grabbedNotes.has(index)) {
-    opacity = Math.max(Math.round((255 / 30) * (130 - p)), 0);
-  }
-  opacity = opacity.toString(16).padStart(2, "0");
-  if (skin.note[n].type == "gradient") {
-    let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-    for (let i = 0; i < skin.note[n].stops.length; i++) {
-      grd.addColorStop(skin.note[n].stops[i].percentage / 100, `#${skin.note[n].stops[i].color}${opacity}`);
-    }
-    ctx.fillStyle = grd;
-    ctx.strokeStyle = grd;
-  } else if (skin.note[n].type == "color") {
-    ctx.fillStyle = `#${skin.note[n].color}${opacity}`;
-    ctx.strokeStyle = `#${skin.note[n].color}${opacity}`;
-  }
-  if (skin.note[n].circle) {
-    if (skin.note[n].circle.type == "gradient") {
-      let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-      for (let i = 0; i < skin.note[n].circle.stops.length; i++) {
-        grd.addColorStop(skin.note[n].circle.stops[i].percentage / 100, `#${skin.note[n].circle.stops[i].color}${opacity}`);
-      }
-      ctx.strokeStyle = grd;
-    } else if (skin.note[n].circle.type == "color") {
-      ctx.strokeStyle = `#${skin.note[n].circle.color}${opacity}`;
-    }
-  }
-  ctx.lineWidth = Math.round(canvasW / 300);
-  if (n == 0) {
-    ctx.beginPath();
-    ctx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(x, y, (w / 100) * p, 0, 2 * Math.PI);
-    ctx.fill();
-    if (skin.note[n].outline) {
-      if (skin.note[n].outline.type == "gradient") {
-        let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
-        }
-        ctx.strokeStyle = grd;
-      } else if (skin.note[n].outline.type == "color") {
-        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
-      }
-      ctx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
-      ctx.stroke();
-    }
-    ctx.beginPath();
-    ctx.globalAlpha = ((0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100) * globalAlpha;
-    ctx.fillStyle = ctx.strokeStyle;
-    ctx.arc(x, y, w, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.globalAlpha = globalAlpha;
-  } else if (n == 1) {
-    w = w * 0.9;
-    let parr = [p <= 20 ? p * 5 : 100, p >= 20 ? (p <= 80 ? (p - 20) * 1.66 : 100) : 0, p >= 80 ? (p <= 100 ? (p - 80) * 5 : 100) : 0];
-    ctx.beginPath();
-    let originalValue = [0, -1.5 * d * w];
-    let moveValue = [originalValue[0] - w * Math.cos(Math.PI / 5) * d, originalValue[1] + w * Math.sin(Math.PI / 5) * d];
-    ctx.moveTo(x + originalValue[0], y + originalValue[1]);
-    ctx.lineTo(x + originalValue[0] - (moveValue[0] / 100) * parr[0], y + originalValue[1] - (moveValue[1] / 100) * parr[0]);
-    ctx.moveTo(x + originalValue[0] - moveValue[0], y + originalValue[1] - moveValue[1]);
-    if (d == 1) ctx.arc(x, y, w, -Math.PI / 5, (((Math.PI / 5) * 7) / 100) * parr[1] - Math.PI / 5);
-    else ctx.arc(x, y, w, (-Math.PI / 5) * 6, (((Math.PI / 5) * 7) / 100) * parr[1] - (Math.PI / 5) * 6);
-    originalValue = [-w * Math.cos(Math.PI / 5) * d, -w * Math.sin(Math.PI / 5) * d];
-    moveValue = [originalValue[0], originalValue[1] - -1.5 * d * w];
-    ctx.moveTo(x + originalValue[0], y + originalValue[1]);
-    ctx.lineTo(x + originalValue[0] - (moveValue[0] / 100) * parr[2], y + originalValue[1] - (moveValue[1] / 100) * parr[2]);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x, y - 1.5 * d * (w / 100) * p);
-    if (d == 1) ctx.arc(x, y, (w / 100) * p, -Math.PI / 5, (Math.PI / 5) * 6);
-    else ctx.arc(x, y, (w / 100) * p, (-Math.PI / 5) * 6, Math.PI / 5);
-    ctx.lineTo(x, y - 1.5 * d * (w / 100) * p);
-    ctx.fill();
-    if (skin.note[n].outline) {
-      if (skin.note[n].outline.type == "gradient") {
-        let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
-        }
-        ctx.strokeStyle = grd;
-      } else if (skin.note[n].outline.type == "color") {
-        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
-      }
-      ctx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
-      ctx.stroke();
-    }
-    ctx.beginPath();
-    ctx.globalAlpha = ((0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100) * globalAlpha;
-    ctx.fillStyle = ctx.strokeStyle;
-    ctx.moveTo(x, y - 1.5 * d * w);
-    if (d == 1) ctx.arc(x, y, w, -Math.PI / 5, (Math.PI / 5) * 6);
-    else ctx.arc(x, y, w, (-Math.PI / 5) * 6, Math.PI / 5);
-    ctx.lineTo(x, y - 1.5 * d * w);
-    ctx.fill();
-    ctx.globalAlpha = globalAlpha;
-  } else if (n == 2) {
-    ctx.beginPath();
-    if (skin.note[n].outline) {
-      if (skin.note[n].outline.type == "gradient") {
-        let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-        for (let i = 0; i < skin.note[n].outline.stops.length; i++) {
-          grd.addColorStop(skin.note[n].outline.stops[i].percentage / 100, `#${skin.note[n].outline.stops[i].color}${opacity}`);
-        }
-        ctx.strokeStyle = grd;
-      } else if (skin.note[n].outline.type == "color") {
-        ctx.strokeStyle = `#${skin.note[n].outline.color}${opacity}`;
-      }
-      ctx.lineWidth = Math.round((canvasW / 1000) * skin.note[n].outline.width);
-    }
-    if (p <= 100) {
-      ctx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
-      ctx.lineTo(x, y);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(x, y, w, (3 / 2) * Math.PI, (3 / 2) * Math.PI + (p / 50) * Math.PI);
-      ctx.stroke();
-    } else if (!grabbedNotes.has(index)) {
-      ctx.arc(x, y, w, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.stroke();
-    } else if (t <= 100) {
-      ctx.arc(x, y, w, (3 / 2) * Math.PI + (t / 50) * Math.PI, (3 / 2) * Math.PI);
-      ctx.lineTo(x, y);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(x, y, w, 0, 2 * Math.PI);
-      ctx.stroke();
-    } else {
-      ctx.arc(x, y, w, 0, 2 * Math.PI);
-      ctx.stroke();
-    }
-    ctx.globalAlpha = ((0.2 * (p * 2 >= 100 ? 100 : p * 2)) / 100) * globalAlpha;
-    ctx.fillStyle = ctx.strokeStyle;
-    ctx.arc(x, y, w, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.globalAlpha = globalAlpha;
-  }
-};
-
-const drawCursor = () => {
-  ctx.beginPath();
-  let w = (canvasW / 70) * cursorZoom;
-  if (mouseClickedMs == -1) {
-    mouseClickedMs = Date.now() - 100;
-  }
-  if (mouseClicked) {
-    if (mouseClickedMs + 10 > Date.now()) {
-      w = w + (canvasW / 400) * (1 - (mouseClickedMs + 10 - Date.now()) / 10);
-    } else {
-      w = w + (canvasW / 400) * 1;
-    }
-  } else {
-    if (mouseClickedMs + 100 > Date.now()) {
-      w = w + ((canvasW / 400) * (mouseClickedMs + 100 - Date.now())) / 100;
-    }
-  }
-  let x = (canvasW / 200) * (mouseX + 100);
-  let y = (canvasH / 200) * (mouseY + 100);
-  if (skin.cursor.type == "gradient") {
-    let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-    for (let i = 0; i < skin.cursor.stops.length; i++) {
-      grd.addColorStop(skin.cursor.stops[i].percentage / 100, `#${skin.cursor.stops[i].color}`);
-    }
-    ctx.shadowColor = `#${skin.cursor.stops[0].color}90`;
-    ctx.fillStyle = grd;
-  } else if (skin.cursor.type == "color") {
-    ctx.fillStyle = `#${skin.cursor.color}`;
-    ctx.shadowColor = `#${skin.cursor.color}90`;
-  }
-  if (skin.cursor.outline) {
-    ctx.lineWidth = Math.round((canvasW / 1000) * skin.cursor.outline.width);
-    if (skin.cursor.outline.type == "gradient") {
-      let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-      for (let i = 0; i < skin.cursor.outline.stops.length; i++) {
-        grd.addColorStop(skin.cursor.outline.stops[i].percentage / 100, `#${skin.cursor.outline.stops[i].color}`);
-      }
-      ctx.shadowColor = `#${skin.cursor.outline.stops[0].color}90`;
-      ctx.strokeStyle = grd;
-    } else if (skin.cursor.outline.type == "color") {
-      ctx.shadowColor = `#${skin.cursor.outline.color}90`;
-      ctx.strokeStyle = `#${skin.cursor.outline.color}`;
-    }
-  }
-  ctx.arc(x, y, w, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.shadowBlur = canvasW / 100;
-  if (skin.cursor.outline) ctx.stroke();
-  ctx.shadowBlur = 0;
-};
-
-const drawBullet = (x, y, a) => {
-  x = (canvasW / 200) * (x + 100);
-  y = (canvasH / 200) * (y + 100);
-  let w = canvasW / 80;
-  if (skin.bullet.type == "gradient") {
-    let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-    for (let i = 0; i < skin.bullet.stops.length; i++) {
-      grd.addColorStop(skin.bullet.stops[i].percentage / 100, `#${skin.bullet.stops[i].color}`);
-    }
-    ctx.fillStyle = grd;
-    ctx.strokeStyle = grd;
-  } else if (skin.bullet.type == "color") {
-    ctx.fillStyle = `#${skin.bullet.color}`;
-    ctx.strokeStyle = `#${skin.bullet.color}`;
-  }
-  if (skin.bullet.outline) {
-    ctx.lineWidth = Math.round((canvasW / 1000) * skin.bullet.outline.width);
-    if (skin.bullet.outline.type == "gradient") {
-      let grd = ctx.createLinearGradient(x - w, y - w, x + w, y + w);
-      for (let i = 0; i < skin.bullet.outline.stops.length; i++) {
-        grd.addColorStop(skin.bullet.outline.stops[i].percentage / 100, `#${skin.bullet.outline.stops[i].color}`);
-      }
-      ctx.strokeStyle = grd;
-    } else if (skin.bullet.outline.type == "color") {
-      ctx.strokeStyle = `#${skin.bullet.outline.color}`;
-    }
-  }
-
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate((a * Math.PI) / 180);
-
-  ctx.fill(bulletPath);
-  if (skin.bullet.outline) ctx.stroke(bulletPath);
-
-  ctx.restore();
-};
-
 const destroyAll = (beat) => {
   const end = upperBound(pattern.bullets, beat);
   for (let j = 0; j < end; j++) {
     if (!destroyedBullets.has(j)) {
-      callBulletDestroy(j);
+      explodingBullets.add(j);
+      destroyedBullets.add(j);
     }
   }
-};
-
-const callBulletDestroy = (j) => {
-  const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-  // const p = ((beats - pattern.bullets[j].beat) / (15 / speed / pattern.bullets[j].speed)) * 100;
-  let end = upperBound(pattern.triggers, pattern.bullets[j].beat);
-  let baseSpeed = pattern.information.speed;
-  for (let i = 0; i < end; i++) {
-    if (pattern.triggers[i].value == 4) {
-      baseSpeed = pattern.triggers[i].speed;
-    }
-  }
-  let start = lowerBound(pattern.triggers, pattern.bullets[j].beat);
-  end = upperBound(pattern.triggers, beats);
-  let p = 0;
-  let prevBeat = pattern.bullets[j].beat;
-  let prevSpeed = baseSpeed;
-  for (let k = start; k < end; k++) {
-    if (pattern.triggers[k].value == 4) {
-      p += ((pattern.triggers[k].beat - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
-      prevBeat = pattern.triggers[k].beat;
-      prevSpeed = pattern.triggers[k].speed;
-    }
-  }
-  p += ((beats - prevBeat) / (15 / prevSpeed / pattern.bullets[j].speed)) * 100; //15 for proper speed(lower is too fast)
-  const left = pattern.bullets[j].direction == "L";
-  let x = (left ? 1 : -1) * (getCos(pattern.bullets[j].angle) * p - 100);
-  let y = pattern.bullets[j].location + (left ? 1 : -1) * getSin(pattern.bullets[j].angle) * p;
-  let randomDirection = [];
-  for (let i = 0; i < 3; i++) {
-    let rx = Math.floor(Math.random() * 4) - 2;
-    let ry = Math.floor(Math.random() * 4) - 2;
-    randomDirection[i] = [rx, ry];
-  }
-  destroyParticles.push({
-    x: x,
-    y: y,
-    w: 5,
-    n: 1,
-    step: 2,
-    d: randomDirection,
-    ms: Date.now(),
-  });
-  destroyedBullets.add(j);
-};
-
-const drawKeyInput = () => {
-  if (keyInput.length == 0) return;
-  if (keyInput[keyInput.length - 1].time + 4000 <= Date.now()) return;
-  if (keyInputMemory != keyInput.length) {
-    keyInputMemory = keyInput.length;
-    keyInputMemoryMs = Date.now();
-  }
-  let alpha = 1;
-  if (keyInput[keyInput.length - 1].time + 3000 <= Date.now()) {
-    alpha = 1 - (Date.now() - keyInput[keyInput.length - 1].time - 3000) / 1000;
-    if (alpha <= 0) return;
-  }
-  let text = "";
-  for (let i = 0; i < keyInput.length; i++) {
-    text += keyInput[i].key;
-  }
-  let animDuration = 0;
-  let animX = 0;
-  if (keyInputMemoryMs + 100 >= Date.now()) {
-    animDuration = 1 - easeOutQuart((Date.now() - keyInputMemoryMs) / 100);
-    animX = animDuration * (canvasW / 100 + canvasW / 200);
-  }
-  for (let i = keyInput.length - 1; i >= (keyInput.length > 12 ? keyInput.length - 12 : 0); i--) {
-    let j = i - keyInput.length + 13;
-    let partAlpha = alpha;
-    if (j < 8) {
-      partAlpha *= (1 / 8) * (j + animDuration);
-    }
-    ctx.globalAlpha = partAlpha;
-    let judge = keyInput[i].judge;
-    let color = "#FFF";
-    switch (judge) {
-      case "Perfect":
-        color = "#57BEEB";
-        break;
-      case "Great":
-        color = "#73DFD2";
-        break;
-      case "Good":
-        color = "#CCE97C";
-        break;
-      case "Bad":
-        color = "#EDC77D";
-        break;
-      case "Miss":
-        color = "#F96C5A";
-        break;
-      case "Bullet":
-        color = "#E8A0A0";
-        break;
-      case "Empty":
-        color = "#ffffff00";
-        break;
-      default:
-        console.log(`drawKeyInput:${judge} isn't specified.`);
-    }
-    ctx.beginPath();
-    ctx.fillStyle = color;
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = canvasW / 800;
-    ctx.roundRect(canvasW * 0.08 - canvasH / 15 + (keyInput.length - i - 1) * (canvasW / 100 + canvasW / 200) - animX, canvasH * 0.05, canvasW / 100, canvasW / 100, [canvasW / 700]);
-    ctx.fill();
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.fillStyle = "#fff";
-    ctx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-    ctx.textBaseline = "top";
-    ctx.textAlign = "center";
-    ctx.fillText(
-      keyInput[i].key[0],
-      canvasW * 0.08 - canvasH / 15 + (keyInput.length - i - 1) * (canvasW / 100 + canvasW / 200) + canvasW / 200 - animX,
-      canvasH * 0.05 + canvasW / 100 + canvasH / 200,
-    );
-  }
-  ctx.globalAlpha = globalAlpha;
-  ctx.clearRect(0, 0, canvasW * 0.08 - canvasH / 15 - canvasW / 800, canvasH * 0.05 + canvasW / 100 + canvasH / 200 + canvasH / 20);
 };
 
 const cntRender = () => {
   requestAnimationFrame(cntRender);
   try {
+    if (!Draw) return;
+
     if (window.devicePixelRatio != pixelRatio) {
       pixelRatio = window.devicePixelRatio;
       initialize(false);
     }
+
     eraseCnt();
+    explodingBullets.clear();
     ctx.globalAlpha = 1;
+
     let mouseCalcX = ((rawX / canvasOW) * 200 - 100) * sens;
     let mouseCalcY = ((rawY / canvasOH) * 200 - 100) * sens;
     mouseX = mouseCalcX >= 100 ? 100 : mouseCalcX <= -100 ? -100 : mouseCalcX;
     mouseY = mouseCalcY >= 100 ? 100 : mouseCalcY <= -100 ? -100 : mouseCalcY;
+
     if (isResultShowing) {
       if (resultMs == 0) {
         resultMs = Date.now();
       }
     }
+
     if (resultMs != 0 && resultMs + 500 <= Date.now()) return;
+
     if (comboAlert) {
       let comboOpacity = 0;
       let fontSize = 20;
@@ -875,28 +359,20 @@ const cntRender = () => {
       ctx.textAlign = "center";
       ctx.fillText(comboAlertCount, canvasW / 2, canvasH / 2);
     }
-    ctx.beginPath();
-    ctx.lineJoin = "round";
-    const percentage = song.seek() / song.duration();
-    const rectX = canvasW / 2 - canvasW / 14;
-    const rectY = canvasH - canvasH / 80 - canvasH / 200;
-    const rectWidth = canvasW / 7;
-    const rectHeight = canvasH / 200;
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = "#fff";
-    ctx.fillStyle = "#fff";
-    ctx.strokeRect(rectX, rectY, rectWidth, rectHeight);
-    ctx.fillRect(rectX, rectY, rectWidth * percentage, rectHeight);
+
+    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
-    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+
     let end = upperBound(pattern.triggers, beats);
     let nowSpeed = pattern.information.speed;
     let renderTexts = [];
     for (let i = 0; i < end; i++) {
       if (pattern.triggers[i].value == 0) {
         if (!destroyedBullets.has(pattern.triggers[i].num)) {
-          callBulletDestroy(pattern.triggers[i].num);
+          explodingBullets.add(pattern.triggers[i].num);
+          destroyedBullets.add(pattern.triggers[i].num);
         }
       } else if (pattern.triggers[i].value == 1) {
         destroyAll(pattern.triggers[i].beat);
@@ -919,23 +395,7 @@ const cntRender = () => {
 
     ctx.globalAlpha = globalAlpha;
 
-    ctx.beginPath();
-    ctx.fillStyle = "#fff";
-    for (text of renderTexts) {
-      if (text.size.indexOf("vh") != -1) ctx.font = `${text.weight} ${(canvasH / 100) * Number(text.size.split("vh")[0])}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-      else ctx.font = `${text.weight} ${text.size} Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-      ctx.textAlign = text.align;
-      ctx.textBaseline = text.valign;
-      ctx.fillText(text.text, (canvasW / 200) * (text.x + 100), (canvasH / 200) * (text.y + 100));
-    }
-
-    for (let i = destroyParticles.length - 1; i >= 0; i--) {
-      if (destroyParticles[i].ms + 250 > Date.now()) {
-        drawParticle(0, destroyParticles[i].x, destroyParticles[i].y, i);
-      } else {
-        destroyParticles.splice(i, 1);
-      }
-    }
+    for (let textObj of renderTexts) Draw.triggerText(textObj);
 
     let renderDuration = 5 / speed;
 
@@ -948,117 +408,50 @@ const cntRender = () => {
       }
     }
     for (let i = end - 1; i >= start; i--) {
-      const p = (1 - (pattern.patterns[i].beat - beats) / renderDuration) * 100;
-      const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
-      const f = (1 - (pattern.patterns[i].beat + pattern.patterns[i].duration - beats) / renderDuration) * 100;
-      drawNote(p, pattern.patterns[i].x, pattern.patterns[i].y, pattern.patterns[i].value, pattern.patterns[i].direction, t, i, f);
-      if (p >= 120 && !destroyedNotes.has(i) && (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
+      const state = Updater.noteProgress(pattern.patterns[i], beats, speed);
+
+      Draw.note(pattern.patterns[i], {
+        ...state,
+        globalAlpha,
+        isGrabbed: grabbedNotes.has(i),
+      });
+
+      if (state.progress >= 120 && !destroyedNotes.has(i) && (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
         calculateScore("miss", i, true);
-        missParticles.push({
-          x: pattern.patterns[i].x,
-          y: pattern.patterns[i].y,
-          s: Date.now(),
-        });
+        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Miss"));
         miss++;
         showOverlay();
         missPoint.push(song.seek() * 1000);
         keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
-      } else if (t >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
+      } else if (state.tailProgress >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
-        perfectParticles.push({ x: pattern.patterns[i].x, y: pattern.patterns[i].y, s: Date.now() });
+        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Perfect"));
         calculateScore("Perfect", i, true);
         keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
       }
     }
-    for (let i = perfectParticles.length - 1; i >= 0; i--) {
-      if (perfectParticles[i].s + 700 > Date.now()) {
-        drawParticle(5, perfectParticles[i].x, perfectParticles[i].y, i);
-      } else {
-        perfectParticles.splice(i, 1);
-      }
-    }
-    for (let i = missParticles.length - 1; i >= 0; i--) {
-      if (missParticles[i].s + 700 > Date.now()) {
-        drawParticle(4, missParticles[i].x, missParticles[i].y, i);
-      } else {
-        missParticles.splice(i, 1);
-      }
-    }
     start = lowerBound(pattern.bullets, beats - 32);
     end = upperBound(pattern.bullets, beats);
-    for (let i = 0; i < end; i++) {
-      if (!destroyedBullets.has(i)) {
+    for (let i = start; i < end; i++) {
+      if (!destroyedBullets.has(i) || explodingBullets.has(i)) {
         const bullet = pattern.bullets[i];
-        if (!createdBullets.has(i)) {
-          createdBullets.add(i);
-          let randomDirection = [];
-          for (let i = 0; i < 3; i++) {
-            let rx = Math.floor(Math.random() * 4) - 2;
-            let ry = Math.floor(Math.random() * 4) - 2;
-            randomDirection[i] = [rx, ry];
-          }
-          destroyParticles.push({
-            x: bullet.direction == "L" ? -100 : 100,
-            y: bullet.location,
-            w: 10,
-            n: 1,
-            step: 4,
-            d: randomDirection,
-            ms: Date.now(),
-          });
+
+        const pos = Updater.bulletPos(bullet, beats, pattern.triggers, pattern.information.speed);
+
+        if (!createdBullets.has(i) || explodingBullets.has(i)) {
+          destroyParticles.push(...Factory.createExplosions(pos.x, pos.y, skin.bullet));
+          if (explodingBullets.has(i)) continue;
         }
+        createdBullets.add(i);
 
-        let triggerEnd = upperBound(pattern.triggers, bullet.beat);
-        let baseSpeed = pattern.information.speed;
+        trackMouseSelection(i, 1, 0, pos.x, pos.y);
 
-        for (let i = 0; i < triggerEnd; i++) {
-          if (pattern.triggers[i].value == 4) {
-            baseSpeed = pattern.triggers[i].speed;
-          }
-        }
-
-        let triggerStart = lowerBound(pattern.triggers, bullet.beat);
-        triggerEnd = upperBound(pattern.triggers, beats);
-
-        let p = 0;
-        let prevBeat = bullet.beat;
-        let prevSpeed = baseSpeed;
-
-        for (let j = triggerStart; j < triggerEnd; j++) {
-          const trigger = pattern.triggers[j];
-          if (trigger.value == 4) {
-            p += ((trigger.beat - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100; //15 for proper speed(lower is too fast)
-            prevBeat = trigger.beat;
-            prevSpeed = trigger.speed;
-          }
-        }
-
-        p += ((beats - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100; //15 for proper speed(lower is too fast)
-        const isLeft = bullet.direction == "L";
-
-        const scaleX = canvasW / 200;
-        const scaleY = canvasH / 200;
-
-        const realAngle = isLeft ? bullet.angle : bullet.angle + 180;
-        const visualAngleRad = Math.atan2(getSin(realAngle) * scaleY, getCos(realAngle) * scaleX);
-        const visualAngle = (visualAngleRad * 180) / Math.PI;
-
-        const x = (isLeft ? -100 : 100) + getCos(realAngle) * p;
-        const y = bullet.location + getSin(realAngle) * p;
-        trackMouseSelection(i, 1, 0, x, y);
-        drawBullet(x, y, visualAngle);
+        Draw.bullet(pos);
       }
     }
 
-    ctx.beginPath();
-    ctx.globalAlpha = 0.5;
-    ctx.fillStyle = "#fff";
-    ctx.font = `600 ${canvasH / 60}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-    ctx.textAlign = "left";
-    ctx.textBaseline = "bottom";
-    ctx.fillText(`Speed : ${nowSpeed}, BPM : ${bpm}`, canvasW / 100, canvasH - canvasH / 60);
-
+    let displayFPS;
     if (frameCounter) {
       frameArray.push(1000 / (Date.now() - frameCounterMs));
       if (frameArray.length == 10) {
@@ -1068,9 +461,40 @@ const cntRender = () => {
           }, 0) / 10;
         frameArray = [];
       }
-      ctx.textAlign = "right";
-      ctx.fillText(fps.toFixed(), canvasW - canvasW / 100, canvasH - canvasH / 70);
+      displayFPS = fps.toFixed();
       frameCounterMs = Date.now();
+    }
+
+    if (keyInput.length > 0 && keyInputMemory != keyInput.length) {
+      if (keyInput.length > 12) {
+        keyInput.splice(0, keyInput.length - 12);
+      }
+      keyInputMemory = keyInput.length;
+      keyInputTime = Date.now();
+    }
+
+    let percentage = 0;
+    if (endBeat !== null) percentage = Math.min(1, beats / endBeat);
+    else percentage = song.seek() / song.duration();
+
+    Updater.particles(destroyParticles);
+    Updater.particles(clickParticles);
+    Updater.particles(judgeParticles, settings.game.applyJudge);
+
+    Draw.explosions(destroyParticles);
+    Draw.clickEffects(clickParticles);
+    Draw.judges(judgeParticles);
+
+    Draw.keyInputUI(keyInput, keyInputTime);
+    Draw.scorePanelUI({ score, combo, difficulty: 3 }, albumImg);
+    Draw.systemInfoUI({ speed: nowSpeed, bpm, fps: displayFPS });
+    Draw.progressBarUI(percentage);
+
+    Draw.cursor({ x: mouseX, y: mouseY, zoom: cursorZoom }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
+
+    if (effectMs != 0 && effectNum != -1) {
+      Draw.finalEffect(effectNum, effectMs);
+      if (Date.now() - effectMs >= 2000) effectMs = 0;
     }
   } catch (e) {
     if (e) {
@@ -1082,122 +506,6 @@ const cntRender = () => {
       console.error(e);
     }
   }
-  ctx.globalAlpha = 1;
-  ctx.beginPath();
-  ctx.fillStyle = "#6021ff";
-  ctx.rect(canvasW * 0.92, canvasH * 0.05, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.fillStyle = "#fff";
-  ctx.rect(canvasW * 0.92 - canvasW * 0.002, canvasH * 0.05 - canvasW * 0.002, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
-  ctx.fill();
-  ctx.drawImage(albumImg, canvasW * 0.92, canvasH * 0.05, canvasH / 15, canvasH / 15);
-  if (Date.now() - scoreMs < 500) {
-    displayScore += ((score - prevScore) / 500) * (Date.now() - scoreMs);
-    prevScore = displayScore;
-  } else {
-    displayScore = score;
-  }
-  ctx.beginPath();
-  ctx.font = `700 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-  ctx.fillStyle = "#fff";
-  ctx.textAlign = "right";
-  ctx.textBaseline = "top";
-  ctx.fillText(numberWithCommas(`${Math.round(displayScore)}`.padStart(9, 0)), canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05);
-  const comboAnimation = Math.max(0, 1 - easeOutQuart(Math.min(Date.now() - comboAnimationMs, 500) / 500));
-  ctx.font = `${400 * (1 + comboAnimation * 0.5)} ${(canvasH / 40) * (1 + comboAnimation)}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-  ctx.fillStyle = "#fff";
-  ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
-  drawCursor();
-
-  drawKeyInput();
-
-  if (effectMs != 0 && effectNum != -1) drawFinalEffect(effectNum);
-
-  drawCursor();
-};
-
-const drawFinalEffect = (i) => {
-  const duration = 2000;
-  ctx.beginPath();
-  const text = i == 0 ? "ALL PERFECT" : "FULL COMBO";
-  const p = easeOutQuart(Math.min(1, (Date.now() - effectMs) / duration));
-  const alpha = Math.max(0, Math.min((Date.now() - effectMs) / 200, Math.min(1, (effectMs + duration - 500 - Date.now()) / 500)));
-  ctx.globalAlpha = alpha;
-  let effectStartX = (-1 * canvasW) / 5;
-  let effectFinalX = -1 * (canvasW / 20);
-  let effectX = effectStartX + (effectFinalX - effectStartX) * p;
-  let effectY = -1 * (canvasH / 20);
-  ctx.font = `800 ${canvasH / 5}px Montserrat`;
-  let grd = ctx.createLinearGradient(effectX, effectY, effectX, effectY + canvasH / 5);
-  grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
-  grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
-  ctx.fillStyle = grd;
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-  ctx.fillText(text, effectX, effectY);
-
-  ctx.beginPath();
-  effectStartX = canvasW + canvasW / 5;
-  effectFinalX = canvasW + canvasW / 20;
-  effectX = effectStartX + (effectFinalX - effectStartX) * p;
-  effectY = canvasH + canvasH / 20;
-  grd = ctx.createLinearGradient(effectX, effectY - canvasH / 5, effectX, effectY);
-  grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
-  grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
-  ctx.fillStyle = grd;
-  ctx.textAlign = "right";
-  ctx.textBaseline = "bottom";
-  ctx.fillText(text, effectX, effectY);
-  ctx.globalAlpha = 1;
-
-  ctx.beginPath();
-  let mainTextX = canvasW / 2;
-  let mainTextY = canvasH / 2;
-  let mainTextSizeStart = canvasH / 5;
-  let mainTextSizeFinal = canvasH / 7;
-  let outlineTextSizeStart = canvasH / 4;
-  let outlineTextSizeFinal = canvasH / 5;
-  let mainTextSize = mainTextSizeStart + (mainTextSizeFinal - mainTextSizeStart) * p;
-  let outlineTextSize = outlineTextSizeStart + (outlineTextSizeFinal - outlineTextSizeStart) * p;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.lineJoin = "round";
-  if (i == 0) {
-    grd = ctx.createLinearGradient(mainTextX, mainTextY - outlineTextSize / 2, mainTextX, mainTextY + outlineTextSize / 2);
-    grd.addColorStop(0, `rgba(245, 129, 255, ${alpha / 3})`);
-    grd.addColorStop(0.5, `rgba(119, 182, 244, ${alpha / 3})`);
-    grd.addColorStop(1, `rgba(67, 221, 166, ${alpha / 3})`);
-    ctx.strokeStyle = grd;
-  } else if (i == 1) {
-    ctx.strokeStyle = `rgba(240, 194, 29, ${alpha / 3})`;
-  }
-  ctx.font = `800 ${outlineTextSize}px Montserrat`;
-  ctx.lineWidth = canvasH / 200;
-  ctx.strokeText(text, mainTextX, mainTextY);
-  ctx.globalCompositeOperation = "destination-out";
-  ctx.fillStyle = `rgb(255, 255, 255)`;
-  ctx.fillText(text, mainTextX, mainTextY);
-  ctx.globalCompositeOperation = "source-over";
-  if (i == 0) {
-    grd = ctx.createLinearGradient(mainTextX, mainTextY - mainTextSize / 2, mainTextX, mainTextY + mainTextSize / 2);
-    grd.addColorStop(0, `rgba(245, 129, 255, ${alpha})`);
-    grd.addColorStop(0.5, `rgba(119, 182, 244, ${alpha})`);
-    grd.addColorStop(1, `rgba(67, 221, 166, ${alpha})`);
-    ctx.strokeStyle = grd;
-  } else if (i == 1) {
-    ctx.strokeStyle = `rgba(240, 194, 29, ${alpha})`;
-  }
-  ctx.font = `800 ${mainTextSize}px Montserrat`;
-  ctx.lineWidth = canvasH / 100;
-  ctx.strokeText(text, mainTextX, mainTextY);
-  ctx.globalCompositeOperation = "destination-out";
-  ctx.fillStyle = `rgb(255, 255, 255)`;
-  ctx.fillText(text, mainTextX, mainTextY);
-  ctx.globalCompositeOperation = "source-over";
-  ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-  ctx.fillText(text, mainTextX, mainTextY);
-  if (p == 1) effectMs = 0;
 };
 
 const trackMousePos = (e) => {
@@ -1220,7 +528,7 @@ const calculateResult = () => {
   document.getElementById("comboText").textContent = `${maxCombo}x`;
   let accuracy = (((perfect + (great / 10) * 7 + good / 2 + (bad / 10) * 3) / (perfect + great + good + bad + miss + bullet)) * 100).toFixed(1);
   document.getElementById("accuracyText").textContent = `${accuracy}%`;
-  let rank = "";
+  let rank;
   if (accuracy >= 98 && bad == 0 && miss == 0 && bullet == 0) {
     rankImg.style.animationName = "rainbow";
     rank = "SS";
@@ -1296,13 +604,14 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
     const powX = ((((mouseX - x) * canvasOW) / 200) * pixelRatio * settings.display.canvasRes) / 100;
     const powY = ((((mouseY - y) * canvasOH) / 200) * pixelRatio * settings.display.canvasRes) / 100;
     switch (v1) {
-      case 0:
+      case 0: {
         const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
         const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
         if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 130) && p >= 0) {
           pointingCntElement.push({ v1: v1, v2: v2, i: i });
         }
         break;
+      }
       case 1:
         if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / 80) {
           if (!destroyedBullets.has(i)) {
@@ -1310,7 +619,8 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
             missPoint.push(song.seek() * 1000);
             combo = 0;
             medalCheck(medal);
-            callBulletDestroy(i);
+            destroyParticles.push(...Factory.createExplosions(x, y, skin.bullet));
+            destroyedBullets.add(i);
             showOverlay();
             keyInput.push({ judge: "Bullet", key: "-", time: Date.now() });
           }
@@ -1351,9 +661,9 @@ const compClicked = (isTyped, key, isWheel) => {
   mouseClickedMs = Date.now();
   const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
   for (let i = 0; i < pointingCntElement.length; i++) {
-    if (pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && ((pointingCntElement[i].v2 === 0) == !isWheel || pointingCntElement[i].v2 === 2)) {
+    if (pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && (pointingCntElement[i].v2 !== 1) == !isWheel) {
       if (pointingCntElement[i].v2 == 1 && pattern.patterns[pointingCntElement[i].i].direction != key) return;
-      drawParticle(1, pattern.patterns[pointingCntElement[i].i].x, pattern.patterns[pointingCntElement[i].i].y, 0, pointingCntElement[i].v2);
+      clickParticles.push(Factory.createClickNote(pattern.patterns[pointingCntElement[i].i].x, pattern.patterns[pointingCntElement[i].i].y, settings.game.size, pointingCntElement[i].v2));
       let beat = pattern.patterns[pointingCntElement[i].i].beat;
       let perfectJudge = (1 / 6) * rate;
       let greatJudge = (1 / 3) * rate;
@@ -1386,24 +696,17 @@ const compClicked = (isTyped, key, isWheel) => {
         keyPressing[key] = pointingCntElement[i].i;
       }
       calculateScore(judge, pointingCntElement[i].i);
-      drawParticle(3, x, y, judge);
+      judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge));
       keyInput.push({ judge, key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
       return;
     }
   }
   keyInput.push({ judge: "Empty", key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
-  drawParticle(2, mouseX, mouseY);
-};
-
-const compReleased = () => {
-  mouseClicked = false;
-  mouseClickedMs = Date.now();
+  clickParticles.push(Factory.createClickDefault(mouseX, mouseY, settings.game.size));
 };
 
 const calculateScore = (judge, i, ignoreMs) => {
   judge = judge.toLowerCase();
-  scoreMs = Date.now();
-  prevScore = displayScore;
   destroyedNotes.add(i);
   if (!ignoreMs) {
     const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
@@ -1416,12 +719,11 @@ const calculateScore = (judge, i, ignoreMs) => {
   }
   tick.play();
   combo++;
-  comboAnimationMs = Date.now();
   if (maxCombo < combo) {
     maxCombo = combo;
   }
   let basicScore = 100000000 / patternLength;
-  let rateCalc = rate;
+  let rateCalc;
   if (rate >= 1) {
     rateCalc = rate * 0.5 + 0.5;
   } else {
@@ -1446,7 +748,7 @@ const calculateScore = (judge, i, ignoreMs) => {
     comboAlertCount = combo;
   }
   if (i == patternLength - 1) {
-    destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
+    if (pattern.bullets.length) destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
     effectMs = Date.now();
     if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
       effectNum = 0;
@@ -1512,10 +814,13 @@ const resume = () => {
   floatingResumeContainer.style.opacity = 1;
 };
 
+// eslint-disable-next-line no-unused-vars
 const retry = () => {
   if (isResultShowing) return location.reload();
   blackOverlayContainer.classList.add("show");
+
   setTimeout(() => {
+    Draw.initialize();
     song.stop();
     pattern = JSON.parse(localStorage.pattern);
     bpm = pattern.information.bpm;
@@ -1525,19 +830,17 @@ const retry = () => {
       beat: 0,
     };
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
+    clickParticles = [];
     destroyParticles = [];
-    missParticles = [];
-    perfectParticles = [];
+    judgeParticles = [];
     createdBullets = new Set([]);
     destroyedBullets = new Set([]);
+    explodingBullets = new Set([]);
     destroyedNotes = new Set([]);
     grabbedNotes = new Set([]);
     score = 0;
     combo = 0;
-    displayScore = 0;
-    prevScore = 0;
     maxCombo = 0;
-    scoreMs = 0;
     perfect = 0;
     great = 0;
     good = 0;
@@ -1550,11 +853,10 @@ const retry = () => {
     missPoint = [];
     comboAlertMs = 0;
     comboAlertCount = 0;
-    comboAnimationMs = 0;
     overlayTime = 0;
     keyInput = [];
     keyInputMemory = 0;
-    keyInputMemoryMs = 0;
+    keyInputTime = 0;
     effectMs = 0;
     effectNum = -1;
     keyPressing = {};
@@ -1571,14 +873,17 @@ const retry = () => {
   }, 100);
 };
 
+// eslint-disable-next-line no-unused-vars
 const editor = () => {
   window.location.href = `${url}/editor${background == "0" ? "?background=0" : ""}`;
 };
 
+// eslint-disable-next-line no-unused-vars
 const home = () => {
   window.location.href = `${url}/game?initialize=0`;
 };
 
+// eslint-disable-next-line no-unused-vars
 const settingChanged = (e, v) => {
   if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
@@ -1608,7 +913,7 @@ const globalScrollEvent = (e) => {
     setTimeout(() => {
       scrollTimer = 0;
     }, 50);
-    let delta = 0;
+    let delta;
     if (e.deltaY != 0) delta = Math.max(-1, Math.min(1, e.deltaY));
     else delta = Math.max(-1, Math.min(1, e.deltaX));
     if (!settings.input.wheelReverse) delta *= -1;
@@ -1681,28 +986,22 @@ const checkHoldNote = (key) => {
   mouseClicked = false;
   mouseClickedMs = date;
   if (pressingKeys.includes(key)) pressingKeys.splice(pressingKeys.indexOf(key), 1);
-  if (keyPressing.hasOwnProperty(key) && grabbedNotes.has(keyPressing[key]) && !grabbedNotes.has(`${keyPressing[key]}!`)) {
+  if (Object.hasOwn(keyPressing, key) && grabbedNotes.has(keyPressing[key]) && !grabbedNotes.has(`${keyPressing[key]}!`)) {
     grabbedNotes.delete(keyPressing[key]);
     grabbedNotes.add(`${keyPressing[key]}!`);
     if (pattern.patterns[keyPressing[key]].beat + pattern.patterns[keyPressing[key]].duration - 1 / 3 > beats) {
       medalCheck(medal);
       pattern.patterns[keyPressing[key]].beat = beats - pattern.patterns[keyPressing[key]].duration;
       calculateScore("Miss", keyPressing[key], true);
-      missParticles.push({
-        x: pattern.patterns[keyPressing[key]].x,
-        y: pattern.patterns[keyPressing[key]].y,
-        s: Date.now(),
-      });
+      judgeParticles.push(Factory.createJudge(pattern.patterns[keyPressing[key]].x, pattern.patterns[keyPressing[key]].y, judgeSkin, "Miss"));
       miss++;
       showOverlay();
       missPoint.push(song.seek() * 1000);
-      record.push([record.length, 0, 2, keyPressing[key], mouseX, mouseY, "miss(hold)", song.seek() * 1000]);
       keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
     } else {
-      perfectParticles.push({ x: pattern.patterns[keyPressing[key]].x, y: pattern.patterns[keyPressing[key]].y, s: Date.now() });
+      judgeParticles.push(Factory.createJudge(pattern.patterns[keyPressing[key]].x, pattern.patterns[keyPressing[key]].y, judgeSkin, "Perfect"));
       calculateScore("Perfect", keyPressing[key], true);
       keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
-      record.push([record.length, 0, 2, keyPressing[key], mouseX, mouseY, "perfect(hold)", song.seek() * 1000]);
     }
     delete keyPressing[key];
   }
