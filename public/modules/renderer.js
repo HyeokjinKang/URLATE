@@ -850,7 +850,7 @@ export default class Renderer {
       ctx.fillStyle = "#F0C21D"; // MID
     else if (difficulty === 2)
       ctx.fillStyle = "#FF774B"; // HARD
-    else ctx.fillSryle = "#6021ff"; // TEST
+    else ctx.fillStyle = "#6021ff"; // TEST
 
     ctx.rect(canvasW * 0.92, canvasH * 0.05, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
     ctx.fill();
