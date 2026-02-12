@@ -326,20 +326,15 @@ export default class Renderer {
       }
 
       ctx.fillStyle = "#ebd534";
-      ctx.strokeStyle = "#ebd534";
     }
     // (에디터용) 피격된 개체
     else if (isHit) {
       ctx.fillStyle = "#fb4934";
-      ctx.strokeStyle = "#fb4934";
     }
     // 스킨 적용
     else {
       this.#applyStyle(skin.bullet, 0, 0, w, 100, false);
-      if (skin.bullet.outline) {
-        this.#applyStyle(skin.bullet.outline, 0, 0, w, 100, true);
-        ctx.stroke(path);
-      }
+      if (skin.bullet.outline) this.#applyStyle(skin.bullet.outline, 0, 0, w, 100, true);
     }
 
     // visualAngle 계산
@@ -355,6 +350,7 @@ export default class Renderer {
 
     const path = this.cache.bulletPath;
     ctx.fill(path);
+    if (skin.bullet.outline) ctx.stroke(path);
 
     ctx.restore();
   }
