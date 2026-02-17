@@ -85,6 +85,15 @@ export default class Renderer {
       UI: {
         DEFAULT_FONT_SIZE: Math.round(refY * Config.UI.DEFAULT_FONT_SIZE),
         DEBUG_TEXT_LINE_WIDTH: Math.round(refX * Config.UI.DEBUG_TEXT_LINE_WIDTH),
+        SCORE_PANEL: {
+          X_BASE: Math.round(refX * Config.UI.SCORE_PANEL.X_BASE),
+          Y_BASE: Math.round(refY * Config.UI.SCORE_PANEL.Y_BASE),
+          SIZE: Math.round(refY * Config.UI.SCORE_PANEL.SIZE),
+          PADDING: Math.round(refX * Config.UI.SCORE_PANEL.PADDING),
+          MARGIN: Math.round(refX * Config.UI.SCORE_PANEL.MARGIN),
+          BORDER: Math.round(refX * Config.UI.SCORE_PANEL.BORDER),
+          FONT_SIZE: Math.round(refY * Config.UI.SCORE_PANEL.FONT_SIZE),
+        },
       },
       CURSOR: {
         SIZE: Math.round(refX * Config.CURSOR.SIZE * this.cursorZoom),
@@ -900,23 +909,32 @@ export default class Renderer {
       ctx.fillStyle = "#FF774B"; // HARD
     else ctx.fillStyle = "#6021ff"; // TEST
 
-    ctx.rect(canvasW * 0.92, canvasH * 0.05, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
+    const Conf = this.CONFIG.UI.SCORE_PANEL;
+    const xBase = Conf.X_BASE;
+    const yBase = Conf.Y_BASE;
+    const size = Conf.SIZE;
+    const padding = Conf.PADDING;
+    const margin = Conf.MARGIN;
+    const border = Conf.BORDER;
+    const fontSize = Conf.FONT_SIZE;
+
+    ctx.rect(xBase, yBase, size + padding, size + padding);
     ctx.fill();
 
     // (2) 흰색 테두리
     ctx.beginPath();
     ctx.fillStyle = "#fff";
-    ctx.rect(canvasW * 0.92 - canvasW * 0.002, canvasH * 0.05 - canvasW * 0.002, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
+    ctx.rect(xBase - border, yBase - border, size + padding, size + padding);
     ctx.fill();
 
     // (3) 앨범 아트
     if (albumImg) {
-      ctx.drawImage(albumImg, canvasW * 0.92, canvasH * 0.05, canvasH / 15, canvasH / 15);
+      ctx.drawImage(albumImg, xBase, yBase, size, size);
     }
 
     // (4) 점수 텍스트
     ctx.beginPath();
-    ctx.font = `700 ${canvasH / 25}px Montserrat, Pretendard JP Variable`;
+    ctx.font = `700 ${fontSize}px Montserrat, Pretendard JP Variable`;
     ctx.textAlign = "right";
     ctx.textBaseline = "top";
 
@@ -926,7 +944,7 @@ export default class Renderer {
     const roundedSize = ~~(this.CONFIG.UI.DEFAULT_FONT_SIZE * (1 + comboScale));
     const roundedWeight = ~~(400 * (1 + comboScale * 0.5));
     ctx.font = `${roundedWeight} ${roundedSize}px Montserrat, Pretendard JP Variable`;
-    ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
+    ctx.fillText(`${combo}x`, xBase - margin, yBase + fontSize);
 
     ctx.restore();
   }

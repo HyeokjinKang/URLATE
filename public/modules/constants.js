@@ -8,6 +8,15 @@ export const Config = {
   UI: {
     DEFAULT_FONT_SIZE: 30,
     DEBUG_TEXT_LINE_WIDTH: 3,
+    SCORE_PANEL: {
+      X_BASE: 920,
+      Y_BASE: 50,
+      SIZE: 200 / 3,
+      PADDING: 4,
+      MARGIN: 10,
+      BORDER: 2,
+      FONT_SIZE: 40,
+    },
   },
   CURSOR: {
     SIZE: 100 / 7,
