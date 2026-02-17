@@ -1,5 +1,22 @@
-export const numberWithCommas = (x) => {
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+export const numberWithCommas = (n) => {
+  let str = (~~n).toString();
+  let head = "";
+  let result = "";
+
+  let len = str.length;
+  for (let i = len; i < 9; i++) {
+    head += "0";
+  }
+  str = head + str;
+
+  len = str.length;
+  for (let i = 0; i < len; i++) {
+    if (i > 0 && (len - i) % 3 === 0) {
+      result += ",";
+    }
+    result += str[i];
+  }
+  return result;
 };
 
 export const hexadecimal = (color, percentage) => {

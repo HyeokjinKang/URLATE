@@ -9,13 +9,14 @@ import { getSin, getCos, hexadecimal, easeInQuad, easeOutQuad, easeOutQuart, num
 export default class Renderer {
   /**
    * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
+   * @param {object} layout - { canvasW, canvasH, cursorZoom? }
    * @param {object} skin - 스킨 데이터
    */
   constructor(ctx, layout, skin) {
     this.ctx = ctx;
     this.canvasW = layout.canvasW;
     this.canvasH = layout.canvasH;
+    this.cursorZoom = layout.cursorZoom ?? 1;
     this.skin = skin;
 
     // 렌더링 캐시
@@ -29,13 +30,15 @@ export default class Renderer {
       score: { current: 0, start: 0, target: 0, startTime: 0 },
       combo: { value: 0, startTime: 0 },
     };
+
+    this.cacheConfig();
   }
 
   /** 내부 헬퍼: 좌표 변환 */
   #getPos(x, y) {
     return {
-      cx: (this.canvasW / 200) * (x + 100),
-      cy: (this.canvasH / 200) * (y + 100),
+      cx: ~~((this.canvasW / 200) * (x + 100)),
+      cy: ~~((this.canvasH / 200) * (y + 100)),
     };
   }
 
@@ -54,7 +57,7 @@ export default class Renderer {
     }
 
     if (isStroke) {
-      ctx.lineWidth = Math.round((canvasW / 1000) * skinPart.width);
+      ctx.lineWidth = ~~((canvasW / 1000) * skinPart.width);
       ctx.strokeStyle = style;
     } else ctx.fillStyle = style;
   }
@@ -70,6 +73,61 @@ export default class Renderer {
     if (this.canvasW !== this.cache.lastCacheW) {
       this.cache.bulletPath = null;
     }
+
+    this.cacheConfig();
+  }
+
+  /** 컨피그 중 canvas size에 따라 달라지는 값 저장 */
+  cacheConfig() {
+    const refX = this.canvasW / 1000;
+    const refY = this.canvasH / 1000;
+    this.CONFIG = {
+      UI: {
+        DEFAULT_FONT_SIZE: Math.round(refY * Config.UI.DEFAULT_FONT_SIZE),
+        DEBUG_TEXT_LINE_WIDTH: Math.round(refX * Config.UI.DEBUG_TEXT_LINE_WIDTH),
+        SCORE_PANEL: {
+          X_BASE: Math.round(refX * Config.UI.SCORE_PANEL.X_BASE),
+          Y_BASE: Math.round(refY * Config.UI.SCORE_PANEL.Y_BASE),
+          SIZE: Math.round(refY * Config.UI.SCORE_PANEL.SIZE),
+          PADDING: Math.round(refX * Config.UI.SCORE_PANEL.PADDING),
+          MARGIN: Math.round(refX * Config.UI.SCORE_PANEL.MARGIN),
+          BORDER: Math.round(refX * Config.UI.SCORE_PANEL.BORDER),
+          FONT_SIZE: Math.round(refY * Config.UI.SCORE_PANEL.FONT_SIZE),
+        },
+      },
+      CURSOR: {
+        SIZE: Math.round(refX * Config.CURSOR.SIZE * this.cursorZoom),
+        ANIM_SIZE_ADDER: Math.round(refX * Config.CURSOR.ANIM_SIZE_ADDER),
+      },
+      NOTE: {
+        WIDTH: Math.round(refX * Config.NOTE.WIDTH),
+      },
+      NOTE_CLICK_EFFECT: {
+        SIZE: Math.round(refX * Config.NOTE_CLICK_EFFECT.SIZE),
+        LINE_WIDTH: Math.round(refX * Config.NOTE_CLICK_EFFECT.LINE_WIDTH),
+      },
+      EXPLODE_EFFECT: {
+        SIZE: Math.round(refX * Config.EXPLODE_EFFECT.SIZE),
+      },
+      FINAL_EFFECT: {
+        BACKGROUND: {
+          FONT_SIZE: Math.round(refY * Config.FINAL_EFFECT.BACKGROUND.FONT_SIZE),
+          START_X: Math.round(refX * Config.FINAL_EFFECT.BACKGROUND.START_X),
+          FINAL_X: Math.round(refX * Config.FINAL_EFFECT.BACKGROUND.FINAL_X),
+          Y: Math.round(refY * Config.FINAL_EFFECT.BACKGROUND.Y),
+        },
+        MAIN: {
+          LINE_WIDTH: Math.round(refX * Config.FINAL_EFFECT.MAIN.LINE_WIDTH),
+          FONT_SIZE_START: Math.round(refY * Config.FINAL_EFFECT.MAIN.FONT_SIZE_START),
+          FONT_SIZE_END: Math.round(refY * Config.FINAL_EFFECT.MAIN.FONT_SIZE_END),
+        },
+        OUTLINE: {
+          LINE_WIDTH: Math.round(refX * Config.FINAL_EFFECT.OUTLINE.LINE_WIDTH),
+          FONT_SIZE_START: Math.round(refY * Config.FINAL_EFFECT.OUTLINE.FONT_SIZE_START),
+          FONT_SIZE_END: Math.round(refY * Config.FINAL_EFFECT.OUTLINE.FONT_SIZE_END),
+        },
+      },
+    };
   }
 
   /** 점수판 애니메이션 상태 초기화 */
@@ -97,7 +155,7 @@ export default class Renderer {
    * @param {object} state - { globalAlpha, progress, tailProgress, endProgress, isGrabbed, isSelected? }
    */
   note(note, state) {
-    const { ctx, canvasW, canvasH, skin } = this;
+    const { ctx, skin } = this;
     const { x, y, value: type, direction } = note;
     const { globalAlpha, progress, tailProgress, endProgress, isGrabbed, isSelected } = state;
 
@@ -108,7 +166,7 @@ export default class Renderer {
     // 공통 변수 계산
     const { cx, cy } = this.#getPos(x, y);
     const safeP = Math.max(progress, 0);
-    let w = (canvasW / 1000) * Config.NOTE.WIDTH;
+    let w = this.CONFIG.NOTE.WIDTH;
 
     // 투명도 계산
     let opacityVal = 100;
@@ -129,18 +187,20 @@ export default class Renderer {
 
     if (isSelected) {
       ctx.beginPath();
-      ctx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.font = `600 ${this.CONFIG.UI.DEFAULT_FONT_SIZE}px Montserrat, Pretendard JP Variable`;
       ctx.fillStyle = "#000";
       ctx.strokeStyle = "#fff";
       ctx.textAlign = "center";
-      ctx.lineWidth = Math.round(canvasW / 300);
+      ctx.lineWidth = ~~this.CONFIG.UI.DEBUG_TEXT_LINE_WIDTH;
+
+      const y = ~~(1.2 * w);
 
       if (note.debugIndex !== undefined) {
         ctx.textBaseline = "bottom";
-        this.outlinedText(`Note_${note.debugIndex}`, 0, -1.2 * w);
+        this.outlinedText(`Note_${note.debugIndex}`, 0, -y);
       }
       ctx.textBaseline = "top";
-      this.outlinedText(`(X: ${x}, Y: ${y})`, 0, 1.2 * w);
+      this.outlinedText(`(X: ${x}, Y: ${y})`, 0, y);
 
       ctx.fillStyle = hexadecimal("#ebd534", opacityVal);
       ctx.strokeStyle = hexadecimal("#ebd534", opacityVal);
@@ -309,11 +369,11 @@ export default class Renderer {
     // (에디터용) 선택된 객체
     if (isSelected) {
       ctx.beginPath();
-      ctx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.font = `600 ${this.CONFIG.UI.DEFAULT_FONT_SIZE}px Montserrat, Pretendard JP Variable`;
       ctx.fillStyle = "#000";
       ctx.strokeStyle = "#fff";
       ctx.textAlign = bullet.direction === "L" ? "left" : "right";
-      ctx.lineWidth = Math.round(canvasW / 300);
+      ctx.lineWidth = ~~this.CONFIG.UI.DEBUG_TEXT_LINE_WIDTH;
 
       if (bullet.debugIndex !== undefined) {
         ctx.textBaseline = "bottom";
@@ -322,7 +382,7 @@ export default class Renderer {
       ctx.textBaseline = "top";
       this.outlinedText(`(Angle: ${bullet.direction === "L" ? realAngle : realAngle - 180})`, cx, cy + 1.5 * w);
       if (bullet.location !== undefined) {
-        this.outlinedText(`(Loc: ${bullet.location})`, cx, cy + 1.5 * w + canvasH / 40);
+        this.outlinedText(`(Loc: ${bullet.location})`, cx, cy + 1.5 * w + this.CONFIG.UI.DEFAULT_FONT_SIZE);
       }
 
       ctx.fillStyle = "#ebd534";
@@ -338,9 +398,7 @@ export default class Renderer {
     }
 
     // visualAngle 계산
-    const scaleX = canvasW / 200;
-    const scaleY = canvasH / 200;
-    const visualAngleRad = Math.atan2(getSin(realAngle) * scaleY, getCos(realAngle) * scaleX);
+    const visualAngleRad = Math.atan2(getSin(realAngle) * canvasH, getCos(realAngle) * canvasW);
     const visualAngle = (visualAngleRad * 180) / Math.PI;
 
     // 그리기 시작
@@ -370,7 +428,7 @@ export default class Renderer {
     if (size.indexOf("vh") != -1) fontSize = (canvasH / 100) * Number(size.split("vh")[0]) + "px";
     else fontSize = size;
 
-    ctx.font = `${weight} ${fontSize} Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    ctx.font = `${weight} ${fontSize} Montserrat, Pretendard JP Variable`;
     ctx.textAlign = align;
     ctx.textBaseline = valign;
 
@@ -382,31 +440,32 @@ export default class Renderer {
 
   /**
    * 마우스 커서를 그립니다.
-   * @param {object} cursor - { x, y, zoom? }
+   * @param {object} cursor - { x, y }
    * @param {object} state - { isClicked?, clickedMs? }
    */
   cursor(cursor, state) {
     const { ctx, canvasW, skin } = this;
-    const { x: mouseX, y: mouseY, zoom = 1 } = cursor;
+    const { x: mouseX, y: mouseY } = cursor;
     const { isClicked = false, clickedMs = -1 } = state;
 
     const { cx, cy } = this.#getPos(mouseX, mouseY);
     const conf = Config.CURSOR;
 
-    // 기본 크기 계산
-    let w = (canvasW / 1000) * conf.SIZE * zoom;
+    // 크기 계산에 필요한 값들 가져오기
+    let w = this.CONFIG.CURSOR.SIZE;
+    let adder = this.CONFIG.CURSOR.ANIM_SIZE_ADDER;
 
     // 클릭 애니메이션
     if (clickedMs !== undefined && clickedMs !== -1) {
       const now = Date.now();
       if (isClicked) {
         // 클릭하면 살짝 커짐
-        w = w + (canvasW / 1000) * conf.ANIM_SIZE_ADDER;
+        w = w + adder;
       } else {
         // 클릭을 풀면 서서히 복귀
         if (now < clickedMs + conf.RELEASE_ANIM_LENGTH) {
           const progress = (clickedMs + conf.RELEASE_ANIM_LENGTH - now) / conf.RELEASE_ANIM_LENGTH;
-          w = w + (canvasW / 1000) * conf.ANIM_SIZE_ADDER * progress;
+          w = w + adder * progress;
         }
       }
     }
@@ -459,7 +518,7 @@ export default class Renderer {
       const animDeg = deg * easeOutProgress;
 
       const yAdder = judgeKey == "miss" ? Config.JUDGE_EFFECT.MISS_ANIM_Y_ADDER : Config.JUDGE_EFFECT.DEFAULT_ANIM_Y_ADDER;
-      const animY = -1 * (canvasH / 1000) * yAdder * easeOutProgress;
+      const animY = -(canvasH / 1000) * yAdder * easeOutProgress;
 
       const opacity = Math.max(0, 100 - easeInProgress * 100);
 
@@ -472,7 +531,7 @@ export default class Renderer {
 
       this.#applyStyle(skinPart, 0, 0, 50, opacity, false);
 
-      ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(p.judge, 0, 0);
@@ -486,13 +545,12 @@ export default class Renderer {
    * @param {Array<object>} particles
    */
   clickEffects(particles) {
-    const { ctx, canvasW, skin } = this;
+    const { ctx, skin } = this;
     const now = Date.now();
 
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       const elapsed = now - p.createdAt;
-      const cursorConf = Config.CURSOR;
 
       const progress = elapsed / p.lifeTime;
       const easeInProgress = easeInQuad(progress);
@@ -510,10 +568,10 @@ export default class Renderer {
         styleTarget = skin.cursor.outline ? skin.cursor.outline : skin.cursor;
       }
 
-      const startW = (canvasW / 1000) * cursorConf.SIZE * p.zoom + (canvasW / 1000) * cursorConf.ANIM_SIZE_ADDER;
-      const expandW = (canvasW / 1000) * effectConf.SIZE;
-      const width = startW + expandW * easeOutProgress;
-      const lineWidth = (1 - easeOutProgress) * ((canvasW / 1000) * effectConf.LINE_WIDTH);
+      const startW = this.CONFIG.CURSOR.SIZE + this.CONFIG.CURSOR.ANIM_SIZE_ADDER;
+      const expandW = this.CONFIG.NOTE_CLICK_EFFECT.SIZE;
+      const width = ~~(startW + expandW * easeOutProgress);
+      const lineWidth = ~~((1 - easeOutProgress) * this.CONFIG.NOTE_CLICK_EFFECT.LINE_WIDTH);
       const opacity = effectConf.OPACITY - easeInProgress * effectConf.OPACITY;
 
       if (lineWidth <= 0 || opacity <= 0 || width <= 0) continue;
@@ -536,9 +594,8 @@ export default class Renderer {
    * @param {Array<object>} particles
    */
   explosions(particles) {
-    const { ctx, canvasW, canvasH } = this;
+    const { ctx } = this;
     const now = Date.now();
-    const conf = Config.EXPLODE_EFFECT;
 
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
@@ -550,17 +607,16 @@ export default class Renderer {
       const currentX = p.startX + p.dx * easeVal;
       const currentY = p.startY + p.dy * easeVal;
 
-      const cx = (canvasW / 200) * (currentX + 100);
-      const cy = (canvasH / 200) * (currentY + 100);
+      const { cx, cy } = this.#getPos(currentX, currentY);
 
-      const size = (canvasW / 1000) * conf.SIZE * (1 - easeVal);
+      const size = ~~(this.CONFIG.EXPLODE_EFFECT.SIZE * (1 - easeVal));
 
       if (size <= 0) continue;
 
       ctx.save();
       ctx.beginPath();
 
-      const skin = p.skin;
+      const skin = this.skin.bullet;
 
       if (skin.type === "gradient") {
         const grd = ctx.createLinearGradient(cx - size, cy - size, size, size);
@@ -585,8 +641,9 @@ export default class Renderer {
    */
   finalEffect(effectNum, effectMs) {
     const { ctx, canvasW, canvasH } = this;
-    const duration = 2000;
     const now = Date.now();
+
+    const duration = Config.FINAL_EFFECT.LIFETIME;
 
     const text = effectNum == 0 ? "ALL PERFECT" : "FULL COMBO";
     const p = easeOutQuart(Math.min(1, (now - effectMs) / duration));
@@ -596,16 +653,21 @@ export default class Renderer {
     ctx.save();
 
     // 1. 배경에 흐르는 텍스트 (화면 모서리 양 끝)
+    const backgroundSize = this.CONFIG.FINAL_EFFECT.BACKGROUND.FONT_SIZE;
+    const backgroundStartX = this.CONFIG.FINAL_EFFECT.BACKGROUND.START_X;
+    const backgroundFinalX = this.CONFIG.FINAL_EFFECT.BACKGROUND.FINAL_X;
+    const backgroundY = this.CONFIG.FINAL_EFFECT.BACKGROUND.Y;
+
     ctx.globalAlpha = baseAlpha;
-    ctx.font = `800 ${canvasH / 5}px Montserrat`;
+    ctx.font = `800 ${backgroundSize}px Montserrat`;
 
     // Top Left
-    let effectStartX = (-1 * canvasW) / 5;
-    let effectFinalX = -1 * (canvasW / 20);
-    let effectX = effectStartX + (effectFinalX - effectStartX) * p;
-    let effectY = -1 * (canvasH / 20);
+    let effectStartX = -backgroundStartX;
+    let effectFinalX = -backgroundFinalX;
+    let effectX = ~~(effectStartX + (effectFinalX - effectStartX) * p);
+    let effectY = -backgroundY;
 
-    let grd = ctx.createLinearGradient(effectX, effectY, effectX, effectY + canvasH / 5);
+    let grd = ctx.createLinearGradient(effectX, effectY, effectX, effectY + backgroundSize);
     grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
     grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
     ctx.fillStyle = grd;
@@ -614,12 +676,12 @@ export default class Renderer {
     ctx.fillText(text, effectX, effectY);
 
     // Bottom Right
-    effectStartX = canvasW + canvasW / 5;
-    effectFinalX = canvasW + canvasW / 20;
-    effectX = effectStartX + (effectFinalX - effectStartX) * p;
-    effectY = canvasH + canvasH / 20;
+    effectStartX = canvasW + backgroundStartX;
+    effectFinalX = canvasW + backgroundFinalX;
+    effectX = ~~(effectStartX + (effectFinalX - effectStartX) * p);
+    effectY = canvasH + backgroundY;
 
-    grd = ctx.createLinearGradient(effectX, effectY - canvasH / 5, effectX, effectY);
+    grd = ctx.createLinearGradient(effectX, effectY - backgroundSize, effectX, effectY);
     grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
     grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
     ctx.fillStyle = grd;
@@ -628,15 +690,15 @@ export default class Renderer {
     ctx.fillText(text, effectX, effectY);
 
     // 2. 메인 중앙 텍스트
-    let mainTextX = canvasW / 2;
-    let mainTextY = canvasH / 2;
+    let mainTextX = ~~(canvasW / 2);
+    let mainTextY = ~~(canvasH / 2);
 
-    let mainTextSizeStart = canvasH / 5;
-    let mainTextSizeFinal = canvasH / 7;
-    let outlineTextSizeStart = canvasH / 4;
-    let outlineTextSizeFinal = canvasH / 5;
-    let mainTextSize = mainTextSizeStart + (mainTextSizeFinal - mainTextSizeStart) * p;
-    let outlineTextSize = outlineTextSizeStart + (outlineTextSizeFinal - outlineTextSizeStart) * p;
+    const mainTextSizeStart = this.CONFIG.FINAL_EFFECT.MAIN.FONT_SIZE_START;
+    const mainTextSizeFinal = this.CONFIG.FINAL_EFFECT.MAIN.FONT_SIZE_END;
+    const outlineTextSizeStart = this.CONFIG.FINAL_EFFECT.OUTLINE.FONT_SIZE_START;
+    const outlineTextSizeFinal = this.CONFIG.FINAL_EFFECT.OUTLINE.FONT_SIZE_END;
+    const mainTextSize = mainTextSizeStart + (mainTextSizeFinal - mainTextSizeStart) * p;
+    const outlineTextSize = outlineTextSizeStart + (outlineTextSizeFinal - outlineTextSizeStart) * p;
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -645,7 +707,7 @@ export default class Renderer {
     let strokeStyle;
     if (effectNum == 0) {
       // All Perfect: Gradient
-      let g = ctx.createLinearGradient(mainTextX, mainTextY - outlineTextSize / 2, mainTextX, mainTextY + outlineTextSize / 2);
+      let g = ctx.createLinearGradient(mainTextX, ~~(mainTextY - outlineTextSize / 2), mainTextX, ~~(mainTextY + outlineTextSize / 2));
       g.addColorStop(0, "#f581ff");
       g.addColorStop(0.5, "#77B6F4");
       g.addColorStop(1, "#43DDA6");
@@ -658,8 +720,8 @@ export default class Renderer {
     // Outline Stroke
     ctx.globalAlpha = baseAlpha / 3;
     ctx.strokeStyle = strokeStyle;
-    ctx.font = `800 ${outlineTextSize}px Montserrat`;
-    ctx.lineWidth = canvasH / 200;
+    ctx.font = `800 ${~~outlineTextSize}px Montserrat`;
+    ctx.lineWidth = this.CONFIG.FINAL_EFFECT.OUTLINE.LINE_WIDTH;
     ctx.strokeText(text, mainTextX, mainTextY);
 
     // Clearing Inside
@@ -672,8 +734,8 @@ export default class Renderer {
     // Main Stroke
     ctx.globalAlpha = baseAlpha;
     ctx.strokeStyle = strokeStyle;
-    ctx.font = `800 ${mainTextSize}px Montserrat`;
-    ctx.lineWidth = canvasH / 100;
+    ctx.font = `800 ${~~mainTextSize}px Montserrat`;
+    ctx.lineWidth = this.CONFIG.FINAL_EFFECT.MAIN.LINE_WIDTH;
     ctx.strokeText(text, mainTextX, mainTextY);
 
     // Clearing Inside
@@ -751,7 +813,7 @@ export default class Renderer {
       // 텍스트 그리기
       ctx.beginPath();
       ctx.fillStyle = "#fff";
-      ctx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.font = `600 ${this.CONFIG.UI.DEFAULT_FONT_SIZE}px Montserrat, Pretendard JP Variable`;
       ctx.textBaseline = "top";
       ctx.textAlign = "center";
 
@@ -794,7 +856,7 @@ export default class Renderer {
    * @param {HTMLImageElement} albumImg
    */
   scorePanelUI(data, albumImg) {
-    const { ctx, canvasW, canvasH } = this;
+    const { ctx } = this;
     const { score, combo, difficulty } = data;
     const now = Date.now();
 
@@ -834,7 +896,6 @@ export default class Renderer {
     }
 
     // 3. Rendering
-
     ctx.save();
 
     // (1) 배경 박스
@@ -848,33 +909,42 @@ export default class Renderer {
       ctx.fillStyle = "#FF774B"; // HARD
     else ctx.fillStyle = "#6021ff"; // TEST
 
-    ctx.rect(canvasW * 0.92, canvasH * 0.05, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
+    const Conf = this.CONFIG.UI.SCORE_PANEL;
+    const xBase = Conf.X_BASE;
+    const yBase = Conf.Y_BASE;
+    const size = Conf.SIZE;
+    const padding = Conf.PADDING;
+    const margin = Conf.MARGIN;
+    const border = Conf.BORDER;
+    const fontSize = Conf.FONT_SIZE;
+
+    ctx.rect(xBase, yBase, size + padding, size + padding);
     ctx.fill();
 
     // (2) 흰색 테두리
     ctx.beginPath();
     ctx.fillStyle = "#fff";
-    ctx.rect(canvasW * 0.92 - canvasW * 0.002, canvasH * 0.05 - canvasW * 0.002, canvasH / 15 + canvasW * 0.004, canvasH / 15 + canvasW * 0.004);
+    ctx.rect(xBase - border, yBase - border, size + padding, size + padding);
     ctx.fill();
 
     // (3) 앨범 아트
     if (albumImg) {
-      ctx.drawImage(albumImg, canvasW * 0.92, canvasH * 0.05, canvasH / 15, canvasH / 15);
+      ctx.drawImage(albumImg, xBase, yBase, size, size);
     }
 
     // (4) 점수 텍스트
     ctx.beginPath();
-    ctx.font = `700 ${canvasH / 25}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-    ctx.fillStyle = "#fff";
+    ctx.font = `700 ${fontSize}px Montserrat, Pretendard JP Variable`;
     ctx.textAlign = "right";
     ctx.textBaseline = "top";
 
-    ctx.fillText(numberWithCommas(`${Math.round(s.current)}`.padStart(9, "0")), canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05);
+    ctx.fillText(numberWithCommas(s.current), xBase - margin, yBase);
 
     // (5) 콤보 텍스트
-    ctx.font = `${400 * (1 + comboScale * 0.5)} ${(canvasH / 40) * (1 + comboScale)}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
-    ctx.fillStyle = "#fff";
-    ctx.fillText(`${combo}x`, canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05 + canvasH / 25);
+    const roundedSize = ~~(this.CONFIG.UI.DEFAULT_FONT_SIZE * (1 + comboScale));
+    const roundedWeight = ~~(400 * (1 + comboScale * 0.5));
+    ctx.font = `${roundedWeight} ${roundedSize}px Montserrat, Pretendard JP Variable`;
+    ctx.fillText(`${combo}x`, xBase - margin, yBase + fontSize);
 
     ctx.restore();
   }
@@ -892,7 +962,7 @@ export default class Renderer {
 
     ctx.globalAlpha = 0.5;
     ctx.fillStyle = "#fff";
-    ctx.font = `600 ${canvasH / 60}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    ctx.font = `600 ${canvasH / 60}px Montserrat, Pretendard JP Variable`;
     ctx.textBaseline = "bottom";
 
     // Speed & BPM (좌측 하단)
@@ -931,7 +1001,7 @@ export default class Renderer {
     ctx.lineTo(canvasW / 2 + w / 2, canvasH / 2 - w / 2);
     ctx.stroke();
 
-    ctx.font = `600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    ctx.font = `600 ${this.CONFIG.UI.DEFAULT_FONT_SIZE}px Montserrat, Pretendard JP Variable`;
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
     ctx.fillText("Add trigger", canvasW / 2, canvasH / 2 + 10);
@@ -1040,11 +1110,11 @@ export default class Renderer {
    * @param {number} alpha - 투명도
    */
   noteShadow(note, alpha) {
-    const { ctx, canvasW } = this;
+    const { ctx } = this;
     const { x, y, value, direction } = note;
     const { cx, cy } = this.#getPos(x, y);
 
-    let w = (canvasW / 1000) * Config.NOTE.WIDTH;
+    let w = this.CONFIG.NOTE.WIDTH;
 
     ctx.save();
     ctx.translate(cx, cy);

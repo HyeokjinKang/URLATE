@@ -5,6 +5,19 @@ export const Config = {
     COS_36: Math.cos(Math.PI / 5),
     SIN_36: Math.sin(Math.PI / 5),
   },
+  UI: {
+    DEFAULT_FONT_SIZE: 30,
+    DEBUG_TEXT_LINE_WIDTH: 3,
+    SCORE_PANEL: {
+      X_BASE: 920,
+      Y_BASE: 50,
+      SIZE: 200 / 3,
+      PADDING: 4,
+      MARGIN: 10,
+      BORDER: 2,
+      FONT_SIZE: 40,
+    },
+  },
   CURSOR: {
     SIZE: 100 / 7,
     ANIM_SIZE_ADDER: 5 / 2,
@@ -36,6 +49,25 @@ export const Config = {
     DEFAULT_ANIM_Y_ADDER: 100,
     MISS_ANIM_Y_ADDER: -50,
     MISS_ANIM_ROTATE: 10,
+  },
+  FINAL_EFFECT: {
+    LIFETIME: 2000,
+    BACKGROUND: {
+      FONT_SIZE: 195,
+      START_X: 200,
+      FINAL_X: 50,
+      Y: 50,
+    },
+    MAIN: {
+      LINE_WIDTH: 6,
+      FONT_SIZE_START: 195,
+      FONT_SIZE_END: 140,
+    },
+    OUTLINE: {
+      LINE_WIDTH: 3,
+      FONT_SIZE_START: 250,
+      FONT_SIZE_END: 195,
+    },
   },
 };
 

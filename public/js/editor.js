@@ -1081,7 +1081,7 @@ const cntRender = () => {
         const pos = Updater.bulletPos(bullet, beats, pattern.triggers, pattern.information.speed);
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
-          if (!prevCreatedBullets.has(i) || explodingBullets.has(i)) destroyParticles.push(...Factory.createExplosions(pos.x, pos.y, skin.bullet));
+          if (!prevCreatedBullets.has(i) || explodingBullets.has(i)) destroyParticles.push(...Factory.createExplosions(pos.x, pos.y));
           if (explodingBullets.has(i)) continue;
         }
         createdBullets.add(i);
