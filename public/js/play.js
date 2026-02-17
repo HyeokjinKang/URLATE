@@ -78,7 +78,6 @@ let fps = 0;
 let missPoint = [];
 let sens = 1,
   skin,
-  cursorZoom,
   inputMode,
   judgeSkin;
 let comboAlert = false,
@@ -259,7 +258,7 @@ const initialize = (isFirstCalled) => {
           .then((data) => {
             if (data.result == "success") {
               skin = JSON.parse(data.data);
-              Draw = new Renderer(ctx, { canvasW, canvasH }, skin);
+              Draw = new Renderer(ctx, { canvasW, canvasH, cursorZoom: settings.game.size }, skin);
             } else {
               alert(`Error occured.\n${data.description}`);
               console.error(`Error occured.\n${data.description}`);
@@ -303,7 +302,6 @@ const settingApply = () => {
   document.getElementById("loadingContainer").style.opacity = 1;
   document.getElementById("canvasBackground").style.opacity = 1;
   sens = settings.input.sens;
-  cursorZoom = settings.game.size;
   inputMode = settings.input.keys;
   comboAlert = settings.game.comboAlert;
   comboCount = settings.game.comboCount;
@@ -459,7 +457,7 @@ const cntRender = () => {
         const pos = Updater.bulletPos(bullet, beats, pattern.triggers, pattern.information.speed);
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
-          destroyParticles.push(...Factory.createExplosions(pos.x, pos.y, skin.bullet));
+          destroyParticles.push(...Factory.createExplosions(pos.x, pos.y));
           if (explodingBullets.has(i)) continue;
         }
         createdBullets.add(i);
@@ -509,7 +507,7 @@ const cntRender = () => {
     Draw.systemInfoUI({ speed: nowSpeed, bpm, fps: displayFPS });
     Draw.progressBarUI(percentage);
 
-    Draw.cursor({ x: mouseX, y: mouseY, zoom: cursorZoom }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
+    Draw.cursor({ x: mouseX, y: mouseY }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
 
     if (effectMs != 0 && effectNum != -1) {
       Draw.finalEffect(effectNum, effectMs);
@@ -699,7 +697,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
             missPoint.push(song.seek() * 1000);
             combo = 0;
             medalCheck(medal);
-            destroyParticles.push(...Factory.createExplosions(x, y, skin.bullet));
+            destroyParticles.push(...Factory.createExplosions(x, y));
             destroyedBullets.add(i);
             showOverlay();
             record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "bullet", song.seek() * 1000]);
@@ -744,7 +742,7 @@ const compClicked = (isTyped, key, isWheel) => {
   for (let i = 0; i < pointingCntElement.length; i++) {
     if (pointingCntElement[i].v1 === 0 && !destroyedNotes.has(pointingCntElement[i].i) && (pointingCntElement[i].v2 !== 1) == !isWheel) {
       if (pointingCntElement[i].v2 == 1 && pattern.patterns[pointingCntElement[i].i].direction != key) return;
-      clickParticles.push(Factory.createClickNote(pattern.patterns[pointingCntElement[i].i].x, pattern.patterns[pointingCntElement[i].i].y, settings.game.size, pointingCntElement[i].v2));
+      clickParticles.push(Factory.createClickNote(pattern.patterns[pointingCntElement[i].i].x, pattern.patterns[pointingCntElement[i].i].y, pointingCntElement[i].v2));
       let beat = pattern.patterns[pointingCntElement[i].i].beat;
       let perfectJudge = (1 / 6) * rate;
       let greatJudge = (1 / 3) * rate;
@@ -784,7 +782,7 @@ const compClicked = (isTyped, key, isWheel) => {
     }
   }
   keyInput.push({ judge: "Empty", key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
-  clickParticles.push(Factory.createClickDefault(mouseX, mouseY, settings.game.size));
+  clickParticles.push(Factory.createClickDefault(mouseX, mouseY));
 };
 
 const calculateScore = (judge, i, ignoreMs) => {

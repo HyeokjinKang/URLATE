@@ -9,13 +9,14 @@ import { getSin, getCos, hexadecimal, easeInQuad, easeOutQuad, easeOutQuart, num
 export default class Renderer {
   /**
    * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH }
+   * @param {object} layout - { canvasW, canvasH, cursorZoom? }
    * @param {object} skin - 스킨 데이터
    */
   constructor(ctx, layout, skin) {
     this.ctx = ctx;
     this.canvasW = layout.canvasW;
     this.canvasH = layout.canvasH;
+    this.cursorZoom = layout.cursorZoom ?? 1;
     this.skin = skin;
 
     // 렌더링 캐시
@@ -382,31 +383,32 @@ export default class Renderer {
 
   /**
    * 마우스 커서를 그립니다.
-   * @param {object} cursor - { x, y, zoom? }
+   * @param {object} cursor - { x, y }
    * @param {object} state - { isClicked?, clickedMs? }
    */
   cursor(cursor, state) {
     const { ctx, canvasW, skin } = this;
-    const { x: mouseX, y: mouseY, zoom = 1 } = cursor;
+    const { x: mouseX, y: mouseY } = cursor;
     const { isClicked = false, clickedMs = -1 } = state;
 
     const { cx, cy } = this.#getPos(mouseX, mouseY);
     const conf = Config.CURSOR;
 
-    // 기본 크기 계산
-    let w = (canvasW / 1000) * conf.SIZE * zoom;
+    // 크기 계산에 필요한 값들 가져오기
+    let w = this.CONFIG.CURSOR.SIZE;
+    let adder = this.CONFIG.CURSOR.ANIM_SIZE_ADDER;
 
     // 클릭 애니메이션
     if (clickedMs !== undefined && clickedMs !== -1) {
       const now = Date.now();
       if (isClicked) {
         // 클릭하면 살짝 커짐
-        w = w + (canvasW / 1000) * conf.ANIM_SIZE_ADDER;
+        w = w + adder;
       } else {
         // 클릭을 풀면 서서히 복귀
         if (now < clickedMs + conf.RELEASE_ANIM_LENGTH) {
           const progress = (clickedMs + conf.RELEASE_ANIM_LENGTH - now) / conf.RELEASE_ANIM_LENGTH;
-          w = w + (canvasW / 1000) * conf.ANIM_SIZE_ADDER * progress;
+          w = w + adder * progress;
         }
       }
     }
@@ -560,7 +562,7 @@ export default class Renderer {
       ctx.save();
       ctx.beginPath();
 
-      const skin = p.skin;
+      const skin = this.skin.bullet;
 
       if (skin.type === "gradient") {
         const grd = ctx.createLinearGradient(cx - size, cy - size, size, size);

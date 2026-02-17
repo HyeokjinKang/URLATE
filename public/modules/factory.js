@@ -10,7 +10,7 @@ export default class Factory {
    * 폭발 효과를 위한 파티클 데이터 배열을 생성합니다.
    * @returns {Array<object>} 생성된 파티클 객체들의 배열
    */
-  static createExplosions(x, y, skin) {
+  static createExplosions(x, y) {
     const particles = [];
     const conf = Config.EXPLODE_EFFECT;
 
@@ -25,7 +25,6 @@ export default class Factory {
         dy: Math.sin(angle) * distance,
         createdAt: Date.now(),
         lifeTime: conf.LIFETIME,
-        skin,
       });
     }
 
@@ -36,12 +35,11 @@ export default class Factory {
    * 기본 클릭 이펙트를 위한 데이터를 생성합니다.
    * @returns { object }
    */
-  static createClickDefault(x, y, zoom) {
+  static createClickDefault(x, y) {
     return {
       type: "default",
       x,
       y,
-      zoom,
       createdAt: Date.now(),
       lifeTime: Config.CLICK_EFFECT.LIFETIME,
     };
@@ -51,12 +49,11 @@ export default class Factory {
    * 노트 클릭 이펙트를 위한 데이터를 생성합니다.
    * @returns { object }
    */
-  static createClickNote(x, y, zoom, noteType) {
+  static createClickNote(x, y, noteType) {
     return {
       type: "note",
       x,
       y,
-      zoom,
       noteType,
       createdAt: Date.now(),
       lifeTime: Config.NOTE_CLICK_EFFECT.LIFETIME,
