@@ -518,7 +518,7 @@ export default class Renderer {
       const animDeg = deg * easeOutProgress;
 
       const yAdder = judgeKey == "miss" ? Config.JUDGE_EFFECT.MISS_ANIM_Y_ADDER : Config.JUDGE_EFFECT.DEFAULT_ANIM_Y_ADDER;
-      const animY = -1 * (canvasH / 1000) * yAdder * easeOutProgress;
+      const animY = -(canvasH / 1000) * yAdder * easeOutProgress;
 
       const opacity = Math.max(0, 100 - easeInProgress * 100);
 
@@ -856,7 +856,7 @@ export default class Renderer {
    * @param {HTMLImageElement} albumImg
    */
   scorePanelUI(data, albumImg) {
-    const { ctx, canvasW, canvasH } = this;
+    const { ctx } = this;
     const { score, combo, difficulty } = data;
     const now = Date.now();
 
@@ -938,7 +938,7 @@ export default class Renderer {
     ctx.textAlign = "right";
     ctx.textBaseline = "top";
 
-    ctx.fillText(numberWithCommas(`${~~s.current}`.padStart(9, "0")), canvasW * 0.92 - canvasW * 0.01, canvasH * 0.05);
+    ctx.fillText(numberWithCommas(s.current), xBase - margin, yBase);
 
     // (5) 콤보 텍스트
     const roundedSize = ~~(this.CONFIG.UI.DEFAULT_FONT_SIZE * (1 + comboScale));
