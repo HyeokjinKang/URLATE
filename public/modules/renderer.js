@@ -193,14 +193,14 @@ export default class Renderer {
       ctx.textAlign = "center";
       ctx.lineWidth = ~~this.CONFIG.UI.DEBUG_TEXT_LINE_WIDTH;
 
-      const y = ~~(1.2 * w);
+      const textY = ~~(1.2 * w);
 
       if (note.debugIndex !== undefined) {
         ctx.textBaseline = "bottom";
-        this.outlinedText(`Note_${note.debugIndex}`, 0, -y);
+        this.outlinedText(`Note_${note.debugIndex}`, 0, -textY);
       }
       ctx.textBaseline = "top";
-      this.outlinedText(`(X: ${x}, Y: ${y})`, 0, y);
+      this.outlinedText(`(X: ${x}, Y: ${y})`, 0, textY);
 
       ctx.fillStyle = hexadecimal("#ebd534", opacityVal);
       ctx.strokeStyle = hexadecimal("#ebd534", opacityVal);
