@@ -461,19 +461,11 @@ const initialize = (isFirstCalled) => {
   isTmlUpdateNeeded = true;
 
   if (isFirstCalled) {
-    fetch(`${api}/skin/${settings.game.skin}`, {
-      method: "GET",
-      credentials: "include",
-    })
+    fetch(`${cdn}/skins/${settings.game.skin}.json`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.result == "success") {
-          skin = JSON.parse(data.data);
-          Draw = new Renderer(cntCtx, { canvasW, canvasH }, skin);
-        } else {
-          alert(`Error occured.\n${data.description}`);
-          console.error(`Error occured.\n${data.description}`);
-        }
+        skin = JSON.parse(data);
+        Draw = new Renderer(cntCtx, { canvasW, canvasH }, skin);
       })
       .catch((error) => {
         alert(`Error occured.\n${error}`);
