@@ -607,7 +607,7 @@ const tmlRender = () => {
     bulletsOverlapNum = 1;
     let bulletsOverlap = {};
     for (let i = start; i < end; i++) {
-      let overlapIndex = parseInt(pattern.bullets[i].beat * 2);
+      let overlapIndex = Math.round(pattern.bullets[i].beat * 2);
 
       if (bulletsOverlap[overlapIndex]) {
         bulletsOverlap[overlapIndex]++;
@@ -624,7 +624,7 @@ const tmlRender = () => {
     for (let j = start; j < end; j++) {
       tmlCtx.beginPath();
       let x = tmlStartX + parseInt((pattern.bullets[j].beat - renderStart) * beatToPx);
-      let y = startY + timelineYLoc + height * bulletsOverlap[parseInt(pattern.bullets[j].beat * 2)] + height / 2;
+      let y = startY + timelineYLoc + height * bulletsOverlap[Math.round(pattern.bullets[j].beat * 2)] + height / 2;
       let w = height / 3;
 
       if (mouseMode == 1) trackMouseSelection(j, 1, 0, x, y);
@@ -640,7 +640,7 @@ const tmlRender = () => {
       tmlCtx.lineTo(x, y - w);
       tmlCtx.lineTo(x - w, y);
 
-      bulletsOverlap[parseInt(pattern.bullets[j].beat * 2)]--;
+      bulletsOverlap[Math.round(pattern.bullets[j].beat * 2)]--;
       tmlCtx.fill();
     }
 
@@ -652,7 +652,7 @@ const tmlRender = () => {
     triggersOverlapNum = 2;
     let triggersOverlap = {};
     for (let i = start; i < end; i++) {
-      let overlapIndex = parseInt(pattern.triggers[i].beat * 2);
+      let overlapIndex = Math.round(pattern.triggers[i].beat * 2);
 
       if (triggersOverlap[overlapIndex]) {
         triggersOverlap[overlapIndex]++;
@@ -669,7 +669,7 @@ const tmlRender = () => {
     for (let j = start; j < end; j++) {
       tmlCtx.beginPath();
       let x = tmlStartX + parseInt((pattern.triggers[j].beat - renderStart) * beatToPx);
-      let y = startY + timelineYLoc + height * (bulletsOverlapNum + triggersOverlap[parseInt(pattern.triggers[j].beat * 2)]) + height / 2;
+      let y = startY + timelineYLoc + height * (bulletsOverlapNum + triggersOverlap[Math.round(pattern.triggers[j].beat * 2)]) + height / 2;
       let w = height / 3;
 
       if (mouseMode == 1) trackMouseSelection(j, 2, pattern.triggers[j].value, x, y);
@@ -684,7 +684,7 @@ const tmlRender = () => {
       tmlCtx.lineTo(x - w / 1.1, y + w);
       tmlCtx.lineTo(x - w / 1.1, y - w);
 
-      triggersOverlap[parseInt(pattern.triggers[j].beat * 2)]--;
+      triggersOverlap[Math.round(pattern.triggers[j].beat * 2)]--;
       tmlCtx.fill();
     }
 
