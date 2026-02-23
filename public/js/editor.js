@@ -464,7 +464,7 @@ const initialize = (isFirstCalled) => {
     fetch(`${cdn}/skins/${settings.game.skin}.json`)
       .then((res) => res.json())
       .then((data) => {
-        skin = JSON.parse(data);
+        skin = data;
         Draw = new Renderer(cntCtx, { canvasW, canvasH }, skin);
       })
       .catch((error) => {
