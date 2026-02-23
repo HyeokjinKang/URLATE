@@ -213,19 +213,11 @@ const initialize = (isFirstCalled) => {
         document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
         albumImg.src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.webp`;
       });
-    fetch(`${api}/skin/${settings.game.skin}`, {
-      method: "GET",
-      credentials: "include",
-    })
+    fetch(`${cdn}/skins/${settings.game.skin}.json`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.result == "success") {
-          skin = JSON.parse(data.data);
-          Draw = new Renderer(ctx, { canvasW, canvasH, cursorZoom: settings.game.size }, skin);
-        } else {
-          alert(`Error occured.\n${data.description}`);
-          console.error(`Error occured.\n${data.description}`);
-        }
+        skin = data;
+        Draw = new Renderer(ctx, { canvasW, canvasH, cursorZoom: settings.game.size }, skin);
       })
       .catch((error) => {
         alert(`Error occured.\n${error}`);
