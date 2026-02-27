@@ -124,14 +124,24 @@ app.get("/privacy", (req, res) => {
 const upload = multer({
   storage: multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, __dirname + "/../public/images/profiles");
+      const dirPath = path.join(__dirname, "..", "public", "images", "profiles");
+      fs.mkdir(dirPath, { recursive: true }, (err) => {
+        if (err) {
+          logger.error("Profile update API error", err, {
+            message: "Failed to create profile image directory.",
+            userid: req.params.userid,
+          });
+          return cb(err, dirPath);
+        }
+        cb(null, dirPath);
+      });
     },
     filename: function (req, file, cb) {
       cb(null, Date.now() + ".webp");
     },
   }),
   limits: {
-    fileSize: 1024 * 1024 * 3,
+    fileSize: 3 * 1024 * 1024, // 3MB
   },
 }).single("img");
 
