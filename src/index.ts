@@ -125,17 +125,16 @@ const upload = multer({
   storage: multer.diskStorage({
     destination: function (req, file, cb) {
       const dirPath = path.join(__dirname, "..", "public", "images", "profiles");
-      try {
-        fs.mkdirSync(dirPath, { recursive: true });
+      fs.mkdir(dirPath, { recursive: true }, (err) => {
+        if (err) {
+          logger.error("Profile update API error", err, {
+            message: "Failed to create profile image directory.",
+            userid: req.params.userid,
+          });
+          return cb(err, dirPath);
+        }
         cb(null, dirPath);
-      } catch (err) {
-        logger.error("Profile update API error", null, {
-          message: "Failed to validate directory path.",
-          userid: req.params.userid,
-          error: err.message,
-        });
-        cb(err, dirPath);
-      }
+      });
     },
     filename: function (req, file, cb) {
       cb(null, Date.now() + ".webp");
