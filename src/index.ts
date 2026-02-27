@@ -124,14 +124,25 @@ app.get("/privacy", (req, res) => {
 const upload = multer({
   storage: multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, __dirname + "/../public/images/profiles");
+      const dirPath = path.join(__dirname, "..", "public", "images", "profiles");
+      try {
+        fs.mkdirSync(dirPath, { recursive: true });
+        cb(null, dirPath);
+      } catch (err) {
+        logger.error("Profile update API error", null, {
+          message: "Failed to validate directory path.",
+          userid: req.params.userid,
+          error: err.message,
+        });
+        cb(err, dirPath);
+      }
     },
     filename: function (req, file, cb) {
       cb(null, Date.now() + ".webp");
     },
   }),
   limits: {
-    fileSize: 1024 * 1024 * 3,
+    fileSize: 3 * 1024 * 1024, // 3MB
   },
 }).single("img");
 
