@@ -11,7 +11,9 @@
     "preinstall": "npx only-allow pnpm",
     "build": "tsc",
     "auto-build": "tsc-watch",
-    "start": "supervisor dist/index.js",
+    "dev": "supervisor dist/index.js",
+    "start": "pm2 start ecosystem.config.js",
+    "stop": "pm2 stop URLATE-v3l-frontend",
     "obfuscate": "javascript-obfuscator public/js/ --output public/js/ --debug-protection false --disable-console-output true --domain-lock 'urlate.coupy.dev' --domain-lock-redirect-url 'urlate.coupy.dev' --numbers-to-expressions true --self-defending true"
   },
   "author": "Coupyworks",
