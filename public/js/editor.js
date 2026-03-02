@@ -603,11 +603,15 @@ const tmlRender = () => {
     start = lowerBound(pattern.bullets, renderStart);
     end = upperBound(pattern.bullets, renderEnd);
 
+    // Elements (w = height/3) visually overlap when pixel distance < 2*w.
+    // Convert to beats: threshold = (2 * height/3) / beatToPx.
+    const overlapThreshold = beatToPx > 0 ? (2 * height) / (3 * beatToPx) : Infinity;
+
     //Calculate overlap number
     bulletsOverlapNum = 1;
     let bulletsOverlap = {};
     for (let i = start; i < end; i++) {
-      let overlapIndex = parseInt(pattern.bullets[i].beat * 2);
+      let overlapIndex = Math.round(pattern.bullets[i].beat / overlapThreshold);
 
       if (bulletsOverlap[overlapIndex]) {
         bulletsOverlap[overlapIndex]++;
@@ -624,7 +628,7 @@ const tmlRender = () => {
     for (let j = start; j < end; j++) {
       tmlCtx.beginPath();
       let x = tmlStartX + parseInt((pattern.bullets[j].beat - renderStart) * beatToPx);
-      let y = startY + timelineYLoc + height * bulletsOverlap[parseInt(pattern.bullets[j].beat * 2)] + height / 2;
+      let y = startY + timelineYLoc + height * bulletsOverlap[Math.round(pattern.bullets[j].beat / overlapThreshold)] + height / 2;
       let w = height / 3;
 
       if (mouseMode == 1) trackMouseSelection(j, 1, 0, x, y);
@@ -640,7 +644,7 @@ const tmlRender = () => {
       tmlCtx.lineTo(x, y - w);
       tmlCtx.lineTo(x - w, y);
 
-      bulletsOverlap[parseInt(pattern.bullets[j].beat * 2)]--;
+      bulletsOverlap[Math.round(pattern.bullets[j].beat / overlapThreshold)]--;
       tmlCtx.fill();
     }
 
@@ -652,7 +656,7 @@ const tmlRender = () => {
     triggersOverlapNum = 2;
     let triggersOverlap = {};
     for (let i = start; i < end; i++) {
-      let overlapIndex = parseInt(pattern.triggers[i].beat * 2);
+      let overlapIndex = Math.round(pattern.triggers[i].beat / overlapThreshold);
 
       if (triggersOverlap[overlapIndex]) {
         triggersOverlap[overlapIndex]++;
@@ -669,7 +673,7 @@ const tmlRender = () => {
     for (let j = start; j < end; j++) {
       tmlCtx.beginPath();
       let x = tmlStartX + parseInt((pattern.triggers[j].beat - renderStart) * beatToPx);
-      let y = startY + timelineYLoc + height * (bulletsOverlapNum + triggersOverlap[parseInt(pattern.triggers[j].beat * 2)]) + height / 2;
+      let y = startY + timelineYLoc + height * (bulletsOverlapNum + triggersOverlap[Math.round(pattern.triggers[j].beat / overlapThreshold)]) + height / 2;
       let w = height / 3;
 
       if (mouseMode == 1) trackMouseSelection(j, 2, pattern.triggers[j].value, x, y);
@@ -684,7 +688,7 @@ const tmlRender = () => {
       tmlCtx.lineTo(x - w / 1.1, y + w);
       tmlCtx.lineTo(x - w / 1.1, y - w);
 
-      triggersOverlap[parseInt(pattern.triggers[j].beat * 2)]--;
+      triggersOverlap[Math.round(pattern.triggers[j].beat / overlapThreshold)]--;
       tmlCtx.fill();
     }
 
