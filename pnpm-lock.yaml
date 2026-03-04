@@ -14,13 +14,18 @@ overrides:
   tar@<7.5.8: '>=7.5.8'
   tar@<=7.5.3: '>=7.5.4'
 
+patchedDependencies:
+  '@tensorflow/tfjs-node@4.22.0':
+    hash: 9c8b2df073c14c72df1030aa70d905fcec788cffcf8c86c4de4d587df23ec7ed
+    path: patches/@tensorflow__tfjs-node@4.22.0.patch
+
 importers:
 
   .:
     dependencies:
       '@tensorflow/tfjs-node':
         specifier: ^4.22.0
-        version: 4.22.0(seedrandom@3.0.5)
+        version: 4.22.0(patch_hash=9c8b2df073c14c72df1030aa70d905fcec788cffcf8c86c4de4d587df23ec7ed)(seedrandom@3.0.5)
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
@@ -1360,15 +1365,6 @@ packages:
       encoding:
         optional: true
 
-  node-fetch@2.7.0:
-    resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
-    engines: {node: 4.x || >=6.0.0}
-    peerDependencies:
-      encoding: ^0.1.0
-    peerDependenciesMeta:
-      encoding:
-        optional: true
-
   node-fetch@3.3.2:
     resolution: {integrity: sha512-dRB78srN/l6gqWulah9SrxeYnxeddIG30+GOqK/9OlLVyLg3HPnr6SqOWTWOXKRwC2eGYCkZ59NNuSgvSrpgOA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
@@ -2047,7 +2043,7 @@ snapshots:
       detect-libc: 2.1.2
       https-proxy-agent: 5.0.1
       make-dir: 3.1.0
-      node-fetch: 2.7.0
+      node-fetch: 2.6.13
       nopt: 5.0.0
       npmlog: 5.0.1
       rimraf: 3.0.2
@@ -2122,7 +2118,7 @@ snapshots:
     dependencies:
       '@tensorflow/tfjs-core': 4.22.0
 
-  '@tensorflow/tfjs-node@4.22.0(seedrandom@3.0.5)':
+  '@tensorflow/tfjs-node@4.22.0(patch_hash=9c8b2df073c14c72df1030aa70d905fcec788cffcf8c86c4de4d587df23ec7ed)(seedrandom@3.0.5)':
     dependencies:
       '@mapbox/node-pre-gyp': 1.0.9
       '@tensorflow/tfjs': 4.22.0(seedrandom@3.0.5)
@@ -3197,10 +3193,6 @@ snapshots:
   node-domexception@1.0.0: {}
 
   node-fetch@2.6.13:
-    dependencies:
-      whatwg-url: 5.0.0
-
-  node-fetch@2.7.0:
     dependencies:
       whatwg-url: 5.0.0
 
