@@ -41,12 +41,6 @@ jobs:
           cp ./src/i18n.js ./dist/
           cp -r dist ./deploy/
 
-      - name: Tensorflow fix
-        run: |
-          cd ./deploy/node_modules/@tensorflow/tfjs-node/
-          node-pre-gyp rebuild
-          cd ../../../../
-
       - name: Rsync to Production
         run: |
           rsync -azq --delete \
