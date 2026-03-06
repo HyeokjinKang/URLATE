@@ -23,6 +23,7 @@ export default class Renderer {
     this.cache = {
       bulletPath: null,
       lastCacheW: 0,
+      gradient: new Map(), // skinPart -> Map(size -> gradient)
     };
 
     // 애니메이션 상태
@@ -42,16 +43,29 @@ export default class Renderer {
     };
   }
 
-  /** 내부 헬퍼: 스킨 데이터(Gradient/Color)를 분석하여 ctx의 fillStyle 또는 strokeStyle을 설정합니다. */
+  /** 내부 헬퍼: 스킨 데이터(Gradient/Color)를 분석하여 ctx의 fillStyle 또는 strokeStyle을 설정합니다.
+   * 최적화: 그라데이션은 불투명하게 캐싱하고, 투명도는 ctx.globalAlpha로 조절합니다.
+   */
   #applyStyle(skinPart, x, y, size, opacity, isStroke = false) {
     const { ctx, canvasW } = this;
     let style;
     if (skinPart.type === "gradient") {
-      const grd = ctx.createLinearGradient(x - size, y - size, x + size, y + size);
-      for (let s = 0; s < skinPart.stops.length; s++) {
-        grd.addColorStop(skinPart.stops[s].percentage / 100, hexadecimal(skinPart.stops[s].color, opacity));
+      let sizeMap = this.cache.gradient.get(skinPart);
+      if (!sizeMap) {
+        sizeMap = new Map();
+        this.cache.gradient.set(skinPart, sizeMap);
       }
-      style = grd;
+      style = sizeMap.get(size);
+      if (!style) {
+        // 캐싱할 그라데이션은 (x, y)를 원점으로 하여 상대 좌표로 생성 (보통 x, y는 0)
+        style = ctx.createLinearGradient(x - size, y - size, x + size, y + size);
+        for (let s = 0; s < skinPart.stops.length; s++) {
+          style.addColorStop(skinPart.stops[s].percentage / 100, skinPart.stops[s].color);
+        }
+        sizeMap.set(size, style);
+      }
+      // 그라데이션인 경우 opacity 처리는 호출 측에서 globalAlpha를 조절하도록 유도하거나,
+      // 여기서 직접 조절 (단, globalAlpha는 누적되므로 주의 필요)
     } else {
       style = hexadecimal(skinPart.color, opacity);
     }
@@ -72,6 +86,7 @@ export default class Renderer {
     // 화면 크기가 바뀌면 캐시 초기화
     if (this.canvasW !== this.cache.lastCacheW) {
       this.cache.bulletPath = null;
+      this.cache.gradient.clear();
     }
 
     this.cacheConfig();
@@ -184,6 +199,7 @@ export default class Renderer {
     // 그리기 시작
     ctx.save();
     ctx.translate(cx, cy);
+    ctx.globalAlpha = (opacityVal / 100) * globalAlpha;
 
     if (isSelected) {
       ctx.beginPath();
@@ -202,11 +218,12 @@ export default class Renderer {
       ctx.textBaseline = "top";
       this.outlinedText(`(X: ${x}, Y: ${y})`, 0, textY);
 
-      ctx.fillStyle = hexadecimal("#ebd534", opacityVal);
-      ctx.strokeStyle = hexadecimal("#ebd534", opacityVal);
+      ctx.fillStyle = "#ebd534";
+      ctx.strokeStyle = "#ebd534";
     } else {
-      this.#applyStyle(noteSkin, 0, 0, w, opacityVal, false);
-      this.#applyStyle(noteSkin.indicator, 0, 0, w, opacityVal, true);
+      // 그라데이션 캐싱 활용을 위해 opacity는 100으로 넘기고 globalAlpha로 제어
+      this.#applyStyle(noteSkin, 0, 0, w, 100, false);
+      this.#applyStyle(noteSkin.indicator, 0, 0, w, 100, true);
     }
 
     // Type 0: Circle Note (일반)
@@ -221,13 +238,13 @@ export default class Renderer {
       ctx.arc(0, 0, (w / 100) * safeP, 0, 2 * Math.PI);
       ctx.fill();
       if (noteSkin.outline) {
-        this.#applyStyle(noteSkin.outline, 0, 0, w, opacityVal, true);
+        this.#applyStyle(noteSkin.outline, 0, 0, w, 100, true);
         ctx.stroke();
       }
 
       // 틴트
       ctx.beginPath();
-      ctx.globalAlpha = ((0.2 * Math.min(safeP * 2, 100)) / 100) * globalAlpha;
+      ctx.globalAlpha *= (0.2 * Math.min(safeP * 2, 100)) / 100;
       ctx.fillStyle = ctx.strokeStyle;
       ctx.arc(0, 0, w, 0, 2 * Math.PI);
       ctx.fill();
@@ -284,13 +301,13 @@ export default class Renderer {
       ctx.lineTo(0, -1.5 * (w / 100) * safeP);
       ctx.fill();
       if (noteSkin.outline) {
-        this.#applyStyle(noteSkin.outline, 0, 0, w, opacityVal, true);
+        this.#applyStyle(noteSkin.outline, 0, 0, w, 100, true);
         ctx.stroke();
       }
 
       // 틴트
       ctx.beginPath();
-      ctx.globalAlpha = ((0.2 * Math.min(safeP * 2, 100)) / 100) * globalAlpha;
+      ctx.globalAlpha *= (0.2 * Math.min(safeP * 2, 100)) / 100;
       ctx.fillStyle = ctx.strokeStyle;
       ctx.moveTo(0, -1.5 * w);
       ctx.arc(0, 0, w, -PI_5, PI_5 * 6);
@@ -298,7 +315,6 @@ export default class Renderer {
       ctx.fill();
 
       ctx.restore();
-      ctx.globalAlpha = globalAlpha;
     }
 
     // Type 2: Hold Note (홀드)
@@ -332,14 +348,14 @@ export default class Renderer {
       }
 
       // 틴트
-      ctx.globalAlpha = ((0.2 * Math.min(safeP * 2, 100)) / 100) * globalAlpha;
+      ctx.beginPath();
+      ctx.globalAlpha *= (0.2 * Math.min(safeP * 2, 100)) / 100;
       ctx.fillStyle = ctx.strokeStyle;
       ctx.arc(0, 0, w, 0, 2 * Math.PI);
       ctx.fill();
     }
 
     ctx.restore();
-    ctx.globalAlpha = globalAlpha;
   }
 
   /**
@@ -475,13 +491,13 @@ export default class Renderer {
 
     // 스킨 적용
     this.#applyStyle(skin.cursor, 0, 0, w, 100, false);
-    if (skin.cursor.type === "gradient") ctx.shadowColor = hexadecimal(skin.cursor.stops[0].color, 50);
-    else ctx.shadowColor = hexadecimal(skin.cursor.color, 50);
+    if (skin.cursor.type === "gradient") ctx.shadowColor = skin.cursor.stops[0].color;
+    else ctx.shadowColor = skin.cursor.color;
 
     if (skin.cursor.outline) {
       this.#applyStyle(skin.cursor.outline, 0, 0, w, 100, true);
-      if (skin.cursor.outline.type === "gradient") ctx.shadowColor = hexadecimal(skin.cursor.outline.stops[0].color, 50);
-      else ctx.shadowColor = hexadecimal(skin.cursor.outline.color, 50);
+      if (skin.cursor.outline.type === "gradient") ctx.shadowColor = skin.cursor.outline.stops[0].color;
+      else ctx.shadowColor = skin.cursor.outline.color;
     }
 
     // 그리기
@@ -528,8 +544,9 @@ export default class Renderer {
       ctx.beginPath();
       ctx.translate(cx, cy + animY);
       ctx.rotate((Math.PI * animDeg) / 180);
+      ctx.globalAlpha = opacity / 100;
 
-      this.#applyStyle(skinPart, 0, 0, 50, opacity, false);
+      this.#applyStyle(skinPart, 0, 0, 50, 100, false);
 
       ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable`;
       ctx.textAlign = "center";
@@ -578,8 +595,9 @@ export default class Renderer {
 
       ctx.save();
       ctx.beginPath();
+      ctx.globalAlpha = opacity / 100;
 
-      this.#applyStyle(styleTarget, cx, cy, width, opacity, true);
+      this.#applyStyle(styleTarget, 0, 0, width, 100, true);
       ctx.lineWidth = lineWidth;
 
       ctx.arc(cx, cy, width, 0, 2 * Math.PI);
@@ -596,6 +614,7 @@ export default class Renderer {
   explosions(particles) {
     const { ctx } = this;
     const now = Date.now();
+    const skin = this.skin.bullet;
 
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
@@ -608,27 +627,17 @@ export default class Renderer {
       const currentY = p.startY + p.dy * easeVal;
 
       const { cx, cy } = this.#getPos(currentX, currentY);
-
       const size = ~~(this.CONFIG.EXPLODE_EFFECT.SIZE * (1 - easeVal));
 
       if (size <= 0) continue;
 
       ctx.save();
       ctx.beginPath();
+      ctx.translate(cx, cy);
 
-      const skin = this.skin.bullet;
+      this.#applyStyle(skin, 0, 0, size, 100, false);
 
-      if (skin.type === "gradient") {
-        const grd = ctx.createLinearGradient(cx - size, cy - size, size, size);
-        for (let s = 0; s < skin.stops.length; s++) {
-          grd.addColorStop(skin.stops[s].percentage / 100, skin.stops[s].color);
-        }
-        ctx.fillStyle = grd;
-      } else {
-        ctx.fillStyle = skin.color;
-      }
-
-      ctx.arc(cx, cy, size, 0, Math.PI * 2);
+      ctx.arc(0, 0, size, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }
