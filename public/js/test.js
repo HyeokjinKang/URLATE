@@ -90,6 +90,7 @@ let fileName = "";
 let paceLoaded = 0;
 let overlayTime = 0;
 let shiftDown = false;
+let currentTriggerIndex = 0;
 let tick = new Howl({
   src: [`/sounds/tick.mp3`],
   autoplay: false,
@@ -221,6 +222,7 @@ const initialize = (isFirstCalled) => {
       ms: 0,
       beat: 0,
     };
+    currentTriggerIndex = 0;
     background = new URLSearchParams(window.location.search).get("background");
     for (let i = 0; i < tracks.length; i++) {
       if (tracks[i].name == pattern.information.track) {
@@ -308,6 +310,7 @@ const cntRender = () => {
   requestAnimationFrame(cntRender);
   try {
     if (!Draw) return;
+    const now = Date.now();
 
     if (window.devicePixelRatio != pixelRatio) {
       pixelRatio = window.devicePixelRatio;
@@ -325,23 +328,23 @@ const cntRender = () => {
 
     if (isResultShowing) {
       if (resultMs == 0) {
-        resultMs = Date.now();
+        resultMs = now;
       }
     }
 
-    if (resultMs != 0 && resultMs + 500 <= Date.now()) return;
+    if (resultMs != 0 && resultMs + 500 <= now) return;
 
     if (comboAlert) {
       let comboOpacity = 0;
       let fontSize = 20;
-      if (comboAlertMs + 400 > Date.now()) {
-        comboOpacity = (Date.now() - comboAlertMs) / 1200;
-      } else if (comboAlertMs + 400 <= Date.now() && comboAlertMs + 600 > Date.now()) {
+      if (comboAlertMs + 400 > now) {
+        comboOpacity = (now - comboAlertMs) / 1200;
+      } else if (comboAlertMs + 400 <= now && comboAlertMs + 600 > now) {
         comboOpacity = 0.33;
-      } else if (comboAlertMs + 600 <= Date.now() && comboAlertMs + 1000 > Date.now()) {
-        comboOpacity = (comboAlertMs + 1000 - Date.now()) / 1200;
+      } else if (comboAlertMs + 600 <= now && comboAlertMs + 1000 > now) {
+        comboOpacity = (comboAlertMs + 1000 - now) / 1200;
       }
-      fontSize = (canvasH / 5) * easeOutSine((Date.now() - comboAlertMs) / 1000);
+      fontSize = (canvasH / 5) * easeOutSine((now - comboAlertMs) / 1000);
       ctx.beginPath();
       ctx.font = `700 ${fontSize}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
       ctx.fillStyle = `rgba(200,200,200,${comboOpacity})`;
@@ -355,31 +358,44 @@ const cntRender = () => {
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
 
-    let end = upperBound(pattern.triggers, beats);
+    // 최적화된 트리거 처리 루프
     let nowSpeed = pattern.information.speed;
     let renderTexts = [];
-    for (let i = 0; i < end; i++) {
-      if (pattern.triggers[i].value == 0) {
-        if (!destroyedBullets.has(pattern.triggers[i].num)) {
-          explodingBullets.add(pattern.triggers[i].num);
-          destroyedBullets.add(pattern.triggers[i].num);
+
+    for (let i = 0; i < currentTriggerIndex; i++) {
+      if (pattern.triggers[i].value == 4) nowSpeed = pattern.triggers[i].speed;
+    }
+
+    while (currentTriggerIndex < pattern.triggers.length && pattern.triggers[currentTriggerIndex].beat <= beats) {
+      const trigger = pattern.triggers[currentTriggerIndex];
+      if (trigger.value == 0) {
+        if (!destroyedBullets.has(trigger.num)) {
+          explodingBullets.add(trigger.num);
+          destroyedBullets.add(trigger.num);
         }
-      } else if (pattern.triggers[i].value == 1) {
-        destroyAll(pattern.triggers[i].beat);
-      } else if (pattern.triggers[i].value == 2) {
-        bpmsync.ms = bpmsync.ms + (pattern.triggers[i].beat - bpmsync.beat) * (60000 / bpm);
-        bpm = pattern.triggers[i].bpm;
-        bpmsync.beat = pattern.triggers[i].beat;
-      } else if (pattern.triggers[i].value == 3) {
-        globalAlpha = pattern.triggers[i].opacity;
-      } else if (pattern.triggers[i].value == 4) {
-        nowSpeed = pattern.triggers[i].speed;
-      } else if (pattern.triggers[i].value == 5) {
+      } else if (trigger.value == 1) {
+        destroyAll(trigger.beat);
+      } else if (trigger.value == 2) {
+        bpmsync.ms = bpmsync.ms + (trigger.beat - bpmsync.beat) * (60000 / bpm);
+        bpm = trigger.bpm;
+        bpmsync.beat = trigger.beat;
+      } else if (trigger.value == 3) {
+        globalAlpha = trigger.opacity;
+      } else if (trigger.value == 4) {
+        nowSpeed = trigger.speed;
+      } else if (trigger.value == 6) {
+        calculateResult();
+      }
+      currentTriggerIndex++;
+    }
+
+    let textEnd = upperBound(pattern.triggers, beats);
+    let textStart = lowerBound(pattern.triggers, beats - 32);
+    for (let i = textStart; i < textEnd; i++) {
+      if (pattern.triggers[i].value == 5) {
         if (pattern.triggers[i].beat <= beats && beats <= pattern.triggers[i].beat + pattern.triggers[i].duration) {
           renderTexts.push(pattern.triggers[i]);
         }
-      } else if (pattern.triggers[i].value == 6) {
-        calculateResult();
       }
     }
 
@@ -390,7 +406,7 @@ const cntRender = () => {
     let renderDuration = 5 / speed;
 
     let start = lowerBound(pattern.patterns, beats - noteMaxDuration);
-    end = upperBound(pattern.patterns, beats + renderDuration);
+    let end = upperBound(pattern.patterns, beats + renderDuration);
     for (let i = start; i < end; i++) {
       const p = (1 - (pattern.patterns[i].beat - beats) / renderDuration) * 100;
       if (p >= 50) {
@@ -412,13 +428,13 @@ const cntRender = () => {
         miss++;
         showOverlay();
         missPoint.push(song.seek() * 1000);
-        keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
+        keyInput.push({ judge: "Miss", key: "-", time: now });
       } else if (state.tailProgress >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
         judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Perfect"));
         calculateScore("Perfect", i, true);
-        keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
+        keyInput.push({ judge: "Perfect", key: "-", time: now });
       }
     }
     start = lowerBound(pattern.bullets, beats - 32);
@@ -443,7 +459,7 @@ const cntRender = () => {
 
     let displayFPS;
     if (frameCounter) {
-      frameArray.push(1000 / (Date.now() - frameCounterMs));
+      frameArray.push(1000 / (now - frameCounterMs));
       if (frameArray.length == 10) {
         fps =
           frameArray.reduce((sum, current) => {
@@ -452,7 +468,7 @@ const cntRender = () => {
         frameArray = [];
       }
       displayFPS = fps.toFixed();
-      frameCounterMs = Date.now();
+      frameCounterMs = now;
     }
 
     if (keyInput.length > 0 && keyInputMemory != keyInput.length) {
@@ -460,7 +476,7 @@ const cntRender = () => {
         keyInput.splice(0, keyInput.length - 12);
       }
       keyInputMemory = keyInput.length;
-      keyInputTime = Date.now();
+      keyInputTime = now;
     }
 
     let percentage = 0;
@@ -484,7 +500,7 @@ const cntRender = () => {
 
     if (effectMs != 0 && effectNum != -1) {
       Draw.finalEffect(effectNum, effectMs);
-      if (Date.now() - effectMs >= 2000) effectMs = 0;
+      if (now - effectMs >= 2000) effectMs = 0;
     }
   } catch (e) {
     if (e) {
