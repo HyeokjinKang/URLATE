@@ -19,9 +19,14 @@ export const numberWithCommas = (n) => {
   return result;
 };
 
+const alphaCache = Array.from({ length: 256 }, (_, i) => {
+  return i.toString(16).padStart(2, "0").toUpperCase();
+});
+
 export const hexadecimal = (color, percentage) => {
-  const decimal = `0${Math.round(255 * (percentage / 100)).toString(16)}`.slice(-2).toUpperCase();
-  return color + decimal;
+  const alphaIndex = Math.round(255 * (percentage / 100));
+  const alpha = alphaCache[Math.max(0, Math.min(255, alphaIndex))];
+  return color + alpha;
 };
 
 export const getTan = (deg) => {
