@@ -4,6 +4,11 @@
  */
 import { Config } from "./constants.js";
 
+// 오브젝트 풀 정의
+const EXPLOSION_POOL = [];
+const CLICK_POOL = [];
+const JUDGE_POOL = [];
+
 /** 캔버스에 그려질 게임 오브젝트(파티클, 노트 등)의 순수 데이터를 생성합니다. */
 export default class Factory {
   /**
@@ -13,19 +18,23 @@ export default class Factory {
   static createExplosions(x, y) {
     const particles = [];
     const conf = Config.EXPLODE_EFFECT;
+    const now = Date.now();
 
     for (let i = 0; i < conf.COUNT; i++) {
       const angle = Math.random() * Math.PI * 2;
       const distance = conf.SPEED * (0.8 + Math.random() * 0.4);
 
-      particles.push({
-        startX: x,
-        startY: y,
-        dx: Math.cos(angle) * distance,
-        dy: Math.sin(angle) * distance,
-        createdAt: Date.now(),
-        lifeTime: conf.LIFETIME,
-      });
+      // 풀에서 가져오거나 새로 생성
+      const p = EXPLOSION_POOL.pop() || {};
+      p.startX = x;
+      p.startY = y;
+      p.dx = Math.cos(angle) * distance;
+      p.dy = Math.sin(angle) * distance;
+      p.createdAt = now;
+      p.lifeTime = conf.LIFETIME;
+      p.type = "explosion";
+
+      particles.push(p);
     }
 
     return particles;
@@ -36,13 +45,13 @@ export default class Factory {
    * @returns { object }
    */
   static createClickDefault(x, y) {
-    return {
-      type: "default",
-      x,
-      y,
-      createdAt: Date.now(),
-      lifeTime: Config.CLICK_EFFECT.LIFETIME,
-    };
+    const p = CLICK_POOL.pop() || {};
+    p.type = "default";
+    p.x = x;
+    p.y = y;
+    p.createdAt = Date.now();
+    p.lifeTime = Config.CLICK_EFFECT.LIFETIME;
+    return p;
   }
 
   /**
@@ -50,14 +59,14 @@ export default class Factory {
    * @returns { object }
    */
   static createClickNote(x, y, noteType) {
-    return {
-      type: "note",
-      x,
-      y,
-      noteType,
-      createdAt: Date.now(),
-      lifeTime: Config.NOTE_CLICK_EFFECT.LIFETIME,
-    };
+    const p = CLICK_POOL.pop() || {};
+    p.type = "note";
+    p.x = x;
+    p.y = y;
+    p.noteType = noteType;
+    p.createdAt = Date.now();
+    p.lifeTime = Config.NOTE_CLICK_EFFECT.LIFETIME;
+    return p;
   }
 
   /**
@@ -68,13 +77,24 @@ export default class Factory {
    * @param {string} judge
    */
   static createJudge(x, y, judgeSkin, judge) {
-    return {
-      x,
-      y,
-      judgeSkin,
-      judge,
-      createdAt: Date.now(),
-      lifeTime: Config.JUDGE_EFFECT.LIFETIME,
-    };
+    const p = JUDGE_POOL.pop() || {};
+    p.x = x;
+    p.y = y;
+    p.judgeSkin = judgeSkin;
+    p.judge = judge;
+    p.createdAt = Date.now();
+    p.lifeTime = Config.JUDGE_EFFECT.LIFETIME;
+    p.type = "judge";
+    return p;
+  }
+
+  /**
+   * 수명이 다한 객체를 풀로 반환합니다.
+   */
+  static recycle(p) {
+    if (!p) return;
+    if (p.type === "explosion") EXPLOSION_POOL.push(p);
+    else if (p.type === "judge") JUDGE_POOL.push(p);
+    else CLICK_POOL.push(p);
   }
 }

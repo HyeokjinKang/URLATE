@@ -3,6 +3,7 @@
  * 게임의 데이터 계산, 물리 연산, 수명 관리 등 핵심 로직을 담당합니다.
  */
 import { getSin, getCos, upperBound, lowerBound } from "./utils.js";
+import Factory from "./factory.js";
 
 export default class Updater {
   /**
@@ -14,11 +15,11 @@ export default class Updater {
    * @returns {{x: number, y: number, angle: number}}
    */
   static bulletPos(bullet, currentBeat, triggers, baseSpeed) {
-    // 트리거 탐색 범위 설정
+    // 최적화: 트리거 탐색 범위를 좁히고 반복 연산 최소화
     let triggerEnd = upperBound(triggers, bullet.beat);
     let currentSpeed = baseSpeed;
 
-    // 현재 총알 생성 시점의 스피드 확인
+    // 총알 생성 시점의 속도 찾기 (이 부분도 사실 play.js에서 넘겨주면 더 빠름)
     for (let i = 0; i < triggerEnd; i++) {
       if (triggers[i].value == 4) {
         currentSpeed = triggers[i].speed;
@@ -32,20 +33,20 @@ export default class Updater {
     let prevBeat = bullet.beat;
     let prevSpeed = currentSpeed;
 
-    // 적분(이동 거리 누적) 계산
+    // 변속 구간 누적 계산
     for (let j = triggerStart; j < triggerEnd; j++) {
       const trigger = triggers[j];
       if (trigger.value == 4) {
-        p += ((trigger.beat - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100;
+        // (거리 = 시간 * 속도) 개념의 비트 기반 계산
+        p += ((trigger.beat - prevBeat) * prevSpeed * bullet.speed) / 0.15;
         prevBeat = trigger.beat;
         prevSpeed = trigger.speed;
       }
     }
 
-    // 남은 비트만큼 이동
-    p += ((currentBeat - prevBeat) / (15 / prevSpeed / bullet.speed)) * 100;
+    // 현재 비트까지의 남은 거리 추가
+    p += ((currentBeat - prevBeat) * prevSpeed * bullet.speed) / 0.15;
 
-    // 좌표 및 각도 산출
     const isLeft = bullet.direction == "L";
     const angle = isLeft ? bullet.angle : bullet.angle + 180;
 
@@ -64,18 +65,15 @@ export default class Updater {
    */
   static noteProgress(note, currentBeat, speed) {
     const renderDuration = 5 / speed;
-
     const progress = (1 - (note.beat - currentBeat) / renderDuration) * 100;
-
     const tailProgress = ((currentBeat - note.beat) / note.duration) * 100;
-
     const endProgress = (1 - (note.beat + note.duration - currentBeat) / renderDuration) * 100;
 
     return { progress, tailProgress, endProgress };
   }
 
   /**
-   * 수명이 다한 파티클을 배열에서 제거합니다.
+   * 수명이 다한 파티클을 배열에서 제거하고 풀로 반환합니다.
    * @param {Array} particles - 파티클 배열
    * @param {object} [hideSettings] - 판정 숨김 설정 (judgeParticles 관리시에만 필요)
    */
@@ -84,12 +82,11 @@ export default class Updater {
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
 
-      if (hideSettings && p.judge && hideSettings[p.judge]) {
-        particles.splice(i, 1);
-        continue;
-      }
+      const shouldHide = hideSettings && p.judge && hideSettings[p.judge];
+      const isExpired = now - p.createdAt >= p.lifeTime;
 
-      if (now - p.createdAt >= p.lifeTime) {
+      if (shouldHide || isExpired) {
+        Factory.recycle(p);
         particles.splice(i, 1);
       }
     }
