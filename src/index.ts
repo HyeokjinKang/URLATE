@@ -4,9 +4,10 @@ import i18n from "./i18n";
 import multer from "multer";
 import path from "path";
 import fetch from "node-fetch";
-import * as nsfw from "nsfwjs";
 import { exec } from "child_process";
-import * as tf from "@tensorflow/tfjs-node";
+import * as tf from "@tensorflow/tfjs";
+import "@tensorflow/tfjs-backend-wasm";
+import * as nsfw from "nsfwjs";
 import fs from "fs";
 import sharp from "sharp";
 import { logger } from "./logger";
@@ -145,6 +146,17 @@ const upload = multer({
   },
 }).single("img");
 
+const imageToTensor = async (fileBuffer) => {
+  // 1. sharp를 사용하여 raw pixel 데이터(RGB)와 메타데이터 추출
+  const { data, info } = await sharp(fileBuffer)
+    .raw() // 압축되지 않은 raw pixel 데이터로 변환
+    .toBuffer({ resolveWithObject: true });
+
+  // 2. 추출된 데이터를 Uint8Array로 변환 후 텐서 생성
+  // info.height, info.width, info.channels(3)를 사용하여 형상(shape) 지정
+  return tf.tensor3d(new Uint8Array(data), [info.height, info.width, info.channels], "int32");
+};
+
 app.post("/profile/:userid/:type", async (req, res) => {
   // Validate userid: must be numeric
   if (!/^[0-9]+$/.test(req.params.userid)) {
@@ -231,8 +243,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
       })
       .toBuffer();
     fs.writeFileSync(filePath, fileBuffer);
-    const buffer = await sharp(fileBuffer).png().toBuffer();
-    const image = tf.node.decodeImage(buffer, 3);
+    const image = await imageToTensor(fileBuffer);
     const predictions = await model.classify(image);
     image.dispose();
     let explicit = false;
@@ -318,17 +329,21 @@ process.on("uncaughtException", (error: Error) => {
   process.exit(1);
 });
 
-loadModel()
-  .then(() => {
-    app.listen(config.project.port, () => {
-      logger.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : process.env.npm_package_version}.`);
-      logger.success(`HTTP Server running at port ${config.project.port}.`);
+(async () => {
+  await tf.ready();
+
+  loadModel()
+    .then(() => {
+      app.listen(config.project.port, () => {
+        logger.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : process.env.npm_package_version}.`);
+        logger.success(`HTTP Server running at port ${config.project.port}.`);
+      });
+    })
+    .catch((err) => {
+      logger.fatal("Failed to load NSFW model", err);
+      process.exit(1);
     });
-  })
-  .catch((err) => {
-    logger.fatal("Failed to load NSFW model", err);
-    process.exit(1);
-  });
+})();
 
 // Add error handler middleware (must be last)
 app.use(errorHandler);
