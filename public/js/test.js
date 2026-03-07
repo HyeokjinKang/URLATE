@@ -91,6 +91,7 @@ let paceLoaded = 0;
 let overlayTime = 0;
 let shiftDown = false;
 let currentTriggerIndex = 0;
+let nowSpeed = 1;
 let tick = new Howl({
   src: [`/sounds/tick.mp3`],
   autoplay: false,
@@ -218,6 +219,7 @@ const initialize = (isFirstCalled) => {
     offset = pattern.information.offset;
     bpm = pattern.information.bpm;
     speed = pattern.information.speed;
+    nowSpeed = pattern.information.speed;
     bpmsync = {
       ms: 0,
       beat: 0,
@@ -359,12 +361,7 @@ const cntRender = () => {
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
 
     // 최적화된 트리거 처리 루프
-    let nowSpeed = pattern.information.speed;
     let renderTexts = [];
-
-    for (let i = 0; i < currentTriggerIndex; i++) {
-      if (pattern.triggers[i].value == 4) nowSpeed = pattern.triggers[i].speed;
-    }
 
     while (currentTriggerIndex < pattern.triggers.length && pattern.triggers[currentTriggerIndex].beat <= beats) {
       const trigger = pattern.triggers[currentTriggerIndex];
@@ -831,6 +828,7 @@ const retry = () => {
     pattern = JSON.parse(localStorage.pattern);
     bpm = pattern.information.bpm;
     speed = pattern.information.speed;
+    nowSpeed = pattern.information.speed;
     bpmsync = {
       ms: 0,
       beat: 0,
