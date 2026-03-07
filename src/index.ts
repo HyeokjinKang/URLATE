@@ -331,19 +331,20 @@ process.on("uncaughtException", (error: Error) => {
 });
 
 (async () => {
-  await tf.ready();
+  try {
+    await tf.setBackend("wasm");
+    await tf.ready();
 
-  loadModel()
-    .then(() => {
-      app.listen(config.project.port, () => {
-        logger.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : process.env.npm_package_version}.`);
-        logger.success(`HTTP Server running at port ${config.project.port}.`);
-      });
-    })
-    .catch((err) => {
-      logger.fatal("Failed to load NSFW model", err);
-      process.exit(1);
+    await loadModel();
+
+    app.listen(config.project.port, () => {
+      logger.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : process.env.npm_package_version}.`);
+      logger.success(`HTTP Server running at port ${config.project.port}.`);
     });
+  } catch (err) {
+    logger.fatal("Failed to initialize front-end server.", err);
+    process.exit(1);
+  }
 })();
 
 // Add error handler middleware (must be last)
