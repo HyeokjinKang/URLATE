@@ -95,6 +95,7 @@ export default class Factory {
     if (!p) return;
     if (p.type === "explosion") EXPLOSION_POOL.push(p);
     else if (p.type === "judge") JUDGE_POOL.push(p);
-    else CLICK_POOL.push(p);
+    else if (p.type === "default" || p.type === "note") CLICK_POOL.push(p);
+    else console.warn("Attempted to recycle unknown object type:", p.type);
   }
 }
