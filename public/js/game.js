@@ -44,8 +44,8 @@ const profileImageContainer = document.getElementById("profileImageContainer");
 const profileDescription = document.getElementById("profileDescription");
 const profileNameContainer = document.getElementById("profileNameContainer");
 
-const SlowRate = 110 / 174;
-const FastRate = 174 / 110;
+const slowRate = 110 / 174;
+const fastRate = 174 / 110;
 
 let settings = [];
 let profileSong;
@@ -870,27 +870,27 @@ const playProfileSong = () => {
   if (!profileSong.playing()) profileSong.play();
   if (!themeSong.playing()) {
     songs[songSelection].fade(1, 0, 300);
-    fadeRate(songs[songSelection], 1, SlowRate, 300, Date.now());
+    fadeRate(songs[songSelection], 1, slowRate, 300, Date.now());
   } else {
-    profileSong.seek(Math.max(0, themeSong.seek() - 1.4) * FastRate);
+    profileSong.seek(Math.max(0, themeSong.seek() - 1.4) * fastRate);
     themeSong.fade(1, 0, 300);
-    fadeRate(themeSong, 1, SlowRate, 300, Date.now());
+    fadeRate(themeSong, 1, slowRate, 300, Date.now());
   }
   profileSong.fade(0, 1, 300);
-  fadeRate(profileSong, FastRate, 1, 300, Date.now());
+  fadeRate(profileSong, fastRate, 1, 300, Date.now());
 };
 
 const stopProfileSong = () => {
   if (songSelection != -1) {
     if (!songs[songSelection].playing()) songs[songSelection].play();
     songs[songSelection].fade(0, 1, 300);
-    fadeRate(songs[songSelection], SlowRate, 1, 300, new Date().getTime());
+    fadeRate(songs[songSelection], slowRate, 1, 300, new Date().getTime());
   } else {
     themeSong.fade(0, 1, 300);
-    fadeRate(themeSong, SlowRate, 1, 300, new Date().getTime());
+    fadeRate(themeSong, slowRate, 1, 300, new Date().getTime());
   }
   profileSong.fade(1, 0, 300);
-  fadeRate(profileSong, 1, FastRate, 300, new Date().getTime());
+  fadeRate(profileSong, 1, fastRate, 300, new Date().getTime());
 };
 
 // eslint-disable-next-line no-unused-vars
