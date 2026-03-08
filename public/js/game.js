@@ -44,6 +44,9 @@ const profileImageContainer = document.getElementById("profileImageContainer");
 const profileDescription = document.getElementById("profileDescription");
 const profileNameContainer = document.getElementById("profileNameContainer");
 
+const SlowRate = 110 / 174;
+const FastRate = 174 / 110;
+
 let settings = [];
 let profileSong;
 let display = -1;
@@ -196,17 +199,13 @@ const settingApply = () => {
     html5: true,
     autoplay: false,
     loop: true,
+    volume: 0,
     onload: () => {
       loaded++;
-      profileSong.volume(0);
-      profileSong.rate(1.5818181818);
       if (loaded == 4) {
         loaded = -1;
         gameLoaded();
       }
-      Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
-      intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
-      intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
     },
   });
   themeSong = new Howl({
@@ -221,10 +220,17 @@ const settingApply = () => {
         loaded = -1;
         gameLoaded();
       }
-      Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
-      intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
-      intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
     },
+  });
+  profileSong._sounds.forEach((s) => {
+    if (s._node) {
+      s._node.preservesPitch = false;
+    }
+  });
+  themeSong._sounds.forEach((s) => {
+    if (s._node) {
+      s._node.preservesPitch = false;
+    }
   });
 };
 
@@ -801,10 +807,7 @@ const gameLoaded = () => {
   } else if (display == 0 && songSelection == -1) {
     themeSong.play();
   }
-  setTimeout(() => {
-    profileSong.rate(1.5818181818);
-    profileSong.play();
-  }, 1400);
+  profileSong.play();
   document.getElementById("menuContainer").style.display = "flex";
   document.getElementById("loadingContainer").classList.add("fadeOutAnim");
   localStorage.clear("songName");
@@ -866,26 +869,27 @@ Pace.on("done", () => {
 const playProfileSong = () => {
   if (!themeSong.playing()) {
     songs[songSelection].fade(1, 0, 300);
-    fadeRate(songs[songSelection], 1, 0.632183908, 300, Date.now());
+    fadeRate(songs[songSelection], 1, SlowRate, 300, Date.now());
   } else {
+    profileSong.seek(Math.max(0, themeSong.seek() - 1.4) * FastRate);
     themeSong.fade(1, 0, 300);
-    fadeRate(themeSong, 1, 0.632183908, 300, Date.now());
+    fadeRate(themeSong, 1, SlowRate, 300, Date.now());
   }
   profileSong.fade(0, 1, 300);
-  fadeRate(profileSong, 1.5818181818, 1, 300, Date.now());
+  fadeRate(profileSong, FastRate, 1, 300, Date.now());
 };
 
 const stopProfileSong = () => {
   if (songSelection != -1) {
     if (!songs[songSelection].playing()) songs[songSelection].play();
     songs[songSelection].fade(0, 1, 300);
-    fadeRate(songs[songSelection], 0.632183908, 1, 300, new Date().getTime());
+    fadeRate(songs[songSelection], SlowRate, 1, 300, new Date().getTime());
   } else {
     themeSong.fade(0, 1, 300);
-    fadeRate(themeSong, 0.632183908, 1, 300, new Date().getTime());
+    fadeRate(themeSong, SlowRate, 1, 300, new Date().getTime());
   }
   profileSong.fade(1, 0, 300);
-  fadeRate(profileSong, 1, 1.5818181818, 300, new Date().getTime());
+  fadeRate(profileSong, 1, FastRate, 300, new Date().getTime());
 };
 
 // eslint-disable-next-line no-unused-vars
