@@ -147,7 +147,7 @@ const upload = multer({
 }).single("img");
 
 const imageToTensor = async (fileBuffer) => {
-  const { data, info } = await sharp(fileBuffer).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = await sharp(fileBuffer).raw().toBuffer({ resolveWithObject: true });
 
   return tf.tensor3d(new Uint8Array(data), [info.height, info.width, info.channels], "int32");
 };
@@ -232,6 +232,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
     }
     const fileBuffer: Buffer = await sharp(filePath)
       .resize({ width, height })
+      .flatten({ background: "#ffffff" })
       .webp({
         quality: 70,
         effort: 6,
