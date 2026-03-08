@@ -867,6 +867,7 @@ Pace.on("done", () => {
 });
 
 const playProfileSong = () => {
+  if (!profileSong.playing()) profileSong.play();
   if (!themeSong.playing()) {
     songs[songSelection].fade(1, 0, 300);
     fadeRate(songs[songSelection], 1, SlowRate, 300, Date.now());
