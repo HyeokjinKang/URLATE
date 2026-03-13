@@ -691,12 +691,9 @@ const songSelected = (n, refreshed, seek) => {
   document.getElementById("selectBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.webp")`;
   setTimeout(
     () => {
-      let underLimit = window.innerHeight * 0.09 * (n + 1);
-      underLimit = parseInt(underLimit);
-      if (selectSongContainer.offsetHeight + selectSongContainer.scrollTop < underLimit) {
-        selectSongContainer.scrollTop = underLimit - selectSongContainer.offsetHeight;
-      } else if (underLimit - window.innerHeight * 0.09 < selectSongContainer.scrollTop) {
-        selectSongContainer.scrollTop = selectSongContainer.scrollTop - (selectSongContainer.scrollTop - underLimit) - window.innerHeight * 0.09;
+      const selectedElement = document.getElementsByClassName("songSelectionContainer")[n];
+      if (selectedElement) {
+        selectedElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
     },
     songSelection != -1 ? 0 : 200,
