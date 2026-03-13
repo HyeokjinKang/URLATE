@@ -105,6 +105,7 @@ let offsetSong = new Howl({
 
 let scrollTimer = 0;
 
+let songPlayTimeout;
 let chartVar;
 
 const initialize = () => {
@@ -629,6 +630,7 @@ const songSelected = (n, refreshed, seek) => {
       display = 0;
       document.getElementById("selectInnerContainer").classList.add("fadeOut");
       document.getElementById("selectBackground").classList.add("fadeOut");
+      clearTimeout(songPlayTimeout);
       songs[songSelection].fade(1, 0, 2000);
       setTimeout(() => {
         localStorage.rate = rate;
@@ -651,24 +653,22 @@ const songSelected = (n, refreshed, seek) => {
   trackModsText.classList.remove("enabled");
   if (!(songSelection == -1 && tracks[n].name == "URLATE Theme")) {
     document.getElementById("songNameText").textContent = settings.general.detailLang == "original" ? tracks[n].originalName : tracks[n].name;
-    if (songs[n]) songs[n].volume(1);
-    if (songSelection != -1 && !refreshed) {
-      let i = songSelection;
-      songs[i].fade(1, 0, 200);
-      setTimeout(() => {
-        songs[i].stop();
-      }, 200);
-    }
     if (themeSong.playing()) {
       themeSong.fade(1, 0, 500);
       setTimeout(() => {
         themeSong.stop();
       }, 500);
     }
-    if (songs[n]) {
-      songs[n].play();
-      if (seek) songs[n].seek(seek);
-    }
+    songs.forEach((s) => {
+      if (s) s.stop();
+    });
+    clearTimeout(songPlayTimeout);
+    songPlayTimeout = setTimeout(() => {
+      if (songs[n]) {
+        songs[n].play();
+        if (seek) songs[n].seek(seek);
+      }
+    }, 200);
   }
   if (document.getElementsByClassName("songSelected")[0]) {
     document.getElementsByClassName("songSelected")[0].classList.remove("songSelected");
@@ -922,6 +922,7 @@ const displayClose = () => {
   if (!loading) {
     if (display == 1) {
       //PLAY
+      clearTimeout(songPlayTimeout);
       document.getElementById("selectContainer").classList.remove("fadeInAnim");
       document.getElementById("selectContainer").classList.add("fadeOutAnim");
       setTimeout(() => {
