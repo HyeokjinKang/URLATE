@@ -515,8 +515,8 @@ const tracksUpdate = () => {
     fetchTargets.map((i) =>
       fetch(`${api}/record/${tracks[i].name}/${username}`, { method: "GET", credentials: "include" })
         .then((res) => res.json())
-        .then((data) => ({ i, data })),
-    ),
+        .then((data) => ({ i, data }))
+    )
   )
     .then((results) => {
       results.forEach(({ i, data }) => {
@@ -823,7 +823,7 @@ Pace.on("done", () => {
 });
 
 const playProfileSong = () => {
-  const profileId = profileSong.playing() ? undefined : profileSong.play();
+  if (!profileSong.playing()) profileSong.play();
   if (!themeSong.playing()) {
     const selSong = getSong(songSelection);
     if (selSong) {
@@ -835,7 +835,7 @@ const playProfileSong = () => {
     themeSong.fade(1, 0, 300);
     fadeRate(themeSong, 1, slowRate, 300, Date.now());
   }
-  profileSong.fade(0, 1, 300, profileId);
+  profileSong.fade(0, 1, 300);
   fadeRate(profileSong, fastRate, 1, 300, Date.now());
 };
 
@@ -843,13 +843,12 @@ const stopProfileSong = () => {
   if (songSelection != -1) {
     const selSong = getSong(songSelection);
     if (selSong) {
-      const selId = selSong.playing() ? undefined : selSong.play();
-      selSong.fade(0, 1, 300, selId);
+      if (!selSong.playing()) selSong.play();
+      selSong.fade(0, 1, 300);
       fadeRate(selSong, slowRate, 1, 300, Date.now());
     }
   } else {
-    const themeId = themeSong.playing() ? undefined : themeSong.play();
-    themeSong.fade(0, 1, 300, themeId);
+    themeSong.fade(0, 1, 300);
     fadeRate(themeSong, slowRate, 1, 300, Date.now());
   }
   profileSong.fade(1, 0, 300);
@@ -951,12 +950,12 @@ const displayClose = () => {
       if (songSelection != -1) {
         const selSong = getSong(songSelection);
         if (selSong) {
-          const selId = selSong.playing() ? undefined : selSong.play();
-          selSong.fade(0, 1, 500, selId);
+          if (!selSong.playing()) selSong.play();
+          selSong.fade(0, 1, 500);
         }
       } else {
-        const themeId = themeSong.playing() ? undefined : themeSong.play();
-        themeSong.fade(0, 1, 500, themeId);
+        if (!themeSong.playing()) themeSong.play();
+        themeSong.fade(0, 1, 500);
       }
       offsetSong.fade(1, 0, 500);
       setTimeout(() => {
@@ -1109,7 +1108,7 @@ const rankUpdate = async () => {
       <td>${Number(e.accuracy).toFixed(2)}%</td>
       <td>${numberWithCommas(Number(e.scoreSum))}</td>
       <td>${Number(e.rating / 100).toFixed(2)}</td>
-      </tr>`,
+      </tr>`
       )
       .join("");
   }
@@ -1177,7 +1176,11 @@ const profileUpdate = async (uid, isMe) => {
       document.getElementsByClassName("profileStatValue")[5].textContent = "-";
       document.getElementById("profileRecentPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
     } else {
-      const recentResults = await Promise.all(recentPlay.map((id) => fetch(`${api}/record/${id}`, { method: "GET", credentials: "include" }).then((res) => res.json())));
+      const recentResults = await Promise.all(
+        recentPlay.map((id) =>
+          fetch(`${api}/record/${id}`, { method: "GET", credentials: "include" }).then((res) => res.json())
+        )
+      );
       let recentHTML = "";
       for (let i = 0; i < recentResults.length; i++) {
         const res = recentResults[i];
@@ -1571,8 +1574,8 @@ const offsetSetting = () => {
       themeSong.pause();
     }, 500);
   }
-  const offsetId = offsetSong.play();
-  offsetSong.fade(0, 1, 500, offsetId);
+  offsetSong.play();
+  offsetSong.fade(0, 1, 500);
   offsetUpdate();
 };
 
