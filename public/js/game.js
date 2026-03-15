@@ -874,17 +874,22 @@ const profileScreen = (uid) => {
   profileUpdate(uid ? uid : userid, uid == undefined);
 };
 
+const fadeOutContainer = (id) => {
+  const el = document.getElementById(id);
+  el.classList.remove("fadeInAnim");
+  el.classList.add("fadeOutAnim");
+  setTimeout(() => {
+    el.classList.remove("fadeOutAnim");
+    el.style.display = "none";
+  }, 500);
+};
+
 const displayClose = () => {
   if (!loading) {
     if (display == 1) {
       //PLAY
       clearTimeout(songPlayTimeout);
-      document.getElementById("selectContainer").classList.remove("fadeInAnim");
-      document.getElementById("selectContainer").classList.add("fadeOutAnim");
-      setTimeout(() => {
-        document.getElementById("selectContainer").classList.remove("fadeOutAnim");
-        document.getElementById("selectContainer").style.display = "none";
-      }, 500);
+      fadeOutContainer("selectContainer");
     } else if (display == 2) {
       //OPTION
       loadingShow();
@@ -911,36 +916,16 @@ const displayClose = () => {
           console.error(`Error occured.\n${error}`);
           location.reload();
         });
-      document.getElementById("optionContainer").classList.remove("fadeInAnim");
-      document.getElementById("optionContainer").classList.add("fadeOutAnim");
-      setTimeout(() => {
-        document.getElementById("optionContainer").classList.remove("fadeOutAnim");
-        document.getElementById("optionContainer").style.display = "none";
-      }, 500);
+      fadeOutContainer("optionContainer");
     } else if (display == 3) {
       //ADVANCED
-      document.getElementById("advancedContainer").classList.remove("fadeInAnim");
-      document.getElementById("advancedContainer").classList.add("fadeOutAnim");
-      setTimeout(() => {
-        document.getElementById("advancedContainer").classList.remove("fadeOutAnim");
-        document.getElementById("advancedContainer").style.display = "none";
-      }, 500);
+      fadeOutContainer("advancedContainer");
     } else if (display == 4) {
       //Info
-      document.getElementById("infoContainer").classList.remove("fadeInAnim");
-      document.getElementById("infoContainer").classList.add("fadeOutAnim");
-      setTimeout(() => {
-        document.getElementById("infoContainer").classList.remove("fadeOutAnim");
-        document.getElementById("infoContainer").style.display = "none";
-      }, 500);
+      fadeOutContainer("infoContainer");
     } else if (display == 5) {
       //Info Profile
-      document.getElementById("infoProfileContainer").classList.remove("fadeInAnim");
-      document.getElementById("infoProfileContainer").classList.add("fadeOutAnim");
-      setTimeout(() => {
-        document.getElementById("infoProfileContainer").classList.remove("fadeOutAnim");
-        document.getElementById("infoProfileContainer").style.display = "none";
-      }, 500);
+      fadeOutContainer("infoProfileContainer");
       display = 4;
       return;
     } else if (display == 6) {
@@ -973,30 +958,15 @@ const displayClose = () => {
       return;
     } else if (display == 8) {
       //STORE
-      document.getElementById("storeContainer").classList.remove("fadeInAnim");
-      document.getElementById("storeContainer").classList.add("fadeOutAnim");
-      setTimeout(() => {
-        document.getElementById("storeContainer").classList.remove("fadeOutAnim");
-        document.getElementById("storeContainer").style.display = "none";
-      }, 500);
+      fadeOutContainer("storeContainer");
     } else if (display == 9) {
       //DLC info
-      document.getElementById("storeDLCInfo").classList.remove("fadeInAnim");
-      document.getElementById("storeDLCInfo").classList.add("fadeOutAnim");
-      setTimeout(() => {
-        document.getElementById("storeDLCInfo").classList.remove("fadeOutAnim");
-        document.getElementById("storeDLCInfo").style.display = "none";
-      }, 500);
+      fadeOutContainer("storeDLCInfo");
       display = 8;
       return;
     } else if (display == 10) {
       //Skin info
-      document.getElementById("storeSkinInfo").classList.remove("fadeInAnim");
-      document.getElementById("storeSkinInfo").classList.add("fadeOutAnim");
-      setTimeout(() => {
-        document.getElementById("storeSkinInfo").classList.remove("fadeOutAnim");
-        document.getElementById("storeSkinInfo").style.display = "none";
-      }, 500);
+      fadeOutContainer("storeSkinInfo");
       display = 8;
       return;
     } else if (display == 11) {
@@ -1014,12 +984,7 @@ const displayClose = () => {
     } else if (display == 13) {
       //store tutorial
       tutorial--;
-      document.getElementById("storeTutorialContainer").classList.remove("fadeInAnim");
-      document.getElementById("storeTutorialContainer").classList.add("fadeOutAnim");
-      setTimeout(() => {
-        document.getElementById("storeTutorialContainer").classList.remove("fadeOutAnim");
-        document.getElementById("storeTutorialContainer").style.display = "none";
-      }, 500);
+      fadeOutContainer("storeTutorialContainer");
       display = 8;
       fetch(`${api}/storeTutorial`, {
         method: "PUT",
@@ -1039,12 +1004,7 @@ const displayClose = () => {
       return;
     } else if (display == 14) {
       display = 1;
-      document.getElementById("CPLContainer").classList.remove("fadeInAnim");
-      document.getElementById("CPLContainer").classList.add("fadeOutAnim");
-      setTimeout(() => {
-        document.getElementById("CPLContainer").classList.remove("fadeOutAnim");
-        document.getElementById("CPLContainer").style.display = "none";
-      }, 500);
+      fadeOutContainer("CPLContainer");
       return;
     } else if (display == 15 || display == 16) {
       //PROFILE
@@ -1053,12 +1013,7 @@ const displayClose = () => {
       profileImageContainer.classList.remove("showBackground");
       profileDescription.classList.remove("showBackground");
       profileNameContainer.classList.remove("showBackground");
-      document.getElementById("profileContainer").classList.remove("fadeInAnim");
-      document.getElementById("profileContainer").classList.add("fadeOutAnim");
-      setTimeout(() => {
-        document.getElementById("profileContainer").classList.remove("fadeOutAnim");
-        document.getElementById("profileContainer").style.display = "none";
-      }, 500);
+      fadeOutContainer("profileContainer");
     }
     if (display == 15) display = 0;
     else display = 3;
