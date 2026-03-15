@@ -1142,23 +1142,23 @@ const profileUpdate = async (uid, isMe) => {
       document.getElementsByClassName("profileStatValue")[5].textContent = "-";
       document.getElementById("profileRecentPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
     } else {
-      document.getElementById("profileRecentPlay").innerHTML = "";
-      for (let i = 0; i < recentPlay.length; i++) {
-        await fetch(`${api}/record/${recentPlay[i]}`, {
-          method: "GET",
-          credentials: "include",
-        })
-          .then((res) => res.json())
-          .then((res) => {
-            if (res.result == "success") {
-              if (i == 0) {
-                const recentDate = new Date(res.results[0].date);
-                document.getElementsByClassName("profileStatValue")[5].textContent = `${recentDate.toLocaleDateString()}`;
-              }
-              const data = res.results[0];
-              const song = tracks.find((e) => e.name == data.name);
-              const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
-              document.getElementById("profileRecentPlay").innerHTML += `<div class="playContainer">
+      const recentResults = await Promise.all(
+        recentPlay.map((id) =>
+          fetch(`${api}/record/${id}`, { method: "GET", credentials: "include" }).then((res) => res.json())
+        )
+      );
+      let recentHTML = "";
+      for (let i = 0; i < recentResults.length; i++) {
+        const res = recentResults[i];
+        if (res.result == "success") {
+          if (i == 0) {
+            const recentDate = new Date(res.results[0].date);
+            document.getElementsByClassName("profileStatValue")[5].textContent = `${recentDate.toLocaleDateString()}`;
+          }
+          const data = res.results[0];
+          const song = tracks.find((e) => e.name == data.name);
+          const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
+          recentHTML += `<div class="playContainer">
               <div class="playContainerLeft">
                 <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${difficulty}</span>
                 <img src="${cdn}/albums/50/${song.fileName}.webp" class="playAlbum" />
@@ -1174,9 +1174,9 @@ const profileUpdate = async (uid, isMe) => {
                 <span class="playRate">${rating} +${Number(data.rating / 100).toFixed(2)}</span>
               </div>
             </div>`;
-            }
-          });
+        }
       }
+      document.getElementById("profileRecentPlay").innerHTML = recentHTML;
     }
     let bestRecords = await fetch(`${api}/bestRecords/${profile.nickname}`, {
       method: "GET",
