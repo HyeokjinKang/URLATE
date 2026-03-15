@@ -445,7 +445,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const tracksUpdate = () => {
   let songList = "";
-  let loadedCount = 0;
+  const fetchTargets = [];
+
   for (let i = 0; i < tracks.length; i++) {
     if (tracks[i].type == 3) {
       songList += `<div class="songSelectionContainer songSelectionDisable">
@@ -484,36 +485,29 @@ const tracksUpdate = () => {
                 <span class="ranks rankQ"></span>
               </div>
           </div>`;
-    fetch(`${api}/record/${tracks[i].name}/${username}`, {
-      method: "GET",
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        trackRecords[i] = [];
+    fetchTargets.push(i);
+  }
+
+  selectSongContainer.innerHTML = songList;
+
+  const defaultRecord = (type) => ({ rank: type == 1 ? "rankL" : "rankQ", record: 0, medal: 0, maxcombo: 0 });
+
+  Promise.all(
+    fetchTargets.map((i) =>
+      fetch(`${api}/record/${tracks[i].name}/${username}`, { method: "GET", credentials: "include" })
+        .then((res) => res.json())
+        .then((data) => ({ i, data }))
+    )
+  )
+    .then((results) => {
+      results.forEach(({ i, data }) => {
+        trackRecords[i] = [defaultRecord(tracks[i].type), defaultRecord(tracks[i].type), defaultRecord(tracks[i].type)];
         if (data.result == "success") {
           for (let j = 0; j < 3; j++) {
-            if (tracks[i].type == 1) {
-              trackRecords[i][j] = {
-                rank: "rankL",
-                record: 0,
-                medal: 0,
-                maxcombo: 0,
-              };
-            } else {
-              trackRecords[i][j] = {
-                rank: "rankQ",
-                record: 0,
-                medal: 0,
-                maxcombo: 0,
-              };
-            }
-          }
-          for (let j = 0; j < 3; j++) {
             if (data.results[j] != undefined) {
-              let value = data.results[j];
-              document.getElementsByClassName("ranks")[i].className = "ranks";
-              document.getElementsByClassName("ranks")[i].classList.add(`rank${value.rank}`);
+              const value = data.results[j];
+              const rankEl = document.getElementsByClassName("ranks")[i];
+              rankEl.className = `ranks rank${value.rank}`;
               trackRecords[i][value.difficulty - 1] = {
                 rank: `rank${value.rank}`,
                 record: value.record,
@@ -522,44 +516,25 @@ const tracksUpdate = () => {
               };
             }
           }
-        } else {
-          for (let j = 0; j < 3; j++) {
-            if (tracks[i].type == 1) {
-              document.getElementsByClassName("ranks")[i].className = "ranks";
-              document.getElementsByClassName("ranks")[i].classList.add("rankL");
-              document.getElementsByClassName("songSelectionInfo")[i].classList.add("locked");
-              trackRecords[i][j] = {
-                rank: "rankL",
-                record: 0,
-                medal: 0,
-                maxcombo: 0,
-              };
-            } else {
-              trackRecords[i][j] = {
-                rank: "rankQ",
-                record: 0,
-                medal: 0,
-                maxcombo: 0,
-              };
-            }
-          }
+        } else if (tracks[i].type == 1) {
+          const rankEl = document.getElementsByClassName("ranks")[i];
+          rankEl.className = "ranks rankL";
+          document.getElementsByClassName("songSelectionInfo")[i].classList.add("locked");
         }
-        loadedCount++;
-        if (loadedCount == tracks.length && iniMode != -1) {
-          loaded++;
-          if (loaded == 4) {
-            loaded = -1;
-            gameLoaded();
-          }
-        }
-      })
-      .catch((error) => {
-        alert(`Error occured.\n${error}`);
-        console.error(`Error occured.\n${error}`);
-        location.reload();
       });
-  }
-  selectSongContainer.innerHTML = songList;
+      if (iniMode != -1) {
+        loaded++;
+        if (loaded == 4) {
+          loaded = -1;
+          gameLoaded();
+        }
+      }
+    })
+    .catch((error) => {
+      alert(`Error occured.\n${error}`);
+      console.error(`Error occured.\n${error}`);
+      location.reload();
+    });
 };
 
 const sortSelected = (n, isInitializing) => {
