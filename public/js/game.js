@@ -1086,9 +1086,9 @@ const rankUpdate = async () => {
   });
   const data = await res.json();
   if (data.result == "success") {
-    document.getElementById("rankTableBody").innerHTML = "";
-    data.results.forEach((e, i) => {
-      document.getElementById("rankTableBody").innerHTML += `<tr>
+    document.getElementById("rankTableBody").innerHTML = data.results
+      .map(
+        (e, i) => `<tr>
       <td>${i + 1}</td>
       <td>
         <div class="rankProfileContainer" onclick="profileScreen('${e.userid}')">
@@ -1099,8 +1099,9 @@ const rankUpdate = async () => {
       <td>${Number(e.accuracy).toFixed(2)}%</td>
       <td>${numberWithCommas(Number(e.scoreSum))}</td>
       <td>${Number(e.rating / 100).toFixed(2)}</td>
-      </tr>`;
-    });
+      </tr>`
+      )
+      .join("");
   }
 };
 
