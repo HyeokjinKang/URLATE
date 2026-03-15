@@ -515,8 +515,8 @@ const tracksUpdate = () => {
     fetchTargets.map((i) =>
       fetch(`${api}/record/${tracks[i].name}/${username}`, { method: "GET", credentials: "include" })
         .then((res) => res.json())
-        .then((data) => ({ i, data }))
-    )
+        .then((data) => ({ i, data })),
+    ),
   )
     .then((results) => {
       results.forEach(({ i, data }) => {
@@ -1108,7 +1108,7 @@ const rankUpdate = async () => {
       <td>${Number(e.accuracy).toFixed(2)}%</td>
       <td>${numberWithCommas(Number(e.scoreSum))}</td>
       <td>${Number(e.rating / 100).toFixed(2)}</td>
-      </tr>`
+      </tr>`,
       )
       .join("");
   }
@@ -1176,11 +1176,7 @@ const profileUpdate = async (uid, isMe) => {
       document.getElementsByClassName("profileStatValue")[5].textContent = "-";
       document.getElementById("profileRecentPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
     } else {
-      const recentResults = await Promise.all(
-        recentPlay.map((id) =>
-          fetch(`${api}/record/${id}`, { method: "GET", credentials: "include" }).then((res) => res.json())
-        )
-      );
+      const recentResults = await Promise.all(recentPlay.map((id) => fetch(`${api}/record/${id}`, { method: "GET", credentials: "include" }).then((res) => res.json())));
       let recentHTML = "";
       for (let i = 0; i < recentResults.length; i++) {
         const res = recentResults[i];
