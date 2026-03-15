@@ -115,53 +115,14 @@ const initialize = () => {
 };
 
 const settingApply = () => {
-  if (settings.general.detailLang == "original") {
-    langDetailSelector.getElementsByTagName("option")[0].selected = true;
-  } else if (settings.general.detailLang == "english") {
-    langDetailSelector.getElementsByTagName("option")[1].selected = true;
-  }
-  if (settings.display.canvasRes == 100) {
-    canvasResSelector.getElementsByTagName("option")[0].selected = true;
-  } else if (settings.display.canvasRes == 75) {
-    canvasResSelector.getElementsByTagName("option")[1].selected = true;
-  } else if (settings.display.canvasRes == 50) {
-    canvasResSelector.getElementsByTagName("option")[2].selected = true;
-  } else if (settings.display.canvasRes == 25) {
-    canvasResSelector.getElementsByTagName("option")[3].selected = true;
-  }
-  if (settings.display.albumRes == 100) {
-    albumResSelector.getElementsByTagName("option")[0].selected = true;
-  } else if (settings.display.albumRes == 75) {
-    albumResSelector.getElementsByTagName("option")[1].selected = true;
-  } else if (settings.display.albumRes == 50) {
-    albumResSelector.getElementsByTagName("option")[2].selected = true;
-  }
-  if (settings.sound.res == "96kbps") {
-    soundResSelector.getElementsByTagName("option")[0].selected = true;
-  } else if (settings.sound.res == "128kbps") {
-    soundResSelector.getElementsByTagName("option")[1].selected = true;
-  } else if (settings.sound.res == "192kbps") {
-    soundResSelector.getElementsByTagName("option")[2].selected = true;
-  }
-  if (settings.game.comboCount == 10) {
-    comboSelector.getElementsByTagName("option")[0].selected = true;
-  } else if (settings.game.comboCount == 25) {
-    comboSelector.getElementsByTagName("option")[1].selected = true;
-  } else if (settings.game.comboCount == 50) {
-    comboSelector.getElementsByTagName("option")[2].selected = true;
-  } else if (settings.game.comboCount == 100) {
-    comboSelector.getElementsByTagName("option")[3].selected = true;
-  } else if (settings.game.comboCount == 200) {
-    comboSelector.getElementsByTagName("option")[4].selected = true;
-  }
-  for (let i = 0; i < skinSelector.getElementsByTagName("option").length; i++) {
-    if (skinSelector.getElementsByTagName("option")[i].value == settings.game.skin) {
-      skinSelector.getElementsByTagName("option")[i].selected = true;
-      break;
-    }
-  }
-  document.getElementById("wheelSelector").getElementsByTagName("option")[Number(settings.input.wheelReverse)].selected = true;
-  document.getElementById("inputSelector").getElementsByTagName("option")[Number(settings.input.keys)].selected = true;
+  langDetailSelector.value = settings.general.detailLang;
+  canvasResSelector.value = settings.display.canvasRes;
+  albumResSelector.value = settings.display.albumRes;
+  soundResSelector.value = settings.sound.res;
+  comboSelector.value = settings.game.comboCount + "x";
+  skinSelector.value = settings.game.skin;
+  document.getElementById("wheelSelector").value = settings.input.wheelReverse;
+  document.getElementById("inputSelector").value = settings.input.keys;
   for (let i = 0; i <= 1; i++) {
     document.getElementsByClassName("volumeMaster")[i].value = settings.sound.volume.master * 100;
     document.getElementsByClassName("volumeMasterValue")[i].textContent = Math.round(settings.sound.volume.master * 100) + "%";
@@ -433,11 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
               if (data.explicit % 2 == 1) document.getElementById("profilePic").classList.add("blur");
               document.getElementById("name").textContent = username;
               document.getElementById("optionName").textContent = username;
-              if (lang == "ko") {
-                langSelector.getElementsByTagName("option")[0].selected = true;
-              } else if (lang == "en") {
-                langSelector.getElementsByTagName("option")[1].selected = true;
-              }
+              langSelector.value = lang;
               skins = JSON.parse(data.skins);
               for (let i = 0; i < skins.length; i++) {
                 let option = document.createElement("option");
