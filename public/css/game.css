@@ -515,7 +515,7 @@ p {
   margin-bottom: 4.5vh;
 }
 
-#infoLineContainer {
+.infoLineContainer {
   margin-top: 4.5vh;
   margin-bottom: 4.5vh;
   width: 100vw;
@@ -524,18 +524,18 @@ p {
   align-items: center;
 }
 
-#infoLine {
+.infoLine {
   border-top: 2px solid rgb(39, 39, 39);
   width: 4vw;
   margin: 10px;
 }
 
-#infoTitle {
+.infoTitle {
   font-size: 3vh;
   font-weight: 700;
 }
 
-#infoSubtitle {
+.infoSubtitle {
   color: #aaa;
   font-size: 2vh;
   font-weight: 500;
