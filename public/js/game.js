@@ -807,8 +807,8 @@ const gameLoaded = () => {
   profileSong.play();
   document.getElementById("menuContainer").style.display = "flex";
   document.getElementById("loadingContainer").classList.add("fadeOutAnim");
-  localStorage.clear("songName");
-  localStorage.clear("difficulty");
+  localStorage.removeItem("songName");
+  localStorage.removeItem("difficulty");
   setTimeout(() => {
     if (tutorial >= 3) {
       document.getElementById("tutorialInformation").style.display = "flex";
