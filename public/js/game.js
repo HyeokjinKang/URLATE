@@ -235,10 +235,7 @@ const settingApply = () => {
   });
 };
 
-const drawBar = (x1, y1, x2, y2, width) => {
-  let lineColor = "rgb(0, 0, 0)";
-  ctx.strokeStyle = lineColor;
-  ctx.lineWidth = width;
+const drawBar = (x1, y1, x2, y2) => {
   ctx.beginPath();
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
@@ -252,13 +249,15 @@ const animationLooper = () => {
     analyser.getByteFrequencyData(dataArray);
     let barWidth = wWidth / 300;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "rgb(0, 0, 0)";
+    ctx.lineWidth = barWidth / 2;
     for (let i = 0; i < 300; i++) {
       let barHeight = (dataArray[i] * wHeight) / 1000;
       let x = barWidth * i;
       let y_end = barHeight / 1.3;
-      drawBar(x, 0, x, y_end, barWidth - barWidth / 2, 1);
+      drawBar(x, 0, x, y_end);
       x = wWidth - x;
-      drawBar(x, wHeight, x, wHeight - y_end, barWidth - barWidth / 2, 1);
+      drawBar(x, wHeight, x, wHeight - y_end);
     }
   }
   requestAnimationFrame(animationLooper);
