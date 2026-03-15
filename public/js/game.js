@@ -164,7 +164,6 @@ const settingApply = () => {
   document.getElementById("judgeGood").checked = settings.game.applyJudge.Good;
   document.getElementById("judgeBad").checked = settings.game.applyJudge.Bad;
   document.getElementById("judgeMiss").checked = settings.game.applyJudge.Miss;
-  // judgeBullet.checked = settings.game.applyJudge.Bullet;
   document.getElementById("frameCheck").checked = settings.game.counter;
   document.getElementById("ignoreCursorCheck").checked = settings.editor.denyCursor;
   document.getElementById("ignoreEditorCheck").checked = settings.editor.denySkin;
@@ -1744,7 +1743,7 @@ const couponApply = () => {
         overlayLoadingContainer.style.opacity = "0";
       });
   } else {
-    alert(`${inputEmpty}`);
+    alert(inputEmpty);
   }
 };
 
@@ -1991,9 +1990,7 @@ const scrollEvent = (e) => {
 };
 
 document.onkeydown = (e) => {
-  e = e || window.event;
   let key = e.key.toLowerCase();
-  //console.log(key);
   if (key == "escape") {
     e.preventDefault();
     displayClose();
@@ -2002,18 +1999,7 @@ document.onkeydown = (e) => {
   if (key == "shift") {
     shiftDown = true;
   }
-  if (display == 0) {
-    if (key == "arrowleft") {
-      e.preventDefault();
-      //menuLeft();
-    } else if (key == "arrowright") {
-      e.preventDefault();
-      //menuRight();
-    } else if (key == "enter" || key == " ") {
-      e.preventDefault();
-      //menuSelected();
-    }
-  } else if (display == 1 || display == 6) {
+  if (display == 1 || display == 6) {
     if (key == "arrowup") {
       e.preventDefault();
       if (songSelection != 0) {
@@ -2053,7 +2039,6 @@ document.onkeydown = (e) => {
 };
 
 document.onkeyup = (e) => {
-  e = e || window.event;
   let key = e.key.toLowerCase();
   if (display == 7) {
     offsetInput = false;
