@@ -1560,15 +1560,9 @@ const offsetSetting = () => {
   document.getElementById("offsetContiner").classList.add("fadeInAnim");
   if (!themeSong.playing()) {
     const selSong = getSong(songSelection);
-    if (selSong) {
-      selSong.fade(1, 0, 500);
-      setTimeout(() => selSong.pause(), 500);
-    }
+    if (selSong) selSong.fade(1, 0, 500);
   } else {
     themeSong.fade(1, 0, 500);
-    setTimeout(() => {
-      themeSong.pause();
-    }, 500);
   }
   offsetSong.play();
   offsetSong.fade(0, 1, 500);
