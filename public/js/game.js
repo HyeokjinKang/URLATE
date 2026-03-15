@@ -95,7 +95,31 @@ let tracks;
 let trackRecords = [];
 
 let themeSong;
-let songs = [];
+const SONG_CACHE_MAX = 5;
+const songs = new Map();
+const getSong = (n) => {
+  if (n < 0 || !tracks[n] || tracks[n].type == 3) return null;
+  if (songs.has(n)) {
+    const s = songs.get(n);
+    songs.delete(n);
+    songs.set(n, s);
+    return s;
+  }
+  const howl = new Howl({
+    src: [`${cdn}/tracks/preview/${tracks[n].fileName}.ogg`],
+    format: ["ogg"],
+    html5: true,
+    autoplay: false,
+    loop: true,
+  });
+  songs.set(n, howl);
+  if (songs.size > SONG_CACHE_MAX) {
+    const oldest = songs.keys().next().value;
+    songs.get(oldest).unload();
+    songs.delete(oldest);
+  }
+  return howl;
+};
 let offsetSong = new Howl({
   src: [`${cdn}/tracks/offset.ogg`],
   format: ["ogg"],
@@ -445,6 +469,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 const tracksUpdate = () => {
+  songs.forEach((s) => s.unload());
+  songs.clear();
   let songList = "";
   const fetchTargets = [];
 
@@ -461,13 +487,6 @@ const tracksUpdate = () => {
       </div>`;
       continue;
     }
-    songs[i] = new Howl({
-      src: [`${cdn}/tracks/preview/${tracks[i].fileName}.ogg`],
-      format: ["ogg"],
-      html5: true,
-      autoplay: false,
-      loop: true,
-    });
     songList += `<div class="songSelectionContainer" onclick="songSelected(${i})">
               <div class="songSelectionInfo">
                 <div class="songSelectionTitle">
@@ -540,13 +559,14 @@ const tracksUpdate = () => {
 
 const sortSelected = (n, isInitializing) => {
   localStorage.sort = n;
-  let seek = songs[songSelection].seek();
+  const currentSong = getSong(songSelection);
+  let seek = currentSong?.seek() ?? 0;
   Array.prototype.forEach.call(document.getElementsByClassName("sortText"), (e) => {
     if (e.classList.contains("selected")) e.classList.remove("selected");
   });
   document.getElementsByClassName("sortText")[n].classList.add("selected");
   const sortArray = [sortAsName, sortAsProducer, sortAsDifficulty, sortAsBPM];
-  if (songs[songSelection]) songs[songSelection].stop();
+  currentSong?.stop();
   const prevName = tracks[songSelection].fileName;
   tracks.sort(sortAsName);
   tracks.sort(sortArray[n]);
@@ -566,7 +586,7 @@ const songSelected = (n, refreshed, seek) => {
       document.getElementById("selectInnerContainer").classList.add("fadeOut");
       document.getElementById("selectBackground").classList.add("fadeOut");
       clearTimeout(songPlayTimeout);
-      songs[songSelection].fade(1, 0, 2000);
+      getSong(songSelection)?.fade(1, 0, 2000);
       setTimeout(() => {
         localStorage.rate = rate;
         localStorage.disableText = disableText;
@@ -594,14 +614,19 @@ const songSelected = (n, refreshed, seek) => {
         themeSong.stop();
       }, 500);
     }
-    songs.forEach((s) => {
-      if (s) s.stop();
-    });
+    songs.forEach((s) => s.stop());
+    const targetSong = getSong(n);
     clearTimeout(songPlayTimeout);
     songPlayTimeout = setTimeout(() => {
-      if (songs[n]) {
-        songs[n].play();
-        if (seek) songs[n].seek(seek);
+      if (!targetSong) return;
+      const doPlay = () => {
+        targetSong.play();
+        if (seek) targetSong.seek(seek);
+      };
+      if (targetSong.state() === "loaded") {
+        doPlay();
+      } else {
+        targetSong.once("load", doPlay);
       }
     }, 200);
   }
@@ -801,8 +826,11 @@ Pace.on("done", () => {
 const playProfileSong = () => {
   if (!profileSong.playing()) profileSong.play();
   if (!themeSong.playing()) {
-    songs[songSelection].fade(1, 0, 300);
-    fadeRate(songs[songSelection], 1, slowRate, 300, Date.now());
+    const selSong = getSong(songSelection);
+    if (selSong) {
+      selSong.fade(1, 0, 300);
+      fadeRate(selSong, 1, slowRate, 300, Date.now());
+    }
   } else {
     profileSong.seek(Math.max(0, themeSong.seek() - 1.4) * fastRate);
     themeSong.fade(1, 0, 300);
@@ -814,15 +842,18 @@ const playProfileSong = () => {
 
 const stopProfileSong = () => {
   if (songSelection != -1) {
-    if (!songs[songSelection].playing()) songs[songSelection].play();
-    songs[songSelection].fade(0, 1, 300);
-    fadeRate(songs[songSelection], slowRate, 1, 300, new Date().getTime());
+    const selSong = getSong(songSelection);
+    if (selSong) {
+      if (!selSong.playing()) selSong.play();
+      selSong.fade(0, 1, 300);
+      fadeRate(selSong, slowRate, 1, 300, Date.now());
+    }
   } else {
     themeSong.fade(0, 1, 300);
-    fadeRate(themeSong, slowRate, 1, 300, new Date().getTime());
+    fadeRate(themeSong, slowRate, 1, 300, Date.now());
   }
   profileSong.fade(1, 0, 300);
-  fadeRate(profileSong, 1, fastRate, 300, new Date().getTime());
+  fadeRate(profileSong, 1, fastRate, 300, Date.now());
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -918,8 +949,11 @@ const displayClose = () => {
       document.getElementById("offsetContiner").classList.remove("fadeInAnim");
       document.getElementById("offsetContiner").classList.add("fadeOutAnim");
       if (songSelection != -1) {
-        if (!songs[songSelection].playing()) songs[songSelection].play();
-        songs[songSelection].fade(0, 1, 500);
+        const selSong = getSong(songSelection);
+        if (selSong) {
+          if (!selSong.playing()) selSong.play();
+          selSong.fade(0, 1, 500);
+        }
       } else {
         if (!themeSong.playing()) themeSong.play();
         themeSong.fade(0, 1, 500);
@@ -1028,7 +1062,7 @@ const menuSelected = (n) => {
         let min = Math.ceil(0);
         let max = Math.floor(tracks.length);
         let result = Math.floor(Math.random() * (max - min)) + min;
-        if (songs[result]) {
+        if (tracks[result].type != 3) {
           songSelected(result);
           break;
         }
@@ -1530,10 +1564,11 @@ const offsetSetting = () => {
   document.getElementById("offsetContiner").style.display = "flex";
   document.getElementById("offsetContiner").classList.add("fadeInAnim");
   if (!themeSong.playing()) {
-    songs[songSelection].fade(1, 0, 500);
-    setTimeout(() => {
-      songs[songSelection].pause();
-    }, 500);
+    const selSong = getSong(songSelection);
+    if (selSong) {
+      selSong.fade(1, 0, 500);
+      setTimeout(() => selSong.pause(), 500);
+    }
   } else {
     themeSong.fade(1, 0, 500);
     setTimeout(() => {
