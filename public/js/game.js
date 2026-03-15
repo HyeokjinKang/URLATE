@@ -273,11 +273,14 @@ const sortAsProducer = (a, b) => {
   return a.producer.toLowerCase() > b.producer.toLowerCase() ? 1 : -1;
 };
 
+const difficultyCache = new Map();
 const sortAsDifficulty = (a, b) => {
-  a = JSON.parse(a.difficulty)[difficultySelection];
-  b = JSON.parse(b.difficulty)[difficultySelection];
-  if (a == b) return 0;
-  return a > b ? 1 : -1;
+  if (!difficultyCache.has(a.fileName)) difficultyCache.set(a.fileName, JSON.parse(a.difficulty));
+  if (!difficultyCache.has(b.fileName)) difficultyCache.set(b.fileName, JSON.parse(b.difficulty));
+  const da = difficultyCache.get(a.fileName)[difficultySelection];
+  const db = difficultyCache.get(b.fileName)[difficultySelection];
+  if (da == db) return 0;
+  return da > db ? 1 : -1;
 };
 
 const sortAsBPM = (a, b) => {
