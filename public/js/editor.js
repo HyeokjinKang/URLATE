@@ -2300,7 +2300,7 @@ const patternChanged = () => {
     patternHistory.splice(patternSeek + 1, patternHistory.length - 1 - patternSeek);
   }
 
-  patternHistory.push(eval(`(${JSON.stringify(pattern)})`));
+  patternHistory.push(structuredClone(pattern));
   if (patternHistory.length > 50) {
     patternHistory.splice(0, patternHistory.length - 50);
   }
@@ -2312,7 +2312,7 @@ const patternChanged = () => {
 const patternUndo = () => {
   if (patternSeek >= 1) {
     patternSeek--;
-    pattern = eval(`(${JSON.stringify(patternHistory[patternSeek])})`);
+    pattern = structuredClone(patternHistory[patternSeek]);
   }
   selectedCntElement = { i: "", v1: "", v2: "" };
   rangeCopyCancel();
@@ -2322,7 +2322,7 @@ const patternUndo = () => {
 const patternRedo = () => {
   if (patternSeek < patternHistory.length - 1) {
     patternSeek++;
-    pattern = eval(`(${JSON.stringify(patternHistory[patternSeek])})`);
+    pattern = structuredClone(patternHistory[patternSeek]);
   }
   selectedCntElement = { i: "", v1: "", v2: "" };
   rangeCopyCancel();
@@ -2339,11 +2339,11 @@ const elementCopy = () => {
   }
   copiedElement.v1 = selectedCntElement.v1;
   if (selectedCntElement.v1 == 0) {
-    copiedElement.element = eval(`(${JSON.stringify(pattern.patterns[selectedCntElement.i])})`);
+    copiedElement.element = structuredClone(pattern.patterns[selectedCntElement.i]);
   } else if (selectedCntElement.v1 == 1) {
-    copiedElement.element = eval(`(${JSON.stringify(pattern.bullets[selectedCntElement.i])})`);
+    copiedElement.element = structuredClone(pattern.bullets[selectedCntElement.i]);
   } else if (selectedCntElement.v1 == 2) {
-    copiedElement.element = eval(`(${JSON.stringify(pattern.triggers[selectedCntElement.i])})`);
+    copiedElement.element = structuredClone(pattern.triggers[selectedCntElement.i]);
   }
   iziToast.success({
     title: "Copy",
@@ -2360,23 +2360,24 @@ const elementPaste = () => {
     return;
   }
   const beats = Number((bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-  copiedElement.element.beat = beats;
+  const pasteElement = structuredClone(copiedElement.element);
+  pasteElement.beat = beats;
   let searchTarget = "";
   if (copiedElement.v1 == 0) {
-    pattern.patterns.push(eval(`(${JSON.stringify(copiedElement.element)})`));
+    pattern.patterns.push(pasteElement);
     pattern.patterns.sort(sortAsTiming);
     searchTarget = pattern.patterns;
   } else if (copiedElement.v1 == 1) {
-    pattern.bullets.push(eval(`(${JSON.stringify(copiedElement.element)})`));
+    pattern.bullets.push(pasteElement);
     pattern.bullets.sort(sortAsTiming);
     searchTarget = pattern.bullets;
   } else if (copiedElement.v1 == 2) {
-    pattern.triggers.push(eval(`(${JSON.stringify(copiedElement.element)})`));
+    pattern.triggers.push(pasteElement);
     pattern.triggers.sort(sortAsTiming);
     searchTarget = pattern.triggers;
   }
   for (let i = 0; i < searchTarget.length; i++) {
-    if (JSON.stringify(searchTarget[i]) == JSON.stringify(copiedElement.element)) {
+    if (searchTarget[i] === pasteElement) {
       selectedCntElement = {
         i: i,
         v1: copiedElement.v1,

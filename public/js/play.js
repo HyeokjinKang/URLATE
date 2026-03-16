@@ -204,7 +204,7 @@ const initialize = (isFirstCalled) => {
       .then((res) => res.json())
       .then((data) => {
         patternBackup = data;
-        pattern = JSON.parse(JSON.stringify(patternBackup));
+        pattern = structuredClone(patternBackup);
         patternLength = pattern.patterns.length;
 
         noteMaxDuration = 0;
@@ -915,7 +915,7 @@ const retry = () => {
   setTimeout(() => {
     Draw.initialize();
     song.stop();
-    pattern = JSON.parse(JSON.stringify(patternBackup));
+    pattern = structuredClone(patternBackup);
     bpm = pattern.information.bpm;
     speed = pattern.information.speed;
     nowSpeed = pattern.information.speed;
