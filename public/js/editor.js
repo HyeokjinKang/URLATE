@@ -519,10 +519,9 @@ const gotoMain = (isCalledByMain) => {
   }
 };
 
-const trackMouseSelection = (i, v1, v2, x, y) => {
+const trackMouseSelection = (i, v1, v2, x, y, beats) => {
   if (mode != 2 && mouseMode == 0) {
     if (pointingCntElement.i == "") {
-      const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
       const powX = ((((mouseX - x) * canvasContainerOW) / 200) * pixelRatio * settings.display.canvasRes) / 100;
       const powY = ((((mouseY - y) * canvasContainerOH) / 200) * pixelRatio * settings.display.canvasRes) / 100;
       switch (v1) {
@@ -587,7 +586,7 @@ const tmlRender = () => {
       let x = tmlStartX + (pattern.patterns[j].beat - renderStart) * beatToPx;
       let y = startY + timelineYLoc + height / 2;
 
-      if (mouseMode == 1) trackMouseSelection(j, 0, pattern.patterns[j].value, x, y);
+      if (mouseMode == 1) trackMouseSelection(j, 0, pattern.patterns[j].value, x, y, beats);
 
       if (selectedCheck(0, j)) {
         tmlCtx.fillStyle = "#ed5b45";
@@ -626,7 +625,7 @@ const tmlRender = () => {
       let y = startY + timelineYLoc + height * bulletsOverlap[parseInt(pattern.bullets[j].beat * 2)] + height / 2;
       let w = height / 3;
 
-      if (mouseMode == 1) trackMouseSelection(j, 1, 0, x, y);
+      if (mouseMode == 1) trackMouseSelection(j, 1, 0, x, y, beats);
 
       if (selectedCheck(1, j)) {
         tmlCtx.fillStyle = "#ed5b45";
@@ -671,7 +670,7 @@ const tmlRender = () => {
       let y = startY + timelineYLoc + height * (bulletsOverlapNum + triggersOverlap[parseInt(pattern.triggers[j].beat * 2)]) + height / 2;
       let w = height / 3;
 
-      if (mouseMode == 1) trackMouseSelection(j, 2, pattern.triggers[j].value, x, y);
+      if (mouseMode == 1) trackMouseSelection(j, 2, pattern.triggers[j].value, x, y, beats);
 
       if (selectedCheck(2, j)) {
         tmlCtx.fillStyle = "#ed5b45";
@@ -1028,33 +1027,32 @@ const cntRender = () => {
         displayMessage("Error", `[URLATE] validationError: Note_${i} of the beat ${pattern.patterns[i].beat} is too close to Note_${i - 1}.`);
       }
       prevNoteBeat = pattern.patterns[i].beat;
-      if (mouseMode == 0) trackMouseSelection(i, 0, pattern.patterns[i].value, pattern.patterns[i].x, pattern.patterns[i].y);
+      if (mouseMode == 0) trackMouseSelection(i, 0, pattern.patterns[i].value, pattern.patterns[i].x, pattern.patterns[i].y, beats);
     }
 
     // Note drawing loop
     let validNote = end;
+    const _noteState = { progress: 0, tailProgress: 0, endProgress: 0, globalAlpha, isGrabbed: false, isSelected: false };
     for (let i = end - 1; i >= start; i--) {
-      const state = Updater.noteProgress(pattern.patterns[i], beats, speed);
+      Updater.noteProgress(pattern.patterns[i], beats, speed, _noteState);
 
-      if (pattern.patterns[i].value != 2 && state.progress < 101) validNote = i;
-      else if (pattern.patterns[i].value == 2 && state.endProgress < 100) validNote = i;
+      if (pattern.patterns[i].value != 2 && _noteState.progress < 101) validNote = i;
+      else if (pattern.patterns[i].value == 2 && _noteState.endProgress < 100) validNote = i;
 
       const alpha = 0.4 - 0.1 * (validNote - i);
 
       if (i > 0) Draw.noteConnector(pattern.patterns[i - 1], pattern.patterns[i], alpha);
 
       if (i == validNote) {
+        _noteState.globalAlpha = globalAlpha;
+        _noteState.isGrabbed = _noteState.progress >= 100;
+        _noteState.isSelected = selectedCheck(0, i);
         Draw.note(
           {
             ...pattern.patterns[i],
             debugIndex: i,
           },
-          {
-            ...state,
-            globalAlpha,
-            isGrabbed: state.progress >= 100,
-            isSelected: selectedCheck(0, i),
-          },
+          _noteState,
         );
       } else if (i + 3 >= validNote) {
         Draw.noteShadow(pattern.patterns[i], alpha);
@@ -1076,7 +1074,7 @@ const cntRender = () => {
         }
         createdBullets.add(i);
 
-        trackMouseSelection(i, 1, 0, pos.x, pos.y);
+        trackMouseSelection(i, 1, 0, pos.x, pos.y, beats);
 
         Draw.bullet(
           {
