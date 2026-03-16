@@ -493,7 +493,8 @@ body {
   background-color: white;
 }
 
-#gotoGame {
+#gotoGame,
+#gotoMain {
   position: fixed;
   left: 3vw;
   top: 4.5vh;
