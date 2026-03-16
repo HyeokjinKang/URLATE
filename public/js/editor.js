@@ -1330,7 +1330,7 @@ const settingsInput = (v, e) => {
           targetElements = pattern.triggers;
         }
         for (let i = 0; i < targetElements.length; i++) {
-          if (JSON.stringify(targetElements[i]) == JSON.stringify(changedResult)) {
+          if (targetElements[i] === changedResult) {
             selectedCntElement = {
               i: i,
               v1: selectedCntElement.v1,
@@ -1873,7 +1873,7 @@ const timelineAddElement = () => {
       pattern.patterns.sort(sortAsTiming);
       patternChanged();
       for (let i = 0; i < pattern.patterns.length; i++) {
-        if (JSON.stringify(pattern.patterns[i]) == JSON.stringify(newElement)) {
+        if (pattern.patterns[i] === newElement) {
           selectedCntElement = { v1: 0, v2: selectedValue, i: i };
           break;
         }
@@ -1889,7 +1889,7 @@ const timelineAddElement = () => {
       pattern.bullets.push(newElement);
       pattern.bullets.sort(sortAsTiming);
       for (let i = 0; i < pattern.bullets.length; i++) {
-        if (JSON.stringify(pattern.bullets[i]) == JSON.stringify(newElement)) {
+        if (pattern.bullets[i] === newElement) {
           selectedCntElement = { v1: 1, v2: 0, i: i };
           break;
         }
@@ -1917,7 +1917,7 @@ const timelineAddElement = () => {
       pattern.triggers.sort(sortAsTiming);
       patternChanged();
       for (let i = 0; i < pattern.triggers.length; i++) {
-        if (JSON.stringify(pattern.triggers[i]) == JSON.stringify(newElement)) {
+        if (pattern.triggers[i] === newElement) {
           selectedCntElement = { i: i, v1: 2, v2: -1 };
           break;
         }
@@ -1970,7 +1970,7 @@ const compClicked = () => {
         pattern.bullets.push(newElement);
         pattern.bullets.sort(sortAsTiming);
         for (let i = 0; i < pattern.bullets.length; i++) {
-          if (JSON.stringify(pattern.bullets[i]) == JSON.stringify(newElement)) {
+          if (pattern.bullets[i] === newElement) {
             selectedCntElement = { v1: 1, v2: 0, i: i };
             break;
           }
@@ -2004,7 +2004,7 @@ const compClicked = () => {
         pattern.patterns.sort(sortAsTiming);
         patternChanged();
         for (let i = 0; i < pattern.patterns.length; i++) {
-          if (JSON.stringify(pattern.patterns[i]) == JSON.stringify(newElement)) {
+          if (pattern.patterns[i] === newElement) {
             selectedCntElement = { v1: 0, v2: selectedValue, i: i };
             break;
           }
@@ -2033,7 +2033,7 @@ const compClicked = () => {
       pattern.triggers.sort(sortAsTiming);
       patternChanged();
       for (let i = 0; i < pattern.triggers.length; i++) {
-        if (JSON.stringify(pattern.triggers[i]) == JSON.stringify(newElement)) {
+        if (pattern.triggers[i] === newElement) {
           selectedCntElement = { i: i, v1: 2, v2: -1 };
           break;
         }
