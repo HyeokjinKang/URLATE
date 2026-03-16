@@ -117,6 +117,8 @@ let canvasW = 0,
   canvasH = 0,
   canvasOW = 0,
   canvasOH = 0;
+const FONT_STACK = "Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
+let UIFontNormal = "";
 const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -183,6 +185,7 @@ const initialize = (isFirstCalled) => {
   canvasH = (window.innerHeight * pixelRatio * settings.display.canvasRes) / 100;
   canvas.width = canvasW;
   canvas.height = canvasH;
+  UIFontNormal = `500 ${canvasH / 30}px ${FONT_STACK}`;
 
   if (Draw) Draw.setSize({ canvasW, canvasH });
 
@@ -348,7 +351,7 @@ const cntRender = () => {
       }
       fontSize = (canvasH / 5) * easeOutSine((now - comboAlertMs) / 1000);
       ctx.beginPath();
-      ctx.font = `700 ${fontSize}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.font = `700 ${fontSize}px ${FONT_STACK}`;
       ctx.fillStyle = `rgba(200,200,200,${comboOpacity})`;
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
@@ -501,7 +504,7 @@ const cntRender = () => {
     }
   } catch (e) {
     if (e) {
-      ctx.font = `500 ${canvasH / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.font = UIFontNormal;
       ctx.fillStyle = "#F55";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
@@ -594,7 +597,7 @@ const calculateResult = () => {
   }
   if (missPoint.length == 0) {
     missCtx.fillStyle = "#FFF";
-    missCtx.font = `500 ${canvasH / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    missCtx.font = UIFontNormal;
     missCtx.textAlign = "right";
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
@@ -630,7 +633,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
         }
         break;
       default:
-        ctx.font = `500 ${canvasH / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+        ctx.font = UIFontNormal;
         ctx.fillStyle = "#F55";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
