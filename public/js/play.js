@@ -122,7 +122,8 @@ let canvasW = 0,
   canvasOW = 0,
   canvasOH = 0;
 const FONT_STACK = "Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
-let cachedFontNormal = "", cachedFontItalic = "";
+let UIFontNormal = "",
+  UIFontItalic = "";
 const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -191,8 +192,8 @@ const initialize = (isFirstCalled) => {
   canvasH = (window.innerHeight * pixelRatio * settings.display.canvasRes) / 100;
   canvas.width = canvasW;
   canvas.height = canvasH;
-  cachedFontNormal = `500 ${canvasH / 30}px ${FONT_STACK}`;
-  cachedFontItalic = `italic 600 ${canvasH / 40}px ${FONT_STACK}`;
+  UIFontNormal = `500 ${canvasH / 30}px ${FONT_STACK}`;
+  UIFontItalic = `italic 600 ${canvasH / 40}px ${FONT_STACK}`;
 
   if (Draw) Draw.setSize({ canvasW, canvasH });
 
@@ -540,7 +541,7 @@ const cntRender = () => {
       ctx.fill();
       ctx.beginPath();
       ctx.fillStyle = "#000000";
-      ctx.font = cachedFontItalic;
+      ctx.font = UIFontItalic;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
       ctx.fillText("NEW RECORD!", canvasW * 0.87, canvasH * 0.23);
@@ -553,7 +554,7 @@ const cntRender = () => {
     }
   } catch (e) {
     if (e) {
-      ctx.font = cachedFontNormal;
+      ctx.font = UIFontNormal;
       ctx.fillStyle = "#F55";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
@@ -646,7 +647,7 @@ const calculateResult = () => {
   }
   if (missPoint.length == 0) {
     missCtx.fillStyle = "#FFF";
-    missCtx.font = cachedFontNormal;
+    missCtx.font = UIFontNormal;
     missCtx.textAlign = "right";
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
@@ -717,7 +718,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
         }
         break;
       default:
-        ctx.font = cachedFontNormal;
+        ctx.font = UIFontNormal;
         ctx.fillStyle = "#F55";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
