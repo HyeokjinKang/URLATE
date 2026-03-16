@@ -916,6 +916,7 @@ const finish = () => {
 };
 
 let scrollTimer = 0;
+let volumeSaveTimeout;
 
 const globalScrollEvent = (e) => {
   if (scrollTimer == 0) {
@@ -951,26 +952,29 @@ const globalScrollEvent = (e) => {
       setTimeout(() => {
         overlayClose("volume");
       }, 1500);
-      fetch(`${api}/settings`, {
-        method: "PUT",
-        credentials: "include",
-        body: JSON.stringify({
-          settings: settings,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.result != "success") {
-            alert(`Error occured.\n${data.error}`);
-          }
+      clearTimeout(volumeSaveTimeout);
+      volumeSaveTimeout = setTimeout(() => {
+        fetch(`${api}/settings`, {
+          method: "PUT",
+          credentials: "include",
+          body: JSON.stringify({
+            settings: settings,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
         })
-        .catch((error) => {
-          alert(`Error occured.\n${error}`);
-          console.error(`Error occured.\n${error}`);
-        });
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.result != "success") {
+              alert(`Error occured.\n${data.error}`);
+            }
+          })
+          .catch((error) => {
+            alert(`Error occured.\n${error}`);
+            console.error(`Error occured.\n${error}`);
+          });
+      }, 1000);
     } else {
       if (delta == 1) {
         //UP
