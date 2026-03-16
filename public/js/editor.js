@@ -919,7 +919,9 @@ const cntRender = () => {
 
     // Initialize
     pointingCntElement = mouseMode == 1 ? pointingTmlElement : { v1: "", v2: "", i: "" };
+    [prevCreatedBullets, createdBullets] = [createdBullets, prevCreatedBullets];
     createdBullets.clear();
+    [prevDestroyedBullets, destroyedBullets] = [destroyedBullets, prevDestroyedBullets];
     destroyedBullets.clear();
     explodingBullets.clear();
 
@@ -1013,9 +1015,6 @@ const cntRender = () => {
 
     for (let textObj of renderTexts) Draw.triggerText(textObj);
 
-    // Prevent destroy infinite loop
-    prevDestroyedBullets = new Set(destroyedBullets);
-
     // Note render
     let renderDuration = 5 / speed;
 
@@ -1093,8 +1092,6 @@ const cntRender = () => {
         );
       }
     }
-    prevCreatedBullets = new Set(createdBullets);
-
     cntCtx.globalAlpha = 1;
 
     cntCtx.beginPath();
