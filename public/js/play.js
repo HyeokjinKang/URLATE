@@ -93,6 +93,7 @@ let overlayTime = 0;
 let shiftDown = false;
 let currentTriggerIndex = 0;
 let nowSpeed = 1;
+let bulletCreationSpeeds = [];
 let tick = new Howl({
   src: [`/sounds/tick.mp3`],
   autoplay: false,
@@ -121,6 +122,9 @@ let canvasW = 0,
   canvasH = 0,
   canvasOW = 0,
   canvasOH = 0;
+const FONT_STACK = "Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
+let UIFontNormal = "",
+  UIFontItalic = "";
 const albumImg = new Image();
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -189,6 +193,8 @@ const initialize = (isFirstCalled) => {
   canvasH = (window.innerHeight * pixelRatio * settings.display.canvasRes) / 100;
   canvas.width = canvasW;
   canvas.height = canvasH;
+  UIFontNormal = `500 ${canvasH / 30}px ${FONT_STACK}`;
+  UIFontItalic = `italic 600 ${canvasH / 40}px ${FONT_STACK}`;
 
   if (Draw) Draw.setSize({ canvasW, canvasH });
 
@@ -204,7 +210,7 @@ const initialize = (isFirstCalled) => {
       .then((res) => res.json())
       .then((data) => {
         patternBackup = data;
-        pattern = JSON.parse(JSON.stringify(patternBackup));
+        pattern = structuredClone(patternBackup);
         patternLength = pattern.patterns.length;
 
         noteMaxDuration = 0;
@@ -217,6 +223,16 @@ const initialize = (isFirstCalled) => {
 
         const findEnd = pattern.triggers.find((t) => t.value == 6);
         endBeat = findEnd ? findEnd.beat : null;
+
+        // 총알 생성 시점 속도를 한 번만 계산하여 캐싱 (bulletPos 내 첫 번째 탐색 제거)
+        bulletCreationSpeeds = pattern.bullets.map((b) => {
+          const end = upperBound(pattern.triggers, b.beat);
+          let cs = pattern.information.speed;
+          for (let k = 0; k < end; k++) {
+            if (pattern.triggers[k].value == 4) cs = pattern.triggers[k].speed;
+          }
+          return cs;
+        });
 
         document.getElementById("scoreDifficultyNum").textContent = localStorage.difficulty;
         document.getElementById("scoreDifficultyName").textContent = difficultyNames[localStorage.difficultySelection];
@@ -366,7 +382,7 @@ const cntRender = () => {
       }
       fontSize = (canvasH / 5) * easeOutSine((now - comboAlertMs) / 1000);
       ctx.beginPath();
-      ctx.font = `700 ${fontSize}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.font = `700 ${fontSize}px ${FONT_STACK}`;
       ctx.fillStyle = `rgba(200,200,200,${comboOpacity})`;
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
@@ -426,33 +442,32 @@ const cntRender = () => {
     for (let i = start; i < end; i++) {
       const p = (1 - (pattern.patterns[i].beat - beats) / renderDuration) * 100;
       if (p >= 50) {
-        trackMouseSelection(i, 0, pattern.patterns[i].value, pattern.patterns[i].x, pattern.patterns[i].y);
+        trackMouseSelection(i, 0, pattern.patterns[i].value, pattern.patterns[i].x, pattern.patterns[i].y, beats);
       }
     }
+    const _noteState = { progress: 0, tailProgress: 0, endProgress: 0, globalAlpha, isGrabbed: false };
     for (let i = end - 1; i >= start; i--) {
-      const state = Updater.noteProgress(pattern.patterns[i], beats, speed);
+      Updater.noteProgress(pattern.patterns[i], beats, speed, _noteState);
+      _noteState.globalAlpha = globalAlpha;
+      _noteState.isGrabbed = grabbedNotes.has(i);
 
-      Draw.note(pattern.patterns[i], {
-        ...state,
-        globalAlpha,
-        isGrabbed: grabbedNotes.has(i),
-      });
+      Draw.note(pattern.patterns[i], _noteState);
 
-      if (state.progress >= 120 && !destroyedNotes.has(i) && (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
+      if (_noteState.progress >= 120 && !destroyedNotes.has(i) && (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
         calculateScore("miss", i, true);
         judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Miss"));
         miss++;
         showOverlay();
         missPoint.push(song.seek() * 1000);
         record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "miss(hold)", song.seek() * 1000]);
-        keyInput.push({ judge: "Miss", key: "-", time: Date.now() });
-      } else if (state.tailProgress >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
+        keyInput.push({ judge: "Miss", key: "-", time: now });
+      } else if (_noteState.tailProgress >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
         judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Perfect"));
         calculateScore("Perfect", i, true);
         record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "perfect(hold)", song.seek() * 1000]);
-        keyInput.push({ judge: "Perfect", key: "-", time: Date.now() });
+        keyInput.push({ judge: "Perfect", key: "-", time: now });
       }
     }
     start = lowerBound(pattern.bullets, beats - 32);
@@ -461,7 +476,7 @@ const cntRender = () => {
       if (!destroyedBullets.has(i) || explodingBullets.has(i)) {
         const bullet = pattern.bullets[i];
 
-        const pos = Updater.bulletPos(bullet, beats, pattern.triggers, pattern.information.speed);
+        const pos = Updater.bulletPos(bullet, beats, pattern.triggers, pattern.information.speed, bulletCreationSpeeds[i]);
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
           destroyParticles.push(...Factory.createExplosions(pos.x, pos.y));
@@ -469,7 +484,7 @@ const cntRender = () => {
         }
         createdBullets.add(i);
 
-        trackMouseSelection(i, 1, 0, pos.x, pos.y);
+        trackMouseSelection(i, 1, 0, pos.x, pos.y, beats);
 
         Draw.bullet(pos);
       }
@@ -477,7 +492,7 @@ const cntRender = () => {
 
     let displayFPS;
     if (frameCounter) {
-      frameArray.push(1000 / (Date.now() - frameCounterMs));
+      frameArray.push(1000 / (now - frameCounterMs));
       if (frameArray.length == 10) {
         fps =
           frameArray.reduce((sum, current) => {
@@ -486,7 +501,7 @@ const cntRender = () => {
         frameArray = [];
       }
       displayFPS = fps.toFixed();
-      frameCounterMs = Date.now();
+      frameCounterMs = now;
     }
 
     if (keyInput.length > 0 && keyInputMemory != keyInput.length) {
@@ -494,7 +509,7 @@ const cntRender = () => {
         keyInput.splice(0, keyInput.length - 12);
       }
       keyInputMemory = keyInput.length;
-      keyInputTime = Date.now();
+      keyInputTime = now;
     }
 
     let percentage = 0;
@@ -519,16 +534,16 @@ const cntRender = () => {
     if (effectMs != 0 && effectNum != -1) {
       Draw.finalEffect(effectNum, effectMs);
 
-      if (Date.now() - effectMs >= 2000) effectMs = 0;
+      if (now - effectMs >= 2000) effectMs = 0;
     }
 
     //new record
     if (newRecordTime != 0) {
-      let p1 = easeOutQuad(Math.min(1, (Date.now() - newRecordTime) / 500));
-      let p2 = easeOutQuad(Math.min(1, Math.max(0, (Date.now() - newRecordTime - 300) / 500)));
-      if (newRecordTime + 5000 < Date.now()) {
-        if (newRecordTime + 10000 < Date.now()) newRecordTime = 0;
-        else ctx.globalAlpha = 1 - (Date.now() - newRecordTime - 5000) / 5000;
+      let p1 = easeOutQuad(Math.min(1, (now - newRecordTime) / 500));
+      let p2 = easeOutQuad(Math.min(1, Math.max(0, (now - newRecordTime - 300) / 500)));
+      if (newRecordTime + 5000 < now) {
+        if (newRecordTime + 10000 < now) newRecordTime = 0;
+        else ctx.globalAlpha = 1 - (now - newRecordTime - 5000) / 5000;
       }
       ctx.beginPath();
       ctx.fillStyle = "#ffffff";
@@ -536,7 +551,7 @@ const cntRender = () => {
       ctx.fill();
       ctx.beginPath();
       ctx.fillStyle = "#000000";
-      ctx.font = `italic 600 ${canvasH / 40}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.font = UIFontItalic;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
       ctx.fillText("NEW RECORD!", canvasW * 0.87, canvasH * 0.23);
@@ -549,7 +564,7 @@ const cntRender = () => {
     }
   } catch (e) {
     if (e) {
-      ctx.font = `500 ${canvasH / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      ctx.font = UIFontNormal;
       ctx.fillStyle = "#F55";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
@@ -642,7 +657,7 @@ const calculateResult = () => {
   }
   if (missPoint.length == 0) {
     missCtx.fillStyle = "#FFF";
-    missCtx.font = `500 ${canvasH / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    missCtx.font = UIFontNormal;
     missCtx.textAlign = "right";
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
@@ -683,9 +698,8 @@ const calculateResult = () => {
     });
 };
 
-const trackMouseSelection = (i, v1, v2, x, y) => {
+const trackMouseSelection = (i, v1, v2, x, y, beats) => {
   if (song.playing()) {
-    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
     const powX = ((((mouseX - x) * canvasOW) / 200) * pixelRatio * settings.display.canvasRes) / 100;
     const powY = ((((mouseY - y) * canvasOH) / 200) * pixelRatio * settings.display.canvasRes) / 100;
     switch (v1) {
@@ -713,7 +727,7 @@ const trackMouseSelection = (i, v1, v2, x, y) => {
         }
         break;
       default:
-        ctx.font = `500 ${canvasH / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+        ctx.font = UIFontNormal;
         ctx.fillStyle = "#F55";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
@@ -915,7 +929,15 @@ const retry = () => {
   setTimeout(() => {
     Draw.initialize();
     song.stop();
-    pattern = JSON.parse(JSON.stringify(patternBackup));
+    pattern = structuredClone(patternBackup);
+    bulletCreationSpeeds = pattern.bullets.map((b) => {
+      const end = upperBound(pattern.triggers, b.beat);
+      let cs = pattern.information.speed;
+      for (let k = 0; k < end; k++) {
+        if (pattern.triggers[k].value == 4) cs = pattern.triggers[k].speed;
+      }
+      return cs;
+    });
     bpm = pattern.information.bpm;
     speed = pattern.information.speed;
     nowSpeed = pattern.information.speed;
@@ -998,6 +1020,7 @@ const overlayClose = (s) => {
 };
 
 let scrollTimer = 0;
+let volumeSaveTimeout;
 
 const globalScrollEvent = (e) => {
   if (scrollTimer == 0) {
@@ -1033,26 +1056,29 @@ const globalScrollEvent = (e) => {
       setTimeout(() => {
         overlayClose("volume");
       }, 1500);
-      fetch(`${api}/settings`, {
-        method: "PUT",
-        credentials: "include",
-        body: JSON.stringify({
-          settings: settings,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.result != "success") {
-            alert(`Error occured.\n${data.error}`);
-          }
+      clearTimeout(volumeSaveTimeout);
+      volumeSaveTimeout = setTimeout(() => {
+        fetch(`${api}/settings`, {
+          method: "PUT",
+          credentials: "include",
+          body: JSON.stringify({
+            settings: settings,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
         })
-        .catch((error) => {
-          alert(`Error occured.\n${error}`);
-          console.error(`Error occured.\n${error}`);
-        });
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.result != "success") {
+              alert(`Error occured.\n${data.error}`);
+            }
+          })
+          .catch((error) => {
+            alert(`Error occured.\n${error}`);
+            console.error(`Error occured.\n${error}`);
+          });
+      }, 1000);
     } else {
       if (delta == 1) {
         //UP

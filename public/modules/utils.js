@@ -29,20 +29,11 @@ export const hexadecimal = (color, percentage) => {
   return color + alpha;
 };
 
-export const getTan = (deg) => {
-  let rad = (deg * Math.PI) / 180;
-  return Math.tan(rad);
-};
+const DEG_TO_RAD = Math.PI / 180;
 
-export const getCos = (deg) => {
-  let rad = (deg * Math.PI) / 180;
-  return Math.cos(rad);
-};
-
-export const getSin = (deg) => {
-  let rad = (deg * Math.PI) / 180;
-  return Math.sin(rad);
-};
+export const getTan = (deg) => Math.tan(deg * DEG_TO_RAD);
+export const getCos = (deg) => Math.cos(deg * DEG_TO_RAD);
+export const getSin = (deg) => Math.sin(deg * DEG_TO_RAD);
 
 export const calcAngleDegrees = (x, y) => {
   return (Math.atan2(y, x) * 180) / Math.PI;

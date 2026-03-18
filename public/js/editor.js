@@ -95,7 +95,6 @@ let gridToggle = true,
   magnetToggle = true,
   metronomeToggle = false,
   circleToggle = false;
-let scrollTimer = 0;
 let errorCount = 0;
 let preventUnload = false;
 let globalAlpha = 1;
@@ -520,10 +519,9 @@ const gotoMain = (isCalledByMain) => {
   }
 };
 
-const trackMouseSelection = (i, v1, v2, x, y) => {
+const trackMouseSelection = (i, v1, v2, x, y, beats) => {
   if (mode != 2 && mouseMode == 0) {
     if (pointingCntElement.i == "") {
-      const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
       const powX = ((((mouseX - x) * canvasContainerOW) / 200) * pixelRatio * settings.display.canvasRes) / 100;
       const powY = ((((mouseY - y) * canvasContainerOH) / 200) * pixelRatio * settings.display.canvasRes) / 100;
       switch (v1) {
@@ -588,7 +586,7 @@ const tmlRender = () => {
       let x = tmlStartX + (pattern.patterns[j].beat - renderStart) * beatToPx;
       let y = startY + timelineYLoc + height / 2;
 
-      if (mouseMode == 1) trackMouseSelection(j, 0, pattern.patterns[j].value, x, y);
+      if (mouseMode == 1) trackMouseSelection(j, 0, pattern.patterns[j].value, x, y, beats);
 
       if (selectedCheck(0, j)) {
         tmlCtx.fillStyle = "#ed5b45";
@@ -627,7 +625,7 @@ const tmlRender = () => {
       let y = startY + timelineYLoc + height * bulletsOverlap[parseInt(pattern.bullets[j].beat * 2)] + height / 2;
       let w = height / 3;
 
-      if (mouseMode == 1) trackMouseSelection(j, 1, 0, x, y);
+      if (mouseMode == 1) trackMouseSelection(j, 1, 0, x, y, beats);
 
       if (selectedCheck(1, j)) {
         tmlCtx.fillStyle = "#ed5b45";
@@ -672,7 +670,7 @@ const tmlRender = () => {
       let y = startY + timelineYLoc + height * (bulletsOverlapNum + triggersOverlap[parseInt(pattern.triggers[j].beat * 2)]) + height / 2;
       let w = height / 3;
 
-      if (mouseMode == 1) trackMouseSelection(j, 2, pattern.triggers[j].value, x, y);
+      if (mouseMode == 1) trackMouseSelection(j, 2, pattern.triggers[j].value, x, y, beats);
 
       if (selectedCheck(2, j)) {
         tmlCtx.fillStyle = "#ed5b45";
@@ -920,7 +918,9 @@ const cntRender = () => {
 
     // Initialize
     pointingCntElement = mouseMode == 1 ? pointingTmlElement : { v1: "", v2: "", i: "" };
+    [prevCreatedBullets, createdBullets] = [createdBullets, prevCreatedBullets];
     createdBullets.clear();
+    [prevDestroyedBullets, destroyedBullets] = [destroyedBullets, prevDestroyedBullets];
     destroyedBullets.clear();
     explodingBullets.clear();
 
@@ -1014,9 +1014,6 @@ const cntRender = () => {
 
     for (let textObj of renderTexts) Draw.triggerText(textObj);
 
-    // Prevent destroy infinite loop
-    prevDestroyedBullets = new Set(destroyedBullets);
-
     // Note render
     let renderDuration = 5 / speed;
 
@@ -1030,33 +1027,32 @@ const cntRender = () => {
         displayMessage("Error", `[URLATE] validationError: Note_${i} of the beat ${pattern.patterns[i].beat} is too close to Note_${i - 1}.`);
       }
       prevNoteBeat = pattern.patterns[i].beat;
-      if (mouseMode == 0) trackMouseSelection(i, 0, pattern.patterns[i].value, pattern.patterns[i].x, pattern.patterns[i].y);
+      if (mouseMode == 0) trackMouseSelection(i, 0, pattern.patterns[i].value, pattern.patterns[i].x, pattern.patterns[i].y, beats);
     }
 
     // Note drawing loop
     let validNote = end;
+    const _noteState = { progress: 0, tailProgress: 0, endProgress: 0, globalAlpha, isGrabbed: false, isSelected: false };
     for (let i = end - 1; i >= start; i--) {
-      const state = Updater.noteProgress(pattern.patterns[i], beats, speed);
+      Updater.noteProgress(pattern.patterns[i], beats, speed, _noteState);
 
-      if (pattern.patterns[i].value != 2 && state.progress < 101) validNote = i;
-      else if (pattern.patterns[i].value == 2 && state.endProgress < 100) validNote = i;
+      if (pattern.patterns[i].value != 2 && _noteState.progress < 101) validNote = i;
+      else if (pattern.patterns[i].value == 2 && _noteState.endProgress < 100) validNote = i;
 
       const alpha = 0.4 - 0.1 * (validNote - i);
 
       if (i > 0) Draw.noteConnector(pattern.patterns[i - 1], pattern.patterns[i], alpha);
 
       if (i == validNote) {
+        _noteState.globalAlpha = globalAlpha;
+        _noteState.isGrabbed = _noteState.progress >= 100;
+        _noteState.isSelected = selectedCheck(0, i);
         Draw.note(
           {
             ...pattern.patterns[i],
             debugIndex: i,
           },
-          {
-            ...state,
-            globalAlpha,
-            isGrabbed: state.progress >= 100,
-            isSelected: selectedCheck(0, i),
-          },
+          _noteState,
         );
       } else if (i + 3 >= validNote) {
         Draw.noteShadow(pattern.patterns[i], alpha);
@@ -1078,7 +1074,7 @@ const cntRender = () => {
         }
         createdBullets.add(i);
 
-        trackMouseSelection(i, 1, 0, pos.x, pos.y);
+        trackMouseSelection(i, 1, 0, pos.x, pos.y, beats);
 
         Draw.bullet(
           {
@@ -1094,8 +1090,6 @@ const cntRender = () => {
         );
       }
     }
-    prevCreatedBullets = new Set(createdBullets);
-
     cntCtx.globalAlpha = 1;
 
     cntCtx.beginPath();
@@ -1334,7 +1328,7 @@ const settingsInput = (v, e) => {
           targetElements = pattern.triggers;
         }
         for (let i = 0; i < targetElements.length; i++) {
-          if (JSON.stringify(targetElements[i]) == JSON.stringify(changedResult)) {
+          if (targetElements[i] === changedResult) {
             selectedCntElement = {
               i: i,
               v1: selectedCntElement.v1,
@@ -1877,7 +1871,7 @@ const timelineAddElement = () => {
       pattern.patterns.sort(sortAsTiming);
       patternChanged();
       for (let i = 0; i < pattern.patterns.length; i++) {
-        if (JSON.stringify(pattern.patterns[i]) == JSON.stringify(newElement)) {
+        if (pattern.patterns[i] === newElement) {
           selectedCntElement = { v1: 0, v2: selectedValue, i: i };
           break;
         }
@@ -1893,7 +1887,7 @@ const timelineAddElement = () => {
       pattern.bullets.push(newElement);
       pattern.bullets.sort(sortAsTiming);
       for (let i = 0; i < pattern.bullets.length; i++) {
-        if (JSON.stringify(pattern.bullets[i]) == JSON.stringify(newElement)) {
+        if (pattern.bullets[i] === newElement) {
           selectedCntElement = { v1: 1, v2: 0, i: i };
           break;
         }
@@ -1921,7 +1915,7 @@ const timelineAddElement = () => {
       pattern.triggers.sort(sortAsTiming);
       patternChanged();
       for (let i = 0; i < pattern.triggers.length; i++) {
-        if (JSON.stringify(pattern.triggers[i]) == JSON.stringify(newElement)) {
+        if (pattern.triggers[i] === newElement) {
           selectedCntElement = { i: i, v1: 2, v2: -1 };
           break;
         }
@@ -1974,7 +1968,7 @@ const compClicked = () => {
         pattern.bullets.push(newElement);
         pattern.bullets.sort(sortAsTiming);
         for (let i = 0; i < pattern.bullets.length; i++) {
-          if (JSON.stringify(pattern.bullets[i]) == JSON.stringify(newElement)) {
+          if (pattern.bullets[i] === newElement) {
             selectedCntElement = { v1: 1, v2: 0, i: i };
             break;
           }
@@ -2008,7 +2002,7 @@ const compClicked = () => {
         pattern.patterns.sort(sortAsTiming);
         patternChanged();
         for (let i = 0; i < pattern.patterns.length; i++) {
-          if (JSON.stringify(pattern.patterns[i]) == JSON.stringify(newElement)) {
+          if (pattern.patterns[i] === newElement) {
             selectedCntElement = { v1: 0, v2: selectedValue, i: i };
             break;
           }
@@ -2037,7 +2031,7 @@ const compClicked = () => {
       pattern.triggers.sort(sortAsTiming);
       patternChanged();
       for (let i = 0; i < pattern.triggers.length; i++) {
-        if (JSON.stringify(pattern.triggers[i]) == JSON.stringify(newElement)) {
+        if (pattern.triggers[i] === newElement) {
           selectedCntElement = { i: i, v1: 2, v2: -1 };
           break;
         }
@@ -2301,7 +2295,7 @@ const patternChanged = () => {
     patternHistory.splice(patternSeek + 1, patternHistory.length - 1 - patternSeek);
   }
 
-  patternHistory.push(eval(`(${JSON.stringify(pattern)})`));
+  patternHistory.push(structuredClone(pattern));
   if (patternHistory.length > 50) {
     patternHistory.splice(0, patternHistory.length - 50);
   }
@@ -2313,7 +2307,7 @@ const patternChanged = () => {
 const patternUndo = () => {
   if (patternSeek >= 1) {
     patternSeek--;
-    pattern = eval(`(${JSON.stringify(patternHistory[patternSeek])})`);
+    pattern = structuredClone(patternHistory[patternSeek]);
   }
   selectedCntElement = { i: "", v1: "", v2: "" };
   rangeCopyCancel();
@@ -2323,7 +2317,7 @@ const patternUndo = () => {
 const patternRedo = () => {
   if (patternSeek < patternHistory.length - 1) {
     patternSeek++;
-    pattern = eval(`(${JSON.stringify(patternHistory[patternSeek])})`);
+    pattern = structuredClone(patternHistory[patternSeek]);
   }
   selectedCntElement = { i: "", v1: "", v2: "" };
   rangeCopyCancel();
@@ -2340,11 +2334,11 @@ const elementCopy = () => {
   }
   copiedElement.v1 = selectedCntElement.v1;
   if (selectedCntElement.v1 == 0) {
-    copiedElement.element = eval(`(${JSON.stringify(pattern.patterns[selectedCntElement.i])})`);
+    copiedElement.element = structuredClone(pattern.patterns[selectedCntElement.i]);
   } else if (selectedCntElement.v1 == 1) {
-    copiedElement.element = eval(`(${JSON.stringify(pattern.bullets[selectedCntElement.i])})`);
+    copiedElement.element = structuredClone(pattern.bullets[selectedCntElement.i]);
   } else if (selectedCntElement.v1 == 2) {
-    copiedElement.element = eval(`(${JSON.stringify(pattern.triggers[selectedCntElement.i])})`);
+    copiedElement.element = structuredClone(pattern.triggers[selectedCntElement.i]);
   }
   iziToast.success({
     title: "Copy",
@@ -2361,23 +2355,24 @@ const elementPaste = () => {
     return;
   }
   const beats = Number((bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-  copiedElement.element.beat = beats;
+  const pasteElement = structuredClone(copiedElement.element);
+  pasteElement.beat = beats;
   let searchTarget = "";
   if (copiedElement.v1 == 0) {
-    pattern.patterns.push(eval(`(${JSON.stringify(copiedElement.element)})`));
+    pattern.patterns.push(pasteElement);
     pattern.patterns.sort(sortAsTiming);
     searchTarget = pattern.patterns;
   } else if (copiedElement.v1 == 1) {
-    pattern.bullets.push(eval(`(${JSON.stringify(copiedElement.element)})`));
+    pattern.bullets.push(pasteElement);
     pattern.bullets.sort(sortAsTiming);
     searchTarget = pattern.bullets;
   } else if (copiedElement.v1 == 2) {
-    pattern.triggers.push(eval(`(${JSON.stringify(copiedElement.element)})`));
+    pattern.triggers.push(pasteElement);
     pattern.triggers.sort(sortAsTiming);
     searchTarget = pattern.triggers;
   }
   for (let i = 0; i < searchTarget.length; i++) {
-    if (JSON.stringify(searchTarget[i]) == JSON.stringify(copiedElement.element)) {
+    if (searchTarget[i] === pasteElement) {
       selectedCntElement = {
         i: i,
         v1: copiedElement.v1,
@@ -2600,6 +2595,9 @@ const overlayClose = (s) => {
   }
 };
 
+let scrollTimer = 0;
+let volumeSaveTimeout;
+
 const globalScrollEvent = (e) => {
   if (scrollTimer == 0) {
     scrollTimer = 1;
@@ -2634,26 +2632,29 @@ const globalScrollEvent = (e) => {
       setTimeout(() => {
         overlayClose("volume");
       }, 1500);
-      fetch(`${api}/settings`, {
-        method: "PUT",
-        credentials: "include",
-        body: JSON.stringify({
-          settings: settings,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.result != "success") {
-            alert(`Error occured.\n${data.error}`);
-          }
+      clearTimeout(volumeSaveTimeout);
+      volumeSaveTimeout = setTimeout(() => {
+        fetch(`${api}/settings`, {
+          method: "PUT",
+          credentials: "include",
+          body: JSON.stringify({
+            settings: settings,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
         })
-        .catch((error) => {
-          alert(`Error occured.\n${error}`);
-          console.error(`Error occured.\n${error}`);
-        });
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.result != "success") {
+              alert(`Error occured.\n${data.error}`);
+            }
+          })
+          .catch((error) => {
+            alert(`Error occured.\n${error}`);
+            console.error(`Error occured.\n${error}`);
+          });
+      }, 1000);
     }
   }
 };

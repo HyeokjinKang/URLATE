@@ -127,9 +127,6 @@ let offsetSong = new Howl({
   loop: true,
 });
 
-let scrollTimer = 0;
-let volumeSaveTimeout;
-
 let songPlayTimeout;
 let chartVar;
 
@@ -1912,6 +1909,9 @@ const picLoaded = async (e, type) => {
       });
     });
 };
+
+let scrollTimer = 0;
+let volumeSaveTimeout;
 
 const scrollEvent = (e) => {
   if (scrollTimer == 0) {

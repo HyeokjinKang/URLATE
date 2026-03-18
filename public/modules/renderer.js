@@ -96,6 +96,7 @@ export default class Renderer {
   cacheConfig() {
     const refX = this.canvasW / 1000;
     const refY = this.canvasH / 1000;
+    const _F = "Montserrat, Pretendard JP Variable";
     this.CONFIG = {
       UI: {
         DEFAULT_FONT_SIZE: Math.round(refY * Config.UI.DEFAULT_FONT_SIZE),
@@ -142,6 +143,19 @@ export default class Renderer {
           FONT_SIZE_END: Math.round(refY * Config.FINAL_EFFECT.OUTLINE.FONT_SIZE_END),
         },
       },
+    };
+
+    // resize 시에만 바뀌는 고정 font 문자열 캐싱
+    const defaultSize = this.CONFIG.UI.DEFAULT_FONT_SIZE;
+    const scorePanelSize = this.CONFIG.UI.SCORE_PANEL.FONT_SIZE;
+    const judgeSize = ~~(this.canvasH / 25);
+    const systemInfoSize = ~~(this.canvasH / 60);
+    this.FONT = {
+      debug:      `600 ${defaultSize}px ${_F}`,
+      judge:      `600 ${judgeSize}px ${_F}`,
+      keyInput:   `600 ${defaultSize}px ${_F}`,
+      scorePanel: `700 ${scorePanelSize}px ${_F}`,
+      systemInfo: `600 ${systemInfoSize}px ${_F}`,
     };
   }
 
@@ -203,7 +217,7 @@ export default class Renderer {
 
     if (isSelected) {
       ctx.beginPath();
-      ctx.font = `600 ${this.CONFIG.UI.DEFAULT_FONT_SIZE}px Montserrat, Pretendard JP Variable`;
+      ctx.font = this.FONT.debug;
       ctx.fillStyle = "#000";
       ctx.strokeStyle = "#fff";
       ctx.textAlign = "center";
@@ -385,7 +399,7 @@ export default class Renderer {
     // (에디터용) 선택된 객체
     if (isSelected) {
       ctx.beginPath();
-      ctx.font = `600 ${this.CONFIG.UI.DEFAULT_FONT_SIZE}px Montserrat, Pretendard JP Variable`;
+      ctx.font = this.FONT.debug;
       ctx.fillStyle = "#000";
       ctx.strokeStyle = "#fff";
       ctx.textAlign = bullet.direction === "L" ? "left" : "right";
@@ -548,7 +562,7 @@ export default class Renderer {
 
       this.#applyStyle(skinPart, 0, 0, 50, 100, false);
 
-      ctx.font = `600 ${canvasH / 25}px Montserrat, Pretendard JP Variable`;
+      ctx.font = this.FONT.judge;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(p.judge, 0, 0);
@@ -822,7 +836,7 @@ export default class Renderer {
       // 텍스트 그리기
       ctx.beginPath();
       ctx.fillStyle = "#fff";
-      ctx.font = `600 ${this.CONFIG.UI.DEFAULT_FONT_SIZE}px Montserrat, Pretendard JP Variable`;
+      ctx.font = this.FONT.keyInput;
       ctx.textBaseline = "top";
       ctx.textAlign = "center";
 
@@ -943,7 +957,7 @@ export default class Renderer {
 
     // (4) 점수 텍스트
     ctx.beginPath();
-    ctx.font = `700 ${fontSize}px Montserrat, Pretendard JP Variable`;
+    ctx.font = this.FONT.scorePanel;
     ctx.textAlign = "right";
     ctx.textBaseline = "top";
 
@@ -971,7 +985,7 @@ export default class Renderer {
 
     ctx.globalAlpha = 0.5;
     ctx.fillStyle = "#fff";
-    ctx.font = `600 ${canvasH / 60}px Montserrat, Pretendard JP Variable`;
+    ctx.font = this.FONT.systemInfo;
     ctx.textBaseline = "bottom";
 
     // Speed & BPM (좌측 하단)
@@ -1010,7 +1024,7 @@ export default class Renderer {
     ctx.lineTo(canvasW / 2 + w / 2, canvasH / 2 - w / 2);
     ctx.stroke();
 
-    ctx.font = `600 ${this.CONFIG.UI.DEFAULT_FONT_SIZE}px Montserrat, Pretendard JP Variable`;
+    ctx.font = this.FONT.debug;
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
     ctx.fillText("Add trigger", canvasW / 2, canvasH / 2 + 10);
