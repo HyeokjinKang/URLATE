@@ -1,17 +1,7 @@
 injectWorkspacePackages: true
 
 onlyBuiltDependencies:
-  - '@tensorflow/tfjs-node'
+  - "@tensorflow/tfjs-node"
   - core-js
   - javascript-obfuscator
   - sharp
-
-overrides:
-  ajv@<6.14.0: '>=6.14.0'
-  flatted@<3.4.0: '>=3.4.0'
-  minimatch@<3.1.4: '>=3.1.4'
-  minimatch@>=5.0.0 <5.1.8: '>=5.1.8'
-  minimatch@>=9.0.0 <9.0.7: '>=9.0.7'
-  qs@>=6.7.0 <=6.14.1: '>=6.14.2'
-  tar@<7.5.8: '>=7.5.8'
-  tar@<=7.5.3: '>=7.5.4'
