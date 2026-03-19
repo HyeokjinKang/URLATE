@@ -42,6 +42,7 @@ const tmlCtx = tmlCanvas.getContext("2d");
 const timelinePlayController = document.getElementById("timelinePlayController");
 const metronome = document.getElementById("metronome");
 const metronomeContainer = document.getElementById("metronomeContainer");
+const menuIcons = Array.from(document.getElementsByClassName("menuIcon"));
 const isMac = navigator.userAgentData && navigator.userAgentData.platform ? navigator.userAgentData.platform === "macOS" : /Mac/.test(navigator.platform);
 let Draw;
 const epsilon = 1e-9;
@@ -402,10 +403,10 @@ const toggleSettings = () => {
 };
 
 const changeMode = (n) => {
-  document.getElementsByClassName("menuIcon")[n].classList.toggle("menuSelected");
-  document.getElementsByClassName("menuIcon")[mode].classList.toggle("menuSelected");
-  document.getElementsByClassName("menuIcon")[n].classList.toggle("clickable");
-  document.getElementsByClassName("menuIcon")[mode].classList.toggle("clickable");
+  menuIcons[n].classList.toggle("menuSelected");
+  menuIcons[mode].classList.toggle("menuSelected");
+  menuIcons[n].classList.toggle("clickable");
+  menuIcons[mode].classList.toggle("clickable");
   mode = n;
 };
 
@@ -524,31 +525,38 @@ const trackMouseSelection = (i, v1, v2, x, y, beats) => {
     if (pointingCntElement.i == "") {
       const powX = ((((mouseX - x) * canvasContainerOW) / 200) * pixelRatio * settings.display.canvasRes) / 100;
       const powY = ((((mouseY - y) * canvasContainerOH) / 200) * pixelRatio * settings.display.canvasRes) / 100;
+      const distSq = powX * powX + powY * powY;
       switch (v1) {
         case 0: {
           const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
           const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
-          if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 100) && p >= 0) {
-            pointingCntElement = { v1: v1, v2: v2, i: i };
+          const r = canvasW / 40;
+          if (distSq <= r * r && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 100) && p >= 0) {
+            pointingCntElement = { v1, v2, i };
           }
           break;
         }
-        case 1:
-          if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / (song.playing() ? 80 : 50)) {
-            pointingCntElement = { v1: v1, v2: v2, i: i };
+        case 1: {
+          const r = canvasW / (song.playing() ? 80 : 50);
+          if (distSq <= r * r) {
+            pointingCntElement = { v1, v2, i };
             if (song.playing()) {
               hitBullets.add(i);
             }
           }
           break;
+        }
         default:
           displayMessage("Warning", `[URLATE] trackingWarning: Cursor pointing unknown element.`);
       }
     }
   } else if (mode != 2 && mouseMode == 1) {
     if (pointingTmlElement.i == "") {
-      if (Math.sqrt(Math.pow(mouseX - x, 2) + Math.pow(mouseY - y, 2)) <= tmlCanvasH / 27) {
-        pointingTmlElement = { v1: v1, v2: v2, i: i };
+      const dx = mouseX - x;
+      const dy = mouseY - y;
+      const r = tmlCanvasH / 27;
+      if (dx * dx + dy * dy <= r * r) {
+        pointingTmlElement = { v1, v2, i };
       }
     }
   }
@@ -562,7 +570,8 @@ const tmlRender = () => {
   try {
     //Initialize
     eraseTml();
-    const beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
+    const seekMs = song.seek() * 1000;
+    const beats = bpmsync.beat + (seekMs - bpmsync.ms) / (60000 / bpm);
     const tmlStartX = tmlCanvasW / 10, //timeline(element view) start X
       startX = tmlCanvasW / 80,
       startY = tmlCanvasH / 6,
@@ -771,7 +780,7 @@ const tmlRender = () => {
     if (isNaN(beats)) {
       tmlCtx.fillText("Wait..", timeStartX, startY / 1.7);
     } else {
-      const seek = song.seek(),
+      const seek = seekMs / 1000,
         minutes = Math.floor(seek / 60),
         seconds = seek - minutes * 60;
       tmlCtx.fillText(`${String(minutes).padStart(1, "0")}:${seconds.toFixed(2).padStart(5, "0")}`, timeStartX, startY / 1.7);
@@ -930,10 +939,11 @@ const cntRender = () => {
     errorCount = 0;
 
     // Calculate seeking position
-    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+    const seekMs = song.seek() * 1000;
+    const beats = Number((bpmsync.beat + (seekMs - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
 
     // Metronome
-    const noSyncBeats = Number((bpmsync.beat + (song.seek() * 1000 - offset - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+    const noSyncBeats = Number((bpmsync.beat + (seekMs - offset - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
     if (metronomeToggle) {
       const intBeat = Math.floor(noSyncBeats);
       if (song.playing()) {
@@ -968,7 +978,7 @@ const cntRender = () => {
     // Track triggers from start to now
     let end = upperBound(pattern.triggers, beats);
     let nowSpeed = pattern.information.speed;
-    let renderTexts = [];
+    const renderTexts = [];
     for (let i = 0; i < end; i++) {
       if (pattern.triggers[i].value == 0) {
         // Bullet Destroy

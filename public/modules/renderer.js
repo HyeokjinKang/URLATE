@@ -2,7 +2,7 @@
  * renderer.js
  * 게임의 캔버스 드로잉을 담당합니다.
  */
-import { Config, JudgeSkin, KeyInputColors } from "./constants.js";
+import { Config, JudgeSkin, KeyInputColors, DiffColors } from "./constants.js";
 import { getSin, getCos, hexadecimal, easeInQuad, easeOutQuad, easeOutQuart, numberWithCommas } from "./utils.js";
 
 /** 데이터를 받아 Canvas Context(ctx)에 실제 렌더링을 수행합니다. */
@@ -151,9 +151,9 @@ export default class Renderer {
     const judgeSize = ~~(this.canvasH / 25);
     const systemInfoSize = ~~(this.canvasH / 60);
     this.FONT = {
-      debug:      `600 ${defaultSize}px ${_F}`,
-      judge:      `600 ${judgeSize}px ${_F}`,
-      keyInput:   `600 ${defaultSize}px ${_F}`,
+      debug: `600 ${defaultSize}px ${_F}`,
+      judge: `600 ${judgeSize}px ${_F}`,
+      keyInput: `600 ${defaultSize}px ${_F}`,
       scorePanel: `700 ${scorePanelSize}px ${_F}`,
       systemInfo: `600 ${systemInfoSize}px ${_F}`,
     };
@@ -455,7 +455,7 @@ export default class Renderer {
     ctx.fillStyle = "#fff";
 
     let fontSize;
-    if (size.indexOf("vh") != -1) fontSize = (canvasH / 100) * Number(size.split("vh")[0]) + "px";
+    if (size.includes("vh")) fontSize = (canvasH / 100) * Number(size.split("vh")[0]) + "px";
     else fontSize = size;
 
     ctx.font = `${weight} ${fontSize} Montserrat, Pretendard JP Variable`;
@@ -924,13 +924,7 @@ export default class Renderer {
     // (1) 배경 박스
     ctx.beginPath();
 
-    if (difficulty === 0)
-      ctx.fillStyle = "#31A97E"; // EZ
-    else if (difficulty === 1)
-      ctx.fillStyle = "#F0C21D"; // MID
-    else if (difficulty === 2)
-      ctx.fillStyle = "#FF774B"; // HARD
-    else ctx.fillStyle = "#6021ff"; // TEST
+    ctx.fillStyle = DiffColors[difficulty] ?? "#6021ff"; // EZ / MID / HARD / TEST
 
     const Conf = this.CONFIG.UI.SCORE_PANEL;
     const xBase = Conf.X_BASE;
