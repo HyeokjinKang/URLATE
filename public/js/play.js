@@ -615,28 +615,28 @@ const calculateResult = () => {
     () => {
       canvasContainer.style.opacity = "0";
     },
-    song.playing ? 0 : 500,
+    song.playing() ? 0 : 500,
   );
   setTimeout(
     () => {
       floatingArrowContainer.style.display = "flex";
       floatingArrowContainer.classList.toggle("arrowFade");
     },
-    song.playing ? 0 : 1000,
+    song.playing() ? 0 : 1000,
   );
   setTimeout(
     () => {
       floatingResultContainer.style.display = "flex";
       floatingResultContainer.classList.toggle("resultFade");
     },
-    song.playing ? 300 : 1300,
+    song.playing() ? 300 : 1300,
   );
   setTimeout(
     () => {
       scoreContainer.style.opacity = "1";
       scoreContainer.style.pointerEvents = "all";
     },
-    song.playing ? 1000 : 2000,
+    song.playing() ? 1000 : 2000,
   );
   missCtx.beginPath();
   missCtx.fillStyle = "#FFF";
