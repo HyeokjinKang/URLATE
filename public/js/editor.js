@@ -566,20 +566,59 @@ const selectedCheck = (n, i) => {
   return (pointingCntElement.v1 === n && pointingCntElement.i == i) || (selectedCntElement.v1 === n && selectedCntElement.i == i);
 };
 
-// Assigns each element (sorted by beat) to the lowest vertical lane
+// --- Min-heap helpers ---
+const _heapPush = (heap, item, cmp) => {
+  heap.push(item);
+  let i = heap.length - 1;
+  while (i > 0) {
+    const p = (i - 1) >> 1;
+    if (cmp(heap[i], heap[p]) < 0) { [heap[i], heap[p]] = [heap[p], heap[i]]; i = p; }
+    else break;
+  }
+};
+const _heapPop = (heap, cmp) => {
+  const top = heap[0];
+  const last = heap.pop();
+  if (heap.length > 0) {
+    heap[0] = last;
+    let i = 0;
+    for (;;) {
+      const l = 2 * i + 1, r = l + 1;
+      let s = i;
+      if (l < heap.length && cmp(heap[l], heap[s]) < 0) s = l;
+      if (r < heap.length && cmp(heap[r], heap[s]) < 0) s = r;
+      if (s === i) break;
+      [heap[i], heap[s]] = [heap[s], heap[i]]; i = s;
+    }
+  }
+  return top;
+};
+
+// Assigns each element (sorted by beat) to the lowest-indexed vertical lane
 // that doesn't visually overlap with the previous element in that lane.
 // Returns laneOf[i - start] = 0-based lane index, and laneCount = total lanes used.
+// O(n log laneCount) via two min-heaps: one tracking active lanes by lastBeat
+// (to detect newly freed lanes), one tracking free lane indices (to pick the lowest).
 const assignLanes = (elements, start, end, overlapThreshold) => {
-  const laneLastBeat = []; // last beat placed in each lane
+  const active = []; // min-heap of {lastBeat, lane}, ordered by lastBeat
+  const free   = []; // min-heap of free lane indices, ordered ascending
   const laneOf = [];
+  let nextLane = 0;
+  const cmpBeat = (a, b) => a.lastBeat - b.lastBeat;
+  const cmpIdx  = (a, b) => a - b;
+
   for (let i = start; i < end; i++) {
     const beat = elements[i].beat;
-    let lane = laneLastBeat.findIndex(last => beat - last >= overlapThreshold);
-    if (lane === -1) lane = laneLastBeat.length;
-    laneLastBeat[lane] = beat;
+    // Release all lanes whose last occupant is no longer overlapping.
+    while (active.length > 0 && beat - active[0].lastBeat >= overlapThreshold) {
+      _heapPush(free, _heapPop(active, cmpBeat).lane, cmpIdx);
+    }
+    // Pick the lowest available lane, or open a new one.
+    const lane = free.length > 0 ? _heapPop(free, cmpIdx) : nextLane++;
+    _heapPush(active, { lastBeat: beat, lane }, cmpBeat);
     laneOf.push(lane);
   }
-  return { laneOf, laneCount: laneLastBeat.length || 1 };
+  return { laneOf, laneCount: nextLane || 1 };
 };
 
 const tmlRender = () => {
