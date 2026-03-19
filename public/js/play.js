@@ -347,6 +347,7 @@ const cntRender = () => {
   try {
     if (!Draw) return;
     const now = Date.now(); // 단일 Date.now() 호출
+    const seekMs = song.seek() * 1000;
 
     if (window.devicePixelRatio != pixelRatio) {
       pixelRatio = window.devicePixelRatio;
@@ -389,13 +390,13 @@ const cntRender = () => {
       ctx.fillText(comboAlertCount, canvasW / 2, canvasH / 2);
     }
 
-    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+    const beats = Number((bpmsync.beat + (seekMs - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
 
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
 
     // 최적화된 트리거 처리 루프
-    let renderTexts = [];
+    const renderTexts = [];
 
     while (currentTriggerIndex < pattern.triggers.length && pattern.triggers[currentTriggerIndex].beat <= beats) {
       const trigger = pattern.triggers[currentTriggerIndex];
@@ -442,7 +443,7 @@ const cntRender = () => {
     for (let i = start; i < end; i++) {
       const p = (1 - (pattern.patterns[i].beat - beats) / renderDuration) * 100;
       if (p >= 50) {
-        trackMouseSelection(i, 0, pattern.patterns[i].value, pattern.patterns[i].x, pattern.patterns[i].y, beats);
+        trackMouseSelection(i, 0, pattern.patterns[i].value, pattern.patterns[i].x, pattern.patterns[i].y, beats, seekMs);
       }
     }
     const _noteState = { progress: 0, tailProgress: 0, endProgress: 0, globalAlpha, isGrabbed: false };
@@ -458,15 +459,15 @@ const cntRender = () => {
         judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Miss"));
         miss++;
         showOverlay();
-        missPoint.push(song.seek() * 1000);
-        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "miss(hold)", song.seek() * 1000]);
+        missPoint.push(seekMs);
+        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "miss(hold)", seekMs]);
         keyInput.push({ judge: "Miss", key: "-", time: now });
       } else if (_noteState.tailProgress >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
         judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Perfect"));
         calculateScore("Perfect", i, true);
-        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "perfect(hold)", song.seek() * 1000]);
+        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "perfect(hold)", seekMs]);
         keyInput.push({ judge: "Perfect", key: "-", time: now });
       }
     }
@@ -484,7 +485,7 @@ const cntRender = () => {
         }
         createdBullets.add(i);
 
-        trackMouseSelection(i, 1, 0, pos.x, pos.y, beats);
+        trackMouseSelection(i, 1, 0, pos.x, pos.y, beats, seekMs);
 
         Draw.bullet(pos);
       }
@@ -514,7 +515,7 @@ const cntRender = () => {
 
     let percentage = 0;
     if (endBeat !== null) percentage = Math.min(1, beats / endBeat);
-    else percentage = song.seek() / song.duration();
+    else percentage = seekMs / (song.duration() * 1000);
 
     Updater.particles(destroyParticles);
     Updater.particles(clickParticles);
@@ -698,30 +699,31 @@ const calculateResult = () => {
     });
 };
 
-const trackMouseSelection = (i, v1, v2, x, y, beats) => {
+const trackMouseSelection = (i, v1, v2, x, y, beats, seekMs) => {
   if (song.playing()) {
     const powX = ((((mouseX - x) * canvasOW) / 200) * pixelRatio * settings.display.canvasRes) / 100;
     const powY = ((((mouseY - y) * canvasOH) / 200) * pixelRatio * settings.display.canvasRes) / 100;
+    const distSq = powX * powX + powY * powY;
     switch (v1) {
       case 0: {
         const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
         const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
-        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / 40 && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 130) && p >= 0) {
-          pointingCntElement.push({ v1: v1, v2: v2, i: i });
+        if (distSq <= (canvasW / 40) * (canvasW / 40) && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 130) && p >= 0) {
+          pointingCntElement.push({ v1, v2, i });
         }
         break;
       }
       case 1:
-        if (Math.sqrt(Math.pow(powX, 2) + Math.pow(powY, 2)) <= canvasW / 80) {
+        if (distSq <= (canvasW / 80) * (canvasW / 80)) {
           if (!destroyedBullets.has(i)) {
             bullet++;
-            missPoint.push(song.seek() * 1000);
+            missPoint.push(seekMs);
             combo = 0;
             medalCheck(medal);
             destroyParticles.push(...Factory.createExplosions(x, y));
             destroyedBullets.add(i);
             showOverlay();
-            record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "bullet", song.seek() * 1000]);
+            record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "bullet", seekMs]);
             keyInput.push({ judge: "Bullet", key: "-", time: Date.now() });
           }
         }
@@ -810,7 +812,7 @@ const calculateScore = (judge, i, ignoreMs) => {
   judge = judge.toLowerCase();
   destroyedNotes.add(i);
   if (!ignoreMs) {
-    const beats = Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+    const beats = calcBeats();
     pattern.patterns[i].beat = beats;
   }
   if (judge == "miss") {
