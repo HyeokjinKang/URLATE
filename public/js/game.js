@@ -108,7 +108,6 @@ const getSong = (n) => {
   const howl = new Howl({
     src: [`${cdn}/tracks/preview/${tracks[n].fileName}.ogg`],
     format: ["ogg"],
-    html5: true,
     autoplay: false,
     loop: true,
   });
@@ -228,18 +227,27 @@ const animationLooper = () => {
   if (display == 1 || display == 6) {
     let wWidth = canvas.width;
     let wHeight = canvas.height;
+
+    analyser.fftSize = 1024;
     analyser.getByteFrequencyData(dataArray);
-    let barWidth = wWidth / 300;
+
+    const bufferLength = analyser.frequencyBinCount;
+    const excludeLength = 150;
+
+    const unitHeight = wHeight / 1000;
+    const barWidth = wWidth / (bufferLength - excludeLength);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = "rgb(0, 0, 0)";
+    ctx.strokeStyle = "rgb(180, 180, 180)";
     ctx.lineWidth = barWidth / 2;
-    for (let i = 0; i < 300; i++) {
-      let barHeight = (dataArray[i] * wHeight) / 1000;
+    ctx.lineCap = "round";
+
+    for (let i = 0; i < bufferLength - excludeLength; i++) {
+      const value = dataArray[i] ** 2;
+      const barHeight = (Math.max(0, value - 2500) / 200) * unitHeight;
       let x = barWidth * i;
-      let y_end = barHeight / 1.3;
-      drawBar(x, 0, x, y_end);
+      drawBar(x, 0, x, barHeight);
       x = wWidth - x;
-      drawBar(x, wHeight, x, wHeight - y_end);
+      drawBar(x, wHeight, x, wHeight - barHeight);
     }
   }
   requestAnimationFrame(animationLooper);
