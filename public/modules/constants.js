@@ -96,3 +96,5 @@ export const KeyInputColors = {
   Bullet: "#E8A0A0",
   Empty: "#00000000",
 };
+
+export const DiffColors = ["#31A97E", "#F0C21D", "#FF774B"];
