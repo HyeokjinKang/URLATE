@@ -566,6 +566,22 @@ const selectedCheck = (n, i) => {
   return (pointingCntElement.v1 === n && pointingCntElement.i == i) || (selectedCntElement.v1 === n && selectedCntElement.i == i);
 };
 
+// Assigns each element (sorted by beat) to the lowest vertical lane
+// that doesn't visually overlap with the previous element in that lane.
+// Returns laneOf[i - start] = 0-based lane index, and laneCount = total lanes used.
+const assignLanes = (elements, start, end, overlapThreshold) => {
+  const laneLastBeat = []; // last beat placed in each lane
+  const laneOf = [];
+  for (let i = start; i < end; i++) {
+    const beat = elements[i].beat;
+    let lane = laneLastBeat.findIndex(last => beat - last >= overlapThreshold);
+    if (lane === -1) lane = laneLastBeat.length;
+    laneLastBeat[lane] = beat;
+    laneOf.push(lane);
+  }
+  return { laneOf, laneCount: laneLastBeat.length || 1 };
+};
+
 const tmlRender = () => {
   try {
     //Initialize
@@ -610,48 +626,29 @@ const tmlRender = () => {
     start = lowerBound(pattern.bullets, renderStart);
     end = upperBound(pattern.bullets, renderEnd);
 
-    // Elements (w = height/3) visually overlap when pixel distance < 2*w.
-    // Convert to beats: threshold = (2 * height/3) / beatToPx.
+    // Two elements (w = height/3) overlap when pixel distance < 2*w.
+    // Converted to beats: overlapThreshold = (2 * height/3) / beatToPx.
     const overlapThreshold = beatToPx > 0 ? (2 * height) / (3 * beatToPx) : Infinity;
 
-    //Calculate overlap number
-    bulletsOverlapNum = 1;
-    let bulletsOverlap = {};
-    for (let i = start; i < end; i++) {
-      let overlapIndex = Math.round(pattern.bullets[i].beat / overlapThreshold);
-
-      if (bulletsOverlap[overlapIndex]) {
-        bulletsOverlap[overlapIndex]++;
-      } else {
-        bulletsOverlap[overlapIndex] = 1;
-      }
-
-      if (bulletsOverlapNum < bulletsOverlap[overlapIndex]) {
-        bulletsOverlapNum = bulletsOverlap[overlapIndex];
-      }
-    }
+    const { laneOf: bulletLane, laneCount: bulletLaneCount } = assignLanes(pattern.bullets, start, end, overlapThreshold);
+    bulletsOverlapNum = bulletLaneCount;
 
     //Draw bullets
     for (let j = start; j < end; j++) {
       tmlCtx.beginPath();
-      let x = tmlStartX + parseInt((pattern.bullets[j].beat - renderStart) * beatToPx);
-      let y = startY + timelineYLoc + height * bulletsOverlap[Math.round(pattern.bullets[j].beat / overlapThreshold)] + height / 2;
-      let w = height / 3;
+      const x = tmlStartX + parseInt((pattern.bullets[j].beat - renderStart) * beatToPx);
+      const lane = bulletLane[j - start];
+      const y = startY + timelineYLoc + height * (lane + 1) + height / 2;
+      const w = height / 3;
 
       if (mouseMode == 1) trackMouseSelection(j, 1, 0, x, y, beats);
 
-      if (selectedCheck(1, j)) {
-        tmlCtx.fillStyle = "#ed5b45";
-      } else {
-        tmlCtx.fillStyle = "#4297d4";
-      }
+      tmlCtx.fillStyle = selectedCheck(1, j) ? "#ed5b45" : "#4297d4";
       tmlCtx.moveTo(x - w, y);
       tmlCtx.lineTo(x, y + w);
       tmlCtx.lineTo(x + w, y);
       tmlCtx.lineTo(x, y - w);
       tmlCtx.lineTo(x - w, y);
-
-      bulletsOverlap[Math.round(pattern.bullets[j].beat / overlapThreshold)]--;
       tmlCtx.fill();
     }
 
@@ -659,43 +656,25 @@ const tmlRender = () => {
     start = lowerBound(pattern.triggers, renderStart);
     end = upperBound(pattern.triggers, renderEnd);
 
-    //Calculate overlap number
-    triggersOverlapNum = 2;
-    let triggersOverlap = {};
-    for (let i = start; i < end; i++) {
-      let overlapIndex = Math.round(pattern.triggers[i].beat / overlapThreshold);
-
-      if (triggersOverlap[overlapIndex]) {
-        triggersOverlap[overlapIndex]++;
-      } else {
-        triggersOverlap[overlapIndex] = 1;
-      }
-
-      if (triggersOverlapNum < triggersOverlap[overlapIndex] + 1) {
-        triggersOverlapNum = triggersOverlap[overlapIndex] + 1;
-      }
-    }
+    const { laneOf: triggerLane, laneCount: triggerLaneCount } = assignLanes(pattern.triggers, start, end, overlapThreshold);
+    // triggersOverlapNum - 1 = number of trigger rows (preserved for mouse hit detection and labels)
+    triggersOverlapNum = triggerLaneCount + 1;
 
     //Draw triggers
     for (let j = start; j < end; j++) {
       tmlCtx.beginPath();
-      let x = tmlStartX + parseInt((pattern.triggers[j].beat - renderStart) * beatToPx);
-      let y = startY + timelineYLoc + height * (bulletsOverlapNum + triggersOverlap[Math.round(pattern.triggers[j].beat / overlapThreshold)]) + height / 2;
-      let w = height / 3;
+      const x = tmlStartX + parseInt((pattern.triggers[j].beat - renderStart) * beatToPx);
+      const lane = triggerLane[j - start];
+      const y = startY + timelineYLoc + height * (bulletsOverlapNum + 1 + lane) + height / 2;
+      const w = height / 3;
 
       if (mouseMode == 1) trackMouseSelection(j, 2, pattern.triggers[j].value, x, y, beats);
 
-      if (selectedCheck(2, j)) {
-        tmlCtx.fillStyle = "#ed5b45";
-      } else {
-        tmlCtx.fillStyle = "#2ec90e";
-      }
+      tmlCtx.fillStyle = selectedCheck(2, j) ? "#ed5b45" : "#2ec90e";
       tmlCtx.moveTo(x - w / 1.1, y - w);
       tmlCtx.lineTo(x + w / 1.1, y);
       tmlCtx.lineTo(x - w / 1.1, y + w);
       tmlCtx.lineTo(x - w / 1.1, y - w);
-
-      triggersOverlap[Math.round(pattern.triggers[j].beat / overlapThreshold)]--;
       tmlCtx.fill();
     }
 
