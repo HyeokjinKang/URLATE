@@ -699,9 +699,7 @@ p {
 }
 
 #visualizer {
-  transform: scaleY(1.1) translateY(5vh);
   mix-blend-mode: hard-light;
-  filter: invert(70%);
   opacity: 0.3;
   pointer-events: none;
   position: fixed;
