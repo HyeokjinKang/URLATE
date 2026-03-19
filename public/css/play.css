@@ -21,8 +21,7 @@ body {
   font-family: var(--font-montserrat);
   font-feature-settings: "ss05";
   letter-spacing: -0.3px;
-  overflow-x: hidden;
-  overflow-y: hidden;
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
   user-select: none;
 }
@@ -673,7 +672,6 @@ body {
 }
 
 #floatingResumeContainer {
-  display: none;
   opacity: 0;
   pointer-events: none;
   position: fixed;
