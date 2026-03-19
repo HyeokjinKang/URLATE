@@ -42,6 +42,7 @@ const tmlCtx = tmlCanvas.getContext("2d");
 const timelinePlayController = document.getElementById("timelinePlayController");
 const metronome = document.getElementById("metronome");
 const metronomeContainer = document.getElementById("metronomeContainer");
+const menuIcons = Array.from(document.getElementsByClassName("menuIcon"));
 const isMac = navigator.userAgentData && navigator.userAgentData.platform ? navigator.userAgentData.platform === "macOS" : /Mac/.test(navigator.platform);
 let Draw;
 const epsilon = 1e-9;
@@ -402,10 +403,10 @@ const toggleSettings = () => {
 };
 
 const changeMode = (n) => {
-  document.getElementsByClassName("menuIcon")[n].classList.toggle("menuSelected");
-  document.getElementsByClassName("menuIcon")[mode].classList.toggle("menuSelected");
-  document.getElementsByClassName("menuIcon")[n].classList.toggle("clickable");
-  document.getElementsByClassName("menuIcon")[mode].classList.toggle("clickable");
+  menuIcons[n].classList.toggle("menuSelected");
+  menuIcons[mode].classList.toggle("menuSelected");
+  menuIcons[n].classList.toggle("clickable");
+  menuIcons[mode].classList.toggle("clickable");
   mode = n;
 };
 
@@ -977,7 +978,7 @@ const cntRender = () => {
     // Track triggers from start to now
     let end = upperBound(pattern.triggers, beats);
     let nowSpeed = pattern.information.speed;
-    let renderTexts = [];
+    const renderTexts = [];
     for (let i = 0; i < end; i++) {
       if (pattern.triggers[i].value == 0) {
         // Bullet Destroy
