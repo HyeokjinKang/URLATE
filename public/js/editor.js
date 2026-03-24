@@ -572,8 +572,10 @@ const _heapPush = (heap, item, cmp) => {
   let i = heap.length - 1;
   while (i > 0) {
     const p = (i - 1) >> 1;
-    if (cmp(heap[i], heap[p]) < 0) { [heap[i], heap[p]] = [heap[p], heap[i]]; i = p; }
-    else break;
+    if (cmp(heap[i], heap[p]) < 0) {
+      [heap[i], heap[p]] = [heap[p], heap[i]];
+      i = p;
+    } else break;
   }
 };
 const _heapPop = (heap, cmp) => {
@@ -583,12 +585,14 @@ const _heapPop = (heap, cmp) => {
     heap[0] = last;
     let i = 0;
     for (;;) {
-      const l = 2 * i + 1, r = l + 1;
+      const l = 2 * i + 1,
+        r = l + 1;
       let s = i;
       if (l < heap.length && cmp(heap[l], heap[s]) < 0) s = l;
       if (r < heap.length && cmp(heap[r], heap[s]) < 0) s = r;
       if (s === i) break;
-      [heap[i], heap[s]] = [heap[s], heap[i]]; i = s;
+      [heap[i], heap[s]] = [heap[s], heap[i]];
+      i = s;
     }
   }
   return top;
@@ -601,11 +605,11 @@ const _heapPop = (heap, cmp) => {
 // (to detect newly freed lanes), one tracking free lane indices (to pick the lowest).
 const assignLanes = (elements, start, end, overlapThreshold) => {
   const active = []; // min-heap of {lastBeat, lane}, ordered by lastBeat
-  const free   = []; // min-heap of free lane indices, ordered ascending
+  const free = []; // min-heap of free lane indices, ordered ascending
   const laneOf = [];
   let nextLane = 0;
   const cmpBeat = (a, b) => a.lastBeat - b.lastBeat;
-  const cmpIdx  = (a, b) => a - b;
+  const cmpIdx = (a, b) => a - b;
 
   for (let i = start; i < end; i++) {
     const beat = elements[i].beat;
@@ -2344,6 +2348,7 @@ const patternUndo = () => {
   selectedCntElement = { i: "", v1: "", v2: "" };
   rangeCopyCancel();
   if (isSettingsOpened) toggleSettings();
+  isTmlUpdateNeeded = true;
 };
 
 const patternRedo = () => {
@@ -2354,6 +2359,7 @@ const patternRedo = () => {
   selectedCntElement = { i: "", v1: "", v2: "" };
   rangeCopyCancel();
   if (isSettingsOpened) toggleSettings();
+  isTmlUpdateNeeded = true;
 };
 
 const elementCopy = () => {
