@@ -39,6 +39,7 @@ let background;
 let pattern = {};
 let patternLength = 0;
 let settings, sync, song, tracks, pixelRatio, offset, bpm, speed;
+let audioLatency = 0;
 let bpmsync = {
   ms: 0,
   beat: 0,
@@ -183,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-const calcBeats = () => Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+const calcBeats = () => Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync + audioLatency * 1000) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
 
 const calcBulletCreationSpeeds = () =>
   pattern.bullets.map((b) => {
@@ -314,6 +315,11 @@ const settingApply = () => {
   volumeMasterValue.textContent = Math.round(settings.sound.volume.master * 100) + "%";
 };
 
+const playSong = () => {
+  audioLatency = (Howler.ctx.outputLatency ?? 0) + (Howler.ctx.baseLatency ?? 0);
+  song.play();
+};
+
 const eraseCnt = () => {
   ctx.clearRect(0, 0, canvasW, canvasH);
 };
@@ -334,6 +340,7 @@ const cntRender = () => {
     if (!Draw) return;
     const now = Date.now();
     const seekMs = song.seek() * 1000;
+    const beats = calcBeats();
 
     if (window.devicePixelRatio != pixelRatio) {
       pixelRatio = window.devicePixelRatio;
@@ -375,8 +382,6 @@ const cntRender = () => {
       ctx.textAlign = "center";
       ctx.fillText(comboAlertCount, canvasW / 2, canvasH / 2);
     }
-
-    const beats = Number((bpmsync.beat + (seekMs - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
 
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
@@ -673,7 +678,7 @@ const compClicked = (isTyped, key, isWheel) => {
     setTimeout(() => {
       floatingResumeContainer.style.display = "none";
     }, 300);
-    song.play();
+    playSong();
   }
   if (key && !isWheel) mouseClicked = key;
   else if (!isWheel) mouseClicked = true;
@@ -803,7 +808,7 @@ const doneLoading = () => {
     }, 1000);
     setTimeout(() => {
       if (!isPaused && !song.playing()) {
-        song.play();
+        playSong();
       }
     }, 2000);
   }, 2000);
@@ -892,7 +897,7 @@ const retry = () => {
     menuContainer.style.display = "none";
     isMenuOpened = false;
     isPaused = false;
-    song.play();
+    playSong();
   }, 100);
 };
 
