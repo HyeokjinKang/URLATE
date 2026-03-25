@@ -60,11 +60,7 @@ let settings,
   sync = 0,
   rate = 1,
   split = 2;
-let song = new Howl({
-  src: ["/sounds/tick.mp3"],
-  format: ["mp3"],
-  autoplay: false,
-});
+let song;
 let mouseX = 0,
   mouseY = 0,
   mouseMode = 0;
@@ -154,6 +150,7 @@ const sortAsTiming = (a, b) => {
 
 const settingApply = () => {
   Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
+  Howler.autoSuspend = false;
   volumeMaster.value = settings.sound.volume.master * 100;
   volumeMasterValue.textContent = settings.sound.volume.master * 100 + "%";
   sync = settings.sound.offset;
@@ -484,12 +481,8 @@ const initialize = (isFirstCalled) => {
 // eslint-disable-next-line no-unused-vars
 const gotoMain = (isCalledByMain) => {
   if (isCalledByMain || !preventUnload || confirm("Are you sure you want to leave? There are unsaved changes.")) {
-    song.stop();
-    song = new Howl({
-      src: ["/sounds/tick.mp3"],
-      format: ["mp3"],
-      autoplay: false,
-    });
+    if (song) song.stop();
+    song = null;
     localStorage.temp = JSON.stringify(pattern);
     localStorage.clear("pattern");
     changeSettingsMode(-1);

@@ -280,6 +280,7 @@ const initialize = (isFirstCalled) => {
         calculateResult();
       },
       onload: () => {
+        Howler.autoSuspend = false;
         Howler.volume(settings.sound.volume.master);
         song.volume(settings.sound.volume.music);
         let rate = new URLSearchParams(window.location.search).get("rate");

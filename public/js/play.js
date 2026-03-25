@@ -297,6 +297,7 @@ const initialize = (isFirstCalled) => {
             calculateResult();
           },
           onload: () => {
+            Howler.autoSuspend = false;
             Howler.volume(settings.sound.volume.master);
             song.volume(settings.sound.volume.music);
             song.rate(localStorage.rate);
