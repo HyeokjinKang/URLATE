@@ -490,7 +490,7 @@ const gotoMain = (isCalledByMain) => {
     if (song) song.stop();
     song = null;
     localStorage.temp = JSON.stringify(pattern);
-    localStorage.clear("pattern");
+    localStorage.removeItem("pattern");
     changeSettingsMode(-1);
     if (isSettingsOpened) toggleSettings();
     selectedCntElement = { v1: "", v2: "", i: "" };
