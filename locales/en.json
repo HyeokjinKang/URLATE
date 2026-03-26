@@ -140,7 +140,7 @@
   "not_available_2": "We're working on it — please wait a little longer..!",
   "nothing_here": "There's... nothing here ;-;",
   "image_error": "Image upload failed. Please check that the image is under 3MB.",
-  "alias_select": "Select a alias.",
+  "alias_select": "Select an alias.",
   "picture_message": "Select the item you want to change.",
   "socket_status_connected": "Reconnected to the game server.",
   "socket_status_reconnecting": "Attempting to reconnect to the game server..",
