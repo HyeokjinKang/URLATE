@@ -1575,23 +1575,29 @@ const offsetSetting = () => {
 };
 
 const offsetUpdate = () => {
-  let beat = 60 / 110;
-  let remain = ((offsetSong.seek() % beat <= beat / 1.5 ? offsetSong.seek() % beat : (offsetSong.seek() % beat) - beat) * 1000) / offsetRate;
-  let fillColor = "#373737";
-  if (offsetSong.seek() <= beat + 0.005) fillColor = "#e56464";
-  if (-50 <= remain && remain <= 0) {
-    offsetNextCircle.style.backgroundColor = "#ffffff";
+  const beat = 60 / 110;
+  const audioLatency = (Howler.ctx.outputLatency ?? 0) + (Howler.ctx.baseLatency ?? 0);
+  const seek = Math.max(0, offsetSong.seek() - audioLatency);
+  const beatPosition = seek % beat;
+  const beatOffset = beatPosition <= beat / 1.5 ? beatPosition : beatPosition - beat;
+  const remain = (beatOffset * 1000) / offsetRate;
+
+  const eraseColor = "#ffffff";
+  const fillColor = "#373737";
+
+  if (-75 <= remain && remain <= -25) {
+    offsetNextCircle.style.backgroundColor = eraseColor;
     offsetPrevCircle.style.backgroundColor = fillColor;
-  } else if (0 <= remain && remain <= 50) {
-    offsetPrevCircle.style.backgroundColor = "#ffffff";
+  } else if (-25 <= remain && remain <= 25) {
+    offsetPrevCircle.style.backgroundColor = eraseColor;
     offsetTimingCircle.style.backgroundColor = fillColor;
-  } else if (50 <= remain && remain <= 100) {
-    offsetTimingCircle.style.backgroundColor = "#ffffff";
+  } else if (25 <= remain && remain <= 75) {
+    offsetTimingCircle.style.backgroundColor = eraseColor;
     offsetNextCircle.style.backgroundColor = fillColor;
   } else {
-    offsetTimingCircle.style.backgroundColor = "#ffffff";
-    offsetPrevCircle.style.backgroundColor = "#ffffff";
-    offsetNextCircle.style.backgroundColor = "#ffffff";
+    offsetTimingCircle.style.backgroundColor = eraseColor;
+    offsetPrevCircle.style.backgroundColor = eraseColor;
+    offsetNextCircle.style.backgroundColor = eraseColor;
   }
   if (offsetInput) {
     offsetInputCircle.style.backgroundColor = fillColor;
@@ -1609,12 +1615,12 @@ const offsetUpdate = () => {
       offsetButtonText.textContent = offset + "ms";
     }
   } else {
-    offsetInputCircle.style.backgroundColor = "#ffffff";
+    offsetInputCircle.style.backgroundColor = eraseColor;
   }
-  if (offset <= remain && remain <= offset + 50) {
+  if (offset - 25 <= remain && remain <= offset + 25) {
     offsetOffsetCircle.style.backgroundColor = fillColor;
   } else {
-    offsetOffsetCircle.style.backgroundColor = "#ffffff";
+    offsetOffsetCircle.style.backgroundColor = eraseColor;
   }
   offsetPrevInput = offsetInput;
   if (display == 7) {
