@@ -1242,7 +1242,8 @@ const songPlayPause = () => {
       hitBullets.clear();
       controlBtn.classList.add("timeline-pause");
       controlBtn.classList.remove("timeline-play");
-      audioLatency = (Howler.ctx.outputLatency ?? 0) + (Howler.ctx.baseLatency ?? 0);
+      const ctx = Howler.ctx;
+      audioLatency = (ctx?.outputLatency ?? 0) + (ctx?.baseLatency ?? 0);
       song.play();
     }
   }

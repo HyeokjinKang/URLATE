@@ -1576,7 +1576,8 @@ const offsetSetting = () => {
 
 const offsetUpdate = () => {
   const beat = 60 / 110;
-  const audioLatency = (Howler.ctx.outputLatency ?? 0) + (Howler.ctx.baseLatency ?? 0);
+  const ctx = Howler.ctx;
+  const audioLatency = (ctx?.outputLatency ?? 0) + (ctx?.baseLatency ?? 0);
   const seek = Math.max(0, offsetSong.seek() - audioLatency);
   const beatPosition = seek % beat;
   const beatOffset = beatPosition <= beat / 1.5 ? beatPosition : beatPosition - beat;

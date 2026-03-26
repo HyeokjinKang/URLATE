@@ -291,9 +291,7 @@ const settingApply = () => {
 
 const playSong = () => {
   const ctx = Howler.ctx;
-  const outputLatency = ctx?.outputLatency ?? 0;
-  const baseLatency = ctx?.baseLatency ?? 0;
-  audioLatency = outputLatency + baseLatency;
+  audioLatency = (ctx?.outputLatency ?? 0) + (ctx?.baseLatency ?? 0);
   song.play();
 };
 
