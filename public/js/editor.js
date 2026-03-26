@@ -134,6 +134,8 @@ let prevCreatedBullets = new Set([]);
 let hitBullets = new Set([]);
 let explodingBullets = new Set();
 
+let stopRenderFlag = false;
+
 let copySelection = { element: -2, start: -1, end: -1, beat: 0 };
 
 let prevBeat = 1;
@@ -372,6 +374,7 @@ const songSelected = (isLoaded = false) => {
   document.getElementById("editorMainContainer").style.display = "initial";
   initialize();
   patternChanged();
+  stopRenderFlag = false;
   window.requestAnimationFrame(cntRender);
 };
 
@@ -483,6 +486,7 @@ const initialize = (isFirstCalled) => {
 // eslint-disable-next-line no-unused-vars
 const gotoMain = (isCalledByMain) => {
   if (isCalledByMain || !preventUnload || confirm("Are you sure you want to leave? There are unsaved changes.")) {
+    stopRenderFlag = true;
     if (song) song.stop();
     song = null;
     localStorage.temp = JSON.stringify(pattern);
@@ -927,7 +931,8 @@ const displayMessage = (type, message) => {
 };
 
 const cntRender = () => {
-  window.requestAnimationFrame(cntRender);
+  if (!stopRenderFlag) window.requestAnimationFrame(cntRender);
+  else return;
   try {
     eraseCnt();
 
