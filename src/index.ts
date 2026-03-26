@@ -110,10 +110,6 @@ app.get("/tutorial", async (req, res) => {
   });
 });
 
-app.get("/accessDenined", (req, res) => {
-  res.render("accessDenined");
-});
-
 app.get("/info", (req, res) => {
   res.render("info");
 });

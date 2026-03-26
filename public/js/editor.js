@@ -60,11 +60,8 @@ let settings,
   sync = 0,
   rate = 1,
   split = 2;
-let song = new Howl({
-  src: ["/sounds/tick.mp3"],
-  format: ["mp3"],
-  autoplay: false,
-});
+let audioLatency = 0;
+let song;
 let mouseX = 0,
   mouseY = 0,
   mouseMode = 0;
@@ -99,6 +96,7 @@ let gridToggle = true,
 let errorCount = 0;
 let preventUnload = false;
 let globalAlpha = 1;
+let wasSongPlaying = false;
 let isTmlUpdateNeeded = true;
 let canvasContainerOW = 0,
   canvasContainerOH = 0,
@@ -136,6 +134,8 @@ let prevCreatedBullets = new Set([]);
 let hitBullets = new Set([]);
 let explodingBullets = new Set();
 
+let stopRenderFlag = false;
+
 let copySelection = { element: -2, start: -1, end: -1, beat: 0 };
 
 let prevBeat = 1;
@@ -154,6 +154,7 @@ const sortAsTiming = (a, b) => {
 
 const settingApply = () => {
   Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
+  Howler.autoSuspend = false;
   volumeMaster.value = settings.sound.volume.master * 100;
   volumeMasterValue.textContent = settings.sound.volume.master * 100 + "%";
   sync = settings.sound.offset;
@@ -373,6 +374,7 @@ const songSelected = (isLoaded = false) => {
   document.getElementById("editorMainContainer").style.display = "initial";
   initialize();
   patternChanged();
+  stopRenderFlag = false;
   window.requestAnimationFrame(cntRender);
 };
 
@@ -484,14 +486,11 @@ const initialize = (isFirstCalled) => {
 // eslint-disable-next-line no-unused-vars
 const gotoMain = (isCalledByMain) => {
   if (isCalledByMain || !preventUnload || confirm("Are you sure you want to leave? There are unsaved changes.")) {
-    song.stop();
-    song = new Howl({
-      src: ["/sounds/tick.mp3"],
-      format: ["mp3"],
-      autoplay: false,
-    });
+    stopRenderFlag = true;
+    if (song) song.stop();
+    song = null;
     localStorage.temp = JSON.stringify(pattern);
-    localStorage.clear("pattern");
+    localStorage.removeItem("pattern");
     changeSettingsMode(-1);
     if (isSettingsOpened) toggleSettings();
     selectedCntElement = { v1: "", v2: "", i: "" };
@@ -812,15 +811,6 @@ const tmlRender = () => {
       tmlCtx.fillText(`${String(minutes).padStart(1, "0")}:${seconds.toFixed(2).padStart(5, "0")}`, timeStartX, startY / 1.7);
     }
 
-    //Timeline offset playhead
-    tmlCtx.beginPath();
-    tmlCtx.fillStyle = "#2f91ed";
-    tmlCtx.strokeStyle = "#2f91ed";
-    const offsetLineX = tmlStartX + (beats - renderStart - (offset + sync) / (60000 / bpm)) * beatToPx;
-    tmlCtx.moveTo(offsetLineX, endY);
-    tmlCtx.lineTo(offsetLineX, startY);
-    tmlCtx.stroke();
-
     //Timeline playhead
     tmlCtx.beginPath();
     tmlCtx.fillStyle = "#ed5b45";
@@ -829,6 +819,17 @@ const tmlRender = () => {
     tmlCtx.moveTo(lineX, endY);
     tmlCtx.lineTo(lineX, startY);
     tmlCtx.stroke();
+
+    //Timeline offset playhead
+    if (song.playing()) {
+      tmlCtx.beginPath();
+      tmlCtx.fillStyle = "#2f91ed";
+      tmlCtx.strokeStyle = "#2f91ed";
+      const offsetLineX = tmlStartX + (beats - renderStart - (offset + sync + audioLatency * 1000) / (60000 / bpm)) * beatToPx;
+      tmlCtx.moveTo(offsetLineX, endY);
+      tmlCtx.lineTo(offsetLineX, startY);
+      tmlCtx.stroke();
+    }
 
     //Add mode yellow preview
     if (mode == 2 && mouseMode == 1) {
@@ -871,10 +872,8 @@ const tmlRender = () => {
     tmlCtx.fillStyle = "#555";
     tmlCtx.textAlign = "right";
     tmlCtx.textBaseline = "top";
-    if (tmlCanvasW / tmlCanvasH >= 4.9) {
-      if (sync + offset >= 50 || sync + offset <= -50) {
-        tmlCtx.fillText(syncAlert, endX, endY + 5);
-      }
+    if (song.playing() && tmlCanvasW / tmlCanvasH >= 4.9) {
+      tmlCtx.fillText(syncAlert, endX, endY + 5);
     }
 
     //Key indicator(or copied text)
@@ -932,7 +931,8 @@ const displayMessage = (type, message) => {
 };
 
 const cntRender = () => {
-  window.requestAnimationFrame(cntRender);
+  if (!stopRenderFlag) window.requestAnimationFrame(cntRender);
+  else return;
   try {
     eraseCnt();
 
@@ -965,14 +965,15 @@ const cntRender = () => {
     errorCount = 0;
 
     // Calculate seeking position
-    const seekMs = song.seek() * 1000;
-    const beats = Number((bpmsync.beat + (seekMs - (offset + sync) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+    const isSongPlaying = song.playing();
+    const seekMs = (song.seek() - (isSongPlaying ? audioLatency : 0)) * 1000;
+    const beats = Number((bpmsync.beat + (seekMs - (isSongPlaying ? offset + sync : 0) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
 
     // Metronome
     const noSyncBeats = Number((bpmsync.beat + (seekMs - offset - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
     if (metronomeToggle) {
       const intBeat = Math.floor(noSyncBeats);
-      if (song.playing()) {
+      if (isSongPlaying) {
         if (prevBeat != intBeat) {
           prevBeat = intBeat;
           beep.play();
@@ -1219,19 +1220,20 @@ const cntRender = () => {
         componentView.style.cursor = "url('/images/parts/cursor/blueSelect.cur'), pointer";
       }
     }
+
+    if (wasSongPlaying || isTmlUpdateNeeded) {
+      pointingTmlElement = { v1: "", v2: "", i: "" };
+      tmlRender();
+      isTmlUpdateNeeded = false;
+    }
+    wasSongPlaying = isSongPlaying;
+
+    if (mouseMode == 0 && !denyCursor) {
+      Draw.cursor({ x: mouseX, y: mouseY }, {});
+    }
   } catch (e) {
     displayMessage("Error", `[Runtime] ${e}`);
     console.error(e);
-  }
-
-  if (song.playing() || isTmlUpdateNeeded) {
-    pointingTmlElement = { v1: "", v2: "", i: "" };
-    tmlRender();
-    isTmlUpdateNeeded = false;
-  }
-
-  if (mouseMode == 0 && !denyCursor) {
-    Draw.cursor({ x: mouseX, y: mouseY });
   }
 };
 
@@ -1246,6 +1248,9 @@ const songPlayPause = () => {
       controlBtn.classList.add("timeline-pause");
       controlBtn.classList.remove("timeline-play");
       song.play();
+
+      const ctx = Howler.ctx;
+      audioLatency = (ctx?.outputLatency ?? 0) + (ctx?.baseLatency ?? 0);
     }
   }
 };
