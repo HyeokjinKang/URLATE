@@ -337,9 +337,10 @@ const settingApply = () => {
 };
 
 const playSong = () => {
+  song.play();
+
   const ctx = Howler.ctx;
   audioLatency = (ctx?.outputLatency ?? 0) + (ctx?.baseLatency ?? 0);
-  song.play();
 };
 
 const eraseCnt = () => {
