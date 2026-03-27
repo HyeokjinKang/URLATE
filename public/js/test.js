@@ -254,7 +254,7 @@ const initialize = (isFirstCalled) => {
         fileName = tracks[i].fileName;
         document.getElementById("albumContainer").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
         if (background !== "0") document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-        else canvasBackground.style.backgroundColor = `black`;
+        else canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/urlate.webp")`;
         document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
         document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
         albumImg.src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.webp`;

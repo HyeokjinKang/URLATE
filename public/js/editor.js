@@ -85,7 +85,7 @@ let pixelRatio = window.devicePixelRatio;
 let bulletsOverlapNum = 1;
 let triggersOverlapNum = 2;
 let isTextboxFocused = false;
-let skin, denyCursor, denySkin;
+let skin, denyCursor;
 let dragMouseX, dragMouseY, originX, originY;
 let copied = false,
   copiedTime = 0;
@@ -160,7 +160,6 @@ const settingApply = () => {
   sync = settings.sound.offset;
   denyCursor = settings.editor.denyCursor;
   canvasContainer.style.cursor = denyCursor ? "" : "none";
-  denySkin = settings.editor.denySkin;
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -355,8 +354,6 @@ const songSelected = (isLoaded = false) => {
   settingsPropertiesTextbox[4].value = pattern.information.bpm;
   settingsPropertiesTextbox[5].value = pattern.information.speed;
   settingsPropertiesTextbox[6].value = pattern.information.offset;
-  if (denySkin) canvasBackground.style.filter = `grayscale(30%) opacity(20%)`;
-  else canvasBackground.style.filter = `brightness(30%)`;
   bpm = pattern.information.bpm;
   bpmsync = {
     ms: 0,
@@ -368,7 +365,7 @@ const songSelected = (isLoaded = false) => {
   rate = 1;
   background = new URLSearchParams(window.location.search).get("background");
   if (background !== "0") canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[songSelectBox.selectedIndex].fileName}.webp")`;
-  else if (!denySkin) canvasBackground.style.backgroundColor = `black`;
+  else canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/urlate.webp")`;
   document.getElementById("songSelectionContainer").style.display = "none";
   document.getElementById("initialScreenContainer").style.display = "none";
   document.getElementById("editorMainContainer").style.display = "initial";
