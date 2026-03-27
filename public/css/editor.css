@@ -247,6 +247,7 @@ body {
 
 #canvasBackground {
   position: fixed;
+  filter: brightness(30%);
   width: 60%;
   height: 65%;
   background-position: center;
