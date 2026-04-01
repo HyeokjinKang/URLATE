@@ -2153,8 +2153,13 @@ document.onkeydown = (e) => {
   } else if (display == 7) {
     offsetInput = true;
   } else if (display == 13) {
-    if (key == "arrowup") visualSyncOffset++;
-    else if (key == "arrowdown") visualSyncOffset--;
+    if (key == "arrowup") {
+      e.preventDefault();
+      visualSyncOffset++;
+    } else if (key == "arrowdown") {
+      e.preventDefault();
+      visualSyncOffset--;
+    }
     document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
     document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
   }
