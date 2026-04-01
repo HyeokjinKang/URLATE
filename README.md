@@ -39,7 +39,7 @@ There's an development version of URLATE at [dev.urlate.coupy.dev](https://dev.u
 
 ## How to play
 
-[![Tutorial Video](https://img.youtube.com/vi/HD_wtfxZ3Q8/0.jpg)](https://www.youtube.com/watch?v=HD_wtfxZ3Q8)
+[![Tutorial Video](https://img.youtube.com/vi/HD_wtfxZ3Q8/0.jpg)](https://youtu.be/HD_wtfxZ3Q8)
 
 ## Screenshots
 
