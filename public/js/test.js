@@ -38,7 +38,7 @@ let Draw;
 let background;
 let pattern = {};
 let patternLength = 0;
-let settings, sync, song, tracks, pixelRatio, offset, bpm, speed;
+let settings, sync, visualSync, song, tracks, pixelRatio, offset, bpm, speed;
 let audioLatency = 0;
 let bpmsync = {
   ms: 0,
@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-const calcBeats = () => Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync + audioLatency * 1000) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+const calcBeats = (seek = song.seek() * 1000) => Number((bpmsync.beat + (seek - (offset + sync + audioLatency * 1000) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
 
 const calcBulletCreationSpeeds = () =>
   pattern.bullets.map((b) => {
@@ -297,7 +297,8 @@ const initialize = (isFirstCalled) => {
 const settingApply = () => {
   tick.volume(settings.sound.volume.hitSound);
   resultEffect.volume(settings.sound.volume.effect);
-  sync = parseInt(settings.sound.offset);
+  sync = settings.sound.offset;
+  visualSync = settings.display.offset ?? 0;
   document.getElementById("loadingContainer").style.opacity = 1;
   document.getElementById("canvasBackground").style.opacity = 1;
   sens = settings.input.sens;
@@ -341,8 +342,8 @@ const cntRender = () => {
   try {
     if (!Draw) return;
     const now = Date.now();
-    const seekMs = song.seek() * 1000;
-    const beats = calcBeats();
+    const seekMs = song.seek() * 1000 + visualSync;
+    const beats = calcBeats(seekMs);
 
     if (window.devicePixelRatio != pixelRatio) {
       pixelRatio = window.devicePixelRatio;

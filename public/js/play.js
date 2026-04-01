@@ -39,7 +39,7 @@ let patternBackup = {};
 let patternLength = 0;
 let userName = "";
 let difficultyNames = ["EZ", "MID", "HARD"];
-let settings, sync, song, tracks, pixelRatio, offset, bpm, speed, userid;
+let settings, sync, visualSync, song, tracks, pixelRatio, offset, bpm, speed, userid;
 let audioLatency = 0;
 let bpmsync = {
   ms: 0,
@@ -191,7 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-const calcBeats = () => Number((bpmsync.beat + (song.seek() * 1000 - (offset + sync + audioLatency * 1000) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+const calcBeats = (seek = song.seek() * 1000) => Number((bpmsync.beat + (seek - (offset + sync + audioLatency * 1000) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
 
 const calcBulletCreationSpeeds = () =>
   pattern.bullets.map((b) => {
@@ -318,7 +318,8 @@ const initialize = (isFirstCalled) => {
 const settingApply = () => {
   tick.volume(settings.sound.volume.hitSound);
   resultEffect.volume(settings.sound.volume.effect);
-  sync = parseInt(settings.sound.offset);
+  sync = settings.sound.offset;
+  visualSync = settings.display.offset ?? 0;
   document.getElementById("loadingContainer").style.opacity = 1;
   document.getElementById("canvasBackground").style.opacity = 1;
   sens = settings.input.sens;
@@ -362,8 +363,8 @@ const cntRender = () => {
   try {
     if (!Draw) return;
     const now = Date.now();
-    const seekMs = song.seek() * 1000;
-    const beats = calcBeats();
+    const seekMs = song.seek() * 1000 + visualSync;
+    const beats = calcBeats(seekMs);
 
     if (window.devicePixelRatio != pixelRatio) {
       pixelRatio = window.devicePixelRatio;
@@ -474,14 +475,14 @@ const cntRender = () => {
         miss++;
         showOverlay();
         missPoint.push(seekMs);
-        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "miss(hold)", seekMs]);
+        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "miss(hold)", song.seek() * 1000]);
         keyInput.push({ judge: "Miss", key: "-", time: now });
       } else if (_noteState.tailProgress >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
         judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Perfect"));
         calculateScore("Perfect", i, true);
-        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "perfect(hold)", seekMs]);
+        record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "perfect(hold)", song.seek() * 1000]);
         keyInput.push({ judge: "Perfect", key: "-", time: now });
       }
     }
@@ -734,7 +735,7 @@ const trackMouseSelection = (i, v1, v2, x, y, beats, seekMs) => {
             destroyParticles.push(...Factory.createExplosions(x, y));
             destroyedBullets.add(i);
             showOverlay();
-            record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "bullet", seekMs]);
+            record.push([record.length, pointingCntElement[0].v1, pointingCntElement[0].v2, pointingCntElement[0].i, mouseX, mouseY, "bullet", song.seek() * 1000]);
             keyInput.push({ judge: "Bullet", key: "-", time: Date.now() });
           }
         }

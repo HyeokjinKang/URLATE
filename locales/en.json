@@ -48,7 +48,7 @@
   "general": "General",
   "screen": "Screen",
   "sound": "Sound",
-  "game": "Game",
+  "game": "In-Game",
   "my_info": "My Info",
   "namePlaceholder": "Nickname",
   "logout": "Logout",
@@ -175,5 +175,10 @@
   "nameExist": "The nickname you entered already exists.",
   "nameText": "Nickname must be a string of 5 to 12 characters (A-Z, a-z, _, -).",
   "done": "Done!",
-  "mainPage": "Back to Main"
+  "mainPage": "Back to Main",
+  "visual_sync_setting": "Visual Sync Settings",
+  "sync": "Visual Sync",
+  "visual_sync_description_1": "Adjust the sync value",
+  "visual_sync_description_2": " so that the audio and visuals are in sync.",
+  "visual_sync_description_3": "Use the arrow keys (↑↓) for finer adjustments."
 }

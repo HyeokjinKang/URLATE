@@ -89,6 +89,9 @@ let offsetInput = false;
 let offsetPrevInput = false;
 let offsetAverage = [];
 
+let visualSyncOffset = 0;
+let visualSyncAnimId = null;
+
 let iniMode = -1;
 
 let tracks;
@@ -174,6 +177,8 @@ const settingApply = () => {
   if (offset != 0) {
     offsetButtonText.textContent = offset + "ms";
   }
+  visualSyncOffset = settings.display.offset || 0;
+  document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
   initialize();
   profileSong = new Howl({
     src: [`${cdn}/tracks/128kbps/store.ogg`],
@@ -905,6 +910,7 @@ const displayClose = () => {
       //OPTION
       loadingShow();
       settings.sound.offset = offset;
+      settings.display.offset = visualSyncOffset;
       fetch(`${api}/settings`, {
         method: "PUT",
         credentials: "include",
@@ -996,25 +1002,30 @@ const displayClose = () => {
       display = 2;
       return;
     } else if (display == 13) {
-      //store tutorial
-      tutorial--;
-      fadeOutContainer("storeTutorialContainer");
-      display = 8;
-      fetch(`${api}/storeTutorial`, {
-        method: "PUT",
-        credentials: "include",
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.result != "success") {
-            alert(`Error occured.\n${data.error}`);
-          }
-        })
-        .catch((error) => {
-          alert(`Error occured.\n${error}`);
-          console.error(`Error occured.\n${error}`);
-          location.reload();
-        });
+      //OPTION VisualSync
+      if (visualSyncAnimId) {
+        cancelAnimationFrame(visualSyncAnimId);
+        visualSyncAnimId = null;
+      }
+      if (songSelection != -1) {
+        const selSong = getSong(songSelection);
+        if (selSong) {
+          if (!selSong.playing()) selSong.play();
+          selSong.fade(0, 1, 500);
+        }
+      } else {
+        if (!themeSong.playing()) themeSong.play();
+        themeSong.fade(0, 1, 500);
+      }
+      offsetSong.fade(1, 0, 500);
+      document.getElementById("visualSyncContainer").classList.remove("fadeInAnim");
+      document.getElementById("visualSyncContainer").classList.add("fadeOutAnim");
+      setTimeout(() => {
+        document.getElementById("visualSyncContainer").classList.remove("fadeOutAnim");
+        document.getElementById("visualSyncContainer").style.display = "none";
+        offsetSong.stop();
+      }, 500);
+      display = 2;
       return;
     } else if (display == 14) {
       display = 1;
@@ -1600,6 +1611,7 @@ const offsetUpdate = () => {
     offsetPrevCircle.style.backgroundColor = eraseColor;
     offsetNextCircle.style.backgroundColor = eraseColor;
   }
+
   if (offsetInput) {
     offsetInputCircle.style.backgroundColor = fillColor;
     if (!offsetPrevInput) {
@@ -1623,7 +1635,9 @@ const offsetUpdate = () => {
   } else {
     offsetOffsetCircle.style.backgroundColor = eraseColor;
   }
+
   offsetPrevInput = offsetInput;
+
   if (display == 7) {
     window.requestAnimationFrame(offsetUpdate);
   } else {
@@ -1684,6 +1698,104 @@ const offsetButtonDown = () => {
 // eslint-disable-next-line no-unused-vars
 const offsetButtonUp = () => {
   offsetInput = false;
+};
+
+// eslint-disable-next-line no-unused-vars
+const visualSyncSetting = () => {
+  display = 13;
+  document.getElementById("visualSyncContainer").style.display = "flex";
+  document.getElementById("visualSyncContainer").classList.add("fadeInAnim");
+  document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
+
+  // offsetSong 재생 (offset 설정과 동일)
+  if (songSelection != -1) {
+    const selSong = getSong(songSelection);
+    if (selSong) selSong.fade(1, 0, 500);
+  } else {
+    themeSong.fade(1, 0, 500);
+  }
+  offsetSong.play();
+  offsetSong.fade(0, 1, 500);
+
+  const vsCanvas = document.getElementById("visualSyncCanvas");
+  const vsCtx = vsCanvas.getContext("2d");
+  const W = vsCanvas.width;
+  const H = vsCanvas.height;
+  const beat = 60 / 110; // offsetSong BPM
+
+  const drawFrame = () => {
+    if (display !== 13) return;
+
+    // offsetUpdate와 동일한 방식으로 오디오 기준 seek 계산
+    const howlerCtx = Howler.ctx;
+    const audioLatency = (howlerCtx?.outputLatency ?? 0) + (howlerCtx?.baseLatency ?? 0);
+    const seek = Math.max(0, offsetSong.seek() - audioLatency);
+
+    const cycle = beat * 2; // 2비트마다 노트 한 개
+
+    // visualSyncOffset만큼 앞당긴 비주얼 seek로 노트 progress 계산
+    const visualSeek = seek + visualSyncOffset / 1000;
+    const visualCyclePos = ((visualSeek % cycle) + cycle) % cycle;
+    const visualCycleOffset = visualCyclePos - cycle; // -cycle ~ 0
+
+    const progress = (1 + visualCycleOffset / beat / 2) * 100;
+    const safeP = Math.max(Math.min(progress, 100), 0);
+
+    vsCtx.clearRect(0, 0, W, H);
+    vsCtx.fillStyle = "#f5f5f5";
+    vsCtx.fillRect(0, 0, W, H);
+
+    const cx = W / 2;
+    const cy = H / 2;
+    const noteR = W * 0.1;
+    const lineW = Math.max(2, noteR * 0.12);
+
+    vsCtx.save();
+    vsCtx.translate(cx, cy);
+
+    vsCtx.strokeStyle = "#373737";
+    vsCtx.lineWidth = lineW;
+    vsCtx.beginPath();
+    vsCtx.arc(0, 0, noteR, 1.5 * Math.PI, 1.5 * Math.PI + (safeP / 50) * Math.PI);
+    vsCtx.stroke();
+
+    vsCtx.fillStyle = "#373737";
+    vsCtx.beginPath();
+    vsCtx.arc(0, 0, (noteR / 100) * safeP, 0, 2 * Math.PI);
+    vsCtx.fill();
+
+    vsCtx.globalAlpha = (0.2 * Math.min(safeP * 2, 100)) / 100;
+    vsCtx.beginPath();
+    vsCtx.arc(0, 0, noteR, 0, 2 * Math.PI);
+    vsCtx.fill();
+
+    vsCtx.restore();
+
+    visualSyncAnimId = requestAnimationFrame(drawFrame);
+  };
+
+  visualSyncAnimId = requestAnimationFrame(drawFrame);
+};
+
+// eslint-disable-next-line no-unused-vars
+const visualSyncUp = () => {
+  visualSyncOffset += 10;
+  document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
+  document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
+};
+
+// eslint-disable-next-line no-unused-vars
+const visualSyncDown = () => {
+  visualSyncOffset -= 10;
+  document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
+  document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
+};
+
+// eslint-disable-next-line no-unused-vars
+const visualSyncReset = () => {
+  visualSyncOffset = 0;
+  document.getElementById("visualSyncValueText").textContent = "0ms";
+  document.getElementById("syncButton").textContent = "0ms";
 };
 
 const overlayClose = (s) => {
@@ -2040,6 +2152,16 @@ document.onkeydown = (e) => {
     }
   } else if (display == 7) {
     offsetInput = true;
+  } else if (display == 13) {
+    if (key == "arrowup") {
+      e.preventDefault();
+      visualSyncOffset++;
+    } else if (key == "arrowdown") {
+      e.preventDefault();
+      visualSyncOffset--;
+    }
+    document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
+    document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
   }
 };
 

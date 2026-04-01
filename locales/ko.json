@@ -36,7 +36,7 @@
   "screen": "화면",
   "sound": "소리",
   "input": "입력",
-  "game": "게임",
+  "game": "인게임",
   "my_info": "내 정보",
   "language": "언어",
   "general_language": "게임 전반",
@@ -175,5 +175,10 @@
   "alias_select": "칭호를 선택하세요.",
   "picture_message": "바꾸고 싶은 항목을 선택하세요.",
   "socket_achievement_reward": "보상",
-  "socket_achievement_alias": "칭호"
+  "socket_achievement_alias": "칭호",
+  "visual_sync_setting": "화면 싱크 설정",
+  "sync": "화면 싱크",
+  "visual_sync_description_1": "소리와 화면이 일치하도록",
+  "visual_sync_description_2": " 싱크값을 설정하세요.",
+  "visual_sync_description_3": "방향키(↑↓)를 이용하여 더 세밀한 조정이 가능합니다."
 }
