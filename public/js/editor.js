@@ -58,6 +58,7 @@ let settings,
   speed = 2,
   offset = 0,
   sync = 0,
+  visualSync = 0,
   rate = 1,
   split = 2;
 let audioLatency = 0;
@@ -158,6 +159,7 @@ const settingApply = () => {
   volumeMaster.value = settings.sound.volume.master * 100;
   volumeMasterValue.textContent = settings.sound.volume.master * 100 + "%";
   sync = settings.sound.offset;
+  visualSync = settings.display.offset ?? 0;
   denyCursor = settings.editor.denyCursor;
   canvasContainer.style.cursor = denyCursor ? "" : "none";
 };
@@ -822,7 +824,7 @@ const tmlRender = () => {
       tmlCtx.beginPath();
       tmlCtx.fillStyle = "#2f91ed";
       tmlCtx.strokeStyle = "#2f91ed";
-      const offsetLineX = tmlStartX + (beats - renderStart - (offset + sync + audioLatency * 1000) / (60000 / bpm)) * beatToPx;
+      const offsetLineX = tmlStartX + (beats - renderStart - (offset + sync - visualSync + audioLatency * 1000) / (60000 / bpm)) * beatToPx;
       tmlCtx.moveTo(offsetLineX, endY);
       tmlCtx.lineTo(offsetLineX, startY);
       tmlCtx.stroke();
@@ -964,7 +966,7 @@ const cntRender = () => {
     // Calculate seeking position
     const isSongPlaying = song.playing();
     const seekMs = (song.seek() - (isSongPlaying ? audioLatency : 0)) * 1000;
-    const beats = Number((bpmsync.beat + (seekMs - (isSongPlaying ? offset + sync : 0) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+    const beats = Number((bpmsync.beat + (seekMs - (isSongPlaying ? offset + sync - visualSync : 0) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
 
     // Metronome
     const noSyncBeats = Number((bpmsync.beat + (seekMs - offset - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
