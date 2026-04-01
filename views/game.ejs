@@ -28,7 +28,7 @@
       };
     </script>
   </head>
-  <body oncontextmenu="return false" ondragstart="return false" onselect="return false">
+  <body oncontextmenu="return false;" ondragstart="return false;" onselect="return false;">
     <div id="footer">
       <div id="footerLeft">
         <img src="/icons/return.webp" class="icon" />
@@ -435,6 +435,25 @@
           <span id="offsetResetButtonText" class="metropolis"><%= __('reset') %></span>
         </div>
       </div>
+      <div id="visualSyncContainer" class="containers">
+        <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" onclick="displayClose()" />
+        <h1 id="visualSyncTitle"><%= __('visual_sync_setting') %></h1>
+        <canvas id="visualSyncCanvas" width="400" height="200"></canvas>
+        <span id="visualSyncDescription"><strong><%= __('visual_sync_description_1') %></strong><%= __('visual_sync_description_2') %></span>
+        <span id="visualSyncSubDescription"><%= __('visual_sync_description_3') %></span>
+        <div id="visualSyncButtonContainer">
+          <div id="visualSyncValueDisplay">
+            <span id="visualSyncValueText" class="metropolis">0ms</span>
+          </div>
+          <div class="offsetSideContainer">
+            <img src="/icons/plus.svg" class="icon offsetSideIcon clickable" onclick="visualSyncUp()" />
+            <img src="/icons/minus.svg" class="icon offsetSideIcon clickable" onclick="visualSyncDown()" />
+          </div>
+        </div>
+        <div id="visualSyncResetButton" onclick="visualSyncReset()">
+          <span id="visualSyncResetButtonText" class="metropolis"><%= __('reset') %></span>
+        </div>
+      </div>
       <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" onclick="displayClose()" />
       <h1 class="containersTitle"><%= __('option') %></h1>
       <div id="optionElementsContainer">
@@ -478,7 +497,7 @@
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('retry_tutorial') %></p>
-            <a class="optionButton" onclick="window.location.href = '<%= url %>/tutorial';"><%= __('move') %></a>
+            <a class="optionButton" onclick="window.location.href = '<%= url %>/tutorial'"><%= __('move') %></a>
           </div>
         </div>
         <div class="optionContentsContainer" id="optionDisplay">
@@ -499,6 +518,11 @@
               <option value="75">75%</option>
               <option value="50">50%</option>
             </select>
+          </div>
+          <p class="optionTitle"><%= __('details') %></p>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('sync') %></p>
+            <a class="optionButton" onclick="visualSyncSetting()" id="syncButton">0ms</a>
           </div>
         </div>
         <div class="optionContentsContainer" id="optionSound">
@@ -668,7 +692,7 @@
       </div>
     </div>
     <div id="profileContainer" class="containers metropolis" onclick="showProfileBackground(event)">
-      <span id="profileDescription" onclick="return false"><%= __('profile_description') %></span>
+      <span id="profileDescription" onclick="return false;"><%= __('profile_description') %></span>
       <img src="/icons/xmark-circle-ffffff.svg" class="icon clickable closeBtn" onclick="displayClose()" />
       <div id="profileImageContainer"></div>
       <div id="profileNameContainer">

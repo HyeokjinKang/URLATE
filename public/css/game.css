@@ -1613,7 +1613,8 @@ input[type="number"] {
   overflow-y: auto;
 }
 
-#offsetTitle {
+#offsetTitle,
+#visualSyncTitle {
   font-size: 5vh;
   margin-top: 4vh;
   margin-bottom: 5vh;
@@ -1621,7 +1622,8 @@ input[type="number"] {
   font-weight: 600;
 }
 
-#offsetContiner {
+#offsetContiner,
+#visualSyncContainer {
   display: none;
   flex-direction: column;
   align-items: center;
@@ -1701,14 +1703,16 @@ input[type="number"] {
   border: 1px solid black;
 }
 
-#offsetDescription {
+#offsetDescription,
+#visualSyncDescription {
   letter-spacing: -2px;
   margin-top: 5vh;
   font-size: 3.5vh;
   font-weight: 400;
 }
 
-#offsetSubDescription {
+#offsetSubDescription,
+#visualSyncSubDescription {
   letter-spacing: -2px;
   font-size: 2vh;
   font-weight: 400;
@@ -1775,6 +1779,61 @@ input[type="number"] {
 }
 
 #offsetResetButtonText {
+  font-size: 2vh;
+  color: #fff;
+  font-weight: 500;
+}
+
+#visualSyncCanvas {
+  margin-top: 3vh;
+  width: 400px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 1em;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+#visualSyncButtonContainer {
+  margin-top: 3vh;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 8vh;
+}
+
+#visualSyncValueDisplay {
+  margin-left: calc(2vw + 3vh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #373737;
+  width: 20vw;
+  height: 100%;
+  border-radius: 1em;
+  box-shadow: 0 0 1vh rgba(50, 50, 50, 0.3);
+}
+
+#visualSyncValueText {
+  font-size: 4vh;
+  color: #fff;
+  font-weight: 700;
+}
+
+#visualSyncResetButton {
+  margin-top: 3vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e56464;
+  width: 10vw;
+  height: 4vh;
+  border-radius: 0.5em;
+  cursor: pointer;
+  box-shadow: 0 0 1vh rgba(50, 50, 50, 0.3);
+}
+
+#visualSyncResetButtonText {
   font-size: 2vh;
   color: #fff;
   font-weight: 500;
