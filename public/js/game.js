@@ -228,27 +228,26 @@ const drawBar = (x1, y1, x2, y2) => {
   ctx.stroke();
 };
 
+const scale = (value, valueMax, targetMax) => (value / valueMax) * targetMax;
+
 const animationLooper = () => {
   if (display == 1 || display == 6) {
     let wWidth = canvas.width;
     let wHeight = canvas.height;
-
-    analyser.fftSize = 1024;
     analyser.getByteFrequencyData(dataArray);
 
-    const bufferLength = analyser.frequencyBinCount;
-    const excludeLength = 150;
+    const bufferLength = 205;
 
-    const unitHeight = wHeight / 1000;
-    const barWidth = wWidth / (bufferLength - excludeLength);
+    const barMaxHeight = wHeight / 4;
+    const barWidth = wWidth / bufferLength;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = "rgb(180, 180, 180)";
     ctx.lineWidth = barWidth / 2;
     ctx.lineCap = "round";
 
-    for (let i = 0; i < bufferLength - excludeLength; i++) {
-      const value = dataArray[i] ** 2;
-      const barHeight = (Math.max(0, value - 2500) / 200) * unitHeight;
+    for (let i = 0; i < bufferLength; i++) {
+      const value = Math.max(0, dataArray[i] - 55) ** 2;
+      const barHeight = scale(value, 40000, barMaxHeight);
       let x = barWidth * i;
       drawBar(x, 0, x, barHeight);
       x = wWidth - x;
@@ -801,6 +800,7 @@ const gameLoaded = () => {
     document.getElementById("footerLeft").classList.add("fadeInAnim");
   }, 500);
   analyser = Howler.ctx.createAnalyser();
+  analyser.fftSize = 2048;
   Howler.masterGain.connect(analyser);
   dataArray = new Uint8Array(analyser.frequencyBinCount);
   animationLooper();
