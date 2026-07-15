@@ -29,18 +29,18 @@
     "node-fetch": "^3.3.2",
     "nsfwjs": "^4.3.0",
     "sharp": "^0.34.5",
-    "tsc-watch": "^7.2.0"
+    "tsc-watch": "^7.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/multer": "^2.1.0",
-    "@types/node": "^24.12.4",
-    "@typescript-eslint/eslint-plugin": "^8.60.0",
-    "@typescript-eslint/parser": "^8.60.0",
-    "eslint": "^10.4.1",
-    "globals": "^17.6.0",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^24.13.3",
+    "@typescript-eslint/eslint-plugin": "^8.64.0",
+    "@typescript-eslint/parser": "^8.64.0",
+    "eslint": "^10.7.0",
+    "globals": "^17.7.0",
     "javascript-obfuscator": "^4.2.2",
-    "prettier": "^3.8.3",
+    "prettier": "^3.9.5",
     "signale": "^1.4.0",
     "supervisor": "^0.12.0",
     "typescript": "^5.9.3"
