@@ -1,4 +1,4 @@
-/* global Howler, Howl, Pace, Chart, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, introload, notAvailable1, notAvailable2, medalDesc, alias, nothingHere, rating, couponApplySuccess, couponInvalid1, couponInvalid2, couponUsed, inputEmpty, aliasSelect, pictureMessage, imageError */
+/* global Howler, Howl, Pace, Chart, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable1, notAvailable2, medalDesc, alias, nothingHere, rating, couponApplySuccess, couponInvalid1, couponInvalid2, couponUsed, inputEmpty, aliasSelect, pictureMessage, imageError */
 const langDetailSelector = document.getElementById("langDetailSelector");
 const canvasResSelector = document.getElementById("canvasResSelector");
 const albumResSelector = document.getElementById("albumResSelector");
@@ -327,6 +327,37 @@ const warningSkip = () => {
   }
 };
 
+// Intro gate: enable "press anywhere" once both intro videos are loaded
+// and the warning screen has been shown for at least 3 seconds.
+const introReady = { video1: false, video2: false, minDelay: false, done: false };
+
+const checkIntroReady = () => {
+  if (introReady.done || !(introReady.video1 && introReady.video2 && introReady.minDelay)) return;
+  introReady.done = true;
+  document.getElementById("pressAnywhere").textContent = pressAnywhere;
+  warningContainer.onclick = warningSkip;
+};
+
+const watchIntroVideo = (video, key) => {
+  // readyState >= HAVE_CURRENT_DATA means loadeddata already fired before this script ran.
+  if (video.readyState >= 2) {
+    introReady[key] = true;
+    checkIntroReady();
+  } else {
+    video.addEventListener(
+      "loadeddata",
+      () => {
+        introReady[key] = true;
+        checkIntroReady();
+      },
+      { once: true },
+    );
+  }
+};
+
+watchIntroVideo(intro1video, "video1");
+watchIntroVideo(intro2video, "video2");
+
 const intro1skip = () => {
   intro1video.pause();
   if (!intro1skipped) {
@@ -373,12 +404,8 @@ document.addEventListener("DOMContentLoaded", () => {
     warningInner.style.opacity = "1";
   }, 1000);
   setTimeout(() => {
-    if (introload == 2) {
-      document.getElementById("pressAnywhere").textContent = pressAnywhere;
-      document.getElementById("warningContainer").onclick = warningSkip;
-    }
-    // eslint-disable-next-line no-global-assign
-    introload++;
+    introReady.minDelay = true;
+    checkIntroReady();
     document.getElementById("pressAnywhere").style.opacity = "1";
     warningInner.style.borderBottom = "0.1vh solid #555";
   }, 3000);
