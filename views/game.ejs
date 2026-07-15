@@ -3,30 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <title>URLATE Client</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preconnect" href="https://cdn.urlate.coupy.dev" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-jp.min.css" />
+    <link rel="stylesheet" href="/css/metropolis.css?v=<%= ver %>" />
     <link rel="stylesheet" href="/css/iziToast.min.css" />
     <link rel="stylesheet" href="/css/globalSocket.css?v=<%= ver %>" />
     <link rel="stylesheet" href="/css/game.css?v=<%= ver %>" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
-    <script>
-      let introload = 0;
-
-      const intro1loaded = () => {
-        if (introload == 2) {
-          document.getElementById("pressAnywhere").textContent = pressAnywhere;
-          document.getElementById("warningContainer").onclick = warningSkip;
-        }
-        introload++;
-      };
-
-      const intro2loaded = () => {
-        if (introload == 2) {
-          document.getElementById("pressAnywhere").textContent = pressAnywhere;
-          document.getElementById("warningContainer").onclick = warningSkip;
-        }
-        introload++;
-      };
-    </script>
   </head>
   <body oncontextmenu="return false;" ondragstart="return false;" onselect="return false;">
     <div id="footer">
@@ -54,13 +42,13 @@
       <span id="pressAnywhere"><%= __('loading') %></span>
     </div>
     <div id="intro1container" class="introContainer" onclick="intro1skip()">
-      <video id="intro1video" onloadeddata="intro1loaded()">
+      <video id="intro1video">
         <source type="video/webm" src="<%= cdn %>/videos/croissant.webm" />
         <source type="video/mp4" src="<%= cdn %>/videos/croissant.mp4" />
       </video>
     </div>
     <div id="intro2container" class="introContainer" onclick="intro2skip()">
-      <video id="intro2video" onloadeddata="intro2loaded()">
+      <video id="intro2video">
         <source type="video/webm" src="<%= cdn %>/videos/coupyworks.webm" />
         <source type="video/mp4" src="<%= cdn %>/videos/coupyworks.mp4" />
       </video>

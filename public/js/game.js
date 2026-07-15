@@ -1,4 +1,4 @@
-/* global Howler, Howl, Pace, Chart, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, introload, notAvailable1, notAvailable2, medalDesc, alias, nothingHere, rating, couponApplySuccess, couponInvalid1, couponInvalid2, couponUsed, inputEmpty, aliasSelect, pictureMessage, imageError */
+/* global Howler, Howl, Pace, Chart, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable1, notAvailable2, medalDesc, alias, nothingHere, rating, couponApplySuccess, couponInvalid1, couponInvalid2, couponUsed, inputEmpty, aliasSelect, pictureMessage, imageError */
 const langDetailSelector = document.getElementById("langDetailSelector");
 const canvasResSelector = document.getElementById("canvasResSelector");
 const albumResSelector = document.getElementById("albumResSelector");
@@ -46,6 +46,12 @@ const profileNameContainer = document.getElementById("profileNameContainer");
 
 const slowRate = 110 / 174;
 const fastRate = 174 / 110;
+
+// escapeHtml/safeUrl are shared from modules/utils.js (game.js is a classic script, so import dynamically).
+let escapeHtml, safeUrl;
+(async () => {
+  ({ escapeHtml, safeUrl } = await import("../modules/utils.js"));
+})();
 
 let settings = [];
 let profileSong;
@@ -321,6 +327,37 @@ const warningSkip = () => {
   }
 };
 
+// Intro gate: enable "press anywhere" once both intro videos are loaded
+// and the warning screen has been shown for at least 3 seconds.
+const introReady = { video1: false, video2: false, minDelay: false, done: false };
+
+const checkIntroReady = () => {
+  if (introReady.done || !(introReady.video1 && introReady.video2 && introReady.minDelay)) return;
+  introReady.done = true;
+  document.getElementById("pressAnywhere").textContent = pressAnywhere;
+  warningContainer.onclick = warningSkip;
+};
+
+const watchIntroVideo = (video, key) => {
+  // readyState >= HAVE_CURRENT_DATA means loadeddata already fired before this script ran.
+  if (video.readyState >= 2) {
+    introReady[key] = true;
+    checkIntroReady();
+  } else {
+    video.addEventListener(
+      "loadeddata",
+      () => {
+        introReady[key] = true;
+        checkIntroReady();
+      },
+      { once: true },
+    );
+  }
+};
+
+watchIntroVideo(intro1video, "video1");
+watchIntroVideo(intro2video, "video2");
+
 const intro1skip = () => {
   intro1video.pause();
   if (!intro1skipped) {
@@ -367,12 +404,8 @@ document.addEventListener("DOMContentLoaded", () => {
     warningInner.style.opacity = "1";
   }, 1000);
   setTimeout(() => {
-    if (introload == 2) {
-      document.getElementById("pressAnywhere").textContent = pressAnywhere;
-      document.getElementById("warningContainer").onclick = warningSkip;
-    }
-    // eslint-disable-next-line no-global-assign
-    introload++;
+    introReady.minDelay = true;
+    checkIntroReady();
     document.getElementById("pressAnywhere").style.opacity = "1";
     warningInner.style.borderBottom = "0.1vh solid #555";
   }, 3000);
@@ -742,7 +775,7 @@ const updateRanks = () => {
         innerContent += `<br>
                         <div class="selectRank">
                           <div class="selectRankNumber">${i + 1 - rankMinus}</div>
-                          <div class="selectRankName">${data[i].nickname}</div>
+                          <div class="selectRankName">${escapeHtml(data[i].nickname)}</div>
                           <div class="selectRankScore">${numberWithCommas(Number(data[i].record))}</div>
                       </div>`;
         prevScore = data[i].record;
@@ -804,10 +837,15 @@ const gameLoaded = () => {
   Howler.masterGain.connect(analyser);
   dataArray = new Uint8Array(analyser.frequencyBinCount);
   animationLooper();
-  tracks.forEach((e) => {
-    const img = new Image();
-    img.src = `${cdn}/albums/${settings.display.albumRes}/${e.fileName}.webp`;
-  });
+  // Warm the album-art cache during idle time so it doesn't block initial render.
+  const preloadAlbums = () => {
+    tracks.forEach((e) => {
+      const img = new Image();
+      img.src = `${cdn}/albums/${settings.display.albumRes}/${e.fileName}.webp`;
+    });
+  };
+  if (window.requestIdleCallback) requestIdleCallback(preloadAlbums);
+  else setTimeout(preloadAlbums, 1000);
 };
 
 Pace.on("done", () => {
@@ -1072,15 +1110,9 @@ const menuSelected = (n) => {
     //play
     display = 1;
     if (songSelection == -1) {
-      // eslint-disable-next-line no-constant-condition
-      while (1) {
-        let min = Math.ceil(0);
-        let max = Math.floor(tracks.length);
-        let result = Math.floor(Math.random() * (max - min)) + min;
-        if (tracks[result].type != 3) {
-          songSelected(result);
-          break;
-        }
+      const playable = tracks.map((t, i) => (t.type != 3 ? i : -1)).filter((i) => i != -1);
+      if (playable.length > 0) {
+        songSelected(playable[Math.floor(Math.random() * playable.length)]);
       }
     }
     document.getElementById("selectContainer").style.display = "flex";
@@ -1116,9 +1148,9 @@ const rankUpdate = async () => {
         (e, i) => `<tr>
       <td>${i + 1}</td>
       <td>
-        <div class="rankProfileContainer" onclick="profileScreen('${e.userid}')">
-          <img src="${e.picture}" class="rankProfile ${e.explicit % 2 == 1 ? "blur" : ""}" />
-          ${e.nickname}
+        <div class="rankProfileContainer" onclick="profileScreen('${encodeURIComponent(e.userid)}')">
+          <img src="${escapeHtml(safeUrl(e.picture))}" class="rankProfile ${e.explicit % 2 == 1 ? "blur" : ""}" />
+          ${escapeHtml(e.nickname)}
         </div>
       </td>
       <td>${Number(e.accuracy).toFixed(2)}%</td>
@@ -1160,8 +1192,8 @@ const profileUpdate = async (uid, isMe) => {
     if (profile.explicit % 2 == 1) {
       document.getElementById("profileImage").classList.add("blur");
     }
-    document.getElementById("profileImageContainer").style.backgroundImage = `url("${profile.background}")`;
-    document.getElementById("profileImage").src = profile.picture;
+    document.getElementById("profileImageContainer").style.backgroundImage = `url("${safeUrl(profile.background)}")`;
+    document.getElementById("profileImage").src = safeUrl(profile.picture);
     document.getElementById("profileName").textContent = profile.nickname;
     document.getElementById("profileBio").textContent = `| ${alias[profile.alias]}`;
     document.getElementById("profileRank").textContent = `#${numberWithCommas(rank)}`;
@@ -1178,7 +1210,7 @@ const profileUpdate = async (uid, isMe) => {
       if (banners[i].indexOf("(-)") != -1 && !isMe) continue;
       count++;
       document.getElementById("profileBannerContainer").innerHTML += `
-        <div class="bannerImage${isMe ? " clickable" : ""}${banners[i].indexOf("(-)") != -1 ? " hidden" : ""}" style="background-image: url('${cdn}/banners/${banners[i].replace("(-)", "")}.webp')" ${
+        <div class="bannerImage${isMe ? " clickable" : ""}${banners[i].indexOf("(-)") != -1 ? " hidden" : ""}" style="background-image: url('${cdn}/banners/${encodeURIComponent(banners[i].replace("(-)", ""))}.webp')" ${
           isMe ? `onclick="bannerToggle(${i})"` : ""
         }>
           <div class="bannerHover">
@@ -1214,7 +1246,7 @@ const profileUpdate = async (uid, isMe) => {
                 </div>
               </div>
               <div class="playContainerRight">
-                <span class="playDetail">${data.judge}</span>
+                <span class="playDetail">${escapeHtml(data.judge)}</span>
                 <span class="playDetail">${numberWithCommas(Number(data.record))}</span>
                 <span class="playDetail">${Number(data.accuracy).toFixed(2)}%</span>
                 <span class="playRate">${rating} +${Number(data.rating / 100).toFixed(2)}</span>
@@ -1247,7 +1279,7 @@ const profileUpdate = async (uid, isMe) => {
           </div>
         </div>
         <div class="playContainerRight">
-          <span class="playDetail">${data.judge}</span>
+          <span class="playDetail">${escapeHtml(data.judge)}</span>
           <span class="playDetail">${numberWithCommas(Number(data.record))}</span>
           <span class="playDetail">${Number(data.accuracy).toFixed(2)}%</span>
           <span class="playRate">${rating} ${data.rating == 0 ? "-" : `+${Number(data.rating / 100).toFixed(2)}`}</span>
@@ -1491,7 +1523,7 @@ const showProfile = (name) => {
         innerHTML += `
                     <div class="infoProfilePart">
                         <img src="/icons/${info[i].icon}.svg" class="infoIcon">
-                        ${link == "" ? `<span>` : `<a class="blackLink" href="${link}" target="_blank">`}${info[i].content}${link == "" ? `</span>` : `</a>`}
+                        ${link == "" ? `<span>` : `<a class="blackLink" href="${link}" target="_blank" rel="noopener noreferrer">`}${info[i].content}${link == "" ? `</span>` : `</a>`}
                     </div>`;
       }
       document.getElementById("infoProfileBottom").innerHTML = innerHTML;

@@ -33,7 +33,17 @@ app.locals.pretty = true;
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/../views");
 app.use(cookieParser());
-app.use(express.static(__dirname + "/../public"));
+
+// Baseline security headers (CSP omitted: inline event handlers require a larger refactor).
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  next();
+});
+
+// Static assets are cache-busted via ?v=<ver>, so a long max-age is safe.
+app.use(express.static(__dirname + "/../public", { maxAge: "7d" }));
 app.use(i18n);
 
 app.get("/", (req, res) => {
