@@ -804,10 +804,15 @@ const gameLoaded = () => {
   Howler.masterGain.connect(analyser);
   dataArray = new Uint8Array(analyser.frequencyBinCount);
   animationLooper();
-  tracks.forEach((e) => {
-    const img = new Image();
-    img.src = `${cdn}/albums/${settings.display.albumRes}/${e.fileName}.webp`;
-  });
+  // Warm the album-art cache during idle time so it doesn't block initial render.
+  const preloadAlbums = () => {
+    tracks.forEach((e) => {
+      const img = new Image();
+      img.src = `${cdn}/albums/${settings.display.albumRes}/${e.fileName}.webp`;
+    });
+  };
+  if (window.requestIdleCallback) requestIdleCallback(preloadAlbums);
+  else setTimeout(preloadAlbums, 1000);
 };
 
 Pace.on("done", () => {
