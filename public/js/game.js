@@ -1077,15 +1077,9 @@ const menuSelected = (n) => {
     //play
     display = 1;
     if (songSelection == -1) {
-      // eslint-disable-next-line no-constant-condition
-      while (1) {
-        let min = Math.ceil(0);
-        let max = Math.floor(tracks.length);
-        let result = Math.floor(Math.random() * (max - min)) + min;
-        if (tracks[result].type != 3) {
-          songSelected(result);
-          break;
-        }
+      const playable = tracks.map((t, i) => (t.type != 3 ? i : -1)).filter((i) => i != -1);
+      if (playable.length > 0) {
+        songSelected(playable[Math.floor(Math.random() * playable.length)]);
       }
     }
     document.getElementById("selectContainer").style.display = "flex";
