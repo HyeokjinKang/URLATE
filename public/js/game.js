@@ -555,7 +555,7 @@ const tracksUpdate = () => {
 
   Promise.all(
     fetchTargets.map((i) =>
-      fetch(`${api}/record/${tracks[i].name}/${username}`, { method: "GET", credentials: "include" })
+      fetch(`${api}/record/${tracks[i].fileName}/${username}`, { method: "GET", credentials: "include" })
         .then((res) => res.json())
         .then((data) => ({ i, data })),
     ),
@@ -751,7 +751,7 @@ const rateChanged = (e) => {
 };
 
 const updateRanks = () => {
-  fetch(`${api}/records/${tracks[songSelection].name}/${difficultySelection + 1}/record/DESC/${username}`, {
+  fetch(`${api}/records/${tracks[songSelection].fileName}/${difficultySelection + 1}/record/DESC/${username}`, {
     method: "GET",
     credentials: "include",
   })
