@@ -1267,7 +1267,7 @@ const profileUpdate = async (uid, isMe) => {
       if (bestRecords.length == 0) document.getElementById("profileBestPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
       for (let i = 0; i < bestRecords.length; i++) {
         const data = bestRecords[i];
-        const song = tracks.find((e) => e.name == data.name);
+        const song = tracks.find((e) => e.fileName == data.name);
         const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
         document.getElementById("profileBestPlay").innerHTML += `<div class="playContainer">
         <div class="playContainerLeft">
