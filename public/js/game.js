@@ -1234,7 +1234,7 @@ const profileUpdate = async (uid, isMe) => {
             document.getElementsByClassName("profileStatValue")[5].textContent = `${recentDate.toLocaleDateString()}`;
           }
           const data = res.results[0];
-          const song = tracks.find((e) => e.name == data.name);
+          const song = tracks.find((e) => e.fileName == data.name);
           const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
           recentHTML += `<div class="playContainer">
               <div class="playContainerLeft">
