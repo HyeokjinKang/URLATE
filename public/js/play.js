@@ -115,7 +115,6 @@ let keyInputMemory = 0;
 let keyInputTime = 0;
 let keyPressing = {};
 let pressingKeys = [];
-let trackName = "";
 let medal = 1;
 let newRecordTime = 0;
 let effectMs = 0;
@@ -268,7 +267,6 @@ const initialize = (isFirstCalled) => {
           if (tracks[i].name == pattern.information.track) {
             document.getElementById("scoreTitle").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
             document.getElementById("title").textContent = settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
-            trackName = tracks[i].name;
             fileName = tracks[i].fileName;
             document.getElementById("albumContainer").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
             document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
@@ -679,9 +677,9 @@ const calculateResult = () => {
     method: "PUT",
     credentials: "include",
     body: JSON.stringify({
-      name: trackName,
       difficultySelection: Number(localStorage.difficultySelection) + 1,
       difficulty: localStorage.difficulty,
+      fileName,
       userid,
       userName,
       rank,
