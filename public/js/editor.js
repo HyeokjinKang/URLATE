@@ -141,8 +141,8 @@ let copySelection = { element: -2, start: -1, end: -1, beat: 0 };
 
 let prevBeat = 1;
 const beep = new Howl({
-  src: `/sounds/metronome.mp3`,
-  format: ["mp3"],
+  src: `/sounds/metronome.ogg`,
+  format: ["ogg"],
   volume: 1,
   autoplay: false,
   loop: false,
@@ -969,7 +969,8 @@ const cntRender = () => {
     const beats = Number((bpmsync.beat + (seekMs - (isSongPlaying ? offset + sync - visualSync : 0) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
 
     // Metronome
-    const noSyncBeats = Number((bpmsync.beat + (seekMs - offset - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+    const rawSeekMs = song.seek() * 1000;
+    const noSyncBeats = Number((bpmsync.beat + (rawSeekMs - offset - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
     if (metronomeToggle) {
       const intBeat = Math.floor(noSyncBeats);
       if (isSongPlaying) {
