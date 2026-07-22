@@ -709,7 +709,7 @@ const songSelected = (n, refreshed, seek) => {
       document.getElementsByClassName("ranks")[songSelection].classList.add(trackRecords[songSelection][0].rank);
     }
   }
-  fetch(`${api}/trackInfo/${tracks[n].name}`, {
+  fetch(`${api}/trackInfo/${tracks[n].filename}`, {
     method: "GET",
     credentials: "include",
   })
@@ -1234,7 +1234,7 @@ const profileUpdate = async (uid, isMe) => {
             document.getElementsByClassName("profileStatValue")[5].textContent = `${recentDate.toLocaleDateString()}`;
           }
           const data = res.results[0];
-          const song = tracks.find((e) => e.fileName == data.name);
+          const song = tracks.find((e) => e.fileName == data.filename);
           const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
           recentHTML += `<div class="playContainer">
               <div class="playContainerLeft">
@@ -1267,7 +1267,7 @@ const profileUpdate = async (uid, isMe) => {
       if (bestRecords.length == 0) document.getElementById("profileBestPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
       for (let i = 0; i < bestRecords.length; i++) {
         const data = bestRecords[i];
-        const song = tracks.find((e) => e.fileName == data.name);
+        const song = tracks.find((e) => e.fileName == data.filename);
         const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
         document.getElementById("profileBestPlay").innerHTML += `<div class="playContainer">
         <div class="playContainerLeft">
