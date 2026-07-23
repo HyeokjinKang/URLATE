@@ -709,7 +709,7 @@ const songSelected = (n, refreshed, seek) => {
       document.getElementsByClassName("ranks")[songSelection].classList.add(trackRecords[songSelection][0].rank);
     }
   }
-  fetch(`${api}/trackInfo/${tracks[n].filename}`, {
+  fetch(`${api}/trackInfo/${tracks[n].fileName}`, {
     method: "GET",
     credentials: "include",
   })
