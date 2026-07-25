@@ -553,20 +553,18 @@ const tracksUpdate = () => {
 
   const defaultRecord = (type) => ({ rank: type == 1 ? "rankL" : "rankQ", record: 0, medal: 0, maxcombo: 0 });
 
-  Promise.all(
-    fetchTargets.map((i) =>
-      fetch(`${api}/record/${tracks[i].fileName}/${username}`, { method: "GET", credentials: "include" })
-        .then((res) => res.json())
-        .then((data) => ({ i, data })),
-    ),
-  )
-    .then((results) => {
-      results.forEach(({ i, data }) => {
+  // 곡마다 따로 묻지 않고 내 기록 전체를 한 번에 받아옵니다.
+  fetch(`${api}/trackRecords/${username}`, { method: "GET", credentials: "include" })
+    .then((res) => res.json())
+    .then((data) => {
+      const records = data.result == "success" ? data.records : {};
+      fetchTargets.forEach((i) => {
         trackRecords[i] = [defaultRecord(tracks[i].type), defaultRecord(tracks[i].type), defaultRecord(tracks[i].type)];
-        if (data.result == "success") {
+        const results = records[tracks[i].fileName];
+        if (results && results.length) {
           for (let j = 0; j < 3; j++) {
-            if (data.results[j] != undefined) {
-              const value = data.results[j];
+            if (results[j] != undefined) {
+              const value = results[j];
               const rankEl = document.getElementsByClassName("ranks")[i];
               rankEl.className = `ranks rank${value.rank}`;
               trackRecords[i][value.difficulty - 1] = {
@@ -1224,16 +1222,17 @@ const profileUpdate = async (uid, isMe) => {
       document.getElementsByClassName("profileStatValue")[5].textContent = "-";
       document.getElementById("profileRecentPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
     } else {
-      const recentResults = await Promise.all(recentPlay.map((id) => fetch(`${api}/record/${id}`, { method: "GET", credentials: "include" }).then((res) => res.json())));
+      // 기록 id마다 따로 묻지 않고 최근 플레이 목록을 한 번에 받아옵니다.
+      const recentRes = await fetch(`${api}/recentPlays/${uid}`, { method: "GET", credentials: "include" }).then((res) => res.json());
+      const recentResults = recentRes.result == "success" ? recentRes.results : [];
       let recentHTML = "";
       for (let i = 0; i < recentResults.length; i++) {
-        const res = recentResults[i];
-        if (res.result == "success") {
+        const data = recentResults[i];
+        if (data) {
           if (i == 0) {
-            const recentDate = new Date(res.results[0].date);
+            const recentDate = new Date(data.date);
             document.getElementsByClassName("profileStatValue")[5].textContent = `${recentDate.toLocaleDateString()}`;
           }
-          const data = res.results[0];
           const song = tracks.find((e) => e.fileName == data.filename);
           const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
           recentHTML += `<div class="playContainer">
