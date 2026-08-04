@@ -158,6 +158,37 @@ const imageToTensor = async (fileBuffer) => {
   return tf.tensor3d(new Uint8Array(data), [info.height, info.width, info.channels], "int32");
 };
 
+/**
+ * Resolve the caller's identity from the backend session.
+ *
+ * This route used to trust the `:userid` path segment with no authentication at
+ * all, so anyone could overwrite any user's profile picture or background — the
+ * request is what supplies the backend's project secret on the caller's behalf.
+ * The browser already sends its session cookie here (`credentials: "include"`),
+ * so we forward it to the backend and let the backend's session be the only
+ * source of truth for who is being modified.
+ */
+const resolveSessionUserid = async (req): Promise<string | null> => {
+  if (!req.headers.cookie) return null;
+  try {
+    const response = await fetch(`${config.project.api}/user`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.cookie,
+      },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) return null;
+    const data: any = await response.json();
+    if (data.result !== "success" || !data.user || !data.user.userid) return null;
+    return String(data.user.userid);
+  } catch (err) {
+    logger.warn("Failed to resolve session userid", { error: err });
+    return null;
+  }
+};
+
 app.post("/profile/:userid/:type", async (req, res) => {
   // Validate userid: must be numeric
   if (!/^[0-9]+$/.test(req.params.userid)) {
@@ -168,6 +199,31 @@ app.post("/profile/:userid/:type", async (req, res) => {
     });
     return;
   }
+
+  // Authenticate before touching multer, sharp or the NSFW model: an
+  // unauthenticated request must not be able to spend any of that work.
+  const sessionUserid = await resolveSessionUserid(req);
+  if (!sessionUserid) {
+    res.status(401).json({
+      result: "failed",
+      message: "Login required",
+      error: "Unauthorized",
+    });
+    return;
+  }
+  if (sessionUserid !== req.params.userid) {
+    logger.warn("Rejected profile upload for a different user", {
+      sessionUserid,
+      requested: req.params.userid,
+    });
+    res.status(403).json({
+      result: "failed",
+      message: "You can only update your own profile",
+      error: "Forbidden",
+    });
+    return;
+  }
+
   let type = "";
   let width = 256;
   let height = 256;
@@ -257,7 +313,8 @@ app.post("/profile/:userid/:type", async (req, res) => {
       },
       body: JSON.stringify({
         explicit,
-        userid: req.params.userid,
+        // Verified against the backend session above, never the raw path segment.
+        userid: sessionUserid,
         value: `${config.project.url}/images/profiles/${file.filename}`,
         secret: config.project.secretKey,
       }),
