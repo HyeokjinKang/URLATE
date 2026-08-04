@@ -27,6 +27,10 @@ const config = require(__dirname + "/../config/config.json");
 
 let model;
 
+// node-fetch has no default timeout: a backend that accepts the connection but
+// never answers would hang the request handler forever and pin the socket.
+const API_TIMEOUT_MS = 5000;
+
 const app = express();
 app.locals.pretty = true;
 
@@ -177,7 +181,7 @@ const resolveSessionUserid = async (req): Promise<string | null> => {
         "Content-Type": "application/json",
         Cookie: req.headers.cookie,
       },
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
     if (!response.ok) return null;
     const data: any = await response.json();
@@ -250,6 +254,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
       headers: {
         "Content-Type": "application/json",
       },
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
     const profileData: any = await profileResponse.json();
     if (profileData.result === "success" && profileData.user && profileData.user[type] && !config.project.ignoredImageURL.some((domain) => profileData.user[type].includes(domain))) {
@@ -311,6 +316,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
       headers: {
         "Content-Type": "application/json",
       },
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
       body: JSON.stringify({
         explicit,
         // Verified against the backend session above, never the raw path segment.
