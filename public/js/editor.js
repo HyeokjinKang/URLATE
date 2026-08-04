@@ -347,7 +347,6 @@ const songSelected = (isLoaded = false) => {
   });
   controlBtn.classList.add("timeline-play");
   controlBtn.classList.remove("timeline-pause");
-  fetch(`${api}/trackCount/${pattern.information.track}`);
   songName.innerText = pattern.information.track;
   settingsPropertiesTextbox[0].value = pattern.information.track;
   settingsPropertiesTextbox[1].value = pattern.information.producer;
