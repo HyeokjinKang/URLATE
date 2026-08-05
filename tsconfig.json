@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es2025",
     "module": "commonjs",
     // "lib": [],                             /* Specify library files to be included in the compilation. */
     "checkJs": false,
