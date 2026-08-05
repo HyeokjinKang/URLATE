@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
     "module": "commonjs",
     // "lib": [],                             /* Specify library files to be included in the compilation. */
     "checkJs": false,
     "outDir": "dist",
+    "rootDir": "src",
     // Disable for now...
     "strict": false,
     "esModuleInterop": true,
