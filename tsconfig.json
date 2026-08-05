@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es2025",
-    "module": "commonjs",
+    "target": "es2023",
+    "module": "node20",
     // "lib": [],                             /* Specify library files to be included in the compilation. */
     "checkJs": false,
     "outDir": "dist",
