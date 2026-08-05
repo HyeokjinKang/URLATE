@@ -27,8 +27,7 @@ const config = require(__dirname + "/../config/config.json");
 
 let model;
 
-// node-fetch has no default timeout: a backend that accepts the connection but
-// never answers would hang the request handler forever and pin the socket.
+// node-fetch has no default timeout: a hung backend would pin the request handler.
 const API_TIMEOUT_MS = 5000;
 
 const app = express();
@@ -165,12 +164,9 @@ const imageToTensor = async (fileBuffer) => {
 /**
  * Resolve the caller's identity from the backend session.
  *
- * This route used to trust the `:userid` path segment with no authentication at
- * all, so anyone could overwrite any user's profile picture or background — the
- * request is what supplies the backend's project secret on the caller's behalf.
- * The browser already sends its session cookie here (`credentials: "include"`),
- * so we forward it to the backend and let the backend's session be the only
- * source of truth for who is being modified.
+ * This route supplies the backend's project secret on the caller's behalf, so
+ * the `:userid` path segment must never be trusted. The browser already sends
+ * its session cookie here, so forward it and let the backend session decide.
  */
 const resolveSessionUserid = async (req): Promise<string | null> => {
   if (!req.headers.cookie) return null;
@@ -204,8 +200,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
     return;
   }
 
-  // Authenticate before touching multer, sharp or the NSFW model: an
-  // unauthenticated request must not be able to spend any of that work.
+  // Authenticate before multer, sharp and the NSFW model spend any work.
   const sessionUserid = await resolveSessionUserid(req);
   if (!sessionUserid) {
     res.status(401).json({
@@ -319,7 +314,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
       body: JSON.stringify({
         explicit,
-        // Verified against the backend session above, never the raw path segment.
+        // Verified against the backend session, never the raw path segment.
         userid: sessionUserid,
         value: `${config.project.url}/images/profiles/${file.filename}`,
         secret: config.project.secretKey,
