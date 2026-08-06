@@ -27,6 +27,9 @@ const config = require(__dirname + "/../config/config.json");
 
 let model;
 
+// node-fetch has no default timeout: a hung backend would pin the request handler.
+const API_TIMEOUT_MS = 5000;
+
 const app = express();
 app.locals.pretty = true;
 
@@ -158,6 +161,34 @@ const imageToTensor = async (fileBuffer) => {
   return tf.tensor3d(new Uint8Array(data), [info.height, info.width, info.channels], "int32");
 };
 
+/**
+ * Resolve the caller's identity from the backend session.
+ *
+ * This route supplies the backend's project secret on the caller's behalf, so
+ * the `:userid` path segment must never be trusted. The browser already sends
+ * its session cookie here, so forward it and let the backend session decide.
+ */
+const resolveSessionUserid = async (req): Promise<string | null> => {
+  if (!req.headers.cookie) return null;
+  try {
+    const response = await fetch(`${config.project.api}/user`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.cookie,
+      },
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
+    });
+    if (!response.ok) return null;
+    const data: any = await response.json();
+    if (data.result !== "success" || !data.user || !data.user.userid) return null;
+    return String(data.user.userid);
+  } catch (err) {
+    logger.warn("Failed to resolve session userid", { error: err });
+    return null;
+  }
+};
+
 app.post("/profile/:userid/:type", async (req, res) => {
   // Validate userid: must be numeric
   if (!/^[0-9]+$/.test(req.params.userid)) {
@@ -168,6 +199,30 @@ app.post("/profile/:userid/:type", async (req, res) => {
     });
     return;
   }
+
+  // Authenticate before multer, sharp and the NSFW model spend any work.
+  const sessionUserid = await resolveSessionUserid(req);
+  if (!sessionUserid) {
+    res.status(401).json({
+      result: "failed",
+      message: "Login required",
+      error: "Unauthorized",
+    });
+    return;
+  }
+  if (sessionUserid !== req.params.userid) {
+    logger.warn("Rejected profile upload for a different user", {
+      sessionUserid,
+      requested: req.params.userid,
+    });
+    res.status(403).json({
+      result: "failed",
+      message: "You can only update your own profile",
+      error: "Forbidden",
+    });
+    return;
+  }
+
   let type = "";
   let width = 256;
   let height = 256;
@@ -194,6 +249,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
       headers: {
         "Content-Type": "application/json",
       },
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
     const profileData: any = await profileResponse.json();
     if (profileData.result === "success" && profileData.user && profileData.user[type] && !config.project.ignoredImageURL.some((domain) => profileData.user[type].includes(domain))) {
@@ -255,9 +311,11 @@ app.post("/profile/:userid/:type", async (req, res) => {
       headers: {
         "Content-Type": "application/json",
       },
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
       body: JSON.stringify({
         explicit,
-        userid: req.params.userid,
+        // Verified against the backend session, never the raw path segment.
+        userid: sessionUserid,
         value: `${config.project.url}/images/profiles/${file.filename}`,
         secret: config.project.secretKey,
       }),

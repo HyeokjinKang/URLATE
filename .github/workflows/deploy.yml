@@ -48,3 +48,8 @@ jobs:
             --exclude='config/config.json' \
             --exclude='public/images/profiles/' \
             $GITHUB_WORKSPACE/deploy/ URLATE-PRODUCTION:${{secrets.DEPLOY_TARGET}}/
+
+      - name: Restart
+        run: |
+          ssh URLATE-PRODUCTION \
+            "cd '${{secrets.DEPLOY_TARGET}}' && pm2 startOrReload ecosystem.config.js --update-env"
