@@ -73,7 +73,24 @@ app.get("/join", (req, res) => {
   res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version, url: config.project.url });
 });
 
-app.get("/game", async (req, res) => {
+const requireAuth = async (req, res, next) => {
+  if (!req.headers.cookie) return res.redirect("/");
+  try {
+    const resp = await fetch(`${config.project.api}/user`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json", Cookie: req.headers.cookie },
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
+    });
+    if (!resp.ok) return res.redirect("/");
+    const data: any = await resp.json();
+    if (data.result !== "success" || !data.user) return res.redirect("/");
+    next();
+  } catch {
+    res.redirect("/");
+  }
+};
+
+app.get("/game", requireAuth, async (req, res) => {
   res.render("game", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -83,7 +100,7 @@ app.get("/game", async (req, res) => {
   });
 });
 
-app.get("/editor", async (req, res) => {
+app.get("/editor", requireAuth, async (req, res) => {
   res.render("editor", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -93,7 +110,7 @@ app.get("/editor", async (req, res) => {
   });
 });
 
-app.get("/test", async (req, res) => {
+app.get("/test", requireAuth, async (req, res) => {
   res.render("test", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -103,7 +120,7 @@ app.get("/test", async (req, res) => {
   });
 });
 
-app.get("/play", async (req, res) => {
+app.get("/play", requireAuth, async (req, res) => {
   res.render("play", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -113,7 +130,7 @@ app.get("/play", async (req, res) => {
   });
 });
 
-app.get("/tutorial", async (req, res) => {
+app.get("/tutorial", requireAuth, async (req, res) => {
   res.render("tutorial", {
     cdn: config.project.cdn,
     url: config.project.url,
