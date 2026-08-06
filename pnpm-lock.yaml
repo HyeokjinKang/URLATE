@@ -34,8 +34,8 @@ importers:
         specifier: ^3.3.2
         version: 3.3.2
       nsfwjs:
-        specifier: ^4.3.0
-        version: 4.3.0(@tensorflow/tfjs@4.22.0(seedrandom@3.0.5))(buffer@6.0.3)
+        specifier: ^4.4.0
+        version: 4.4.0(@tensorflow/tfjs@4.22.0(seedrandom@3.0.5))(buffer@6.0.3)
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
@@ -1288,8 +1288,9 @@ packages:
     resolution: {integrity: sha512-dRB78srN/l6gqWulah9SrxeYnxeddIG30+GOqK/9OlLVyLg3HPnr6SqOWTWOXKRwC2eGYCkZ59NNuSgvSrpgOA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  nsfwjs@4.3.0:
-    resolution: {integrity: sha512-WTKDte0vp1X97N1h34P79G/hG+sVT3+TnDz9di1WseIJR93v11E4viNX7Vg9WsO6HYoR772Nzq2iM8jo3XBZ+g==}
+  nsfwjs@4.4.0:
+    resolution: {integrity: sha512-krC1fgeTLXtZwgdpKJ0jm7hqv0gTSRQQRL+FhOaxaJ9Wj92t42BO3csO2odwgTAgZgf2RvkwPtp0R8Aa7dc+MA==}
+    engines: {node: 22.13.0, npm: '>=10 <12'}
     peerDependencies:
       '@tensorflow/tfjs': ^4.0.0
       buffer: ^6.0.3
@@ -2978,7 +2979,7 @@ snapshots:
       fetch-blob: 3.2.0
       formdata-polyfill: 4.0.10
 
-  nsfwjs@4.3.0(@tensorflow/tfjs@4.22.0(seedrandom@3.0.5))(buffer@6.0.3):
+  nsfwjs@4.4.0(@tensorflow/tfjs@4.22.0(seedrandom@3.0.5))(buffer@6.0.3):
     dependencies:
       '@tensorflow/tfjs': 4.22.0(seedrandom@3.0.5)
       buffer: 6.0.3
