@@ -1,5 +1,5 @@
 import cookieParser from "cookie-parser";
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import i18n from "./i18n";
 import multer from "multer";
 import path from "path";
@@ -73,7 +73,56 @@ app.get("/join", (req, res) => {
   res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version, url: config.project.url });
 });
 
-app.get("/game", async (req, res) => {
+/**
+ * Gate the pages that only make sense for a signed-in player.
+ *
+ * The status -> destination mapping is the one each page used to run in the
+ * browser after loading. Doing it here means an unauthenticated request never
+ * receives the page at all, so the check can no longer be skipped by disabling
+ * JavaScript or dropping the redirect.
+ */
+const requireAuth = (extraRedirects: Record<string, string> = {}) => {
+  const redirects: Record<string, string> = {
+    "Not registered": `${config.project.url}/join`,
+    "Not logined": config.project.url,
+    Shutdowned: `${config.project.api}/auth/logout?redirect=true&shutdowned=true`,
+    ...extraRedirects,
+  };
+
+  return async (req: Request, res: Response, next: NextFunction) => {
+    // The response depends on the session, so it must never be cached.
+    res.setHeader("Cache-Control", "no-store");
+    if (!req.headers.cookie) return res.redirect(redirects["Not logined"]);
+    try {
+      const response = await fetch(`${config.project.api}/auth/status`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: req.headers.cookie,
+        },
+        signal: AbortSignal.timeout(API_TIMEOUT_MS),
+      });
+      if (!response.ok) return res.redirect(config.project.url);
+      const data: any = await response.json();
+      const redirect = redirects[data.status];
+      if (redirect) return res.redirect(redirect);
+      next();
+    } catch (err) {
+      // Fail closed: an unreachable backend must not open the gate.
+      logger.warn("Failed to check auth status", { path: req.path, error: err });
+      res.redirect(config.project.url);
+    }
+  };
+};
+
+// The editor is gated on more than a login: authorization and identity verification.
+const editorRedirects = {
+  "Not authorized": `${config.project.url}/authorize`,
+  "Not authenticated": `${config.project.url}/authentication`,
+  "Not authenticated(adult)": `${config.project.url}/authentication?adult=1`,
+};
+
+app.get("/game", requireAuth(), async (req, res) => {
   res.render("game", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -83,7 +132,7 @@ app.get("/game", async (req, res) => {
   });
 });
 
-app.get("/editor", async (req, res) => {
+app.get("/editor", requireAuth(editorRedirects), async (req, res) => {
   res.render("editor", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -93,7 +142,7 @@ app.get("/editor", async (req, res) => {
   });
 });
 
-app.get("/test", async (req, res) => {
+app.get("/test", requireAuth(), async (req, res) => {
   res.render("test", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -103,7 +152,7 @@ app.get("/test", async (req, res) => {
   });
 });
 
-app.get("/play", async (req, res) => {
+app.get("/play", requireAuth(), async (req, res) => {
   res.render("play", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -113,7 +162,7 @@ app.get("/play", async (req, res) => {
   });
 });
 
-app.get("/tutorial", async (req, res) => {
+app.get("/tutorial", requireAuth(), async (req, res) => {
   res.render("tutorial", {
     cdn: config.project.cdn,
     url: config.project.url,
