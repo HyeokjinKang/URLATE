@@ -13,6 +13,7 @@ import sharp from "sharp";
 import { logger } from "./logger";
 import { errorHandler } from "./middleware";
 import { URL } from "url";
+import { createHash } from "crypto";
 
 let branch;
 exec("git branch --show-current", (err, stdout, stderr) => {
@@ -73,6 +74,63 @@ app.get("/join", (req, res) => {
   res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version, url: config.project.url });
 });
 
+const baseRedirects: Record<string, string> = {
+  "Not registered": `${config.project.url}/join`,
+  "Not logined": config.project.url,
+  Shutdowned: `${config.project.api}/auth/logout?redirect=true&shutdowned=true`,
+};
+
+// The editor is gated on more than a login: authorization and identity verification.
+const editorRedirects: Record<string, string> = {
+  "Not authorized": `${config.project.url}/authorize`,
+  "Not authenticated": `${config.project.url}/authentication`,
+  "Not authenticated(adult)": `${config.project.url}/authentication?adult=1`,
+};
+
+// Every status that sends the visitor somewhere else on at least one gated page.
+const gatedStatuses = new Set([...Object.keys(baseRedirects), ...Object.keys(editorRedirects)]);
+
+/**
+ * Short-lived cache of the backend's auth status, keyed by the caller's cookies.
+ *
+ * Gated pages carry `no-store`, so the CDN in front cannot absorb them and every
+ * navigation reaches this process. Without this cache each one would also cost a
+ * round trip to the backend.
+ *
+ * Only statuses that let the visitor through are stored. Caching a gated status
+ * would trap a user who just resolved it: finishing signup sends the browser to
+ * /game, and a stale "Not registered" would bounce it back to /join, which sends
+ * it to /game again. Gated statuses are rare and short-lived, so they are always
+ * re-checked; the cache exists for the steady state of an ordinary player moving
+ * between pages.
+ */
+const AUTH_CACHE_TTL_MS = 30 * 1000;
+const AUTH_CACHE_MAX_ENTRIES = 5000;
+const authStatusCache = new Map<string, { status: string; expiresAt: number }>();
+
+// Hashed so live session cookies are not held in memory for the TTL.
+const authCacheKey = (cookie: string) => createHash("sha256").update(cookie).digest("hex");
+
+const readCachedStatus = (key: string): string | null => {
+  const entry = authStatusCache.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    authStatusCache.delete(key);
+    return null;
+  }
+  return entry.status;
+};
+
+const writeCachedStatus = (key: string, status: string) => {
+  if (gatedStatuses.has(status)) return;
+  // Re-insert so the cap evicts the least recently written entry.
+  authStatusCache.delete(key);
+  if (authStatusCache.size >= AUTH_CACHE_MAX_ENTRIES) {
+    authStatusCache.delete(authStatusCache.keys().next().value);
+  }
+  authStatusCache.set(key, { status, expiresAt: Date.now() + AUTH_CACHE_TTL_MS });
+};
+
 /**
  * Gate the pages that only make sense for a signed-in player.
  *
@@ -82,17 +140,21 @@ app.get("/join", (req, res) => {
  * JavaScript or dropping the redirect.
  */
 const requireAuth = (extraRedirects: Record<string, string> = {}) => {
-  const redirects: Record<string, string> = {
-    "Not registered": `${config.project.url}/join`,
-    "Not logined": config.project.url,
-    Shutdowned: `${config.project.api}/auth/logout?redirect=true&shutdowned=true`,
-    ...extraRedirects,
-  };
+  const redirects: Record<string, string> = { ...baseRedirects, ...extraRedirects };
 
   return async (req: Request, res: Response, next: NextFunction) => {
-    // The response depends on the session, so it must never be cached.
+    // The response depends on the session, so neither the CDN nor the browser may cache it.
     res.setHeader("Cache-Control", "no-store");
     if (!req.headers.cookie) return res.redirect(redirects["Not logined"]);
+
+    const key = authCacheKey(req.headers.cookie);
+    const cached = readCachedStatus(key);
+    if (cached !== null) {
+      const redirect = redirects[cached];
+      if (redirect) return res.redirect(redirect);
+      return next();
+    }
+
     try {
       const response = await fetch(`${config.project.api}/auth/status`, {
         method: "GET",
@@ -104,7 +166,9 @@ const requireAuth = (extraRedirects: Record<string, string> = {}) => {
       });
       if (!response.ok) return res.redirect(config.project.url);
       const data: any = await response.json();
-      const redirect = redirects[data.status];
+      const status = String(data.status);
+      writeCachedStatus(key, status);
+      const redirect = redirects[status];
       if (redirect) return res.redirect(redirect);
       next();
     } catch (err) {
@@ -113,13 +177,6 @@ const requireAuth = (extraRedirects: Record<string, string> = {}) => {
       res.redirect(config.project.url);
     }
   };
-};
-
-// The editor is gated on more than a login: authorization and identity verification.
-const editorRedirects = {
-  "Not authorized": `${config.project.url}/authorize`,
-  "Not authenticated": `${config.project.url}/authentication`,
-  "Not authenticated(adult)": `${config.project.url}/authentication?adult=1`,
 };
 
 app.get("/game", requireAuth(), async (req, res) => {
