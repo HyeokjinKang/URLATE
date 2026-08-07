@@ -35,9 +35,8 @@ const API_TIMEOUT_MS = 5000;
 const app = express();
 app.locals.pretty = true;
 
-// The rate limiter below keys on the client address, which arrives in
-// X-Forwarded-For from the CDN and reverse proxy in front. Trusting more hops
-// than actually exist would let a caller spoof it, so the count is configurable.
+// Rate limiting keys on the client address, which arrives via X-Forwarded-For.
+// Trusting more hops than actually exist would let a caller spoof it.
 app.set("trust proxy", config.project.trustProxy ?? 1);
 
 app.set("view engine", "ejs");
@@ -85,22 +84,15 @@ const authRedirects: Record<string, string> = {
   "Not logined": config.project.url,
 };
 
-// Statuses that send the visitor elsewhere instead of rendering the page.
 const gatedStatuses = new Set(Object.keys(authRedirects));
 
 /**
  * Short-lived cache of the backend's auth status, keyed by the caller's cookies.
+ * Gated pages are `no-store`, so without it every navigation costs a round trip.
  *
- * Gated pages carry `no-store`, so the CDN in front cannot absorb them and every
- * navigation reaches this process. Without this cache each one would also cost a
- * round trip to the backend.
- *
- * Only statuses that let the visitor through are stored. Caching a gated status
- * would trap a user who just resolved it: finishing signup sends the browser to
- * /game, and a stale "Not registered" would bounce it back to /join, which sends
- * it to /game again. Gated statuses are rare and short-lived, so they are always
- * re-checked; the cache exists for the steady state of an ordinary player moving
- * between pages.
+ * Only passing statuses are stored. A cached gated status would trap the user who
+ * just resolved it: finishing signup sends the browser to /game, a stale
+ * "Not registered" bounces it to /join, and /join sends it back to /game.
  */
 const AUTH_CACHE_TTL_MS = 30 * 1000;
 const AUTH_CACHE_MAX_ENTRIES = 5000;
@@ -130,17 +122,11 @@ const writeCachedStatus = (key: string, status: string) => {
 };
 
 /**
- * Bound how much backend traffic one address can generate through the gate.
+ * Bound the backend traffic one address can drive through the gate: a cache miss
+ * costs a lookup, and a caller can force one every time by varying the cookie.
  *
- * A cache miss costs a lookup against the backend, and a caller can force a miss
- * on every request just by varying the cookie it sends. One limiter is shared by
- * the gated pages, so the budget covers their combined load.
- *
- * A request already holding a cached pass never reaches the backend, so it does
- * not spend from the budget. That keeps shared addresses -- a school or a home
- * behind one NAT -- from starving each other, while a caller cycling cookies
- * misses every time and stays limited. Since ordinary play barely draws on it,
- * the budget can be small.
+ * A cached pass never reaches the backend, so it does not spend from the budget.
+ * That also keeps users behind one shared address from starving each other.
  */
 const gateLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -150,13 +136,7 @@ const gateLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-/**
- * Logout gets its own budget rather than sharing the one above.
- *
- * It costs nothing on the backend, so it does not belong to the gate's budget,
- * and keeping it separate means a burst of page loads can never leave a visitor
- * unable to sign out. Signing out is idempotent and rare, so this can be small.
- */
+// Its own budget, so a burst of page loads can never leave a visitor unable to sign out.
 const logoutLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 20,
@@ -165,15 +145,12 @@ const logoutLimiter = rateLimit({
 });
 
 /**
- * Gate the pages that only make sense for a signed-in player.
- *
- * The status -> destination mapping is the one each page used to run in the
- * browser after loading. Doing it here means an unauthenticated request never
- * receives the page at all, so the check can no longer be skipped by disabling
- * JavaScript or dropping the redirect.
+ * Gate the pages that only make sense for a signed-in player. The status ->
+ * destination mapping is the one the pages used to run in the browser; doing it
+ * here means the check cannot be skipped by disabling JavaScript.
  */
 const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
-  // The response depends on the session, so neither the CDN nor the browser may cache it.
+  // Depends on the session, so neither the CDN nor the browser may cache it.
   res.setHeader("Cache-Control", "no-store");
   if (!req.headers.cookie) return res.redirect(authRedirects["Not logined"]);
 
@@ -209,21 +186,12 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 /**
- * Sign the visitor out.
+ * Sign the visitor out. The backend still performs the real logout; this route
+ * drops the session cookie and the cached status on the way there, so a destroyed
+ * session stops passing the gate at once rather than when its entry expires.
  *
- * The backend owns the session and still performs the real logout; this route
- * exists so the session cookie and the cached status are dropped on the way
- * there. Without it a visitor keeps passing the gate on a cached status until
- * it expires, and the pages they get are useless because the session is gone.
- *
- * `sessionCookie` and `cookieDomain` name the backend's session cookie, so they
- * have to match what it sets. If they don't, the browser keeps the cookie and
- * only the cache eviction takes effect -- which is what closes the window in
- * either case, since the next gated request then has to ask the backend again.
- *
- * The redirect at the end keeps the backend's own logout in the flow. It is a
- * GET route that checks the request origin, and it reads that origin from the
- * Referer, which survives this hop.
+ * `sessionCookie` and `cookieDomain` must match what the backend sets; if they do
+ * not the cookie survives and only the eviction takes effect.
  */
 app.get("/logout", logoutLimiter, (req, res) => {
   if (req.headers.cookie) authStatusCache.delete(authCacheKey(req.headers.cookie));
@@ -232,6 +200,7 @@ app.get("/logout", logoutLimiter, (req, res) => {
   res.clearCookie(sessionCookie, { path: "/" });
   if (config.project.cookieDomain) res.clearCookie(sessionCookie, { path: "/", domain: config.project.cookieDomain });
 
+  // The backend checks the origin here, reading it from the Referer, which survives this hop.
   res.redirect(`${config.project.api}/auth/logout?redirect=true`);
 });
 

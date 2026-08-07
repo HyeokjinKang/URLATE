@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
       alert(`Error occured.\n${error}`);
       console.error(`Error occured.\n${error}`);
     });
-  // The server already refused to serve this page to a signed-out visitor.
+  // Signed-out visitors were already turned away by the server gate.
   fetch(`${api}/user`, {
     method: "GET",
     credentials: "include",
@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
         initialize(true);
         settingApply();
       } else {
-        // The session is no longer usable, so sign out instead of leaving a dead page.
+        // The session is gone; sign out instead of leaving a dead page.
         window.location.href = "/logout";
       }
     })
