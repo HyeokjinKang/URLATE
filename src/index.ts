@@ -73,17 +73,28 @@ app.get("/join", (req, res) => {
   res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version, url: config.project.url });
 });
 
+const authCache = new Map<string, { expiresAt: number }>();
+const AUTH_CACHE_TTL_MS = 30_000;
+
 const requireAuth = async (req, res, next) => {
-  if (!req.headers.cookie) return res.redirect("/");
+  res.setHeader("Cache-Control", "no-store");
+  const cookie = req.headers.cookie as string | undefined;
+  if (!cookie) return res.redirect("/");
+
+  const cached = authCache.get(cookie);
+  if (cached && cached.expiresAt > Date.now()) return next();
+
   try {
-    const resp = await fetch(`${config.project.api}/user`, {
+    const resp = await fetch(`${config.project.api}/auth/status`, {
       method: "GET",
-      headers: { "Content-Type": "application/json", Cookie: req.headers.cookie },
+      headers: { Cookie: cookie },
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
     if (!resp.ok) return res.redirect("/");
     const data: any = await resp.json();
-    if (data.result !== "success" || !data.user) return res.redirect("/");
+    if (data.status === "Not registered") return res.redirect("/join");
+    if (data.status === "Not logined") return res.redirect("/");
+    authCache.set(cookie, { expiresAt: Date.now() + AUTH_CACHE_TTL_MS });
     next();
   } catch {
     res.redirect("/");

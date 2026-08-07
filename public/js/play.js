@@ -147,41 +147,22 @@ document.addEventListener("DOMContentLoaded", () => {
       alert(`Error occured.\n${error}`);
       console.error(`Error occured.\n${error}`);
     });
-  fetch(`${api}/auth/status`, {
+  fetch(`${api}/user`, {
     method: "GET",
     credentials: "include",
   })
     .then((res) => res.json())
     .then((data) => {
-      if (data.status == "Not registered") {
-        window.location.href = `${url}/join`;
-      } else if (data.status == "Not logined") {
-        window.location.href = url;
-      } else if (data.status == "Shutdowned") {
-        window.location.href = `${api}/auth/logout?redirect=true&shutdowned=true`;
+      if (data.result == "success") {
+        data = data.user;
+        userName = data.nickname;
+        userid = data.userid;
+        settings = JSON.parse(data.settings);
+        initialize(true);
+        settingApply();
       } else {
-        fetch(`${api}/user`, {
-          method: "GET",
-          credentials: "include",
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.result == "success") {
-              data = data.user;
-              userName = data.nickname;
-              userid = data.userid;
-              settings = JSON.parse(data.settings);
-              initialize(true);
-              settingApply();
-            } else {
-              alert(`Error occured.\n${data.description}`);
-              console.error(`Error occured.\n${data.description}`);
-            }
-          })
-          .catch((error) => {
-            alert(`Error occured.\n${error}`);
-            console.error(`Error occured.\n${error}`);
-          });
+        alert(`Error occured.\n${data.description}`);
+        console.error(`Error occured.\n${data.description}`);
       }
     })
     .catch((error) => {
