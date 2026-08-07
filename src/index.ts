@@ -187,6 +187,32 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+/**
+ * Sign the visitor out.
+ *
+ * The backend owns the session and still performs the real logout; this route
+ * exists so the session cookie and the cached status are dropped on the way
+ * there. Without it a visitor keeps passing the gate on a cached status until
+ * it expires, and the pages they get are useless because the session is gone.
+ *
+ * Clearing a cookie only works for names this host can write, so a cookie the
+ * backend scoped to its own host stays; `cookieDomain` covers the common case
+ * of a session shared across subdomains. The cache eviction is what closes the
+ * window either way: with the entry gone the next gated request has to ask the
+ * backend again, whether or not the cookie survived.
+ */
+app.get("/logout", (req, res) => {
+  if (req.headers.cookie) authStatusCache.delete(authCacheKey(req.headers.cookie));
+
+  for (const name of Object.keys(req.cookies ?? {})) {
+    if (name === "lang") continue; // A display preference, not part of the session.
+    res.clearCookie(name, { path: "/" });
+    if (config.project.cookieDomain) res.clearCookie(name, { path: "/", domain: config.project.cookieDomain });
+  }
+
+  res.redirect(`${config.project.api}/auth/logout?redirect=true`);
+});
+
 app.get("/game", gateLimiter, requireAuth, async (req, res) => {
   res.render("game", {
     cdn: config.project.cdn,

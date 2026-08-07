@@ -1362,7 +1362,7 @@ const langChanged = (e) => {
 
 // eslint-disable-next-line no-unused-vars
 const logout = () => {
-  window.location.href = `${api}/auth/logout?redirect=true`;
+  window.location.href = "/logout";
 };
 
 // eslint-disable-next-line no-unused-vars
