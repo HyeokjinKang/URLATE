@@ -135,10 +135,17 @@ const writeCachedStatus = (key: string, status: string) => {
  * A cache miss costs a lookup against the backend, and a caller can force a miss
  * on every request just by varying the cookie it sends. One limiter is shared by
  * the gated pages, so the budget covers their combined load.
+ *
+ * A request already holding a cached pass never reaches the backend, so it does
+ * not spend from the budget. That keeps shared addresses -- a school or a home
+ * behind one NAT -- from starving each other, while a caller cycling cookies
+ * misses every time and stays limited. Since ordinary play barely draws on it,
+ * the budget can be small.
  */
 const gateLimiter = rateLimit({
   windowMs: 60 * 1000,
-  limit: 60,
+  limit: 30,
+  skip: (req) => !!req.headers.cookie && readCachedStatus(authCacheKey(req.headers.cookie)) !== null,
   standardHeaders: true,
   legacyHeaders: false,
 });

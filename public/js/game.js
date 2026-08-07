@@ -480,7 +480,8 @@ document.addEventListener("DOMContentLoaded", () => {
             location.reload();
           });
       } else {
-        alert(`Error occured.\n${data.description}`);
+        // The session is no longer usable, so sign out instead of leaving a dead page.
+        window.location.href = "/logout";
       }
     })
     .catch((error) => {
