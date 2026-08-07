@@ -36,8 +36,9 @@ const app = express();
 app.locals.pretty = true;
 
 // Rate limiting keys on the client address, which arrives via X-Forwarded-For.
-// Trusting more hops than actually exist would let a caller spoof it.
-app.set("trust proxy", config.project.trustProxy ?? 1);
+// Two hops answer for the CDN and the reverse proxy in front; trusting more
+// than actually exist would let a caller spoof the address by sending it.
+app.set("trust proxy", config.project.trustProxy ?? 2);
 
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/../views");
