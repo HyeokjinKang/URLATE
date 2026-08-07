@@ -1,5 +1,6 @@
 import cookieParser from "cookie-parser";
 import express, { NextFunction, Request, Response } from "express";
+import rateLimit from "express-rate-limit";
 import i18n from "./i18n";
 import multer from "multer";
 import path from "path";
@@ -33,6 +34,11 @@ const API_TIMEOUT_MS = 5000;
 
 const app = express();
 app.locals.pretty = true;
+
+// The rate limiter below keys on the client address, which arrives in
+// X-Forwarded-For from the CDN and reverse proxy in front. Trusting more hops
+// than actually exist would let a caller spoof it, so the count is configurable.
+app.set("trust proxy", config.project.trustProxy ?? 1);
 
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/../views");
@@ -124,6 +130,20 @@ const writeCachedStatus = (key: string, status: string) => {
 };
 
 /**
+ * Bound how much backend traffic one address can generate through the gate.
+ *
+ * A cache miss costs a lookup against the backend, and a caller can force a miss
+ * on every request just by varying the cookie it sends. One limiter is shared by
+ * the gated pages, so the budget covers their combined load.
+ */
+const gateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/**
  * Gate the pages that only make sense for a signed-in player.
  *
  * The status -> destination mapping is the one each page used to run in the
@@ -167,7 +187,7 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-app.get("/game", requireAuth, async (req, res) => {
+app.get("/game", gateLimiter, requireAuth, async (req, res) => {
   res.render("game", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -177,7 +197,7 @@ app.get("/game", requireAuth, async (req, res) => {
   });
 });
 
-app.get("/editor", requireAuth, async (req, res) => {
+app.get("/editor", gateLimiter, requireAuth, async (req, res) => {
   res.render("editor", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -187,7 +207,7 @@ app.get("/editor", requireAuth, async (req, res) => {
   });
 });
 
-app.get("/test", requireAuth, async (req, res) => {
+app.get("/test", gateLimiter, requireAuth, async (req, res) => {
   res.render("test", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -197,7 +217,7 @@ app.get("/test", requireAuth, async (req, res) => {
   });
 });
 
-app.get("/play", requireAuth, async (req, res) => {
+app.get("/play", gateLimiter, requireAuth, async (req, res) => {
   res.render("play", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -207,7 +227,7 @@ app.get("/play", requireAuth, async (req, res) => {
   });
 });
 
-app.get("/tutorial", requireAuth, async (req, res) => {
+app.get("/tutorial", gateLimiter, requireAuth, async (req, res) => {
   res.render("tutorial", {
     cdn: config.project.cdn,
     url: config.project.url,
