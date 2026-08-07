@@ -144,6 +144,20 @@ const gateLimiter = rateLimit({
 });
 
 /**
+ * Logout gets its own budget rather than sharing the one above.
+ *
+ * It costs nothing on the backend, so it does not belong to the gate's budget,
+ * and keeping it separate means a burst of page loads can never leave a visitor
+ * unable to sign out. Signing out is idempotent and rare, so this can be small.
+ */
+const logoutLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/**
  * Gate the pages that only make sense for a signed-in player.
  *
  * The status -> destination mapping is the one each page used to run in the
@@ -201,7 +215,7 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
  * window either way: with the entry gone the next gated request has to ask the
  * backend again, whether or not the cookie survived.
  */
-app.get("/logout", (req, res) => {
+app.get("/logout", logoutLimiter, (req, res) => {
   if (req.headers.cookie) authStatusCache.delete(authCacheKey(req.headers.cookie));
 
   for (const name of Object.keys(req.cookies ?? {})) {
