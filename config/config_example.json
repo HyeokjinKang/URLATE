@@ -10,6 +10,7 @@
     "mode": "production",
     "port": 3000,
     "trustProxy": 1,
-    "cookieDomain": ".example.com"
+    "sessionCookie": "urlate",
+    "cookieDomain": "example.com"
   }
 }

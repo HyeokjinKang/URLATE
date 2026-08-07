@@ -209,20 +209,21 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
  * there. Without it a visitor keeps passing the gate on a cached status until
  * it expires, and the pages they get are useless because the session is gone.
  *
- * Clearing a cookie only works for names this host can write, so a cookie the
- * backend scoped to its own host stays; `cookieDomain` covers the common case
- * of a session shared across subdomains. The cache eviction is what closes the
- * window either way: with the entry gone the next gated request has to ask the
- * backend again, whether or not the cookie survived.
+ * `sessionCookie` and `cookieDomain` name the backend's session cookie, so they
+ * have to match what it sets. If they don't, the browser keeps the cookie and
+ * only the cache eviction takes effect -- which is what closes the window in
+ * either case, since the next gated request then has to ask the backend again.
+ *
+ * The redirect at the end keeps the backend's own logout in the flow. It is a
+ * GET route that checks the request origin, and it reads that origin from the
+ * Referer, which survives this hop.
  */
 app.get("/logout", logoutLimiter, (req, res) => {
   if (req.headers.cookie) authStatusCache.delete(authCacheKey(req.headers.cookie));
 
-  for (const name of Object.keys(req.cookies ?? {})) {
-    if (name === "lang") continue; // A display preference, not part of the session.
-    res.clearCookie(name, { path: "/" });
-    if (config.project.cookieDomain) res.clearCookie(name, { path: "/", domain: config.project.cookieDomain });
-  }
+  const sessionCookie = config.project.sessionCookie ?? "urlate";
+  res.clearCookie(sessionCookie, { path: "/" });
+  if (config.project.cookieDomain) res.clearCookie(sessionCookie, { path: "/", domain: config.project.cookieDomain });
 
   res.redirect(`${config.project.api}/auth/logout?redirect=true`);
 });
