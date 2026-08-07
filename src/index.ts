@@ -154,13 +154,9 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   res.setHeader("Cache-Control", "no-store");
   if (!req.headers.cookie) return res.redirect(authRedirects["Not logined"]);
 
+  // Only passing statuses are cached, so a hit is a pass.
   const key = authCacheKey(req.headers.cookie);
-  const cached = readCachedStatus(key);
-  if (cached !== null) {
-    const redirect = authRedirects[cached];
-    if (redirect) return res.redirect(redirect);
-    return next();
-  }
+  if (readCachedStatus(key) !== null) return next();
 
   try {
     const response = await fetch(`${config.project.api}/auth/status`, {
@@ -173,10 +169,10 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
     });
     if (!response.ok) return res.redirect(config.project.url);
     const data: any = await response.json();
-    const status = String(data.status);
+    const status = data.status;
+    if (typeof status !== "string") return res.redirect(config.project.url);
     writeCachedStatus(key, status);
-    const redirect = authRedirects[status];
-    if (redirect) return res.redirect(redirect);
+    if (gatedStatuses.has(status)) return res.redirect(authRedirects[status]);
     next();
   } catch (err) {
     // Fail closed: an unreachable backend must not open the gate.
@@ -185,22 +181,47 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const ownOrigin = (() => {
+  try {
+    return new URL(config.project.url).origin;
+  } catch {
+    return null;
+  }
+})();
+
+// A top-level GET carries no Origin, so fall back to the Referer -- the same pair
+// the backend reads on its own logout route.
+const startedHere = (req: Request) => {
+  const header = req.get("origin") ?? req.get("referer");
+  if (!header || ownOrigin === null) return false;
+  try {
+    return new URL(header).origin === ownOrigin;
+  } catch {
+    return false;
+  }
+};
+
 /**
  * Sign the visitor out. The backend still performs the real logout; this route
  * drops the session cookie and the cached status on the way there, so a destroyed
  * session stops passing the gate at once rather than when its entry expires.
  *
+ * Those two are done only for a sign-out that started on our own pages, or a link
+ * from anywhere else could sign a visitor out. The redirect stays unconditional,
+ * so a request that fails the check behaves exactly as it did before this route
+ * existed: the backend applies the same check and refuses.
+ *
  * `sessionCookie` and `cookieDomain` must match what the backend sets; if they do
  * not the cookie survives and only the eviction takes effect.
  */
 app.get("/logout", logoutLimiter, (req, res) => {
-  if (req.headers.cookie) authStatusCache.delete(authCacheKey(req.headers.cookie));
+  if (startedHere(req)) {
+    if (req.headers.cookie) authStatusCache.delete(authCacheKey(req.headers.cookie));
+    const sessionCookie = config.project.sessionCookie ?? "urlate";
+    res.clearCookie(sessionCookie, { path: "/" });
+    if (config.project.cookieDomain) res.clearCookie(sessionCookie, { path: "/", domain: config.project.cookieDomain });
+  }
 
-  const sessionCookie = config.project.sessionCookie ?? "urlate";
-  res.clearCookie(sessionCookie, { path: "/" });
-  if (config.project.cookieDomain) res.clearCookie(sessionCookie, { path: "/", domain: config.project.cookieDomain });
-
-  // The backend checks the origin here, reading it from the Referer, which survives this hop.
   res.redirect(`${config.project.api}/auth/logout?redirect=true`);
 });
 
