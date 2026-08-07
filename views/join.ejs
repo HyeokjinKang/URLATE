@@ -19,7 +19,7 @@
     <span id="nameExist"><%= __('nameExist') %></span>
     <span id="name"><%= __('nameText') %></span>
     <input type="submit" class="button" onclick="check()" value="<%= __('done') %>" />
-    <h5><a href="<%= api %>/auth/logout?redirect=true" style="color: rgb(0, 135, 197); font-weight: 400"><%= __('mainPage') %></a></h5>
+    <h5><a href="/logout" style="color: rgb(0, 135, 197); font-weight: 400"><%= __('mainPage') %></a></h5>
     <script>
       const projectUrl = "<%= url %>";
       const api = "<%= api %>";

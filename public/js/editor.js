@@ -165,46 +165,22 @@ const settingApply = () => {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  fetch(`${api}/auth/status`, {
+  // Signed-out visitors were already turned away by the server gate.
+  fetch(`${api}/user`, {
     method: "GET",
     credentials: "include",
   })
     .then((res) => res.json())
     .then((data) => {
-      if (data.status == "Not authorized") {
-        window.location.href = `${url}/authorize`;
-      } else if (data.status == "Not registered") {
-        window.location.href = `${url}/join`;
-      } else if (data.status == "Not logined") {
-        window.location.href = url;
-      } else if (data.status == "Not authenticated") {
-        window.location.href = `${url}/authentication`;
-      } else if (data.status == "Not authenticated(adult)") {
-        window.location.href = `${url}/authentication?adult=1`;
-      } else if (data.status == "Shutdowned") {
-        window.location.href = `${api}/auth/logout?redirect=true&shutdowned=true`;
+      if (data.result == "success") {
+        data = data.user;
+        userName = data.nickname;
+        settings = JSON.parse(data.settings);
+        initialize(true);
+        settingApply();
       } else {
-        fetch(`${api}/user`, {
-          method: "GET",
-          credentials: "include",
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.result == "success") {
-              data = data.user;
-              userName = data.nickname;
-              settings = JSON.parse(data.settings);
-              initialize(true);
-              settingApply();
-            } else {
-              alert(`Error occured.\n${data.description}`);
-              console.error(`Error occured.\n${data.description}`);
-            }
-          })
-          .catch((error) => {
-            alert(`Error occured.\n${error}`);
-            console.error(`Error occured.\n${error}`);
-          });
+        // The session is gone; sign out instead of leaving a dead page.
+        window.location.href = "/logout";
       }
     })
     .catch((error) => {

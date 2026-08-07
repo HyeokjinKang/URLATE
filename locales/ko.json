@@ -107,7 +107,6 @@
   "skip_tutorial": "튜토리얼을 건너뛸래요",
   "confirm_exit_tutorial": "튜토리얼을 건너뛰실래요? 설정에서 튜토리얼을 다시 진행할 수 있습니다.",
   "pattern_error": "패턴을 불러오는 중 오류가 발생했습니다.",
-  "shutdowned_alert": "만 16세 미만의 미성년자는 0시부터 6시까지 게임 이용이 제한됩니다.",
   "medal_description": "게임 플레이를 통해 얻을 수 있는 메달입니다. 차례대로 AP(All Perfect), FC(Full Combo), 클리어를 의미합니다.",
   "retry_tutorial": "튜토리얼 다시 시작",
   "move": "이동",

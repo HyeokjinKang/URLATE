@@ -430,69 +430,48 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-  fetch(`${api}/auth/status`, {
+  // Signed-out visitors were already turned away by the server gate.
+  fetch(`${api}/user`, {
     method: "GET",
     credentials: "include",
   })
     .then((res) => res.json())
     .then((data) => {
-      if (data.status == "Not registered") {
-        window.location.href = `${url}/join`;
-      } else if (data.status == "Not logined") {
-        window.location.href = url;
-      } else if (data.status == "Shutdowned") {
-        window.location.href = `${api}/auth/logout?redirect=true&shutdowned=true`;
-      } else {
-        fetch(`${api}/user`, {
+      if (data.result == "success") {
+        data = data.user;
+        settings = JSON.parse(data.settings);
+        username = data.nickname;
+        userid = data.userid;
+        tutorial = data.tutorial;
+        picture = data.picture;
+        document.getElementById("profilePic").src = picture;
+        if (data.explicit % 2 == 1) document.getElementById("profilePic").classList.add("blur");
+        document.getElementById("name").textContent = username;
+        document.getElementById("optionName").textContent = username;
+        langSelector.value = lang;
+        skins = JSON.parse(data.skins);
+        for (let i = 0; i < skins.length; i++) {
+          let option = document.createElement("option");
+          option.appendChild(document.createTextNode(skins[i]));
+          skinSelector.appendChild(option);
+        }
+        settingApply();
+        fetch(`${api}/tracks`, {
           method: "GET",
           credentials: "include",
         })
           .then((res) => res.json())
           .then((data) => {
             if (data.result == "success") {
-              data = data.user;
-              settings = JSON.parse(data.settings);
-              username = data.nickname;
-              userid = data.userid;
-              tutorial = data.tutorial;
-              picture = data.picture;
-              document.getElementById("profilePic").src = picture;
-              if (data.explicit % 2 == 1) document.getElementById("profilePic").classList.add("blur");
-              document.getElementById("name").textContent = username;
-              document.getElementById("optionName").textContent = username;
-              langSelector.value = lang;
-              skins = JSON.parse(data.skins);
-              for (let i = 0; i < skins.length; i++) {
-                let option = document.createElement("option");
-                option.appendChild(document.createTextNode(skins[i]));
-                skinSelector.appendChild(option);
-              }
-              settingApply();
-              fetch(`${api}/tracks`, {
-                method: "GET",
-                credentials: "include",
-              })
-                .then((res) => res.json())
-                .then((data) => {
-                  if (data.result == "success") {
-                    tracks = data.tracks;
-                    tracks.sort(sortAsName);
-                    tracksUpdate();
-                    Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
-                    intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
-                    intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
-                  } else {
-                    alert("Failed to load song list.");
-                    console.error("Failed to load song list.");
-                  }
-                })
-                .catch((error) => {
-                  alert(`Error occured.\n${error}`);
-                  console.error(`Error occured.\n${error}`);
-                  location.reload();
-                });
+              tracks = data.tracks;
+              tracks.sort(sortAsName);
+              tracksUpdate();
+              Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
+              intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
+              intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
             } else {
-              alert(`Error occured.\n${data.description}`);
+              alert("Failed to load song list.");
+              console.error("Failed to load song list.");
             }
           })
           .catch((error) => {
@@ -500,6 +479,9 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error(`Error occured.\n${error}`);
             location.reload();
           });
+      } else {
+        // The session is gone; sign out instead of leaving a dead page.
+        window.location.href = "/logout";
       }
     })
     .catch((error) => {
@@ -1381,7 +1363,7 @@ const langChanged = (e) => {
 
 // eslint-disable-next-line no-unused-vars
 const logout = () => {
-  window.location.href = `${api}/auth/logout?redirect=true`;
+  window.location.href = "/logout";
 };
 
 // eslint-disable-next-line no-unused-vars
