@@ -74,21 +74,13 @@ app.get("/join", (req, res) => {
   res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version, url: config.project.url });
 });
 
-const baseRedirects: Record<string, string> = {
+const authRedirects: Record<string, string> = {
   "Not registered": `${config.project.url}/join`,
   "Not logined": config.project.url,
-  Shutdowned: `${config.project.api}/auth/logout?redirect=true&shutdowned=true`,
 };
 
-// The editor is gated on more than a login: authorization and identity verification.
-const editorRedirects: Record<string, string> = {
-  "Not authorized": `${config.project.url}/authorize`,
-  "Not authenticated": `${config.project.url}/authentication`,
-  "Not authenticated(adult)": `${config.project.url}/authentication?adult=1`,
-};
-
-// Every status that sends the visitor somewhere else on at least one gated page.
-const gatedStatuses = new Set([...Object.keys(baseRedirects), ...Object.keys(editorRedirects)]);
+// Statuses that send the visitor elsewhere instead of rendering the page.
+const gatedStatuses = new Set(Object.keys(authRedirects));
 
 /**
  * Short-lived cache of the backend's auth status, keyed by the caller's cookies.
@@ -139,47 +131,43 @@ const writeCachedStatus = (key: string, status: string) => {
  * receives the page at all, so the check can no longer be skipped by disabling
  * JavaScript or dropping the redirect.
  */
-const requireAuth = (extraRedirects: Record<string, string> = {}) => {
-  const redirects: Record<string, string> = { ...baseRedirects, ...extraRedirects };
+const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
+  // The response depends on the session, so neither the CDN nor the browser may cache it.
+  res.setHeader("Cache-Control", "no-store");
+  if (!req.headers.cookie) return res.redirect(authRedirects["Not logined"]);
 
-  return async (req: Request, res: Response, next: NextFunction) => {
-    // The response depends on the session, so neither the CDN nor the browser may cache it.
-    res.setHeader("Cache-Control", "no-store");
-    if (!req.headers.cookie) return res.redirect(redirects["Not logined"]);
+  const key = authCacheKey(req.headers.cookie);
+  const cached = readCachedStatus(key);
+  if (cached !== null) {
+    const redirect = authRedirects[cached];
+    if (redirect) return res.redirect(redirect);
+    return next();
+  }
 
-    const key = authCacheKey(req.headers.cookie);
-    const cached = readCachedStatus(key);
-    if (cached !== null) {
-      const redirect = redirects[cached];
-      if (redirect) return res.redirect(redirect);
-      return next();
-    }
-
-    try {
-      const response = await fetch(`${config.project.api}/auth/status`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: req.headers.cookie,
-        },
-        signal: AbortSignal.timeout(API_TIMEOUT_MS),
-      });
-      if (!response.ok) return res.redirect(config.project.url);
-      const data: any = await response.json();
-      const status = String(data.status);
-      writeCachedStatus(key, status);
-      const redirect = redirects[status];
-      if (redirect) return res.redirect(redirect);
-      next();
-    } catch (err) {
-      // Fail closed: an unreachable backend must not open the gate.
-      logger.warn("Failed to check auth status", { path: req.path, error: err });
-      res.redirect(config.project.url);
-    }
-  };
+  try {
+    const response = await fetch(`${config.project.api}/auth/status`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.cookie,
+      },
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
+    });
+    if (!response.ok) return res.redirect(config.project.url);
+    const data: any = await response.json();
+    const status = String(data.status);
+    writeCachedStatus(key, status);
+    const redirect = authRedirects[status];
+    if (redirect) return res.redirect(redirect);
+    next();
+  } catch (err) {
+    // Fail closed: an unreachable backend must not open the gate.
+    logger.warn("Failed to check auth status", { path: req.path, error: err });
+    res.redirect(config.project.url);
+  }
 };
 
-app.get("/game", requireAuth(), async (req, res) => {
+app.get("/game", requireAuth, async (req, res) => {
   res.render("game", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -189,7 +177,7 @@ app.get("/game", requireAuth(), async (req, res) => {
   });
 });
 
-app.get("/editor", requireAuth(editorRedirects), async (req, res) => {
+app.get("/editor", requireAuth, async (req, res) => {
   res.render("editor", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -199,7 +187,7 @@ app.get("/editor", requireAuth(editorRedirects), async (req, res) => {
   });
 });
 
-app.get("/test", requireAuth(), async (req, res) => {
+app.get("/test", requireAuth, async (req, res) => {
   res.render("test", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -209,7 +197,7 @@ app.get("/test", requireAuth(), async (req, res) => {
   });
 });
 
-app.get("/play", requireAuth(), async (req, res) => {
+app.get("/play", requireAuth, async (req, res) => {
   res.render("play", {
     cdn: config.project.cdn,
     url: config.project.url,
@@ -219,7 +207,7 @@ app.get("/play", requireAuth(), async (req, res) => {
   });
 });
 
-app.get("/tutorial", requireAuth(), async (req, res) => {
+app.get("/tutorial", requireAuth, async (req, res) => {
   res.render("tutorial", {
     cdn: config.project.cdn,
     url: config.project.url,

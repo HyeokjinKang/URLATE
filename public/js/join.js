@@ -10,8 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = `${projectUrl}/game`;
       } else if (data.status == "Not logined") {
         window.location.href = projectUrl;
-      } else if (data.status == "Shutdowned") {
-        window.location.href = `${api}/auth/logout?redirect=true&shutdowned=true`;
       }
       if (nameReg.test(data.tempName)) {
         document.getElementById("nickname").value = data.tempName;
