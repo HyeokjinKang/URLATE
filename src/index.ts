@@ -27,6 +27,8 @@ exec("git branch --show-current", (err, stdout, stderr) => {
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const config = require(__dirname + "/../config/config.json");
 
+const version = require(__dirname + "/../package.json").version;
+
 let model;
 
 // node-fetch has no default timeout: a hung backend would pin the request handler.
@@ -61,7 +63,7 @@ app.get("/", (req, res) => {
     url: config.project.url,
     api: config.project.api,
     game: config.project.game,
-    ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
+    ver: config.project.mode == "test" ? Date.now() : version,
     branch: branch,
   });
 });
@@ -77,7 +79,7 @@ app.get("/ko", function (req, res) {
 });
 
 app.get("/join", (req, res) => {
-  res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version, url: config.project.url });
+  res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : version, url: config.project.url });
 });
 
 const authRedirects: Record<string, string> = {
@@ -232,7 +234,7 @@ app.get("/game", gateLimiter, requireAuth, async (req, res) => {
     url: config.project.url,
     api: config.project.api,
     game: config.project.game,
-    ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
+    ver: config.project.mode == "test" ? Date.now() : version,
   });
 });
 
@@ -242,7 +244,7 @@ app.get("/editor", gateLimiter, requireAuth, async (req, res) => {
     url: config.project.url,
     api: config.project.api,
     game: config.project.game,
-    ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
+    ver: config.project.mode == "test" ? Date.now() : version,
   });
 });
 
@@ -252,7 +254,7 @@ app.get("/test", gateLimiter, requireAuth, async (req, res) => {
     url: config.project.url,
     api: config.project.api,
     game: config.project.game,
-    ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
+    ver: config.project.mode == "test" ? Date.now() : version,
   });
 });
 
@@ -262,7 +264,7 @@ app.get("/play", gateLimiter, requireAuth, async (req, res) => {
     url: config.project.url,
     api: config.project.api,
     game: config.project.game,
-    ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
+    ver: config.project.mode == "test" ? Date.now() : version,
   });
 });
 
@@ -272,7 +274,7 @@ app.get("/tutorial", gateLimiter, requireAuth, async (req, res) => {
     url: config.project.url,
     api: config.project.api,
     game: config.project.game,
-    ver: config.project.mode == "test" ? Date.now() : process.env.npm_package_version,
+    ver: config.project.mode == "test" ? Date.now() : version,
   });
 });
 
@@ -550,7 +552,7 @@ process.on("uncaughtException", (error: Error) => {
     await loadModel();
 
     app.listen(config.project.port, () => {
-      logger.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : process.env.npm_package_version}.`);
+      logger.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : version}.`);
       logger.success(`HTTP Server running at port ${config.project.port}.`);
     });
   } catch (err) {
