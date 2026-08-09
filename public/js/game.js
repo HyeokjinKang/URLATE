@@ -551,7 +551,6 @@ const tracksUpdate = () => {
 
   const defaultRecord = (type) => ({ rank: type == 1 ? "rankL" : "rankQ", record: 0, medal: 0, maxcombo: 0 });
 
-  // 곡마다 따로 묻지 않고 내 기록 전체를 한 번에 받아옵니다.
   fetch(`${api}/trackRecords/${username}`, { method: "GET", credentials: "include" })
     .then((res) => res.json())
     .then((data) => {
@@ -1218,7 +1217,7 @@ const profileUpdate = async (uid, isMe) => {
       document.getElementsByClassName("profileStatValue")[5].textContent = "-";
       document.getElementById("profileRecentPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
     } else {
-      // 기록 id마다 따로 묻지 않고 최근 플레이 목록을 한 번에 받아옵니다.
+      // Fetch the whole recent play list at once instead of asking per record id.
       const recentRes = await fetch(`${api}/recentPlays/${uid}`, { method: "GET", credentials: "include" }).then((res) => res.json());
       const recentResults = recentRes.result == "success" ? recentRes.results : [];
       let recentHTML = "";
@@ -1735,7 +1734,7 @@ const visualSyncSetting = () => {
   document.getElementById("visualSyncContainer").classList.add("fadeInAnim");
   document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
 
-  // offsetSong 재생 (offset 설정과 동일)
+  // Play offsetSong, same as the offset setting screen.
   if (songSelection != -1) {
     const selSong = getSong(songSelection);
     if (selSong) selSong.fade(1, 0, 500);
@@ -1754,14 +1753,14 @@ const visualSyncSetting = () => {
   const drawFrame = () => {
     if (display !== 13) return;
 
-    // offsetUpdate와 동일한 방식으로 오디오 기준 seek 계산
+    // Compute the audio based seek the same way offsetUpdate does.
     const howlerCtx = Howler.ctx;
     const audioLatency = (howlerCtx?.outputLatency ?? 0) + (howlerCtx?.baseLatency ?? 0);
     const seek = Math.max(0, offsetSong.seek() - audioLatency);
 
-    const cycle = beat * 2; // 2비트마다 노트 한 개
+    const cycle = beat * 2; // one note every two beats
 
-    // visualSyncOffset만큼 앞당긴 비주얼 seek로 노트 progress 계산
+    // Compute the note progress from a visual seek pulled ahead by visualSyncOffset.
     const visualSeek = seek + visualSyncOffset / 1000;
     const visualCyclePos = ((visualSeek % cycle) + cycle) % cycle;
     const visualCycleOffset = visualCyclePos - cycle; // -cycle ~ 0
