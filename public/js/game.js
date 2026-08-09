@@ -465,7 +465,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.result == "success") {
               tracks = data.tracks;
               tracks.sort(sortAsName);
-              tracksUpdate();
+              // sortSelected already runs tracksUpdate, so skip it when a saved sort was restored.
+              if (!restoreSortSettings()) tracksUpdate();
               Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
               intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
               intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
@@ -490,6 +491,21 @@ document.addEventListener("DOMContentLoaded", () => {
       location.reload();
     });
 });
+
+const restoreSortSettings = () => {
+  const savedDifficulty = Number(localStorage.difficultySelection ?? 0);
+  if (savedDifficulty > 0 && savedDifficulty <= 2) {
+    difficultySelection = savedDifficulty;
+    document.getElementsByClassName("difficultySelected")[0].classList.remove("difficultySelected");
+    document.getElementsByClassName("difficulty")[savedDifficulty].classList.add("difficultySelected");
+  }
+  const savedSort = Number(localStorage.sort ?? 0);
+  if (savedSort > 0 && savedSort <= 3) {
+    sortSelected(savedSort, true);
+    return true;
+  }
+  return false;
+};
 
 const tracksUpdate = () => {
   songs.forEach((s) => s.unload());
@@ -1568,6 +1584,7 @@ const updateDetails = (n) => {
 
 const difficultySelected = (n, isInitializing) => {
   difficultySelection = n;
+  localStorage.difficultySelection = n;
   document.getElementsByClassName("difficultySelected")[0].classList.remove("difficultySelected");
   document.getElementsByClassName("difficulty")[n].classList.add("difficultySelected");
   updateDetails(songSelection);
