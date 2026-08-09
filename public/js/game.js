@@ -630,7 +630,6 @@ const songSelected = (n, refreshed, seek) => {
       setTimeout(() => {
         localStorage.rate = rate;
         localStorage.disableText = disableText;
-        localStorage.songNum = songSelection;
         localStorage.difficultySelection = difficultySelection;
         localStorage.difficulty = JSON.parse(tracks[songSelection].difficulty)[difficultySelection];
         localStorage.songName = tracks[songSelection].fileName;
@@ -794,11 +793,9 @@ const numberWithCommas = (x) => {
 
 const gameLoaded = () => {
   if (iniMode == 1) {
-    if (localStorage.songNum) {
-      songSelection = Number(localStorage.songNum);
-      sortSelected(Number(localStorage.sort ? localStorage.sort : 0), true);
-      songSelected(songSelection, true);
-      difficultySelected(Number(localStorage.difficultySelection ? localStorage.difficultySelection : 0), true);
+    const restoreIndex = localStorage.songName ? tracks.findIndex((e) => e.fileName == localStorage.songName) : -1;
+    if (restoreIndex != -1 && tracks[restoreIndex].type != 3) {
+      songSelected(restoreIndex, true);
     }
     menuSelected(0);
   } else if (display == 0 && songSelection == -1) {
@@ -807,8 +804,6 @@ const gameLoaded = () => {
   profileSong.play();
   document.getElementById("menuContainer").style.display = "flex";
   document.getElementById("loadingContainer").classList.add("fadeOutAnim");
-  localStorage.removeItem("songName");
-  localStorage.removeItem("difficulty");
   setTimeout(() => {
     if (tutorial >= 3) {
       document.getElementById("tutorialInformation").style.display = "flex";
