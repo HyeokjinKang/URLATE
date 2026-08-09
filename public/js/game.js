@@ -792,10 +792,6 @@ const numberWithCommas = (x) => {
 
 const gameLoaded = () => {
   if (iniMode == 1) {
-    const restoreIndex = localStorage.songName ? tracks.findIndex((e) => e.fileName == localStorage.songName) : -1;
-    if (restoreIndex != -1 && tracks[restoreIndex].type != 3) {
-      songSelected(restoreIndex, true);
-    }
     menuSelected(0);
   } else if (display == 0 && songSelection == -1) {
     themeSong.play();
@@ -1103,9 +1099,15 @@ const menuSelected = (n) => {
     //play
     display = 1;
     if (songSelection == -1) {
-      const playable = tracks.map((t, i) => (t.type != 3 ? i : -1)).filter((i) => i != -1);
-      if (playable.length > 0) {
-        songSelected(playable[Math.floor(Math.random() * playable.length)]);
+      // Restore the last played song; pick a random one only when there is nothing to restore.
+      const savedIndex = localStorage.songName ? tracks.findIndex((e) => e.fileName == localStorage.songName) : -1;
+      if (savedIndex != -1 && tracks[savedIndex].type != 3) {
+        songSelected(savedIndex);
+      } else {
+        const playable = tracks.map((t, i) => (t.type != 3 ? i : -1)).filter((i) => i != -1);
+        if (playable.length > 0) {
+          songSelected(playable[Math.floor(Math.random() * playable.length)]);
+        }
       }
     }
     document.getElementById("selectContainer").style.display = "flex";
