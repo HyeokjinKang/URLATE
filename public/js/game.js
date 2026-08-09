@@ -588,12 +588,15 @@ const sortSelected = (n, isInitializing) => {
   document.getElementsByClassName("sortText")[n].classList.add("selected");
   const sortArray = [sortAsName, sortAsProducer, sortAsDifficulty, sortAsBPM];
   currentSong?.stop();
-  const prevName = tracks[songSelection].fileName;
+  const prevName = tracks[songSelection]?.fileName;
+  const prevRecords = new Map(tracks.map((track, i) => [track.fileName, trackRecords[i]]));
   tracks.sort(sortAsName);
   tracks.sort(sortArray[n]);
+  trackRecords = tracks.map((track) => prevRecords.get(track.fileName));
   tracksUpdate();
-  const index = tracks.findIndex((obj) => obj.fileName == prevName);
-  if (!isInitializing) songSelected(index, true, seek);
+  const index = prevName ? tracks.findIndex((obj) => obj.fileName == prevName) : -1;
+  if (index != -1) songSelection = index;
+  if (!isInitializing && index != -1) songSelected(index, true, seek);
 };
 
 const songSelected = (n, refreshed, seek) => {
