@@ -465,7 +465,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.result == "success") {
               tracks = data.tracks;
               tracks.sort(sortAsName);
-              tracksUpdate();
+              // sortSelected already runs tracksUpdate, so skip it when a saved sort was restored.
+              if (!restoreSortSettings()) tracksUpdate();
               Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
               intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
               intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
@@ -490,6 +491,21 @@ document.addEventListener("DOMContentLoaded", () => {
       location.reload();
     });
 });
+
+const restoreSortSettings = () => {
+  const savedDifficulty = Number(localStorage.difficultySelection ?? 0);
+  if (savedDifficulty > 0 && savedDifficulty <= 2) {
+    difficultySelection = savedDifficulty;
+    document.getElementsByClassName("difficultySelected")[0].classList.remove("difficultySelected");
+    document.getElementsByClassName("difficulty")[savedDifficulty].classList.add("difficultySelected");
+  }
+  const savedSort = Number(localStorage.sort ?? 0);
+  if (savedSort > 0 && savedSort <= 3) {
+    sortSelected(savedSort, true);
+    return true;
+  }
+  return false;
+};
 
 const tracksUpdate = () => {
   songs.forEach((s) => s.unload());
@@ -535,7 +551,6 @@ const tracksUpdate = () => {
 
   const defaultRecord = (type) => ({ rank: type == 1 ? "rankL" : "rankQ", record: 0, medal: 0, maxcombo: 0 });
 
-  // 곡마다 따로 묻지 않고 내 기록 전체를 한 번에 받아옵니다.
   fetch(`${api}/trackRecords/${username}`, { method: "GET", credentials: "include" })
     .then((res) => res.json())
     .then((data) => {
@@ -588,12 +603,15 @@ const sortSelected = (n, isInitializing) => {
   document.getElementsByClassName("sortText")[n].classList.add("selected");
   const sortArray = [sortAsName, sortAsProducer, sortAsDifficulty, sortAsBPM];
   currentSong?.stop();
-  const prevName = tracks[songSelection].fileName;
+  const prevName = tracks[songSelection]?.fileName;
+  const prevRecords = new Map(tracks.map((track, i) => [track.fileName, trackRecords[i]]));
   tracks.sort(sortAsName);
   tracks.sort(sortArray[n]);
+  trackRecords = tracks.map((track) => prevRecords.get(track.fileName));
   tracksUpdate();
-  const index = tracks.findIndex((obj) => obj.fileName == prevName);
-  if (!isInitializing) songSelected(index, true, seek);
+  const index = prevName ? tracks.findIndex((obj) => obj.fileName == prevName) : -1;
+  if (index != -1) songSelection = index;
+  if (!isInitializing && index != -1) songSelected(index, true, seek);
 };
 
 const songSelected = (n, refreshed, seek) => {
@@ -611,7 +629,6 @@ const songSelected = (n, refreshed, seek) => {
       setTimeout(() => {
         localStorage.rate = rate;
         localStorage.disableText = disableText;
-        localStorage.songNum = songSelection;
         localStorage.difficultySelection = difficultySelection;
         localStorage.difficulty = JSON.parse(tracks[songSelection].difficulty)[difficultySelection];
         localStorage.songName = tracks[songSelection].fileName;
@@ -775,12 +792,6 @@ const numberWithCommas = (x) => {
 
 const gameLoaded = () => {
   if (iniMode == 1) {
-    if (localStorage.songNum) {
-      songSelection = Number(localStorage.songNum);
-      sortSelected(Number(localStorage.sort ? localStorage.sort : 0), true);
-      songSelected(songSelection, true);
-      difficultySelected(Number(localStorage.difficultySelection ? localStorage.difficultySelection : 0), true);
-    }
     menuSelected(0);
   } else if (display == 0 && songSelection == -1) {
     themeSong.play();
@@ -788,8 +799,6 @@ const gameLoaded = () => {
   profileSong.play();
   document.getElementById("menuContainer").style.display = "flex";
   document.getElementById("loadingContainer").classList.add("fadeOutAnim");
-  localStorage.removeItem("songName");
-  localStorage.removeItem("difficulty");
   setTimeout(() => {
     if (tutorial >= 3) {
       document.getElementById("tutorialInformation").style.display = "flex";
@@ -1090,9 +1099,15 @@ const menuSelected = (n) => {
     //play
     display = 1;
     if (songSelection == -1) {
-      const playable = tracks.map((t, i) => (t.type != 3 ? i : -1)).filter((i) => i != -1);
-      if (playable.length > 0) {
-        songSelected(playable[Math.floor(Math.random() * playable.length)]);
+      // Restore the last played song; pick a random one only when there is nothing to restore.
+      const savedIndex = localStorage.songName ? tracks.findIndex((e) => e.fileName == localStorage.songName) : -1;
+      if (savedIndex != -1 && tracks[savedIndex].type != 3) {
+        songSelected(savedIndex);
+      } else {
+        const playable = tracks.map((t, i) => (t.type != 3 ? i : -1)).filter((i) => i != -1);
+        if (playable.length > 0) {
+          songSelected(playable[Math.floor(Math.random() * playable.length)]);
+        }
       }
     }
     document.getElementById("selectContainer").style.display = "flex";
@@ -1204,7 +1219,7 @@ const profileUpdate = async (uid, isMe) => {
       document.getElementsByClassName("profileStatValue")[5].textContent = "-";
       document.getElementById("profileRecentPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
     } else {
-      // 기록 id마다 따로 묻지 않고 최근 플레이 목록을 한 번에 받아옵니다.
+      // Fetch the whole recent play list at once instead of asking per record id.
       const recentRes = await fetch(`${api}/recentPlays/${uid}`, { method: "GET", credentials: "include" }).then((res) => res.json());
       const recentResults = recentRes.result == "success" ? recentRes.results : [];
       let recentHTML = "";
@@ -1565,6 +1580,7 @@ const updateDetails = (n) => {
 
 const difficultySelected = (n, isInitializing) => {
   difficultySelection = n;
+  localStorage.difficultySelection = n;
   document.getElementsByClassName("difficultySelected")[0].classList.remove("difficultySelected");
   document.getElementsByClassName("difficulty")[n].classList.add("difficultySelected");
   updateDetails(songSelection);
@@ -1720,7 +1736,7 @@ const visualSyncSetting = () => {
   document.getElementById("visualSyncContainer").classList.add("fadeInAnim");
   document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
 
-  // offsetSong 재생 (offset 설정과 동일)
+  // Play offsetSong, same as the offset setting screen.
   if (songSelection != -1) {
     const selSong = getSong(songSelection);
     if (selSong) selSong.fade(1, 0, 500);
@@ -1739,14 +1755,14 @@ const visualSyncSetting = () => {
   const drawFrame = () => {
     if (display !== 13) return;
 
-    // offsetUpdate와 동일한 방식으로 오디오 기준 seek 계산
+    // Compute the audio based seek the same way offsetUpdate does.
     const howlerCtx = Howler.ctx;
     const audioLatency = (howlerCtx?.outputLatency ?? 0) + (howlerCtx?.baseLatency ?? 0);
     const seek = Math.max(0, offsetSong.seek() - audioLatency);
 
-    const cycle = beat * 2; // 2비트마다 노트 한 개
+    const cycle = beat * 2; // one note every two beats
 
-    // visualSyncOffset만큼 앞당긴 비주얼 seek로 노트 progress 계산
+    // Compute the note progress from a visual seek pulled ahead by visualSyncOffset.
     const visualSeek = seek + visualSyncOffset / 1000;
     const visualCyclePos = ((visualSeek % cycle) + cycle) % cycle;
     const visualCycleOffset = visualCyclePos - cycle; // -cycle ~ 0
