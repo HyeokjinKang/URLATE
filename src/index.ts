@@ -12,7 +12,7 @@ import * as nsfw from "nsfwjs";
 import fs from "fs";
 import sharp from "sharp";
 import { logger } from "./logger";
-import { errorHandler } from "./middleware";
+import { errorHandler, notFoundHandler, sendError } from "./middleware";
 import { URL } from "url";
 import { createHash, randomUUID } from "crypto";
 
@@ -36,6 +36,9 @@ const API_TIMEOUT_MS = 5000;
 
 const app = express();
 app.locals.pretty = true;
+
+// 버전 노출을 막습니다.
+app.disable("x-powered-by");
 
 // Rate limiting keys on the client address, which arrives via X-Forwarded-For.
 // Two hops answer for the CDN and the reverse proxy in front; trusting more
@@ -161,7 +164,10 @@ const logoutLimiter = rateLimit({
 
 // The gate could not reach a verdict. Say so instead of redirecting, which the
 // browser would read as "you are not signed in".
-const unavailable = (res: Response) => res.status(503).set("Retry-After", "5").send("Service temporarily unavailable. Please try again in a moment.");
+const unavailable = (req: Request, res: Response) => {
+  res.set("Retry-After", "5");
+  sendError(req, res, 503);
+};
 
 /**
  * Gate the pages that only make sense for a signed-in player. The status ->
@@ -193,7 +199,7 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
     // one visitor.
     if (response.status === 429 || response.status >= 500) {
       logger.warn("Auth status unavailable", { path: req.path, status: response.status });
-      return unavailable(res);
+      return unavailable(req, res);
     }
     if (!response.ok) return res.redirect(config.project.url);
     const data: any = await response.json();
@@ -206,7 +212,7 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
     // Fail closed: an unreachable backend must not open the gate. It must not
     // claim the visitor is signed out either, so this is not a redirect.
     logger.warn("Failed to check auth status", { path: req.path, error: err });
-    unavailable(res);
+    unavailable(req, res);
   }
 };
 
@@ -623,6 +629,9 @@ process.on("uncaughtException", (error: Error) => {
     process.exit(1);
   }
 })();
+
+// 라우트 뒤에 와야 합니다. 앞에 두면 모든 요청이 404로 끝납니다.
+app.use(notFoundHandler);
 
 // Add error handler middleware (must be last)
 app.use(errorHandler);

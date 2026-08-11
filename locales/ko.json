@@ -179,5 +179,13 @@
   "sync": "화면 싱크",
   "visual_sync_description_1": "소리와 화면이 일치하도록",
   "visual_sync_description_2": " 싱크값을 설정하세요.",
-  "visual_sync_description_3": "방향키(↑↓)를 이용하여 더 세밀한 조정이 가능합니다."
+  "visual_sync_description_3": "방향키(↑↓)를 이용하여 더 세밀한 조정이 가능합니다.",
+  "error_404_title": "페이지를 찾을 수 없습니다",
+  "error_404_desc": "요청하신 페이지가 존재하지 않습니다.",
+  "error_500_title": "문제가 발생했습니다",
+  "error_500_desc": "예기치 못한 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+  "error_503_title": "일시적으로 이용할 수 없습니다",
+  "error_503_desc": "연결된 서비스가 응답하지 않고 있습니다. 잠시 후 다시 시도해 주세요.",
+  "error_home": "메인 페이지로 돌아가기",
+  "nameReserved": "입력한 닉네임은 사용할 수 없습니다."
 }
