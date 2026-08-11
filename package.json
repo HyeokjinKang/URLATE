@@ -18,6 +18,7 @@
   },
   "author": "Coupyworks",
   "license": "AGPL-3.0-or-later",
+  "packageManager": "pnpm@11.21.0",
   "dependencies": {
     "@tensorflow/tfjs": "^4.22.0",
     "@tensorflow/tfjs-backend-wasm": "^4.22.0",
