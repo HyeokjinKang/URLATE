@@ -318,10 +318,24 @@ app.get("/privacy", (req, res) => {
   res.render("privacy");
 });
 
+// 업로드된 프로필 이미지가 놓이는 유일한 위치입니다. 아래 세 곳이 각자
+// 다른 방식으로 같은 경로를 만들고 있어 하나로 모았습니다.
+const PROFILES_DIR = path.resolve(__dirname, "..", "public", "images", "profiles");
+
+/**
+ * 프로필 디렉터리 "안의 파일"일 때만 정규화한 절대 경로를 돌려줍니다. 벗어나거나
+ * 디렉터리 자기 자신이면 null입니다. 삭제처럼 되돌릴 수 없는 동작 앞에 꼭
+ * 거쳐야 합니다.
+ */
+const insideProfiles = (candidate: string): string | null => {
+  const resolved = path.resolve(PROFILES_DIR, candidate);
+  return resolved.startsWith(PROFILES_DIR + path.sep) ? resolved : null;
+};
+
 const upload = multer({
   storage: multer.diskStorage({
     destination: function (req, file, cb) {
-      const dirPath = path.join(__dirname, "..", "public", "images", "profiles");
+      const dirPath = PROFILES_DIR;
       fs.mkdir(dirPath, { recursive: true }, (err) => {
         if (err) {
           logger.error("Profile update API error", err, {
@@ -353,8 +367,14 @@ const upload = multer({
 // rejects the request afterwards has to remove it or the bytes stay forever.
 const discardUpload = (file: Express.Multer.File | undefined) => {
   if (!file?.path) return;
-  fs.promises.unlink(file.path).catch((err) => {
-    if (err.code !== "ENOENT") logger.warn("Failed to remove a rejected upload", { path: file.path, error: err });
+  // 파일명은 서버가 만들지만, 지우는 동작이므로 경로를 다시 확인합니다.
+  const target = insideProfiles(file.path);
+  if (!target) {
+    logger.error("Refused to remove a file outside the profiles directory", null, { path: file.path });
+    return;
+  }
+  fs.promises.unlink(target).catch((err) => {
+    if (err.code !== "ENOENT") logger.warn("Failed to remove a rejected upload", { path: target, error: err });
   });
 };
 
@@ -486,11 +506,10 @@ app.post("/profile/:userid/:type", uploadLimiter, async (req, res) => {
       });
       return;
     }
-    const ROOT = __dirname.split("/").slice(0, -1).join("/") + "/public/images/profiles";
-    const filePath = fs.realpathSync(path.resolve(ROOT, file.path));
-    if (!filePath.startsWith(ROOT)) {
+    const filePath = insideProfiles(file.path);
+    if (!filePath) {
       discardUpload(file);
-      logger.error("Path traversal attempt detected", null, { userid: req.params.userid, filePath, ROOT });
+      logger.error("Path traversal attempt detected", null, { userid: req.params.userid, path: file.path });
       res.status(400).json({
         result: "failed",
         message: "Error occured while uploading",
@@ -560,20 +579,14 @@ app.post("/profile/:userid/:type", uploadLimiter, async (req, res) => {
           // Asynchronously delete the old file without blocking the response.
           (async () => {
             try {
-              const { realpath, unlink } = fs.promises;
-              const profilesDir = path.join(__dirname, "../public/images/profiles");
-              const rootPath = await realpath(profilesDir);
-
               const oldFilename = path.basename(new URL(oldFileUrl).pathname);
-              const oldFilePath = path.join(profilesDir, oldFilename);
+              const oldFilePath = insideProfiles(oldFilename);
 
-              const resolvedPath = await realpath(oldFilePath);
-
-              if (resolvedPath.startsWith(rootPath)) {
-                await unlink(resolvedPath);
+              if (oldFilePath) {
+                await fs.promises.unlink(oldFilePath);
                 logger.info(`Deleted old ${type} file`, { userid: req.params.userid, oldFilename });
               } else {
-                logger.warn("Skipping deletion of file outside the root directory.", { userid: req.params.userid, oldFileUrl, resolvedPath });
+                logger.warn("Skipping deletion of file outside the root directory.", { userid: req.params.userid, oldFileUrl });
               }
             } catch (err) {
               // It's okay if the file doesn't exist. Log other errors.
