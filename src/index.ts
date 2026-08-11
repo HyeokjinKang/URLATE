@@ -14,7 +14,7 @@ import sharp from "sharp";
 import { logger } from "./logger";
 import { errorHandler } from "./middleware";
 import { URL } from "url";
-import { createHash } from "crypto";
+import { createHash, randomUUID } from "crypto";
 
 let branch;
 exec("git branch --show-current", (err, stdout, stderr) => {
@@ -135,6 +135,18 @@ const gateLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 30,
   skip: (req) => !!req.headers.cookie && readCachedStatus(authCacheKey(req.headers.cookie)) !== null,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/**
+ * An upload costs a 3MB write, a sharp re-encode and an NSFW inference, and the
+ * file it leaves behind is served from our own origin. Cheap for the caller,
+ * expensive for us -- so it gets a budget of its own, well below the gate's.
+ */
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 10,
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -301,14 +313,30 @@ const upload = multer({
         cb(null, dirPath);
       });
     },
+    // Date.now() alone collides: two uploads in the same millisecond overwrite
+    // each other's image.
     filename: function (req, file, cb) {
-      cb(null, Date.now() + ".webp");
+      cb(null, `${Date.now()}-${randomUUID()}.webp`);
     },
   }),
   limits: {
     fileSize: 3 * 1024 * 1024, // 3MB
   },
+  // Rejecting here keeps a non-image from ever reaching the disk; the handler's
+  // own check runs after multer has already written the file.
+  fileFilter: function (req, file, cb) {
+    cb(null, file.mimetype.indexOf("image") === 0);
+  },
 }).single("img");
+
+// multer writes the upload to disk before the handler runs, so every path that
+// rejects the request afterwards has to remove it or the bytes stay forever.
+const discardUpload = (file: Express.Multer.File | undefined) => {
+  if (!file?.path) return;
+  fs.promises.unlink(file.path).catch((err) => {
+    if (err.code !== "ENOENT") logger.warn("Failed to remove a rejected upload", { path: file.path, error: err });
+  });
+};
 
 const imageToTensor = async (fileBuffer) => {
   const { data, info } = await sharp(fileBuffer).raw().toBuffer({ resolveWithObject: true });
@@ -344,7 +372,7 @@ const resolveSessionUserid = async (req): Promise<string | null> => {
   }
 };
 
-app.post("/profile/:userid/:type", async (req, res) => {
+app.post("/profile/:userid/:type", uploadLimiter, async (req, res) => {
   // Validate userid: must be numeric
   if (!/^[0-9]+$/.test(req.params.userid)) {
     res.status(400).json({
@@ -418,6 +446,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
     if (err) {
       if (err instanceof multer.MulterError) err = err.message;
       else err = err.code;
+      discardUpload(req.file);
       logger.error("File upload error", err, { userid: req.params.userid, type: req.params.type });
       res.status(400).json({
         result: "failed",
@@ -428,6 +457,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
     }
     const file = req.file;
     if (!file || file.mimetype.indexOf("image") == -1) {
+      discardUpload(file);
       logger.warn("Invalid file upload attempt", { userid: req.params.userid, type: req.params.type, mimetype: file?.mimetype });
       res.status(400).json({
         result: "failed",
@@ -439,6 +469,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
     const ROOT = __dirname.split("/").slice(0, -1).join("/") + "/public/images/profiles";
     const filePath = fs.realpathSync(path.resolve(ROOT, file.path));
     if (!filePath.startsWith(ROOT)) {
+      discardUpload(file);
       logger.error("Path traversal attempt detected", null, { userid: req.params.userid, filePath, ROOT });
       res.status(400).json({
         result: "failed",
@@ -447,20 +478,36 @@ app.post("/profile/:userid/:type", async (req, res) => {
       });
       return;
     }
-    const fileBuffer: Buffer = await sharp(filePath)
-      .resize({ width, height })
-      .flatten({ background: "#ffffff" })
-      .webp({
-        quality: 70,
-        effort: 6,
-      })
-      .toBuffer();
-    fs.writeFileSync(filePath, fileBuffer);
-    const image = await imageToTensor(fileBuffer);
-    const predictions = await model.classify(image);
-    image.dispose();
+
+    // multer's callback is not an Express handler, so a rejection here is not
+    // turned into a response -- the request would hang and the file would stay.
+    let fileBuffer: Buffer;
     let explicit = false;
-    if (predictions[0].className != "Drawing" && predictions[0].className != "Neutral") explicit = true;
+    try {
+      fileBuffer = await sharp(filePath)
+        .resize({ width, height })
+        .flatten({ background: "#ffffff" })
+        .webp({
+          quality: 70,
+          effort: 6,
+        })
+        .toBuffer();
+      fs.writeFileSync(filePath, fileBuffer);
+      const image = await imageToTensor(fileBuffer);
+      const predictions = await model.classify(image);
+      image.dispose();
+      if (predictions[0].className != "Drawing" && predictions[0].className != "Neutral") explicit = true;
+    } catch (e) {
+      discardUpload(file);
+      logger.error("Failed to process the uploaded image", e, { userid: req.params.userid, type: req.params.type });
+      res.status(400).json({
+        result: "failed",
+        message: "Error occured while uploading",
+        error: "Invalid image",
+      });
+      return;
+    }
+
     fetch(`${config.project.api}/profile/${type}`, {
       method: "PUT",
       headers: {
@@ -478,6 +525,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
       .then((res) => res.json())
       .then((json: any) => {
         if (json.result == "failed") {
+          discardUpload(file);
           logger.error("Profile update API error", null, { message: json.message, userid: req.params.userid });
           res.status(400).json({
             result: "failed",
@@ -519,6 +567,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
         res.status(200).json({ result: "success", url: `${config.project.url}/images/profiles/${file.filename}`, explicit });
       })
       .catch((err) => {
+        discardUpload(file);
         logger.error("Profile update fetch error", err, { userid: req.params.userid });
         res.status(500).json({
           result: "failed",
