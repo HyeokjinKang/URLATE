@@ -1,5 +1,10 @@
 /* global io, iziToast, game, lang, alias, socketi18n */
 const body = document.querySelector("body");
+// Shared from modules/utils.js (this is a classic script, so import dynamically).
+let escapeHtml = (value) => String(value ?? "");
+import("./utils.js").then((utils) => {
+  escapeHtml = utils.escapeHtml;
+});
 let isErrorOccured = false;
 let achievementCount = 0;
 const socket = io(game, {
@@ -43,7 +48,15 @@ socket.on("disconnect", (reason) => {
   isErrorOccured = true;
 });
 
-socket.on("connect_error", () => {
+socket.on("connect_error", (err) => {
+  // The server rejects an unauthenticated handshake outright, so there is
+  // nothing to retry here -- reconnecting would just loop.
+  if (err && (err.data?.code === "unauthorized" || err.message === "unauthorized")) {
+    socket.disconnect();
+    alert(socketi18n.unauthorized);
+    window.location.href = "/logout";
+    return;
+  }
   console.error("[Socket.IO] Cannot connect to server");
   iziToast.error({
     title: "Connection error",
@@ -90,14 +103,14 @@ socket.on("achievement", (data) => {
               <img src="/icons/medal-solid.svg" />
             </div>
             <div class="achievementContentVertical">
-              <span class="achievementContentTitle">${achievement[`title_${lang}`]}</span>
-              <span class="achievementContentDesc">${achievement[`detail_${lang}`]}</span>
+              <span class="achievementContentTitle">${escapeHtml(achievement[`title_${lang}`])}</span>
+              <span class="achievementContentDesc">${escapeHtml(achievement[`detail_${lang}`])}</span>
             </div>
           </div>
           <div class="achievementLine"></div>
           <div class="achievementInnerRight">
-            <span class="achievementRewardTitle">${socketi18n[reward[0]]}</span>
-            <span class="achievementRewardDesc">${getReward(reward[0], reward[1])}</span>
+            <span class="achievementRewardTitle">${escapeHtml(socketi18n[reward[0]])}</span>
+            <span class="achievementRewardDesc">${escapeHtml(getReward(reward[0], reward[1]))}</span>
           </div>
         </div>`;
       achievementCount++;
