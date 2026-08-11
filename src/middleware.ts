@@ -17,13 +17,13 @@ export function errorHandler(err: any, req: Request, res: Response, next: NextFu
     userAgent: req.get("user-agent"),
   });
 
-  // Send error response
+  // Send error response. Never include the stack: it carries absolute paths and
+  // dependency versions, and NODE_ENV is not set under pm2, so keying on it
+  // meant production leaked them.
   const statusCode = err.statusCode || err.status || 500;
-  const message = err.message || "Internal Server Error";
 
   res.status(statusCode).json({
     result: "failed",
-    message: message,
-    error: process.env.NODE_ENV === "production" ? undefined : err.stack,
+    message: statusCode >= 500 ? "Internal Server Error" : err.message || "Bad Request",
   });
 }

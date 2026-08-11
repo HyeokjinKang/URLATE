@@ -159,6 +159,10 @@ const logoutLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// The gate could not reach a verdict. Say so instead of redirecting, which the
+// browser would read as "you are not signed in".
+const unavailable = (res: Response) => res.status(503).set("Retry-After", "5").send("Service temporarily unavailable. Please try again in a moment.");
+
 /**
  * Gate the pages that only make sense for a signed-in player. The status ->
  * destination mapping is the one the pages used to run in the browser; doing it
@@ -182,6 +186,15 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
       },
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
+    // A backend that is rate limiting or broken has not said anything about who
+    // the caller is. Redirecting on it signs a valid session out of the page it
+    // asked for -- and every gate lookup leaves this server's single address, so
+    // the backend's per-address limit is reached by the site as a whole, not by
+    // one visitor.
+    if (response.status === 429 || response.status >= 500) {
+      logger.warn("Auth status unavailable", { path: req.path, status: response.status });
+      return unavailable(res);
+    }
     if (!response.ok) return res.redirect(config.project.url);
     const data: any = await response.json();
     const status = data.status;
@@ -190,9 +203,10 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
     if (gatedStatuses.has(status)) return res.redirect(authRedirects[status]);
     next();
   } catch (err) {
-    // Fail closed: an unreachable backend must not open the gate.
+    // Fail closed: an unreachable backend must not open the gate. It must not
+    // claim the visitor is signed out either, so this is not a redirect.
     logger.warn("Failed to check auth status", { path: req.path, error: err });
-    res.redirect(config.project.url);
+    unavailable(res);
   }
 };
 
