@@ -1,4 +1,4 @@
-/* global api, projectUrl */
+/* global api, projectUrl, joini18n */
 document.addEventListener("DOMContentLoaded", () => {
   fetch(`${api}/auth/status`, {
     method: "GET",
@@ -41,6 +41,7 @@ const check = () => {
     document.getElementById("name").classList.add("show");
   } else {
     document.getElementById("name").classList.remove("show");
+    document.getElementById("nameExist").classList.remove("show");
     fetch(`${api}/auth/join`, {
       method: "POST",
       credentials: "include",
@@ -56,9 +57,13 @@ const check = () => {
         if (data.result == "success") {
           window.location.href = `${projectUrl}/game`;
         } else if (data.result == "failed") {
-          if (data.error == "Exist Name") {
-            document.getElementById("nameExist").style.display = "initial";
-            document.getElementById("nameExist").classList.add("show");
+          // 사용자가 이름만 바꾸면 되는 거부는 입력란 옆에 그대로 보여 줍니다.
+          const reason = { "Exist Name": joini18n.nameExist, "Reserved Name": joini18n.nameReserved }[data.error];
+          if (reason) {
+            const el = document.getElementById("nameExist");
+            el.textContent = reason;
+            el.style.display = "initial";
+            el.classList.add("show");
           } else {
             alert("join failed.");
             console.log(data);
