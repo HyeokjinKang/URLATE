@@ -172,7 +172,7 @@
   "join": "Register",
   "join_desc": "Please choose a nickname.",
   "nameExist": "The nickname you entered already exists.",
-  "nameText": "Nickname must be a string of 5 to 12 characters (A-Z, a-z, _, -).",
+  "nameText": "Nickname must be a string of 5 to 12 characters (A-Z, a-z, 0-9, _, -).",
   "done": "Done!",
   "mainPage": "Back to Main",
   "visual_sync_setting": "Visual Sync Settings",
