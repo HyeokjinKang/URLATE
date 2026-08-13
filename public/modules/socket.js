@@ -4,9 +4,12 @@ import { escapeHtml } from "./utils.js";
 const body = document.querySelector("body");
 let isErrorOccured = false;
 let achievementCount = 0;
-const socket = io(game, {
+export const socket = io(game, {
   withCredentials: true,
 });
+
+// The one place this module is exposed to the classic scripts, which cannot import it.
+(window.URLATE ??= {}).socket = socket;
 
 document.addEventListener("DOMContentLoaded", () => {
   const img = new Image();
