@@ -6,7 +6,7 @@
   "join": "최초 등록",
   "join_desc": "사용하실 닉네임을 정해주세요.",
   "namePlaceholder": "닉네임",
-  "nameText": "닉네임은 5글자에서 12글자의 문자열(A-Z, a-z, _, -)로 이루어져야 합니다.",
+  "nameText": "닉네임은 5글자에서 12글자의 문자열(A-Z, a-z, 0-9, _, -)로 이루어져야 합니다.",
   "done": "완료!",
   "oops": "앗!",
   "mainPage": "메인화면으로 돌아가기",
@@ -179,5 +179,13 @@
   "sync": "화면 싱크",
   "visual_sync_description_1": "소리와 화면이 일치하도록",
   "visual_sync_description_2": " 싱크값을 설정하세요.",
-  "visual_sync_description_3": "방향키(↑↓)를 이용하여 더 세밀한 조정이 가능합니다."
+  "visual_sync_description_3": "방향키(↑↓)를 이용하여 더 세밀한 조정이 가능합니다.",
+  "error_404_title": "페이지를 찾을 수 없습니다",
+  "error_404_desc": "요청하신 페이지가 존재하지 않습니다.",
+  "error_500_title": "문제가 발생했습니다",
+  "error_500_desc": "예기치 못한 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+  "error_503_title": "일시적으로 이용할 수 없습니다",
+  "error_503_desc": "연결된 서비스가 응답하지 않고 있습니다. 잠시 후 다시 시도해 주세요.",
+  "error_home": "메인 페이지로 돌아가기",
+  "nameReserved": "입력한 닉네임은 사용할 수 없습니다."
 }

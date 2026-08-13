@@ -172,12 +172,20 @@
   "join": "Register",
   "join_desc": "Please choose a nickname.",
   "nameExist": "The nickname you entered already exists.",
-  "nameText": "Nickname must be a string of 5 to 12 characters (A-Z, a-z, _, -).",
+  "nameText": "Nickname must be a string of 5 to 12 characters (A-Z, a-z, 0-9, _, -).",
   "done": "Done!",
   "mainPage": "Back to Main",
   "visual_sync_setting": "Visual Sync Settings",
   "sync": "Visual Sync",
   "visual_sync_description_1": "Adjust the sync value",
   "visual_sync_description_2": " so that the audio and visuals are in sync.",
-  "visual_sync_description_3": "Use the arrow keys (↑↓) for finer adjustments."
+  "visual_sync_description_3": "Use the arrow keys (↑↓) for finer adjustments.",
+  "error_404_title": "Page not found",
+  "error_404_desc": "The page you are looking for does not exist.",
+  "error_500_title": "Something went wrong",
+  "error_500_desc": "An unexpected error occurred. Please try again later.",
+  "error_503_title": "Service unavailable",
+  "error_503_desc": "Something we depend on is not responding. Please try again in a moment.",
+  "error_home": "Back to the main page",
+  "nameReserved": "The nickname you entered cannot be used."
 }

@@ -907,14 +907,14 @@ const optionScreen = () => {
 };
 
 // eslint-disable-next-line no-unused-vars
-const profileScreen = (uid) => {
-  if (uid) display = 16;
+const profileScreen = (nickname) => {
+  if (nickname) display = 16;
   else display = 15;
   playProfileSong();
   document.getElementById("profileContainer").style.display = "block";
   document.getElementById("profileContainer").classList.add("fadeInAnim");
   loadingOverlayShow();
-  profileUpdate(uid ? uid : userid, uid == undefined);
+  profileUpdate(nickname ? nickname : username, nickname == undefined);
 };
 
 const fadeOutContainer = (id) => {
@@ -1143,7 +1143,7 @@ const rankUpdate = async () => {
         (e, i) => `<tr>
       <td>${i + 1}</td>
       <td>
-        <div class="rankProfileContainer" onclick="profileScreen('${encodeURIComponent(e.userid)}')">
+        <div class="rankProfileContainer" onclick="profileScreen('${encodeURIComponent(e.nickname)}')">
           <img src="${escapeHtml(safeUrl(e.picture))}" class="rankProfile ${e.explicit % 2 == 1 ? "blur" : ""}" />
           ${escapeHtml(e.nickname)}
         </div>
@@ -1157,9 +1157,11 @@ const rankUpdate = async () => {
   }
 };
 
-const profileUpdate = async (uid, isMe) => {
-  profileid = uid;
-  const res = await fetch(`${api}/profile/${uid}`, {
+// Profiles are looked up by nickname: the ranking no longer carries userid, and
+// nothing on this screen needs the internal identifier.
+const profileUpdate = async (nickname, isMe) => {
+  profileid = nickname;
+  const res = await fetch(`${api}/profile/nickname/${encodeURIComponent(nickname)}`, {
     method: "GET",
     credentials: "include",
   });
@@ -1220,7 +1222,7 @@ const profileUpdate = async (uid, isMe) => {
       document.getElementById("profileRecentPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
     } else {
       // Fetch the whole recent play list at once instead of asking per record id.
-      const recentRes = await fetch(`${api}/recentPlays/${uid}`, { method: "GET", credentials: "include" }).then((res) => res.json());
+      const recentRes = await fetch(`${api}/recentPlays/nickname/${encodeURIComponent(nickname)}`, { method: "GET", credentials: "include" }).then((res) => res.json());
       const recentResults = recentRes.result == "success" ? recentRes.results : [];
       let recentHTML = "";
       for (let i = 0; i < recentResults.length; i++) {
@@ -1234,11 +1236,11 @@ const profileUpdate = async (uid, isMe) => {
           const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
           recentHTML += `<div class="playContainer">
               <div class="playContainerLeft">
-                <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${difficulty}</span>
+                <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${escapeHtml(difficulty)}</span>
                 <img src="${cdn}/albums/50/${song.fileName}.webp" class="playAlbum" />
                 <div class="playTitleContainer">
-                  <span class="playTitle">${settings.general.detailLang == "original" ? song.originalName : song.name}</span>
-                  <span class="playProducer">${song.producer}</span>
+                  <span class="playTitle">${escapeHtml(settings.general.detailLang == "original" ? song.originalName : song.name)}</span>
+                  <span class="playProducer">${escapeHtml(song.producer)}</span>
                 </div>
               </div>
               <div class="playContainerRight">
@@ -1267,11 +1269,11 @@ const profileUpdate = async (uid, isMe) => {
         const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
         document.getElementById("profileBestPlay").innerHTML += `<div class="playContainer">
         <div class="playContainerLeft">
-          <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${difficulty}</span>
+          <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${escapeHtml(difficulty)}</span>
           <img src="${cdn}/albums/50/${song.fileName}.webp" class="playAlbum" />
           <div class="playTitleContainer">
-            <span class="playTitle">${settings.general.detailLang == "original" ? song.originalName : song.name}</span>
-            <span class="playProducer">${song.producer}</span>
+            <span class="playTitle">${escapeHtml(settings.general.detailLang == "original" ? song.originalName : song.name)}</span>
+            <span class="playProducer">${escapeHtml(song.producer)}</span>
           </div>
         </div>
         <div class="playContainerRight">
@@ -1900,7 +1902,7 @@ const rankToggle = () => {
 
 // eslint-disable-next-line no-unused-vars
 const changeProfile = (e) => {
-  if (profileid == userid) {
+  if (profileid == username) {
     switch (e) {
       case "alias": {
         let element = "";

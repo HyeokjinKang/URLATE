@@ -12,9 +12,9 @@ import * as nsfw from "nsfwjs";
 import fs from "fs";
 import sharp from "sharp";
 import { logger } from "./logger";
-import { errorHandler } from "./middleware";
+import { errorHandler, notFoundHandler, sendError } from "./middleware";
 import { URL } from "url";
-import { createHash } from "crypto";
+import { createHash, randomUUID } from "crypto";
 
 let branch;
 exec("git branch --show-current", (err, stdout, stderr) => {
@@ -36,6 +36,9 @@ const API_TIMEOUT_MS = 5000;
 
 const app = express();
 app.locals.pretty = true;
+
+// 버전 노출을 막습니다.
+app.disable("x-powered-by");
 
 // Rate limiting keys on the client address, which arrives via X-Forwarded-For.
 // Two hops answer for the CDN and the reverse proxy in front; trusting more
@@ -139,6 +142,18 @@ const gateLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+/**
+ * An upload costs a 3MB write, a sharp re-encode and an NSFW inference, and the
+ * file it leaves behind is served from our own origin. Cheap for the caller,
+ * expensive for us -- so it gets a budget of its own, well below the gate's.
+ */
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Its own budget, so a burst of page loads can never leave a visitor unable to sign out.
 const logoutLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -146,6 +161,13 @@ const logoutLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+// The gate could not reach a verdict. Say so instead of redirecting, which the
+// browser would read as "you are not signed in".
+const unavailable = (req: Request, res: Response) => {
+  res.set("Retry-After", "5");
+  sendError(req, res, 503);
+};
 
 /**
  * Gate the pages that only make sense for a signed-in player. The status ->
@@ -170,6 +192,15 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
       },
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
+    // A backend that is rate limiting or broken has not said anything about who
+    // the caller is. Redirecting on it signs a valid session out of the page it
+    // asked for -- and every gate lookup leaves this server's single address, so
+    // the backend's per-address limit is reached by the site as a whole, not by
+    // one visitor.
+    if (response.status === 429 || response.status >= 500) {
+      logger.warn("Auth status unavailable", { path: req.path, status: response.status });
+      return unavailable(req, res);
+    }
     if (!response.ok) return res.redirect(config.project.url);
     const data: any = await response.json();
     const status = data.status;
@@ -178,9 +209,10 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
     if (gatedStatuses.has(status)) return res.redirect(authRedirects[status]);
     next();
   } catch (err) {
-    // Fail closed: an unreachable backend must not open the gate.
+    // Fail closed: an unreachable backend must not open the gate. It must not
+    // claim the visitor is signed out either, so this is not a redirect.
     logger.warn("Failed to check auth status", { path: req.path, error: err });
-    res.redirect(config.project.url);
+    unavailable(req, res);
   }
 };
 
@@ -286,10 +318,24 @@ app.get("/privacy", (req, res) => {
   res.render("privacy");
 });
 
+// 업로드된 프로필 이미지가 놓이는 유일한 위치입니다. 아래 세 곳이 각자
+// 다른 방식으로 같은 경로를 만들고 있어 하나로 모았습니다.
+const PROFILES_DIR = path.resolve(__dirname, "..", "public", "images", "profiles");
+
+/**
+ * 프로필 디렉터리 "안의 파일"일 때만 정규화한 절대 경로를 돌려줍니다. 벗어나거나
+ * 디렉터리 자기 자신이면 null입니다. 삭제처럼 되돌릴 수 없는 동작 앞에 꼭
+ * 거쳐야 합니다.
+ */
+const insideProfiles = (candidate: string): string | null => {
+  const resolved = path.resolve(PROFILES_DIR, candidate);
+  return resolved.startsWith(PROFILES_DIR + path.sep) ? resolved : null;
+};
+
 const upload = multer({
   storage: multer.diskStorage({
     destination: function (req, file, cb) {
-      const dirPath = path.join(__dirname, "..", "public", "images", "profiles");
+      const dirPath = PROFILES_DIR;
       fs.mkdir(dirPath, { recursive: true }, (err) => {
         if (err) {
           logger.error("Profile update API error", err, {
@@ -301,14 +347,36 @@ const upload = multer({
         cb(null, dirPath);
       });
     },
+    // Date.now() alone collides: two uploads in the same millisecond overwrite
+    // each other's image.
     filename: function (req, file, cb) {
-      cb(null, Date.now() + ".webp");
+      cb(null, `${Date.now()}-${randomUUID()}.webp`);
     },
   }),
   limits: {
     fileSize: 3 * 1024 * 1024, // 3MB
   },
+  // Rejecting here keeps a non-image from ever reaching the disk; the handler's
+  // own check runs after multer has already written the file.
+  fileFilter: function (req, file, cb) {
+    cb(null, file.mimetype.indexOf("image") === 0);
+  },
 }).single("img");
+
+// multer writes the upload to disk before the handler runs, so every path that
+// rejects the request afterwards has to remove it or the bytes stay forever.
+const discardUpload = (file: Express.Multer.File | undefined) => {
+  if (!file?.path) return;
+  // 파일명은 서버가 만들지만, 지우는 동작이므로 경로를 다시 확인합니다.
+  const target = insideProfiles(file.path);
+  if (!target) {
+    logger.error("Refused to remove a file outside the profiles directory", null, { path: file.path });
+    return;
+  }
+  fs.promises.unlink(target).catch((err) => {
+    if (err.code !== "ENOENT") logger.warn("Failed to remove a rejected upload", { path: target, error: err });
+  });
+};
 
 const imageToTensor = async (fileBuffer) => {
   const { data, info } = await sharp(fileBuffer).raw().toBuffer({ resolveWithObject: true });
@@ -344,7 +412,7 @@ const resolveSessionUserid = async (req): Promise<string | null> => {
   }
 };
 
-app.post("/profile/:userid/:type", async (req, res) => {
+app.post("/profile/:userid/:type", uploadLimiter, async (req, res) => {
   // Validate userid: must be numeric
   if (!/^[0-9]+$/.test(req.params.userid)) {
     res.status(400).json({
@@ -418,6 +486,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
     if (err) {
       if (err instanceof multer.MulterError) err = err.message;
       else err = err.code;
+      discardUpload(req.file);
       logger.error("File upload error", err, { userid: req.params.userid, type: req.params.type });
       res.status(400).json({
         result: "failed",
@@ -428,6 +497,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
     }
     const file = req.file;
     if (!file || file.mimetype.indexOf("image") == -1) {
+      discardUpload(file);
       logger.warn("Invalid file upload attempt", { userid: req.params.userid, type: req.params.type, mimetype: file?.mimetype });
       res.status(400).json({
         result: "failed",
@@ -436,10 +506,10 @@ app.post("/profile/:userid/:type", async (req, res) => {
       });
       return;
     }
-    const ROOT = __dirname.split("/").slice(0, -1).join("/") + "/public/images/profiles";
-    const filePath = fs.realpathSync(path.resolve(ROOT, file.path));
-    if (!filePath.startsWith(ROOT)) {
-      logger.error("Path traversal attempt detected", null, { userid: req.params.userid, filePath, ROOT });
+    const filePath = insideProfiles(file.path);
+    if (!filePath) {
+      discardUpload(file);
+      logger.error("Path traversal attempt detected", null, { userid: req.params.userid, path: file.path });
       res.status(400).json({
         result: "failed",
         message: "Error occured while uploading",
@@ -447,20 +517,36 @@ app.post("/profile/:userid/:type", async (req, res) => {
       });
       return;
     }
-    const fileBuffer: Buffer = await sharp(filePath)
-      .resize({ width, height })
-      .flatten({ background: "#ffffff" })
-      .webp({
-        quality: 70,
-        effort: 6,
-      })
-      .toBuffer();
-    fs.writeFileSync(filePath, fileBuffer);
-    const image = await imageToTensor(fileBuffer);
-    const predictions = await model.classify(image);
-    image.dispose();
+
+    // multer's callback is not an Express handler, so a rejection here is not
+    // turned into a response -- the request would hang and the file would stay.
+    let fileBuffer: Buffer;
     let explicit = false;
-    if (predictions[0].className != "Drawing" && predictions[0].className != "Neutral") explicit = true;
+    try {
+      fileBuffer = await sharp(filePath)
+        .resize({ width, height })
+        .flatten({ background: "#ffffff" })
+        .webp({
+          quality: 70,
+          effort: 6,
+        })
+        .toBuffer();
+      fs.writeFileSync(filePath, fileBuffer);
+      const image = await imageToTensor(fileBuffer);
+      const predictions = await model.classify(image);
+      image.dispose();
+      if (predictions[0].className != "Drawing" && predictions[0].className != "Neutral") explicit = true;
+    } catch (e) {
+      discardUpload(file);
+      logger.error("Failed to process the uploaded image", e, { userid: req.params.userid, type: req.params.type });
+      res.status(400).json({
+        result: "failed",
+        message: "Error occured while uploading",
+        error: "Invalid image",
+      });
+      return;
+    }
+
     fetch(`${config.project.api}/profile/${type}`, {
       method: "PUT",
       headers: {
@@ -478,6 +564,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
       .then((res) => res.json())
       .then((json: any) => {
         if (json.result == "failed") {
+          discardUpload(file);
           logger.error("Profile update API error", null, { message: json.message, userid: req.params.userid });
           res.status(400).json({
             result: "failed",
@@ -492,20 +579,14 @@ app.post("/profile/:userid/:type", async (req, res) => {
           // Asynchronously delete the old file without blocking the response.
           (async () => {
             try {
-              const { realpath, unlink } = fs.promises;
-              const profilesDir = path.join(__dirname, "../public/images/profiles");
-              const rootPath = await realpath(profilesDir);
-
               const oldFilename = path.basename(new URL(oldFileUrl).pathname);
-              const oldFilePath = path.join(profilesDir, oldFilename);
+              const oldFilePath = insideProfiles(oldFilename);
 
-              const resolvedPath = await realpath(oldFilePath);
-
-              if (resolvedPath.startsWith(rootPath)) {
-                await unlink(resolvedPath);
+              if (oldFilePath) {
+                await fs.promises.unlink(oldFilePath);
                 logger.info(`Deleted old ${type} file`, { userid: req.params.userid, oldFilename });
               } else {
-                logger.warn("Skipping deletion of file outside the root directory.", { userid: req.params.userid, oldFileUrl, resolvedPath });
+                logger.warn("Skipping deletion of file outside the root directory.", { userid: req.params.userid, oldFileUrl });
               }
             } catch (err) {
               // It's okay if the file doesn't exist. Log other errors.
@@ -519,6 +600,7 @@ app.post("/profile/:userid/:type", async (req, res) => {
         res.status(200).json({ result: "success", url: `${config.project.url}/images/profiles/${file.filename}`, explicit });
       })
       .catch((err) => {
+        discardUpload(file);
         logger.error("Profile update fetch error", err, { userid: req.params.userid });
         res.status(500).json({
           result: "failed",
@@ -560,6 +642,9 @@ process.on("uncaughtException", (error: Error) => {
     process.exit(1);
   }
 })();
+
+// 라우트 뒤에 와야 합니다. 앞에 두면 모든 요청이 404로 끝납니다.
+app.use(notFoundHandler);
 
 // Add error handler middleware (must be last)
 app.use(errorHandler);
