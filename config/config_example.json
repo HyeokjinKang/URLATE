@@ -12,5 +12,11 @@
     "trustProxy": 2,
     "sessionCookie": "urlate",
     "cookieDomain": "example.com"
+  },
+  "bunny": {
+    "endpoint": "storage.bunnycdn.com",
+    "storageZone": "example-zone",
+    "accessKey": "Storage Zone Password",
+    "path": "profiles"
   }
 }

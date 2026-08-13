@@ -1,15 +1,15 @@
 /* global io, iziToast, game, lang, alias, socketi18n */
+import { escapeHtml } from "./utils.js";
+
 const body = document.querySelector("body");
-// Shared from modules/utils.js (this is a classic script, so import dynamically).
-let escapeHtml = (value) => String(value ?? "");
-import("./utils.js").then((utils) => {
-  escapeHtml = utils.escapeHtml;
-});
 let isErrorOccured = false;
 let achievementCount = 0;
-const socket = io(game, {
+export const socket = io(game, {
   withCredentials: true,
 });
+
+// The one place this module is exposed to the classic scripts, which cannot import it.
+(window.URLATE ??= {}).socket = socket;
 
 document.addEventListener("DOMContentLoaded", () => {
   const img = new Image();

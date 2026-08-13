@@ -1,4 +1,4 @@
-/** 게임 내 이펙트 및 렌더링 관련 상수/설정값을 관리합니다. */
+/** Constants and settings for in-game effects and rendering. */
 export const Config = {
   MATH: {
     PI_5: Math.PI / 5,
@@ -71,7 +71,7 @@ export const Config = {
   },
 };
 
-/** 기본 판정 스킨 */
+/** Default judgement skin. */
 export const JudgeSkin = {
   perfect: {
     type: "gradient",
@@ -86,7 +86,7 @@ export const JudgeSkin = {
   miss: { type: "color", color: "#F96C5A" },
 };
 
-/** keyInput 오버레이 색상표 */
+/** Colour table for the keyInput overlay. */
 export const KeyInputColors = {
   Perfect: "#57BEEB",
   Great: "#73DFD2",

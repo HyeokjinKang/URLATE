@@ -1,19 +1,18 @@
 /**
  * factory.js
- * 게임 오브젝트 생성을 담당합니다.
+ * Creates game objects.
  */
 import { Config } from "./constants.js";
 
-// 오브젝트 풀 정의
 const EXPLOSION_POOL = [];
 const CLICK_POOL = [];
 const JUDGE_POOL = [];
 
-/** 캔버스에 그려질 게임 오브젝트(파티클, 노트 등)의 순수 데이터를 생성합니다. */
+/** Builds the plain data for the game objects (particles, notes, ...) drawn on the canvas. */
 export default class Factory {
   /**
-   * 폭발 효과를 위한 파티클 데이터 배열을 생성합니다.
-   * @returns {Array<object>} 생성된 파티클 객체들의 배열
+   * Build the particle data for an explosion effect.
+   * @returns {Array<object>} the particle objects
    */
   static createExplosions(x, y) {
     const particles = [];
@@ -24,7 +23,6 @@ export default class Factory {
       const angle = Math.random() * Math.PI * 2;
       const distance = conf.SPEED * (0.8 + Math.random() * 0.4);
 
-      // 풀에서 가져오거나 새로 생성
       const p = EXPLOSION_POOL.pop() || {};
       p.startX = x;
       p.startY = y;
@@ -41,7 +39,7 @@ export default class Factory {
   }
 
   /**
-   * 기본 클릭 이펙트를 위한 데이터를 생성합니다.
+   * Build the data for the default click effect.
    * @returns { object }
    */
   static createClickDefault(x, y) {
@@ -55,7 +53,7 @@ export default class Factory {
   }
 
   /**
-   * 노트 클릭 이펙트를 위한 데이터를 생성합니다.
+   * Build the data for the note click effect.
    * @returns { object }
    */
   static createClickNote(x, y, noteType) {
@@ -70,7 +68,7 @@ export default class Factory {
   }
 
   /**
-   * 판정 텍스트 이펙트 데이터를 생성합니다.
+   * Build the data for the judgement text effect.
    * @param {number} x
    * @param {number} y
    * @param {boolean} judgeSkin - settings.game.judgeSkin
@@ -89,7 +87,7 @@ export default class Factory {
   }
 
   /**
-   * 수명이 다한 객체를 풀로 반환합니다.
+   * Return an object that reached the end of its life to the pool.
    */
   static recycle(p) {
     if (!p) return;

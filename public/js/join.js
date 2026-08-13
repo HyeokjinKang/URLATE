@@ -57,7 +57,7 @@ const check = () => {
         if (data.result == "success") {
           window.location.href = `${projectUrl}/game`;
         } else if (data.result == "failed") {
-          // 사용자가 이름만 바꾸면 되는 거부는 입력란 옆에 그대로 보여 줍니다.
+          // A rejection the user fixes by changing the name stays next to the field.
           const reason = { "Exist Name": joini18n.nameExist, "Reserved Name": joini18n.nameReserved }[data.error];
           if (reason) {
             const el = document.getElementById("nameExist");
