@@ -1,10 +1,7 @@
 /* global io, iziToast, game, lang, alias, socketi18n */
+import { escapeHtml } from "./utils.js";
+
 const body = document.querySelector("body");
-// Shared from modules/utils.js (this is a classic script, so import dynamically).
-let escapeHtml = (value) => String(value ?? "");
-import("./utils.js").then((utils) => {
-  escapeHtml = utils.escapeHtml;
-});
 let isErrorOccured = false;
 let achievementCount = 0;
 const socket = io(game, {
