@@ -2,26 +2,24 @@ import signale from "signale";
 import fs from "fs";
 import path from "path";
 
-// Create logs directory if it doesn't exist
 const logsDir = path.join(__dirname, "../logs");
 if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
 }
 
-// Log file paths
 const errorLogPath = path.join(logsDir, "error.log");
 const combinedLogPath = path.join(logsDir, "combined.log");
 
-// 로그 회전 기준입니다. 배포가 logs/를 지우지 않으므로 스스로 정리해야
-// 디스크가 찹니다. 파일당 상한 x (원본 + 보관본) 만큼만 남습니다.
+// Rotation bounds. A deploy does not clear logs/, so the logs have to trim
+// themselves or the disk fills up. At most (limit per file) x (live + kept) remains.
 const MAX_LOG_BYTES = 10 * 1024 * 1024;
 const KEEP_ROTATIONS = 3;
 
-// 매 줄마다 stat을 부르지 않도록 크기를 기억해 둡니다.
+// Remembered so a stat is not needed for every line written.
 const knownSizes = new Map<string, number>();
 
 /**
- * 파일을 .1 로 밀어내고 가장 오래된 보관본을 지웁니다.
+ * Shift the file down to .1 and drop the oldest kept copy.
  */
 function rotate(filePath: string): void {
   const oldest = `${filePath}.${KEEP_ROTATIONS}`;
@@ -59,7 +57,7 @@ function writeToFile(filePath: string, content: string): void {
     fs.appendFileSync(filePath, content, "utf8");
     knownSizes.set(filePath, size + bytes);
   } catch (err) {
-    // 로그를 남기지 못하는 것이 요청을 실패시켜서는 안 됩니다.
+    // Failing to log must never fail the request.
     console.error("Failed to write to log file:", err);
   }
 }
@@ -133,5 +131,4 @@ class Logger {
   }
 }
 
-// Export singleton instance
 export const logger = new Logger();
