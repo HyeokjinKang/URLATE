@@ -68,7 +68,7 @@ let great = 0;
 let good = 0;
 let bad = 0;
 let miss = 0;
-let bullet = 0; //miss와 bullet을 따로 처리
+let bullet = 0; // miss and bullet are tracked separately
 let mouseClicked = false;
 let menuAllowed = false;
 let mouseClickedMs = -1;
@@ -220,7 +220,7 @@ const initialize = (isFirstCalled) => {
         const findEnd = pattern.triggers.find((t) => t.value == 6);
         endBeat = findEnd ? findEnd.beat : null;
 
-        // 총알 생성 시점 속도를 한 번만 계산하여 캐싱 (bulletPos 내 첫 번째 탐색 제거)
+        // Cache the speed at spawn time so bulletPos does not have to look it up again
         bulletCreationSpeeds = calcBulletCreationSpeeds();
 
         document.getElementById("scoreDifficultyNum").textContent = localStorage.difficulty;
@@ -390,7 +390,6 @@ const cntRender = () => {
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
 
-    // 최적화된 트리거 처리 루프
     const renderTexts = [];
 
     while (currentTriggerIndex < pattern.triggers.length && pattern.triggers[currentTriggerIndex].beat <= beats) {
@@ -416,7 +415,7 @@ const cntRender = () => {
       currentTriggerIndex++;
     }
 
-    // 텍스트 트리거는 지속 시간이 있으므로 현재 비트 주변 탐색
+    // Text triggers have a duration, so search around the current beat
     let textEnd = upperBound(pattern.triggers, beats);
     let textStart = lowerBound(pattern.triggers, beats - 32);
     for (let i = textStart; i < textEnd; i++) {

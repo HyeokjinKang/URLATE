@@ -1,16 +1,16 @@
 /**
  * renderer.js
- * 게임의 캔버스 드로잉을 담당합니다.
+ * Canvas drawing for the game.
  */
 import { Config, JudgeSkin, KeyInputColors, DiffColors } from "./constants.js";
 import { getSin, getCos, hexadecimal, easeInQuad, easeOutQuad, easeOutQuart, numberWithCommas } from "./utils.js";
 
-/** 데이터를 받아 Canvas Context(ctx)에 실제 렌더링을 수행합니다. */
+/** Takes the data and renders it into the canvas context. */
 export default class Renderer {
   /**
    * @param {CanvasRenderingContext2D} ctx
    * @param {object} layout - { canvasW, canvasH, cursorZoom? }
-   * @param {object} skin - 스킨 데이터
+   * @param {object} skin - skin data
    */
   constructor(ctx, layout, skin) {
     this.ctx = ctx;
@@ -19,14 +19,14 @@ export default class Renderer {
     this.cursorZoom = layout.cursorZoom ?? 1;
     this.skin = skin;
 
-    // 렌더링 캐시
+    // Render caches
     this.cache = {
       bulletPath: null,
       lastCacheW: 0,
       gradient: new Map(), // skinPart -> Map(size -> gradient)
     };
 
-    // 애니메이션 상태
+    // Animation state
     this.animState = {
       score: { current: 0, start: 0, target: 0, startTime: 0 },
       combo: { value: 0, startTime: 0 },
@@ -35,7 +35,7 @@ export default class Renderer {
     this.cacheConfig();
   }
 
-  /** 내부 헬퍼: 좌표 변환 */
+  /** Helper: game coordinates -> canvas coordinates. */
   #getPos(x, y) {
     return {
       cx: ~~((this.canvasW / 200) * (x + 100)),
@@ -43,8 +43,8 @@ export default class Renderer {
     };
   }
 
-  /** 내부 헬퍼: 스킨 데이터(Gradient/Color)를 분석하여 ctx의 fillStyle 또는 strokeStyle을 설정합니다.
-   * 최적화: 그라데이션은 불투명하게 캐싱하고, 투명도는 ctx.globalAlpha로 조절합니다.
+  /** Helper: read the skin data (gradient or colour) and set fillStyle or strokeStyle.
+   * Gradients are cached fully opaque, and opacity is applied through ctx.globalAlpha.
    */
   #applyStyle(skinPart, x, y, size, opacity, isStroke = false) {
     const { ctx, canvasW } = this;
@@ -57,15 +57,15 @@ export default class Renderer {
       }
       style = sizeMap.get(size);
       if (!style) {
-        // 캐싱할 그라데이션은 (x, y)를 원점으로 하여 상대 좌표로 생성 (보통 x, y는 0)
+        // A cached gradient is built relative to (x, y) as the origin (usually 0, 0)
         style = ctx.createLinearGradient(x - size, y - size, x + size, y + size);
         for (let s = 0; s < skinPart.stops.length; s++) {
           style.addColorStop(skinPart.stops[s].percentage / 100, skinPart.stops[s].color);
         }
         sizeMap.set(size, style);
       }
-      // 그라데이션인 경우 opacity 처리는 호출 측에서 globalAlpha를 조절하도록 유도하거나,
-      // 여기서 직접 조절 (단, globalAlpha는 누적되므로 주의 필요)
+      // For a gradient the caller normally handles opacity through globalAlpha;
+      // setting it here works too, but globalAlpha accumulates.
     } else {
       style = hexadecimal(skinPart.color, opacity);
     }
@@ -76,14 +76,14 @@ export default class Renderer {
     } else ctx.fillStyle = style;
   }
 
-  /** 화면 크기가 변경되었을 때 호출
+  /** Called when the canvas size changed.
    * @param {object} layout - { canvasW, canvasH }
    */
   setSize(layout) {
     this.canvasW = layout.canvasW;
     this.canvasH = layout.canvasH;
 
-    // 화면 크기가 바뀌면 캐시 초기화
+    // A new canvas width invalidates the caches
     if (this.canvasW !== this.cache.lastCacheW) {
       this.cache.bulletPath = null;
       this.cache.gradient.clear();
@@ -92,7 +92,7 @@ export default class Renderer {
     this.cacheConfig();
   }
 
-  /** 컨피그 중 canvas size에 따라 달라지는 값 저장 */
+  /** Store the config values that depend on the canvas size. */
   cacheConfig() {
     const refX = this.canvasW / 1000;
     const refY = this.canvasH / 1000;
@@ -145,7 +145,7 @@ export default class Renderer {
       },
     };
 
-    // resize 시에만 바뀌는 고정 font 문자열 캐싱
+    // Font strings only change on resize, so build them once here
     const defaultSize = this.CONFIG.UI.DEFAULT_FONT_SIZE;
     const scorePanelSize = this.CONFIG.UI.SCORE_PANEL.FONT_SIZE;
     const judgeSize = ~~(this.canvasH / 25);
@@ -159,7 +159,7 @@ export default class Renderer {
     };
   }
 
-  /** 점수판 애니메이션 상태 초기화 */
+  /** Reset the score panel animation state. */
   initialize() {
     this.animState = {
       score: { current: 0, start: 0, target: 0, startTime: 0 },
@@ -168,7 +168,7 @@ export default class Renderer {
   }
 
   /**
-   * 테두리가 있는 텍스트를 그립니다. (스타일 설정 후 호출 필요)
+   * Draw outlined text. The styles must already be set.
    * @param {string} text
    * @param {number} x
    * @param {number} y
@@ -179,7 +179,7 @@ export default class Renderer {
   }
 
   /**
-   * 노트를 그립니다.
+   * Draw a note.
    * @param {object} note - { x, y, value, direction, debugIndex? }
    * @param {object} state - { globalAlpha, progress, tailProgress, endProgress, isGrabbed, isSelected? }
    */
@@ -188,16 +188,14 @@ export default class Renderer {
     const { x, y, value: type, direction } = note;
     const { globalAlpha, progress, tailProgress, endProgress, isGrabbed, isSelected } = state;
 
-    // 종료된 노트는 그리지 않음
+    // A finished note is not drawn
     if (type !== 2 && progress >= 130) return;
     if (type === 2 && endProgress >= 130) return;
 
-    // 공통 변수 계산
     const { cx, cy } = this.#getPos(x, y);
     const safeP = Math.max(progress, 0);
     let w = this.CONFIG.NOTE.WIDTH;
 
-    // 투명도 계산
     let opacityVal = 100;
     if (type !== 2 && safeP >= 100) {
       opacityVal = Math.max(130 - safeP, 0) * (10 / 3);
@@ -210,7 +208,6 @@ export default class Renderer {
     }
     const noteSkin = skin.note[type] || skin.note[0];
 
-    // 그리기 시작
     ctx.save();
     ctx.translate(cx, cy);
     ctx.globalAlpha = (opacityVal / 100) * globalAlpha;
@@ -235,19 +232,18 @@ export default class Renderer {
       ctx.fillStyle = "#ebd534";
       ctx.strokeStyle = "#ebd534";
     } else {
-      // 그라데이션 캐싱 활용을 위해 opacity는 100으로 넘기고 globalAlpha로 제어
+      // Pass opacity 100 so the cached gradient can be reused; globalAlpha does the fading
       this.#applyStyle(noteSkin, 0, 0, w, 100, false);
       this.#applyStyle(noteSkin.indicator, 0, 0, w, 100, true);
     }
 
-    // Type 0: Circle Note (일반)
+    // Type 0: Circle Note
     if (type === 0) {
-      // 타이밍 인디케이터
+      // Timing indicator
       ctx.beginPath();
       ctx.arc(0, 0, w, 1.5 * Math.PI, 1.5 * Math.PI + (safeP / 50) * Math.PI);
       ctx.stroke();
 
-      // 안쪽 채우기
       ctx.beginPath();
       ctx.arc(0, 0, (w / 100) * safeP, 0, 2 * Math.PI);
       ctx.fill();
@@ -256,7 +252,6 @@ export default class Renderer {
         ctx.stroke();
       }
 
-      // 틴트
       ctx.beginPath();
       ctx.globalAlpha *= (0.2 * Math.min(safeP * 2, 100)) / 100;
       ctx.fillStyle = ctx.strokeStyle;
@@ -264,27 +259,27 @@ export default class Renderer {
       ctx.fill();
     }
 
-    // Type 1: Arrow Note (플릭)
+    // Type 1: Arrow Note (flick)
     else if (type === 1) {
       w = w * 0.9;
 
-      // 애니메이션 단계 (0~20, 20~80, 80~100 구간별 진행도)
+      // Animation stages: progress within 0-20, 20-80 and 80-100
       const p1 = safeP <= 20 ? safeP * 5 : 100;
       const p2 = safeP > 20 ? Math.min((safeP - 20) * 1.66, 100) : 0;
       const p3 = safeP > 80 ? Math.min((safeP - 80) * 5, 100) : 0;
 
       const { PI_5, COS_36, SIN_36 } = Config.MATH;
 
-      // direction에 따라 캔버스 변형
+      // Flip the canvas by direction
       ctx.save();
       ctx.scale(direction, direction);
 
       ctx.beginPath();
 
-      // 날개 끝이자 원의 접점
+      // Wing tip, which is also where the arc meets
       const tipX = w * COS_36;
       const tipY = -w * SIN_36;
-      const tailY = -1.5 * w; // 뾰족한 부분
+      const tailY = -1.5 * w; // the sharp end
 
       // [Path 1] Tail(0, tailY) -> Right Tip(tipX, tipY)
       const dx1 = tipX;
@@ -293,7 +288,7 @@ export default class Renderer {
       ctx.moveTo(0, tailY);
       ctx.lineTo((dx1 / 100) * p1, tailY + (dy1 / 100) * p1);
 
-      // [Path 2] Arc (시계방향)
+      // [Path 2] Arc (clockwise)
       if (p2 > 0) {
         const arcLen = ((PI_5 * 7) / 100) * p2;
         ctx.arc(0, 0, w, -PI_5, -PI_5 + arcLen);
@@ -308,9 +303,8 @@ export default class Renderer {
       }
       ctx.stroke();
 
-      // 안쪽 채우기
       ctx.beginPath();
-      ctx.moveTo(0, -1.5 * (w / 100) * safeP); // 중심축
+      ctx.moveTo(0, -1.5 * (w / 100) * safeP); // centre axis
       ctx.arc(0, 0, (w / 100) * safeP, -PI_5, PI_5 * 6);
       ctx.lineTo(0, -1.5 * (w / 100) * safeP);
       ctx.fill();
@@ -319,7 +313,6 @@ export default class Renderer {
         ctx.stroke();
       }
 
-      // 틴트
       ctx.beginPath();
       ctx.globalAlpha *= (0.2 * Math.min(safeP * 2, 100)) / 100;
       ctx.fillStyle = ctx.strokeStyle;
@@ -331,11 +324,11 @@ export default class Renderer {
       ctx.restore();
     }
 
-    // Type 2: Hold Note (홀드)
+    // Type 2: Hold Note
     else if (type === 2) {
       ctx.beginPath();
       if (safeP <= 100) {
-        // 생성 중
+        // growing
         ctx.arc(0, 0, w, 1.5 * Math.PI, 1.5 * Math.PI + (safeP / 50) * Math.PI);
         ctx.lineTo(0, 0);
         ctx.fill();
@@ -343,12 +336,12 @@ export default class Renderer {
         ctx.arc(0, 0, w, 1.5 * Math.PI, 1.5 * Math.PI + (safeP / 50) * Math.PI);
         ctx.stroke();
       } else if (!isGrabbed) {
-        // 놓침
+        // missed
         ctx.arc(0, 0, w, 0, 2 * Math.PI);
         ctx.fill();
         ctx.stroke();
       } else if (tailProgress <= 100) {
-        // 잡는 중
+        // held
         ctx.arc(0, 0, w, 1.5 * Math.PI + (tailProgress / 50) * Math.PI, 1.5 * Math.PI);
         ctx.lineTo(0, 0);
         ctx.fill();
@@ -356,12 +349,11 @@ export default class Renderer {
         ctx.arc(0, 0, w, 0, 2 * Math.PI);
         ctx.stroke();
       } else {
-        // 완료
+        // finished
         ctx.arc(0, 0, w, 0, 2 * Math.PI);
         ctx.stroke();
       }
 
-      // 틴트
       ctx.beginPath();
       ctx.globalAlpha *= (0.2 * Math.min(safeP * 2, 100)) / 100;
       ctx.fillStyle = ctx.strokeStyle;
@@ -373,7 +365,7 @@ export default class Renderer {
   }
 
   /**
-   * 총알을 그립니다.
+   * Draw a bullet.
    * @param {object} bullet - { x, y, angle, location?, direction?, debugIndex? }
    * @param {object} state - { isSelected?, isHit? }
    */
@@ -385,7 +377,7 @@ export default class Renderer {
     const { cx, cy } = this.#getPos(x, y);
     const w = canvasW / 80;
 
-    // 총알 캐시 검증 및 재생성
+    // Rebuild the cached bullet path when the width changed
     if (this.cache.lastCacheW !== canvasW || !this.cache.bulletPath) {
       const path = new Path2D();
       path.arc(0, 0, w, 0.5 * Math.PI, 1.5 * Math.PI);
@@ -396,7 +388,7 @@ export default class Renderer {
       this.cache.lastCacheW = canvasW;
     }
 
-    // (에디터용) 선택된 객체
+    // (editor) selected object
     if (isSelected) {
       ctx.beginPath();
       ctx.font = this.FONT.debug;
@@ -417,21 +409,18 @@ export default class Renderer {
 
       ctx.fillStyle = "#ebd534";
     }
-    // (에디터용) 피격된 개체
+    // (editor) object that was hit
     else if (isHit) {
       ctx.fillStyle = "#fb4934";
     }
-    // 스킨 적용
     else {
       this.#applyStyle(skin.bullet, 0, 0, w, 100, false);
       if (skin.bullet.outline) this.#applyStyle(skin.bullet.outline, 0, 0, w, 100, true);
     }
 
-    // visualAngle 계산
     const visualAngleRad = Math.atan2(getSin(realAngle) * canvasH, getCos(realAngle) * canvasW);
     const visualAngle = (visualAngleRad * 180) / Math.PI;
 
-    // 그리기 시작
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate((visualAngle * Math.PI) / 180);
@@ -444,7 +433,7 @@ export default class Renderer {
   }
 
   /**
-   * 트리거로 정의된 텍스트를 그립니다.
+   * Draw the text defined by a trigger.
    * @param {object} textObj - pattern.trigger[i]
    */
   triggerText(textObj) {
@@ -469,7 +458,7 @@ export default class Renderer {
   }
 
   /**
-   * 마우스 커서를 그립니다.
+   * Draw the mouse cursor.
    * @param {object} cursor - { x, y }
    * @param {object} state - { isClicked?, clickedMs? }
    */
@@ -481,18 +470,17 @@ export default class Renderer {
     const { cx, cy } = this.#getPos(mouseX, mouseY);
     const conf = Config.CURSOR;
 
-    // 크기 계산에 필요한 값들 가져오기
     let w = this.CONFIG.CURSOR.SIZE;
     let adder = this.CONFIG.CURSOR.ANIM_SIZE_ADDER;
 
-    // 클릭 애니메이션
+    // Click animation
     if (clickedMs !== undefined && clickedMs !== -1) {
       const now = Date.now();
       if (isClicked) {
-        // 클릭하면 살짝 커짐
+        // grows a little while held
         w = w + adder;
       } else {
-        // 클릭을 풀면 서서히 복귀
+        // eases back after release
         if (now < clickedMs + conf.RELEASE_ANIM_LENGTH) {
           const progress = (clickedMs + conf.RELEASE_ANIM_LENGTH - now) / conf.RELEASE_ANIM_LENGTH;
           w = w + adder * progress;
@@ -503,7 +491,6 @@ export default class Renderer {
     ctx.save();
     ctx.translate(cx, cy);
 
-    // 스킨 적용
     this.#applyStyle(skin.cursor, 0, 0, w, 100, false);
     if (skin.cursor.type === "gradient") ctx.shadowColor = skin.cursor.stops[0].color;
     else ctx.shadowColor = skin.cursor.color;
@@ -514,7 +501,6 @@ export default class Renderer {
       else ctx.shadowColor = skin.cursor.outline.color;
     }
 
-    // 그리기
     ctx.beginPath();
     ctx.arc(0, 0, w, 0, 2 * Math.PI);
     ctx.fill();
@@ -525,8 +511,8 @@ export default class Renderer {
   }
 
   /**
-   * 판정 텍스트를 그립니다.
-   * @param {Array<object>} particles - 판정 파티클 배열
+   * Draw the judgement text.
+   * @param {Array<object>} particles - the judgement particles
    */
   judges(particles) {
     const { ctx, canvasH, skin } = this;
@@ -572,7 +558,7 @@ export default class Renderer {
   }
 
   /**
-   * 클릭 이펙트를 화면에 그립니다.
+   * Draw the click effects.
    * @param {Array<object>} particles
    */
   clickEffects(particles) {
@@ -622,7 +608,7 @@ export default class Renderer {
   }
 
   /**
-   * 폭발 파티클 목록을 업데이트하고 화면에 그립니다.
+   * Update the explosion particles and draw them.
    * @param {Array<object>} particles
    */
   explosions(particles) {
@@ -658,9 +644,9 @@ export default class Renderer {
   }
 
   /**
-   * FC / AP 이펙트를 그립니다.
+   * Draw the FC / AP effect.
    * @param {number} effectNum - 0: AP / 1 : FC
-   * @param {number} effectMs - 이펙트 시작 시간
+   * @param {number} effectMs - when the effect started
    */
   finalEffect(effectNum, effectMs) {
     const { ctx, canvasW, canvasH } = this;
@@ -675,7 +661,7 @@ export default class Renderer {
 
     ctx.save();
 
-    // 1. 배경에 흐르는 텍스트 (화면 모서리 양 끝)
+    // 1. Background text sliding in from both corners
     const backgroundSize = this.CONFIG.FINAL_EFFECT.BACKGROUND.FONT_SIZE;
     const backgroundStartX = this.CONFIG.FINAL_EFFECT.BACKGROUND.START_X;
     const backgroundFinalX = this.CONFIG.FINAL_EFFECT.BACKGROUND.FINAL_X;
@@ -712,7 +698,7 @@ export default class Renderer {
     ctx.textBaseline = "bottom";
     ctx.fillText(text, effectX, effectY);
 
-    // 2. 메인 중앙 텍스트
+    // 2. Main text in the centre
     let mainTextX = ~~(canvasW / 2);
     let mainTextY = ~~(canvasH / 2);
 
@@ -776,27 +762,27 @@ export default class Renderer {
   }
 
   /**
-   * 키 입력 로그 오버레이를 그립니다.
-   * @param {Array} keyInput - 키 입력 데이터 배열
-   * @param {number} keyInputTime - 마지막 키 입력 시간
+   * Draw the key input log overlay.
+   * @param {Array} keyInput - the key input entries
+   * @param {number} keyInputTime - when the last key input happened
    */
   keyInputUI(keyInput, keyInputTime) {
     if (keyInput.length === 0) return;
 
-    // 마지막 입력 후 4초 지났으면 그리지 않음
+    // Nothing is drawn 4 seconds after the last input
     if (keyInput[keyInput.length - 1].time + 4000 <= Date.now()) return;
 
     const { ctx, canvasW, canvasH } = this;
     const now = Date.now();
 
-    // 마지막 입력 후 3초 뒤 페이드 아웃
+    // Fade out starts 3 seconds after the last input
     let alpha = 1;
     if (keyInput[keyInput.length - 1].time + 3000 <= now) {
       alpha = 1 - (now - keyInput[keyInput.length - 1].time - 3000) / 1000;
       if (alpha <= 0) return;
     }
 
-    // 새 입력 발생 시 밀려나는 애니메이션
+    // A new input pushes the row aside
     let animDuration = 0;
     let animX = 0;
     if (keyInputTime + 100 >= now) {
@@ -808,7 +794,7 @@ export default class Renderer {
       let j = i - keyInput.length + 13;
       let partAlpha = alpha;
 
-      // 등장 애니메이션 (투명도)
+      // Fade-in of the entering box
       if (j < 8) {
         partAlpha *= (1 / 8) * (j + animDuration);
       }
@@ -819,7 +805,6 @@ export default class Renderer {
       const judge = keyInput[i].judge;
       let color = KeyInputColors[judge];
 
-      // 박스 그리기
       const boxX = canvasW * 0.08 - canvasH / 15 + (keyInput.length - i - 1) * (canvasW / 100 + canvasW / 200) - animX;
       const boxY = canvasH * 0.05;
       const boxSize = canvasW / 100;
@@ -833,7 +818,6 @@ export default class Renderer {
       ctx.fill();
       ctx.stroke();
 
-      // 텍스트 그리기
       ctx.beginPath();
       ctx.fillStyle = "#fff";
       ctx.font = this.FONT.keyInput;
@@ -850,8 +834,8 @@ export default class Renderer {
   }
 
   /**
-   * 하단 진행도 바 (Progress Bar)를 그립니다.
-   * @param {number} percentage - 진행도 (0 ~ 1)
+   * Draw the progress bar at the bottom.
+   * @param {number} percentage - progress, 0 to 1
    */
   progressBarUI(percentage) {
     const { ctx, canvasW, canvasH } = this;
@@ -874,7 +858,7 @@ export default class Renderer {
   }
 
   /**
-   * 점수판 및 앨범아트 (Score Panel)을 그립니다.
+   * Draw the score panel and the album art.
    * @param {object} data - { score, combo, difficulty }
    * @param {HTMLImageElement} albumImg
    */
@@ -883,17 +867,17 @@ export default class Renderer {
     const { score, combo, difficulty } = data;
     const now = Date.now();
 
-    // 1. 점수 애니메이션 계산
+    // 1. Score animation
     const s = this.animState.score;
 
-    // 실제 점수가 바뀌었으면 목표값 갱신
+    // A changed score becomes the new target
     if (score !== s.target) {
       s.start = s.current;
       s.target = score;
       s.startTime = now;
     }
 
-    // 0.5초간 카운트 업 애니메이션
+    // Counts up over 0.5s
     const scoreElapsed = now - s.startTime;
     if (scoreElapsed < 500) {
       const progress = easeOutQuart(scoreElapsed / 500);
@@ -902,16 +886,16 @@ export default class Renderer {
       s.current = s.target;
     }
 
-    // 2. 콤보 애니메이션 계산
+    // 2. Combo animation
     const c = this.animState.combo;
 
-    // 콤보가 증가했으면 팝업 효과 시작
+    // A higher combo restarts the pop
     if (combo > c.value) {
       c.startTime = now;
     }
     c.value = combo;
 
-    // 0.5초간 팝업 후 서서히 줄어듦
+    // Pops for 0.5s, then shrinks back
     const comboElapsed = now - c.startTime;
     let comboScale = 0;
     if (comboElapsed < 500) {
@@ -921,7 +905,6 @@ export default class Renderer {
     // 3. Rendering
     ctx.save();
 
-    // (1) 배경 박스
     ctx.beginPath();
 
     ctx.fillStyle = DiffColors[difficulty] ?? "#6021ff"; // EZ / MID / HARD / TEST
@@ -938,18 +921,15 @@ export default class Renderer {
     ctx.rect(xBase, yBase, size + padding, size + padding);
     ctx.fill();
 
-    // (2) 흰색 테두리
     ctx.beginPath();
     ctx.fillStyle = "#fff";
     ctx.rect(xBase - border, yBase - border, size + padding, size + padding);
     ctx.fill();
 
-    // (3) 앨범 아트
     if (albumImg) {
       ctx.drawImage(albumImg, xBase, yBase, size, size);
     }
 
-    // (4) 점수 텍스트
     ctx.beginPath();
     ctx.font = this.FONT.scorePanel;
     ctx.textAlign = "right";
@@ -957,7 +937,6 @@ export default class Renderer {
 
     ctx.fillText(numberWithCommas(s.current), xBase - margin, yBase);
 
-    // (5) 콤보 텍스트
     const roundedSize = ~~(this.CONFIG.UI.DEFAULT_FONT_SIZE * (1 + comboScale));
     const roundedWeight = ~~(400 * (1 + comboScale * 0.5));
     ctx.font = `${roundedWeight} ${roundedSize}px Montserrat, Pretendard JP Variable`;
@@ -967,7 +946,7 @@ export default class Renderer {
   }
 
   /**
-   * 시스템 정보를 그립니다.
+   * Draw the system info.
    * @param {object} info - { speed, bpm, fps }
    */
   systemInfoUI(info) {
@@ -982,13 +961,13 @@ export default class Renderer {
     ctx.font = this.FONT.systemInfo;
     ctx.textBaseline = "bottom";
 
-    // Speed & BPM (좌측 하단)
+    // Speed & BPM (bottom left)
     if (speed !== undefined && bpm !== undefined) {
       ctx.textAlign = "left";
       ctx.fillText(`Speed : ${speed}, BPM : ${bpm}`, canvasW / 100, canvasH - canvasH / 60);
     }
 
-    // FPS (우측 하단)
+    // FPS (bottom right)
     if (fps !== undefined) {
       ctx.textAlign = "right";
       ctx.fillText(fps, canvasW - canvasW / 100, canvasH - canvasH / 70);
@@ -997,7 +976,7 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /** 에디터용: 트리거 추가 안내 오버레이를 그립니다. */
+  /** Editor: overlay prompting for a trigger. */
   triggerAddOverlay() {
     const { ctx, canvasW, canvasH } = this;
 
@@ -1025,7 +1004,7 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /** 에디터용: 중앙 십자선을 그립니다. */
+  /** Editor: centre crosshair. */
   axis() {
     const { ctx, canvasW, canvasH } = this;
     const tw = canvasW / 200;
@@ -1033,13 +1012,11 @@ export default class Renderer {
 
     ctx.save();
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "#ed3a2680"; // 붉은색 강조
+    ctx.strokeStyle = "#ed3a2680"; // red accent
     ctx.beginPath();
 
-    // 세로 중앙선
     ctx.moveTo(tw * 100, 0);
     ctx.lineTo(tw * 100, canvasH);
-    // 가로 중앙선
     ctx.moveTo(0, th * 100);
     ctx.lineTo(canvasW, th * 100);
 
@@ -1047,7 +1024,7 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /** 에디터용: 배경 모눈 격자(Mesh Grid)를 그립니다. */
+  /** Editor: background mesh grid. */
   meshGrid() {
     const { ctx, canvasW, canvasH } = this;
     const tw = canvasW / 200;
@@ -1055,21 +1032,19 @@ export default class Renderer {
 
     ctx.save();
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "#bbbbbb20"; // 연한 회색
+    ctx.strokeStyle = "#bbbbbb20"; // light grey
     ctx.beginPath();
 
     let x1 = 0,
       x2 = tw * 5,
       y = 0;
 
-    // 화면 밖 여유분까지 루프
+    // Loops past the screen edges
     for (let i = -100; i <= 100; i += 10) {
-      // 세로선
       ctx.moveTo(x1, 0);
       ctx.lineTo(x1, canvasH);
       ctx.moveTo(x2, 0);
       ctx.lineTo(x2, canvasH);
-      // 가로선
       ctx.moveTo(0, y);
       ctx.lineTo(canvasW, y);
 
@@ -1082,8 +1057,8 @@ export default class Renderer {
   }
 
   /**
-   * 에디터용: 방사형 그리드(Radial Grid)를 그립니다.
-   * @param {object} centerNote - pattern.patterns[i] (중심이 될 노트)
+   * Editor: radial grid.
+   * @param {object} centerNote - pattern.patterns[i], the note at the centre
    */
   radialGrid(centerNote) {
     const { ctx, canvasW } = this;
@@ -1103,7 +1078,7 @@ export default class Renderer {
   }
 
   /**
-   * 에디터용: 노트 연결선을 그립니다.
+   * Editor: connector line between notes.
    * @param {object} prevNote - { x, y }
    * @param {object} currNote - { x, y }
    * @param {number} alpha - 0 ~ 255
@@ -1122,9 +1097,9 @@ export default class Renderer {
   }
 
   /**
-   * 에디터용: 지나간 노트의 그림자(잔상)를 그립니다.
+   * Editor: ghost of a note that already passed.
    * @param {object} note - { x, y, value, direction }
-   * @param {number} alpha - 투명도
+   * @param {number} alpha - opacity
    */
   noteShadow(note, alpha) {
     const { ctx } = this;

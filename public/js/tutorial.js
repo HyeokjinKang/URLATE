@@ -67,7 +67,7 @@ let great = 0;
 let good = 0;
 let bad = 0;
 let miss = 0;
-let bullet = 0; //miss와 bullet을 따로 처리
+let bullet = 0; // miss and bullet are tracked separately
 let mouseClicked = false;
 let menuAllowed = false;
 let mouseClickedMs = -1;
@@ -345,7 +345,6 @@ const cntRender = () => {
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
 
-    // 최적화된 트리거 처리 루프
     const renderTexts = [];
 
     while (currentTriggerIndex < pattern.triggers.length && pattern.triggers[currentTriggerIndex].beat <= beats) {
