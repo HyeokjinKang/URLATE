@@ -41,6 +41,10 @@ const BUNNY_TIMEOUT_MS = 15000;
 // default image or an avatar we do not own.
 const PROFILE_FILENAME = /^[0-9]+-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$/;
 
+// Never deleted, whatever a profile points at. pfp.webp is the shared default
+// picture: removing it would blank out every user still on it.
+const PROTECTED_FILENAMES = new Set(["pfp.webp"]);
+
 const bunnyStorageUrl = (filename: string) => `https://${config.bunny.endpoint}/${config.bunny.storageZone}/${BUNNY_PATH}/${filename}`;
 
 // The address browsers fetch: a pull zone sits in front of the storage zone.
@@ -88,7 +92,7 @@ const oldStorageFile = (fileUrl: string): string | null => {
   } catch {
     return null;
   }
-  if (!PROFILE_FILENAME.test(filename)) return null;
+  if (PROTECTED_FILENAMES.has(filename) || !PROFILE_FILENAME.test(filename)) return null;
   return filename;
 };
 
