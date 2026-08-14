@@ -6,7 +6,6 @@ import fetch from "node-fetch";
 import * as tf from "@tensorflow/tfjs";
 import "@tensorflow/tfjs-backend-wasm";
 import * as nsfw from "nsfwjs";
-import fs from "fs";
 import sharp from "sharp";
 import { logger } from "./logger";
 import { URL } from "url";
@@ -32,17 +31,6 @@ const uploadLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// New uploads all go to BunnyCDN. This directory only exists to serve and delete
-// the files that were uploaded before the move.
-const PROFILES_DIR = path.resolve(__dirname, "..", "public", "images", "profiles");
-
-// Returns the resolved path only for a file inside the profiles directory, and
-// null for anything that escapes it. Required before an unlink.
-const insideProfiles = (candidate: string): string | null => {
-  const resolved = path.resolve(PROFILES_DIR, candidate);
-  return resolved.startsWith(PROFILES_DIR + path.sep) ? resolved : null;
-};
-
 const BUNNY_PATH = String(config.bunny?.path ?? "profiles").replace(/^\/+|\/+$/g, "");
 
 // A storage upload pushes up to 3MB over the network, so it needs more room than
@@ -50,10 +38,8 @@ const BUNNY_PATH = String(config.bunny?.path ?? "profiles").replace(/^\/+|\/+$/g
 const BUNNY_TIMEOUT_MS = 15000;
 
 // Only files we uploaded may be deleted. A name that does not match may be a
-// default image or an avatar we do not own. The legacy form predates the UUID
-// suffix and exists on disk only.
+// default image or an avatar we do not own.
 const PROFILE_FILENAME = /^[0-9]+-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$/;
-const LEGACY_PROFILE_FILENAME = /^[0-9]+\.webp$/;
 
 const bunnyStorageUrl = (filename: string) => `https://${config.bunny.endpoint}/${config.bunny.storageZone}/${BUNNY_PATH}/${filename}`;
 
@@ -92,21 +78,18 @@ const discardUpload = (filename: string | null, context: Record<string, unknown>
   });
 };
 
-// Tells where a previous profile URL lives, but only when we uploaded it.
-// Default images and external avatars return null and are left alone.
-const locateOldFile = (fileUrl: string): { kind: "bunny" | "local"; filename: string } | null => {
-  const bunnyPrefix = `${config.project.cdn}/${BUNNY_PATH}/`;
-  const localPrefix = `${config.project.url}/images/profiles/`;
-  const kind = fileUrl.startsWith(bunnyPrefix) ? "bunny" : fileUrl.startsWith(localPrefix) ? "local" : null;
-  if (!kind) return null;
+// The storage zone file a previous profile URL points at, but only when we
+// uploaded it. Default images and external avatars return null and are left alone.
+const oldStorageFile = (fileUrl: string): string | null => {
+  if (!fileUrl.startsWith(`${config.project.cdn}/${BUNNY_PATH}/`)) return null;
   let filename: string;
   try {
     filename = path.basename(new URL(fileUrl).pathname);
   } catch {
     return null;
   }
-  if (!PROFILE_FILENAME.test(filename) && !(kind === "local" && LEGACY_PROFILE_FILENAME.test(filename))) return null;
-  return { kind, filename };
+  if (!PROFILE_FILENAME.test(filename)) return null;
+  return filename;
 };
 
 const upload = multer({
@@ -340,28 +323,16 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
         if (oldFileUrl) {
           // Delete the old file without blocking the response.
           (async () => {
-            const old = locateOldFile(oldFileUrl);
-            if (!old) {
+            const oldFilename = oldStorageFile(oldFileUrl);
+            if (!oldFilename) {
               logger.info(`Kept the previous ${type} image, which we did not upload`, { userid: req.params.userid, oldFileUrl });
               return;
             }
             try {
-              if (old.kind === "bunny") {
-                await deleteFromBunny(old.filename);
-              } else {
-                const oldFilePath = insideProfiles(old.filename);
-                if (!oldFilePath) {
-                  logger.warn("Skipping deletion of file outside the root directory.", { userid: req.params.userid, oldFileUrl });
-                  return;
-                }
-                await fs.promises.unlink(oldFilePath);
-              }
-              logger.info(`Deleted old ${type} file`, { userid: req.params.userid, oldFilename: old.filename, storage: old.kind });
+              await deleteFromBunny(oldFilename);
+              logger.info(`Deleted old ${type} file`, { userid: req.params.userid, oldFilename });
             } catch (err) {
-              // It's okay if the file doesn't exist. Log other errors.
-              if (err.code !== "ENOENT") {
-                logger.warn(`Failed to delete old ${type} file`, { userid: req.params.userid, oldFileUrl, error: err });
-              }
+              logger.warn(`Failed to delete old ${type} file`, { userid: req.params.userid, oldFileUrl, error: err });
             }
           })();
         }
