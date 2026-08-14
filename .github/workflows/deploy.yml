@@ -50,7 +50,6 @@ jobs:
           rsync -azq --delete \
             --exclude='.git/' \
             --exclude='config/config.json' \
-            --exclude='public/images/profiles/' \
             --exclude='logs/' \
             $GITHUB_WORKSPACE/deploy/ URLATE-PRODUCTION:${{secrets.DEPLOY_TARGET}}/
 
