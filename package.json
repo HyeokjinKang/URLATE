@@ -3,6 +3,10 @@
     "type": "git",
     "url": "https://github.com/HyeokjinKang/URLATE"
   },
+  "engines": {
+    "node": "24",
+    "pnpm": "11"
+  },
   "name": "urlate",
   "version": "1.0.0-preview.5",
   "description": "URLATE, Online rhythm game based on web technologies.",
@@ -38,10 +42,10 @@
     "@eslint/js": "^10.0.1",
     "@types/multer": "^2.2.0",
     "@types/node": "^24.13.3",
-    "@typescript-eslint/eslint-plugin": "^8.66.0",
-    "@typescript-eslint/parser": "^8.66.0",
+    "@typescript-eslint/eslint-plugin": "^8.67.0",
+    "@typescript-eslint/parser": "^8.67.0",
     "eslint": "^10.8.1",
-    "globals": "^17.9.0",
+    "globals": "^17.11.0",
     "javascript-obfuscator": "^4.2.2",
     "prettier": "^3.9.6",
     "supervisor": "^0.12.0",
