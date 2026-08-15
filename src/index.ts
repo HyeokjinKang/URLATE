@@ -313,9 +313,12 @@ process.on("uncaughtException", (error: Error) => {
   try {
     await initProfile();
 
-    app.listen(config.project.port, () => {
+    // 리버스 프록시가 앞에 있으므로 기본값은 루프백입니다. 와일드카드로 열면
+    // 포트가 방화벽 정책과 무관하게 외부에 그대로 노출됩니다.
+    const host = config.project.host ?? "127.0.0.1";
+    app.listen(config.project.port, host, () => {
       logger.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : version}.`);
-      logger.success(`HTTP Server running at port ${config.project.port}.`);
+      logger.success(`HTTP Server running at ${host}:${config.project.port}.`);
     });
   } catch (err) {
     logger.fatal("Failed to initialize front-end server.", err);
