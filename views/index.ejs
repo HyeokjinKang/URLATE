@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="/css/index.css?v=<%= ver %>" />
     <title>URLATE</title>
   </head>
-  <body oncontextmenu="return false">
+  <body>
     <div
       id="g_id_onload"
       data-client_id="<%= googleClientId %>"
@@ -58,7 +58,7 @@
       <b>안내 사항</b>: 본 게임은 아직 개발 중이며, 누구나 접속이 가능하지만 <b>모든 기록은 초기화될 수 있습니다.</b><br />
       <b>Notice</b>: This game is still in development, so anyone can access it, but <b>all records can be reset.</b>
     </span>
-    <script>
+    <script nonce="<%= cspNonce %>">
       const projectUrl = "<%= url %>";
       const api = "<%= api %>";
       const loginFailed = "<%= __('login_failed') %>";

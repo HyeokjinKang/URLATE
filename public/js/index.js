@@ -12,6 +12,11 @@ function readJson(res) {
   return res.json();
 }
 
+// CSP를 걸기 위해 body의 oncontextmenu 속성에서 옮겨온 것입니다.
+document.addEventListener("contextmenu", (event) => {
+  event.preventDefault();
+});
+
 document.addEventListener("DOMContentLoaded", () => {
   if (isSafari) {
     safariBlocker.classList.remove("hide");

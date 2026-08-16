@@ -94,6 +94,9 @@ const check = () => {
   }
 };
 
+// CSP를 걸기 위해 제출 버튼의 onclick 속성에서 옮겨온 것입니다.
+document.getElementById("submit").addEventListener("click", check);
+
 document.addEventListener("keydown", (event) => {
   if (event.code == "Enter") {
     check();

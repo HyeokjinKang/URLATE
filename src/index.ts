@@ -8,7 +8,7 @@ import { logger } from "./logger";
 import { errorHandler, notFoundHandler, sendError } from "./middleware";
 import { initProfile, profileRouter } from "./profile";
 import { URL } from "url";
-import { createHash } from "crypto";
+import { createHash, randomBytes } from "crypto";
 
 let branch;
 exec("git branch --show-current", (err, stdout, stderr) => {
@@ -49,11 +49,18 @@ app.set("view engine", "ejs");
 app.set("views", __dirname + "/../views");
 app.use(cookieParser());
 
-// Baseline security headers (CSP omitted: inline event handlers require a larger refactor).
+// Baseline security headers. CSP is applied per-route on the account pages only;
+// the rest still carry inline handlers (editor 136, game 97) that a global policy
+// would break.
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  // Only meaningful over HTTPS; browsers ignore it elsewhere. includeSubDomains is
+  // left off because sibling hosts under the parent domain are not ours to commit.
+  if (req.secure) {
+    res.setHeader("Strict-Transport-Security", "max-age=31536000");
+  }
   next();
 });
 
@@ -61,12 +68,47 @@ app.use((req, res, next) => {
 app.use(express.static(__dirname + "/../public", { maxAge: "7d" }));
 app.use(i18n);
 
+/**
+ * 계정을 다루는 화면에만 거는 CSP입니다. 이 두 화면은 인라인 이벤트 핸들러가
+ * 각각 하나뿐이라 정리 비용이 거의 없으면서, 탈취당했을 때 피해는 가장 큽니다.
+ *
+ * 아직 Report-Only입니다. 실제 브라우저에서 위반 보고가 없는 것을 확인한 뒤
+ * Content-Security-Policy로 바꿔야 합니다. 곧바로 강제하면 빠뜨린 출처 하나에
+ * 로그인이 통째로 막히는데, 그 사실을 사용자 신고로 알게 됩니다.
+ */
+const authPageCsp = (nonce: string) =>
+  [
+    "default-src 'self'",
+    // GSI 클라이언트와 페이지가 심는 전역 설정 스크립트를 허용합니다.
+    `script-src 'self' 'nonce-${nonce}' https://accounts.google.com`,
+    // GSI 버튼과 웹폰트 CSS가 인라인 스타일을 주입해 nonce로 좁힐 수 없습니다.
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
+    "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
+    "img-src 'self' data:",
+    `connect-src 'self' ${config.project.api} https://accounts.google.com`,
+    // 로그인 버튼은 accounts.google.com iframe으로 그려집니다.
+    "frame-src https://accounts.google.com",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'self'",
+    "object-src 'none'",
+  ].join("; ");
+
+// 요청마다 새로 만듭니다. 재사용하면 공격자가 값을 알아내 인라인 스크립트를
+// 통과시킬 수 있어 nonce의 의미가 사라집니다.
+const withAuthPageCsp = (res: Response): string => {
+  const nonce = randomBytes(16).toString("base64");
+  res.setHeader("Content-Security-Policy-Report-Only", authPageCsp(nonce));
+  return nonce;
+};
+
 app.get("/", (req, res) => {
   res.render("index", {
     url: config.project.url,
     api: config.project.api,
     game: config.project.game,
     googleClientId: googleClientId,
+    cspNonce: withAuthPageCsp(res),
     ver: config.project.mode == "test" ? Date.now() : version,
     branch: branch,
   });
@@ -83,7 +125,7 @@ app.get("/ko", function (req, res) {
 });
 
 app.get("/join", (req, res) => {
-  res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : version, url: config.project.url });
+  res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : version, url: config.project.url, cspNonce: withAuthPageCsp(res) });
 });
 
 const authRedirects: Record<string, string> = {
