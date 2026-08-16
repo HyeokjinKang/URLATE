@@ -18,5 +18,8 @@
     "storageZone": "example-zone",
     "accessKey": "Storage Zone Password",
     "path": "profiles"
+  },
+  "google": {
+    "clientId": "Your Google OAuth Client ID"
   }
 }

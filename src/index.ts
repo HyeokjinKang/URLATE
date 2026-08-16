@@ -23,6 +23,14 @@ const config = require(__dirname + "/../config/config.json");
 
 const version = require(__dirname + "/../package.json").version;
 
+// 백엔드가 ID 토큰을 검증할 때 쓰는 값과 반드시 같아야 합니다. 템플릿에 직접
+// 적어두면 한쪽만 바뀌었을 때 아무 오류 없이 로그인만 조용히 실패합니다.
+const googleClientId: string = config.google?.clientId;
+if (!googleClientId) {
+  logger.fatal("config.google.clientId is missing. Google login cannot work.");
+  process.exit(1);
+}
+
 // node-fetch has no default timeout: a hung backend would pin the request handler.
 const API_TIMEOUT_MS = 5000;
 
@@ -58,6 +66,7 @@ app.get("/", (req, res) => {
     url: config.project.url,
     api: config.project.api,
     game: config.project.game,
+    googleClientId: googleClientId,
     ver: config.project.mode == "test" ? Date.now() : version,
     branch: branch,
   });

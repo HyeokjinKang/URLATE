@@ -187,5 +187,6 @@
   "error_503_title": "Service unavailable",
   "error_503_desc": "Something we depend on is not responding. Please try again in a moment.",
   "error_home": "Back to the main page",
-  "nameReserved": "The nickname you entered cannot be used."
+  "nameReserved": "The nickname you entered cannot be used.",
+  "join_error": "An error occurred while registering."
 }
