@@ -72,9 +72,10 @@ app.use(i18n);
  * 계정을 다루는 화면에만 거는 CSP입니다. 이 두 화면은 인라인 이벤트 핸들러가
  * 각각 하나뿐이라 정리 비용이 거의 없으면서, 탈취당했을 때 피해는 가장 큽니다.
  *
- * 아직 Report-Only입니다. 실제 브라우저에서 위반 보고가 없는 것을 확인한 뒤
- * Content-Security-Policy로 바꿔야 합니다. 곧바로 강제하면 빠뜨린 출처 하나에
- * 로그인이 통째로 막히는데, 그 사실을 사용자 신고로 알게 됩니다.
+ * Chromium으로 두 화면을 실제로 열어 위반이 없는 것과, GSI 버튼이 그려지고
+ * /auth/status 요청이 통과하는 것까지 확인한 뒤 강제 모드로 두었습니다.
+ * 구글 로그인 완료 이후 경로는 자격증명이 필요해 검증하지 못했지만, 그 단계의
+ * 요청도 /auth/status와 같은 오리진이라 connect-src가 이미 덮습니다.
  */
 const authPageCsp = (nonce: string) =>
   [
@@ -82,7 +83,9 @@ const authPageCsp = (nonce: string) =>
     // GSI 클라이언트와 페이지가 심는 전역 설정 스크립트를 허용합니다.
     `script-src 'self' 'nonce-${nonce}' https://accounts.google.com`,
     // GSI 버튼과 웹폰트 CSS가 인라인 스타일을 주입해 nonce로 좁힐 수 없습니다.
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
+    // accounts.google.com은 GSI가 버튼 스타일시트(/gsi/style)를 받아오는 곳으로,
+    // 빠뜨리면 강제 모드에서 로그인 버튼 모양이 깨집니다.
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://accounts.google.com",
     "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
     "img-src 'self' data:",
     `connect-src 'self' ${config.project.api} https://accounts.google.com`,
@@ -98,7 +101,7 @@ const authPageCsp = (nonce: string) =>
 // 통과시킬 수 있어 nonce의 의미가 사라집니다.
 const withAuthPageCsp = (res: Response): string => {
   const nonce = randomBytes(16).toString("base64");
-  res.setHeader("Content-Security-Policy-Report-Only", authPageCsp(nonce));
+  res.setHeader("Content-Security-Policy", authPageCsp(nonce));
   return nonce;
 };
 
