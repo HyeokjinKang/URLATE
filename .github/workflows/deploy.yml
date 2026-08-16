@@ -28,6 +28,8 @@ jobs:
           cache: true
           install: true
 
+      # domain-lock / disable-console-output 은 빼두었습니다. 두 옵션만 Function()
+      # 생성자를 쓰는데, 계정 화면 CSP 에 unsafe-eval 이 없어 차단됩니다.
       - name: Core file obfuscate
         run: pnpm run obfuscate
 
