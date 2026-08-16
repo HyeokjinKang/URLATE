@@ -15,7 +15,7 @@
     <span id="title"><%= __('join') %></span>
     <span id="desc"><%= __('join_desc') %></span>
     <br />
-    <input type="text" name="displayName" placeholder="<%= __('namePlaceholder') %>" id="nickname" class="textbox" pattern="^[a-zA-Z0-9_-]*$" minlength="5" maxlength="12" required />
+    <input type="text" name="displayName" placeholder="<%= __('namePlaceholder') %>" id="nickname" class="textbox" pattern="^[a-zA-Z0-9_\-]*$" minlength="5" maxlength="12" required />
     <span id="nameExist"><%= __('nameExist') %></span>
     <span id="name"><%= __('nameText') %></span>
     <input type="submit" class="button" id="submit" value="<%= __('done') %>" />
