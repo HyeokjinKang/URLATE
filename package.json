@@ -18,7 +18,7 @@
     "dev": "supervisor dist/index.js",
     "start": "pm2 start ecosystem.config.js",
     "stop": "pm2 stop URLATE-v3l-frontend",
-    "obfuscate": "javascript-obfuscator public/js/ --output public/js/ --debug-protection false --disable-console-output true --domain-lock 'urlate.coupy.dev' --domain-lock-redirect-url 'urlate.coupy.dev' --numbers-to-expressions true --self-defending true"
+    "obfuscate": "javascript-obfuscator public/js/ --output public/js/ --debug-protection false --numbers-to-expressions true --self-defending true"
   },
   "author": "Coupyworks",
   "license": "AGPL-3.0-or-later",
