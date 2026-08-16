@@ -168,6 +168,7 @@
   "index_logoAlt": "Avoid & Get on the tempo, URLATE",
   "login_failed": "Login Failed!",
   "login_error": "Login Error!",
+  "login_blocked": "Could not load Google sign-in. Check whether an ad blocker or your network is blocking accounts.google.com.",
   "join_title": "Welcome to URLATE!",
   "join": "Register",
   "join_desc": "Please choose a nickname.",
@@ -184,8 +185,11 @@
   "error_404_desc": "The page you are looking for does not exist.",
   "error_500_title": "Something went wrong",
   "error_500_desc": "An unexpected error occurred. Please try again later.",
+  "error_429_title": "Too many requests",
+  "error_429_desc": "Requests came in faster than we allow. Please wait a moment and try again.",
   "error_503_title": "Service unavailable",
   "error_503_desc": "Something we depend on is not responding. Please try again in a moment.",
   "error_home": "Back to the main page",
-  "nameReserved": "The nickname you entered cannot be used."
+  "nameReserved": "The nickname you entered cannot be used.",
+  "join_error": "An error occurred while registering."
 }

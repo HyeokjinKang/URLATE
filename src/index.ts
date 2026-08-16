@@ -8,7 +8,7 @@ import { logger } from "./logger";
 import { errorHandler, notFoundHandler, sendError } from "./middleware";
 import { initProfile, profileRouter } from "./profile";
 import { URL } from "url";
-import { createHash } from "crypto";
+import { createHash, randomBytes } from "crypto";
 
 let branch;
 exec("git branch --show-current", (err, stdout, stderr) => {
@@ -22,6 +22,14 @@ exec("git branch --show-current", (err, stdout, stderr) => {
 const config = require(__dirname + "/../config/config.json");
 
 const version = require(__dirname + "/../package.json").version;
+
+// 백엔드가 ID 토큰을 검증할 때 쓰는 값과 반드시 같아야 합니다. 템플릿에 직접
+// 적어두면 한쪽만 바뀌었을 때 아무 오류 없이 로그인만 조용히 실패합니다.
+const googleClientId: string = config.google?.clientId;
+if (!googleClientId) {
+  logger.fatal("config.google.clientId is missing. Google login cannot work.");
+  process.exit(1);
+}
 
 // node-fetch has no default timeout: a hung backend would pin the request handler.
 const API_TIMEOUT_MS = 5000;
@@ -41,11 +49,18 @@ app.set("view engine", "ejs");
 app.set("views", __dirname + "/../views");
 app.use(cookieParser());
 
-// Baseline security headers (CSP omitted: inline event handlers require a larger refactor).
+// Baseline security headers. CSP is applied per-route on the account pages only;
+// the rest still carry inline handlers (editor 136, game 97) that a global policy
+// would break.
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  // Only meaningful over HTTPS; browsers ignore it elsewhere. includeSubDomains is
+  // left off because sibling hosts under the parent domain are not ours to commit.
+  if (req.secure) {
+    res.setHeader("Strict-Transport-Security", "max-age=31536000");
+  }
   next();
 });
 
@@ -53,11 +68,86 @@ app.use((req, res, next) => {
 app.use(express.static(__dirname + "/../public", { maxAge: "7d" }));
 app.use(i18n);
 
-app.get("/", (req, res) => {
+/**
+ * 계정을 다루는 화면에만 거는 CSP입니다. 이 두 화면은 인라인 이벤트 핸들러가
+ * 각각 하나뿐이라 정리 비용이 거의 없으면서, 탈취당했을 때 피해는 가장 큽니다.
+ *
+ * Chromium으로 두 화면을 실제로 열어 위반이 없는 것과, GSI 버튼이 그려지고
+ * /auth/status 요청이 통과하는 것까지 확인한 뒤 강제 모드로 두었습니다.
+ * 구글 로그인 완료 이후 경로는 자격증명이 필요해 검증하지 못했지만, 그 단계의
+ * 요청도 /auth/status와 같은 오리진이라 connect-src가 이미 덮습니다.
+ */
+const GSI_ORIGIN = "https://accounts.google.com";
+
+/**
+ * @param withGsi 구글 로그인을 쓰는 화면인지. 가입 화면은 GSI를 부르지 않으므로
+ *   accounts.google.com을 허용할 이유가 없습니다. 두 화면이 정책을 공유하면
+ *   가입 화면이 쓰지도 않는 출처를 열어두게 됩니다.
+ */
+const authPageCsp = (nonce: string, withGsi: boolean) => {
+  const gsi = (directive: string) => (withGsi ? ` ${directive}` : "");
+
+  return [
+    "default-src 'self'",
+    // GSI 클라이언트와 페이지가 심는 전역 설정 스크립트를 허용합니다.
+    `script-src 'self' 'nonce-${nonce}'${gsi(GSI_ORIGIN)}`,
+    // GSI 버튼과 웹폰트 CSS가 인라인 스타일을 주입해 nonce로 좁힐 수 없습니다.
+    // accounts.google.com은 GSI가 버튼 스타일시트(/gsi/style)를 받아오는 곳으로,
+    // 빠뜨리면 강제 모드에서 로그인 버튼 모양이 깨집니다.
+    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net${gsi(GSI_ORIGIN)}`,
+    "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
+    "img-src 'self' data:",
+    // jsdelivr는 개발자 도구를 열었을 때 폰트 CSS의 소스맵(/sm/*.map)을 받아옵니다.
+    // 사용자 동작에는 영향이 없지만, 막아두면 콘솔에 위반이 쌓여 진짜 문제를 가립니다.
+    // 이미 style-src·font-src로 신뢰하는 출처라 여기서 늘어나는 권한은 없습니다.
+    `connect-src 'self' ${config.project.api} https://cdn.jsdelivr.net${gsi(GSI_ORIGIN)}`,
+    // 로그인 버튼은 accounts.google.com iframe으로 그려집니다. 가입 화면은
+    // 프레임을 전혀 쓰지 않으므로 아예 막습니다.
+    withGsi ? `frame-src ${GSI_ORIGIN}` : "frame-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'self'",
+    "object-src 'none'",
+  ].join("; ");
+};
+
+// 요청마다 새로 만듭니다. 재사용하면 공격자가 값을 알아내 인라인 스크립트를
+// 통과시킬 수 있어 nonce의 의미가 사라집니다.
+const withAuthPageCsp = (res: Response, withGsi: boolean): string => {
+  const nonce = randomBytes(16).toString("base64");
+  res.setHeader("Content-Security-Policy", authPageCsp(nonce, withGsi));
+  return nonce;
+};
+
+/**
+ * 로그인·가입 화면 전용 예산입니다. 두 화면은 요청마다 nonce를 새로 만들기
+ * 때문에 호출 수가 그대로 난수 생성 비용이 됩니다.
+ *
+ * gateLimiter를 재사용하지 않습니다. 그쪽은 인증 캐시가 있으면 건너뛰는데,
+ * 여기는 아직 로그인하지 않은 방문자가 오는 곳이라 그 조건이 성립하지 않습니다.
+ *
+ * 그래서 한도를 gateLimiter보다 넉넉하게 둡니다. gateLimiter는 캐시 적중분을
+ * 건너뛰어 공유 주소 뒤의 사용자끼리 예산을 뺏지 않게 하는데, 이 화면은 모두가
+ * 미인증 상태로 들어오므로 그 장치가 없습니다. PC방처럼 여러 명이 한 주소를
+ * 쓰는 환경에서 좁게 잡으면 정상 방문자가 진입 자체를 못 합니다.
+ */
+const authPageLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 240,
+  standardHeaders: true,
+  legacyHeaders: false,
+  // 기본 응답은 평문 한 줄이라 랜딩 페이지에서 장애처럼 보입니다. 나머지 오류와
+  // 같은 화면·번역을 쓰도록 넘깁니다.
+  handler: (req, res) => sendError(req, res, 429),
+});
+
+app.get("/", authPageLimiter, (req, res) => {
   res.render("index", {
     url: config.project.url,
     api: config.project.api,
     game: config.project.game,
+    googleClientId: googleClientId,
+    cspNonce: withAuthPageCsp(res, true),
     ver: config.project.mode == "test" ? Date.now() : version,
     branch: branch,
   });
@@ -73,8 +163,8 @@ app.get("/ko", function (req, res) {
   res.redirect("/");
 });
 
-app.get("/join", (req, res) => {
-  res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : version, url: config.project.url });
+app.get("/join", authPageLimiter, (req, res) => {
+  res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : version, url: config.project.url, cspNonce: withAuthPageCsp(res, false) });
 });
 
 const authRedirects: Record<string, string> = {

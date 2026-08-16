@@ -21,6 +21,7 @@
   "editor_subtitle": "EDITOR",
   "login_failed": "로그인 실패!",
   "login_error": "로그인 에러!",
+  "login_blocked": "구글 로그인을 불러오지 못했습니다. 광고 차단기나 네트워크 설정이 accounts.google.com을 막고 있는지 확인해 주세요.",
   "offset": "오프셋",
   "editor_main": "에디터 메인",
   "goto_game": "나가기",
@@ -184,8 +185,11 @@
   "error_404_desc": "요청하신 페이지가 존재하지 않습니다.",
   "error_500_title": "문제가 발생했습니다",
   "error_500_desc": "예기치 못한 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+  "error_429_title": "요청이 너무 많습니다",
+  "error_429_desc": "허용된 속도보다 요청이 빠르게 들어왔습니다. 잠시 후 다시 시도해 주세요.",
   "error_503_title": "일시적으로 이용할 수 없습니다",
   "error_503_desc": "연결된 서비스가 응답하지 않고 있습니다. 잠시 후 다시 시도해 주세요.",
   "error_home": "메인 페이지로 돌아가기",
-  "nameReserved": "입력한 닉네임은 사용할 수 없습니다."
+  "nameReserved": "입력한 닉네임은 사용할 수 없습니다.",
+  "join_error": "가입 중 오류가 발생했습니다."
 }

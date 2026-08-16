@@ -19,6 +19,11 @@ const MESSAGES: Record<number, { key: string; title: string; description: string
     title: "Page not found",
     description: "The page you are looking for does not exist.",
   },
+  429: {
+    key: "error_429",
+    title: "Too many requests",
+    description: "Requests came in faster than we allow. Please wait a moment and try again.",
+  },
   503: {
     key: "error_503",
     title: "Service unavailable",
