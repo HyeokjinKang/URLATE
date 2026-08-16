@@ -88,7 +88,10 @@ const authPageCsp = (nonce: string) =>
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://accounts.google.com",
     "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
     "img-src 'self' data:",
-    `connect-src 'self' ${config.project.api} https://accounts.google.com`,
+    // jsdelivr는 개발자 도구를 열었을 때 폰트 CSS의 소스맵(/sm/*.map)을 받아옵니다.
+    // 사용자 동작에는 영향이 없지만, 막아두면 콘솔에 위반이 쌓여 진짜 문제를 가립니다.
+    // 이미 style-src·font-src로 신뢰하는 출처라 여기서 늘어나는 권한은 없습니다.
+    `connect-src 'self' ${config.project.api} https://accounts.google.com https://cdn.jsdelivr.net`,
     // 로그인 버튼은 accounts.google.com iframe으로 그려집니다.
     "frame-src https://accounts.google.com",
     "base-uri 'self'",
