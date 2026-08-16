@@ -114,10 +114,15 @@ const withAuthPageCsp = (res: Response): string => {
  *
  * gateLimiter를 재사용하지 않습니다. 그쪽은 인증 캐시가 있으면 건너뛰는데,
  * 여기는 아직 로그인하지 않은 방문자가 오는 곳이라 그 조건이 성립하지 않습니다.
+ *
+ * 그래서 한도를 gateLimiter보다 넉넉하게 둡니다. gateLimiter는 캐시 적중분을
+ * 건너뛰어 공유 주소 뒤의 사용자끼리 예산을 뺏지 않게 하는데, 이 화면은 모두가
+ * 미인증 상태로 들어오므로 그 장치가 없습니다. PC방처럼 여러 명이 한 주소를
+ * 쓰는 환경에서 좁게 잡으면 정상 방문자가 진입 자체를 못 합니다.
  */
 const authPageLimiter = rateLimit({
   windowMs: 60 * 1000,
-  limit: 60,
+  limit: 240,
   standardHeaders: true,
   legacyHeaders: false,
 });
