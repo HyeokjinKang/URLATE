@@ -108,7 +108,21 @@ const withAuthPageCsp = (res: Response): string => {
   return nonce;
 };
 
-app.get("/", (req, res) => {
+/**
+ * 로그인·가입 화면 전용 예산입니다. 두 화면은 요청마다 nonce를 새로 만들기
+ * 때문에 호출 수가 그대로 난수 생성 비용이 됩니다.
+ *
+ * gateLimiter를 재사용하지 않습니다. 그쪽은 인증 캐시가 있으면 건너뛰는데,
+ * 여기는 아직 로그인하지 않은 방문자가 오는 곳이라 그 조건이 성립하지 않습니다.
+ */
+const authPageLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.get("/", authPageLimiter, (req, res) => {
   res.render("index", {
     url: config.project.url,
     api: config.project.api,
@@ -130,7 +144,7 @@ app.get("/ko", function (req, res) {
   res.redirect("/");
 });
 
-app.get("/join", (req, res) => {
+app.get("/join", authPageLimiter, (req, res) => {
   res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : version, url: config.project.url, cspNonce: withAuthPageCsp(res) });
 });
 
