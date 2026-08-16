@@ -77,34 +77,45 @@ app.use(i18n);
  * 구글 로그인 완료 이후 경로는 자격증명이 필요해 검증하지 못했지만, 그 단계의
  * 요청도 /auth/status와 같은 오리진이라 connect-src가 이미 덮습니다.
  */
-const authPageCsp = (nonce: string) =>
-  [
+const GSI_ORIGIN = "https://accounts.google.com";
+
+/**
+ * @param withGsi 구글 로그인을 쓰는 화면인지. 가입 화면은 GSI를 부르지 않으므로
+ *   accounts.google.com을 허용할 이유가 없습니다. 두 화면이 정책을 공유하면
+ *   가입 화면이 쓰지도 않는 출처를 열어두게 됩니다.
+ */
+const authPageCsp = (nonce: string, withGsi: boolean) => {
+  const gsi = (directive: string) => (withGsi ? ` ${directive}` : "");
+
+  return [
     "default-src 'self'",
     // GSI 클라이언트와 페이지가 심는 전역 설정 스크립트를 허용합니다.
-    `script-src 'self' 'nonce-${nonce}' https://accounts.google.com`,
+    `script-src 'self' 'nonce-${nonce}'${gsi(GSI_ORIGIN)}`,
     // GSI 버튼과 웹폰트 CSS가 인라인 스타일을 주입해 nonce로 좁힐 수 없습니다.
     // accounts.google.com은 GSI가 버튼 스타일시트(/gsi/style)를 받아오는 곳으로,
     // 빠뜨리면 강제 모드에서 로그인 버튼 모양이 깨집니다.
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://accounts.google.com",
+    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net${gsi(GSI_ORIGIN)}`,
     "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
     "img-src 'self' data:",
     // jsdelivr는 개발자 도구를 열었을 때 폰트 CSS의 소스맵(/sm/*.map)을 받아옵니다.
     // 사용자 동작에는 영향이 없지만, 막아두면 콘솔에 위반이 쌓여 진짜 문제를 가립니다.
     // 이미 style-src·font-src로 신뢰하는 출처라 여기서 늘어나는 권한은 없습니다.
-    `connect-src 'self' ${config.project.api} https://accounts.google.com https://cdn.jsdelivr.net`,
-    // 로그인 버튼은 accounts.google.com iframe으로 그려집니다.
-    "frame-src https://accounts.google.com",
+    `connect-src 'self' ${config.project.api} https://cdn.jsdelivr.net${gsi(GSI_ORIGIN)}`,
+    // 로그인 버튼은 accounts.google.com iframe으로 그려집니다. 가입 화면은
+    // 프레임을 전혀 쓰지 않으므로 아예 막습니다.
+    withGsi ? `frame-src ${GSI_ORIGIN}` : "frame-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'self'",
     "object-src 'none'",
   ].join("; ");
+};
 
 // 요청마다 새로 만듭니다. 재사용하면 공격자가 값을 알아내 인라인 스크립트를
 // 통과시킬 수 있어 nonce의 의미가 사라집니다.
-const withAuthPageCsp = (res: Response): string => {
+const withAuthPageCsp = (res: Response, withGsi: boolean): string => {
   const nonce = randomBytes(16).toString("base64");
-  res.setHeader("Content-Security-Policy", authPageCsp(nonce));
+  res.setHeader("Content-Security-Policy", authPageCsp(nonce, withGsi));
   return nonce;
 };
 
@@ -125,6 +136,9 @@ const authPageLimiter = rateLimit({
   limit: 240,
   standardHeaders: true,
   legacyHeaders: false,
+  // 기본 응답은 평문 한 줄이라 랜딩 페이지에서 장애처럼 보입니다. 나머지 오류와
+  // 같은 화면·번역을 쓰도록 넘깁니다.
+  handler: (req, res) => sendError(req, res, 429),
 });
 
 app.get("/", authPageLimiter, (req, res) => {
@@ -133,7 +147,7 @@ app.get("/", authPageLimiter, (req, res) => {
     api: config.project.api,
     game: config.project.game,
     googleClientId: googleClientId,
-    cspNonce: withAuthPageCsp(res),
+    cspNonce: withAuthPageCsp(res, true),
     ver: config.project.mode == "test" ? Date.now() : version,
     branch: branch,
   });
@@ -150,7 +164,7 @@ app.get("/ko", function (req, res) {
 });
 
 app.get("/join", authPageLimiter, (req, res) => {
-  res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : version, url: config.project.url, cspNonce: withAuthPageCsp(res) });
+  res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : version, url: config.project.url, cspNonce: withAuthPageCsp(res, false) });
 });
 
 const authRedirects: Record<string, string> = {

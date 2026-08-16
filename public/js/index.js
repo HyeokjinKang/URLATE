@@ -44,10 +44,13 @@ document.addEventListener("DOMContentLoaded", () => {
 // GSI 스크립트가 차단되거나 로드에 실패하면 버튼이 아예 그려지지 않습니다.
 // 그대로 두면 아무 반응 없는 빈 화면으로 보이므로 원인을 알려줍니다.
 // async 스크립트는 load 이벤트를 지연시키므로 이 시점이면 결과가 확정됩니다.
+//
+// alert 대신 화면에 남겨둡니다. 차단기를 쓰는 사용자는 방문할 때마다 걸리는데,
+// 그때마다 팝업을 띄우면 안내가 아니라 방해가 됩니다.
 window.addEventListener("load", () => {
   if (!window.google || !window.google.accounts || !window.google.accounts.id) {
     console.error("Google Identity Services failed to load.");
-    alert(loginError);
+    document.getElementById("loginNotice").classList.remove("hide");
   }
 });
 

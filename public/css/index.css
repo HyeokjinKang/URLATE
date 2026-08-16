@@ -125,6 +125,20 @@ body {
   pointer-events: none;
 }
 
+/* GSI 스크립트가 차단됐을 때만 드러납니다. 로그인만 막힌 상황이므로 화면
+   전체를 가리지 않고 버튼 자리 옆에 안내만 둡니다. */
+#loginNotice {
+  z-index: 1;
+  margin: 1vh;
+  max-width: 80vw;
+  color: #d98a8a;
+  font-size: 0.8em;
+}
+
+#loginNotice.hide {
+  display: none;
+}
+
 #policies {
   z-index: 1;
   margin: 1vh;
