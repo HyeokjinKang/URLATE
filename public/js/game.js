@@ -288,7 +288,7 @@ const sortAsBPM = (a, b) => {
   return a.bpm > b.bpm ? 1 : -1;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const tutorialSkip = () => {
   if (confirm(confirmExit)) {
     document.getElementById("tutorialInformation").classList.remove("fadeInAnim");
@@ -724,7 +724,7 @@ const songSelected = (n, refreshed, seek) => {
   updateRanks();
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const textDisabled = () => {
   disableText = !disableText;
   if (disableText) {
@@ -736,7 +736,7 @@ const textDisabled = () => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const rateChanged = (e) => {
   e.value = Number(e.value).toFixed(1);
   if (e.value > 2) {
@@ -892,21 +892,21 @@ const stopProfileSong = () => {
   fadeRate(profileSong, 1, fastRate, 300, Date.now());
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const infoScreen = () => {
   display = 4;
   document.getElementById("infoContainer").style.display = "block";
   document.getElementById("infoContainer").classList.add("fadeInAnim");
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const optionScreen = () => {
   display = 2;
   document.getElementById("optionContainer").style.display = "block";
   document.getElementById("optionContainer").classList.add("fadeInAnim");
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const profileScreen = (nickname) => {
   if (nickname) display = 16;
   else display = 15;
@@ -1351,7 +1351,7 @@ const profileUpdate = async (nickname, isMe) => {
   loadingOverlayHide();
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const showProfileBackground = (event) => {
   if (event.target.id === "profileContainer") {
     profileContentsContainer.classList.toggle("showBackground");
@@ -1373,12 +1373,12 @@ const fadeRate = (track, start, end, duration, time) => {
   });
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const langChanged = (e) => {
   window.location.href = `${url}/${encodeURIComponent(e.value)}`;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const logout = () => {
   window.location.href = "/logout";
 };
@@ -1417,7 +1417,7 @@ const bannerToggle = (n) => {
     });
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const settingChanged = (e, v) => {
   if (v == "detailLang") {
     settings.general.detailLang = e.value;
@@ -1480,7 +1480,7 @@ const settingChanged = (e, v) => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const showProfile = (name) => {
   loadingShow();
   document.getElementById("infoProfileContainer").style.display = "flex";
@@ -1535,7 +1535,7 @@ const showProfile = (name) => {
     });
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const optionSelect = (n) => {
   document.getElementsByClassName("optionSelected")[0].classList.remove("optionSelected");
   document.getElementsByClassName("optionSelectors")[n].classList.add("optionSelected");
@@ -1600,7 +1600,7 @@ const showRank = () => {
   document.getElementById("selectRankInnerContainer").classList.add("visible");
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetSetting = () => {
   display = 7;
   document.getElementById("offsetContiner").style.display = "flex";
@@ -1678,7 +1678,7 @@ const offsetUpdate = () => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetSpeedUp = () => {
   offsetRate = Number((offsetRate + 0.1).toFixed(1));
   if (offsetRate > 2) offsetRate = 2;
@@ -1686,7 +1686,7 @@ const offsetSpeedUp = () => {
   offsetSpeedText.textContent = offsetRate + "x";
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetSpeedDown = () => {
   offsetRate = Number((offsetRate - 0.1).toFixed(1));
   if (offsetRate <= 0) offsetRate = 0.1;
@@ -1694,7 +1694,7 @@ const offsetSpeedDown = () => {
   offsetSpeedText.textContent = offsetRate + "x";
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetUp = () => {
   offset += 5;
   if (!offset) {
@@ -1704,7 +1704,7 @@ const offsetUp = () => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetDown = () => {
   offset -= 5;
   if (!offset) {
@@ -1714,24 +1714,24 @@ const offsetDown = () => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetReset = () => {
   offset = 0;
   offsetButtonText.textContent = "TAP";
   offsetAverage = [];
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetButtonDown = () => {
   offsetInput = true;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetButtonUp = () => {
   offsetInput = false;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const visualSyncSetting = () => {
   display = 13;
   document.getElementById("visualSyncContainer").style.display = "flex";
@@ -1808,21 +1808,21 @@ const visualSyncSetting = () => {
   visualSyncAnimId = requestAnimationFrame(drawFrame);
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const visualSyncUp = () => {
   visualSyncOffset += 10;
   document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
   document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const visualSyncDown = () => {
   visualSyncOffset -= 10;
   document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
   document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const visualSyncReset = () => {
   visualSyncOffset = 0;
   document.getElementById("visualSyncValueText").textContent = "0ms";
@@ -1837,7 +1837,7 @@ const overlayClose = (s) => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const couponEnter = () => {
   display = 12;
   overlayCodeContainer.style.pointerEvents = "all";
@@ -1900,7 +1900,7 @@ const rankToggle = () => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const changeProfile = (e) => {
   if (profileid == username) {
     switch (e) {
@@ -2221,3 +2221,77 @@ window.onpopstate = () => {
     history.back();
   }
 };
+
+// 아래는 마크업의 on* 속성에서 옮겨온 결선입니다. CSP 를 걸려면 인라인 핸들러가
+// 없어야 하는데, 이 화면은 97개나 있어 요소마다 리스너를 다는 대신 data-* 속성과
+// 위임으로 처리합니다. 새 버튼을 추가할 때도 속성만 붙이면 됩니다.
+
+// 인자 없이 부르는 동작입니다.
+const clickActions = {
+  couponEnter,
+  changeProfile: (arg) => changeProfile(arg),
+  difficultySelected: (arg) => difficultySelected(Number(arg)),
+  displayClose,
+  goTutorial: () => (window.location.href = `${url}/tutorial`),
+  infoScreen,
+  intro1skip,
+  intro2skip,
+  logout,
+  medalDescription,
+  menuSelected: (arg) => menuSelected(Number(arg)),
+  // 설명 문구가 클릭을 삼키던 자리입니다. 아무 일도 하지 않는 게 목적입니다.
+  noop: () => {},
+  offsetDown,
+  offsetReset,
+  offsetSetting,
+  offsetSpeedDown,
+  offsetSpeedUp,
+  offsetUp,
+  optionScreen,
+  optionSelect: (arg) => optionSelect(Number(arg)),
+  profileScreen,
+  rankToggle,
+  showProfile: (arg) => showProfile(arg),
+  showProfileBackground: (arg, event) => showProfileBackground(event),
+  sortSelected: (arg) => sortSelected(Number(arg)),
+  textDisabled,
+  tutorialSkip,
+  visualSyncDown,
+  visualSyncReset,
+  visualSyncSetting,
+  visualSyncUp,
+};
+
+// 숫자 인자는 Number 로 바꿔 넘깁니다. data-* 값은 항상 문자열이라, 그대로
+// 넘기면 sortSelected("0") 처럼 타입이 달라집니다.
+document.addEventListener("click", (event) => {
+  const target = event.target.closest("[data-action]");
+  if (!target) return;
+  const action = clickActions[target.dataset.action];
+  if (action) action(target.dataset.arg, event);
+});
+
+// 값이 바뀔 때 설정을 저장하는 컨트롤입니다. range 는 input, select·checkbox 는
+// change 로 와서 두 이벤트를 모두 받습니다.
+const handleSettingChange = (event) => {
+  const target = event.target.closest("[data-setting]");
+  if (target) settingChanged(target, target.dataset.setting);
+};
+document.addEventListener("input", handleSettingChange);
+document.addEventListener("change", handleSettingChange);
+
+// 요소 자체를 인자로 받는 select 들입니다.
+const changeActions = { langChanged, rateChanged };
+document.addEventListener("change", (event) => {
+  const target = event.target.closest("[data-change]");
+  if (!target) return;
+  const action = changeActions[target.dataset.change];
+  if (action) action(target);
+});
+
+document.getElementById("offsetTapButton").addEventListener("mousedown", offsetButtonDown);
+document.getElementById("offsetTapButton").addEventListener("mouseup", offsetButtonUp);
+
+document.addEventListener("contextmenu", (event) => event.preventDefault());
+document.addEventListener("dragstart", (event) => event.preventDefault());
+document.addEventListener("selectstart", (event) => event.preventDefault());

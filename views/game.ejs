@@ -16,7 +16,7 @@
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
   </head>
-  <body oncontextmenu="return false;" ondragstart="return false;" onselect="return false;">
+  <body>
     <div id="footer">
       <div id="footerLeft">
         <img src="/icons/return.webp" class="icon" />
@@ -41,13 +41,13 @@
       </div>
       <span id="pressAnywhere"><%= __('loading') %></span>
     </div>
-    <div id="intro1container" class="introContainer" onclick="intro1skip()">
+    <div id="intro1container" class="introContainer" data-action="intro1skip">
       <video id="intro1video">
         <source type="video/webm" src="<%= cdn %>/videos/croissant.webm" />
         <source type="video/mp4" src="<%= cdn %>/videos/croissant.mp4" />
       </video>
     </div>
-    <div id="intro2container" class="introContainer" onclick="intro2skip()">
+    <div id="intro2container" class="introContainer" data-action="intro2skip">
       <video id="intro2video">
         <source type="video/webm" src="<%= cdn %>/videos/coupyworks.webm" />
         <source type="video/mp4" src="<%= cdn %>/videos/coupyworks.mp4" />
@@ -58,15 +58,15 @@
     </div>
     <div id="header">
       <div id="headerLeft">
-        <img src="" id="profilePic" onclick="profileScreen()" />
-        <span id="name" class="metropolis" onclick="profileScreen()">USERNAME</span>
+        <img src="" id="profilePic" data-action="profileScreen" />
+        <span id="name" class="metropolis" data-action="profileScreen">USERNAME</span>
       </div>
       <div id="headerRight">
         <a id="noticeText" target="_blank"></a>
         <div id="line"></div>
-        <img src="/icons/info-circle.svg" class="icon clickable" onclick="infoScreen()" />
+        <img src="/icons/info-circle.svg" class="icon clickable" data-action="infoScreen" />
         <div id="line"></div>
-        <img src="/icons/settings.svg" class="icon clickable" onclick="optionScreen()" />
+        <img src="/icons/settings.svg" class="icon clickable" data-action="optionScreen" />
       </div>
     </div>
     <div id="tutorialInformation" class="containers metropolis">
@@ -78,12 +78,12 @@
         <img src="/images/parts/elements/elements.webp" alt="O O O" />
       </div>
       <div id="tutorialInfoBottom" class="tutorialInner">
-        <button class="storeButton metropolis" onclick="location.href = '<%= url %>/tutorial'"><%= __('all_good') %></button>
-        <span id="tutorialSkip" onclick="tutorialSkip()"><%= __('skip_tutorial') %></span>
+        <button class="storeButton metropolis" data-action="goTutorial"><%= __('all_good') %></button>
+        <span id="tutorialSkip" data-action="tutorialSkip"><%= __('skip_tutorial') %></span>
       </div>
     </div>
     <div id="menuContainer">
-      <div class="menuSelector clickable" onclick="menuSelected(0)">
+      <div class="menuSelector clickable" data-action="menuSelected" data-arg="0">
         <div class="fadeIconContainer">
           <img src="/images/parts/graphicIcons/play.webp" class="mainIcon" />
           <img src="/images/parts/graphicIcons/play_selected.webp" class="fadeIcon" />
@@ -91,7 +91,7 @@
         <span class="menuTitle"><%= __('play_title') %></span>
         <span class="light menuSubtitle"><%= __('play_subtitle') %></span>
       </div>
-      <div class="menuSelector clickable" onclick="menuSelected(1)">
+      <div class="menuSelector clickable" data-action="menuSelected" data-arg="1">
         <div class="fadeIconContainer">
           <img src="/images/parts/graphicIcons/editor.webp" class="mainIcon" />
           <img src="/images/parts/graphicIcons/editor_selected.webp" class="fadeIcon" />
@@ -99,7 +99,7 @@
         <span class="menuTitle"><%= __('editor_title') %></span>
         <span class="light menuSubtitle"><%= __('editor_subtitle') %></span>
       </div>
-      <div class="menuSelector clickable" onclick="menuSelected(2)">
+      <div class="menuSelector clickable" data-action="menuSelected" data-arg="2">
         <div class="fadeIconContainer">
           <img src="/images/parts/graphicIcons/rank.webp" class="mainIcon" />
           <img src="/images/parts/graphicIcons/rank_selected.webp" class="fadeIcon" />
@@ -107,7 +107,7 @@
         <span class="menuTitle"><%= __('rank_title') %></span>
         <span class="light menuSubtitle"><%= __('rank_subtitle') %></span>
       </div>
-      <div class="menuSelector clickable" onclick="menuSelected(3)">
+      <div class="menuSelector clickable" data-action="menuSelected" data-arg="3">
         <div class="fadeIconContainer">
           <img src="/images/parts/graphicIcons/info.webp" class="mainIcon" />
           <img src="/images/parts/graphicIcons/info_selected.webp" class="fadeIcon" />
@@ -120,7 +120,7 @@
       <div id="selectBackground"></div>
       <div id="selectInnerContainer">
         <div id="visualizer"><canvas id="renderer"></canvas></div>
-        <img src="/icons/xmark-circle-ffffff.svg" class="icon clickable closeBtn" onclick="displayClose()" />
+        <img src="/icons/xmark-circle-ffffff.svg" class="icon clickable closeBtn" data-action="displayClose" />
         <div id="selectContainerTopLeft">
           <img src="/images/parts/elements/TRACKS.webp" id="tracks" />
           <div id="tracksLine"></div>
@@ -179,11 +179,11 @@
               </div>
               <div class="trackStatContainer">
                 <span class="trackModsTitle"><%= __('playback_rate') %></span>
-                <input type="number" id="trackModsRate" class="trackModsValue metropolis" value="1.0" onchange="rateChanged(this)" />
+                <input type="number" id="trackModsRate" class="trackModsValue metropolis" value="1.0" data-change="rateChanged" />
               </div>
               <div class="trackStatContainer">
                 <span class="trackModsTitle"><%= __('disable_text') %></span>
-                <div class="trackModsValue" id="trackModsText" onclick="textDisabled()">No</div>
+                <div class="trackModsValue" id="trackModsText" data-action="textDisabled">No</div>
               </div>
             </div>
           </div>
@@ -194,12 +194,12 @@
                 <span class="key">TAB</span>
               </div>
               <div class="selectInfoContentsContainer">
-                <div class="difficulty difficultySelected" onclick="difficultySelected(0)"><span class="difficultyNumber">1</span><span class="difficultyText">EZ</span></div>
-                <div class="difficulty" onclick="difficultySelected(1)"><span class="difficultyNumber">3</span><span class="difficultyText">MID</span></div>
-                <div class="difficulty right" onclick="difficultySelected(2)"><span class="difficultyNumber">5</span><span class="difficultyText">HARD</span></div>
+                <div class="difficulty difficultySelected" data-action="difficultySelected" data-arg="0"><span class="difficultyNumber">1</span><span class="difficultyText">EZ</span></div>
+                <div class="difficulty" data-action="difficultySelected" data-arg="1"><span class="difficultyNumber">3</span><span class="difficultyText">MID</span></div>
+                <div class="difficulty right" data-action="difficultySelected" data-arg="2"><span class="difficultyNumber">5</span><span class="difficultyText">HARD</span></div>
               </div>
             </div>
-            <div class="selectInfo clickable" onclick="rankToggle()">
+            <div class="selectInfo clickable" data-action="rankToggle">
               <div class="selectInfoTitleContainer">
                 <span class="selectInfoTitle">RANK</span>
                 <span class="key">F2</span>
@@ -208,7 +208,7 @@
                 <span id="selectRank">-</span>
               </div>
             </div>
-            <div class="selectInfo clickable" onclick="medalDescription()">
+            <div class="selectInfo clickable" data-action="medalDescription">
               <div class="selectInfoTitleContainer">
                 <span class="selectInfoTitle">MEDAL</span>
                 <span class="key">?</span>
@@ -223,10 +223,10 @@
         </div>
         <div id="selectContainerRight">
           <div id="selectContainerRightTitles">
-            <span class="sortText selected" onclick="sortSelected(0)"><%= __('sort_as_name') %></span>
-            <span class="sortText" onclick="sortSelected(1)"><%= __('sort_as_producer') %></span>
-            <span class="sortText" onclick="sortSelected(2)"><%= __('sort_as_difficulty') %></span>
-            <span class="sortText" id="sortTextRight" onclick="sortSelected(3)"><%= __('sort_as_bpm') %></span>
+            <span class="sortText selected" data-action="sortSelected" data-arg="0"><%= __('sort_as_name') %></span>
+            <span class="sortText" data-action="sortSelected" data-arg="1"><%= __('sort_as_producer') %></span>
+            <span class="sortText" data-action="sortSelected" data-arg="2"><%= __('sort_as_difficulty') %></span>
+            <span class="sortText" id="sortTextRight" data-action="sortSelected" data-arg="3"><%= __('sort_as_bpm') %></span>
             <div id="trackListLine"></div>
             <span id="trackList">TRACK <strong>LIST</strong></span>
           </div>
@@ -239,7 +239,7 @@
                 <span id="selectRankTitle"><strong>R</strong>ANKING</span>
               </div>
               <div id="selectRankTitleRightContainer">
-                <img src="/icons/xmark-circle-ffffff.svg" class="icon clickable rankCloseBtn" onclick="displayClose()" />
+                <img src="/icons/xmark-circle-ffffff.svg" class="icon clickable rankCloseBtn" data-action="displayClose" />
               </div>
             </div>
             <div class="selectRank">
@@ -263,7 +263,7 @@
                 </div>
               </div>
               <div id="CPLTopRightContainer">
-                <img src="/icons/xmark-circle-000000.svg" class="icon clickable rankCloseBtn" onclick="displayClose()" />
+                <img src="/icons/xmark-circle-000000.svg" class="icon clickable rankCloseBtn" data-action="displayClose" />
               </div>
             </div>
             <div id="CPLListIndex">
@@ -280,7 +280,7 @@
       </div>
     </div>
     <div id="advancedContainer" class="containers">
-      <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" onclick="displayClose()" />
+      <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" data-action="displayClose" />
       <h1 id="rankTitle"><%= __('rank_title') %></h1>
       <table id="rankTable">
         <thead>
@@ -297,7 +297,7 @@
     </div>
     <div id="infoContainer" class="containers metropolis">
       <div id="infoProfileContainer" class="containers">
-        <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" onclick="displayClose()" />
+        <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" data-action="displayClose" />
         <div id="infoProfileLeft">
           <img src="" id="infoProfileImg" />
         </div>
@@ -309,7 +309,7 @@
           <div id="infoProfileBottom"></div>
         </div>
       </div>
-      <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" onclick="displayClose()" />
+      <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" data-action="displayClose" />
       <img src="/images/logos/URLATE_LITE.webp" id="infoLogo" />
       <br />
       <span id="license">
@@ -326,7 +326,7 @@
       <br />
       <div class="profileContainer">
         <div class="profile" id="profileCoupy">
-          <div class="profileHover" onclick="showProfile('coupy')">Coupy</div>
+          <div class="profileHover" data-action="showProfile" data-arg="coupy">Coupy</div>
         </div>
       </div>
       <span class="infoTitle">Designer</span>
@@ -335,7 +335,7 @@
       <br />
       <div class="profileContainer">
         <div class="profile" id="profileAlta">
-          <div class="profileHover" onclick="showProfile('altari')">Altari</div>
+          <div class="profileHover" data-action="showProfile" data-arg="altari">Altari</div>
         </div>
       </div>
       <span class="infoTitle">Contributors</span>
@@ -344,29 +344,29 @@
       <br />
       <div class="profileContainer">
         <div class="profile" id="profileShd">
-          <div class="profileHover" onclick="showProfile('sihyeon')">Sihyeon</div>
+          <div class="profileHover" data-action="showProfile" data-arg="sihyeon">Sihyeon</div>
         </div>
         <div class="profile" id="profileGreenstar">
-          <div class="profileHover" onclick="showProfile('greenstar')">Greenstar</div>
+          <div class="profileHover" data-action="showProfile" data-arg="greenstar">Greenstar</div>
         </div>
         <div class="profile" id="profileRanol">
-          <div class="profileHover" onclick="showProfile('ranolp')">RanolP</div>
+          <div class="profileHover" data-action="showProfile" data-arg="ranolp">RanolP</div>
         </div>
         <div class="profile" id="profileKiwi">
-          <div class="profileHover" onclick="showProfile('kiwiyou')">kiwiyou</div>
+          <div class="profileHover" data-action="showProfile" data-arg="kiwiyou">kiwiyou</div>
         </div>
       </div>
       <span class="infoTitle">Thanks to</span>
       <br />
       <div class="profileContainer">
         <div class="profile" id="profileHanu">
-          <div class="profileHover" onclick="showProfile('hanu')">Hanu</div>
+          <div class="profileHover" data-action="showProfile" data-arg="hanu">Hanu</div>
         </div>
         <div class="profile" id="profileGeoplex">
-          <div class="profileHover" onclick="showProfile('geoplex')">Geoplex</div>
+          <div class="profileHover" data-action="showProfile" data-arg="geoplex">Geoplex</div>
         </div>
         <div class="profile" id="profileAlkmerlin">
-          <div class="profileHover" onclick="showProfile('alkmerlin')">ALK</div>
+          <div class="profileHover" data-action="showProfile" data-arg="alkmerlin">ALK</div>
         </div>
         <div class="profile" id="profileYou">..and You</div>
       </div>
@@ -377,7 +377,7 @@
     </div>
     <div id="optionContainer" class="containers">
       <div id="offsetContiner" class="containers">
-        <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" onclick="displayClose()" />
+        <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" data-action="displayClose" />
         <h1 id="offsetTitle"><%= __('offset_setting') %></h1>
         <div class="offsetPreviewContainer">
           <div class="offsetViewContainer">
@@ -407,24 +407,24 @@
         <span id="offsetSubDescription"><%= __('offset_sub_description_1') %></span>
         <div id="offsetButtonContainer">
           <div class="offsetSideContainer">
-            <img src="/icons/nav-arrow-up.svg" class="icon offsetSideIcon clickable" onclick="offsetSpeedUp()" />
+            <img src="/icons/nav-arrow-up.svg" class="icon offsetSideIcon clickable" data-action="offsetSpeedUp" />
             <span id="offsetSpeedText" class="metropolis">1x</span>
-            <img src="/icons/nav-arrow-down.svg" class="icon offsetSideIcon clickable" onclick="offsetSpeedDown()" />
+            <img src="/icons/nav-arrow-down.svg" class="icon offsetSideIcon clickable" data-action="offsetSpeedDown" />
           </div>
-          <div id="offsetTapButton" onmousedown="offsetButtonDown()" onmouseup="offsetButtonUp()">
+          <div id="offsetTapButton">
             <span id="offsetButtonText" class="metropolis">TAP</span>
           </div>
           <div class="offsetSideContainer">
-            <img src="/icons/plus.svg" class="icon offsetSideIcon clickable" onclick="offsetUp()" />
-            <img src="/icons/minus.svg" class="icon offsetSideIcon clickable" onclick="offsetDown()" />
+            <img src="/icons/plus.svg" class="icon offsetSideIcon clickable" data-action="offsetUp" />
+            <img src="/icons/minus.svg" class="icon offsetSideIcon clickable" data-action="offsetDown" />
           </div>
         </div>
-        <div id="offsetResetButton" onclick="offsetReset()">
+        <div id="offsetResetButton" data-action="offsetReset">
           <span id="offsetResetButtonText" class="metropolis"><%= __('reset') %></span>
         </div>
       </div>
       <div id="visualSyncContainer" class="containers">
-        <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" onclick="displayClose()" />
+        <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" data-action="displayClose" />
         <h1 id="visualSyncTitle"><%= __('visual_sync_setting') %></h1>
         <canvas id="visualSyncCanvas" width="400" height="200"></canvas>
         <span id="visualSyncDescription"><strong><%= __('visual_sync_description_1') %></strong><%= __('visual_sync_description_2') %></span>
@@ -434,24 +434,24 @@
             <span id="visualSyncValueText" class="metropolis">0ms</span>
           </div>
           <div class="offsetSideContainer">
-            <img src="/icons/plus.svg" class="icon offsetSideIcon clickable" onclick="visualSyncUp()" />
-            <img src="/icons/minus.svg" class="icon offsetSideIcon clickable" onclick="visualSyncDown()" />
+            <img src="/icons/plus.svg" class="icon offsetSideIcon clickable" data-action="visualSyncUp" />
+            <img src="/icons/minus.svg" class="icon offsetSideIcon clickable" data-action="visualSyncDown" />
           </div>
         </div>
-        <div id="visualSyncResetButton" onclick="visualSyncReset()">
+        <div id="visualSyncResetButton" data-action="visualSyncReset">
           <span id="visualSyncResetButtonText" class="metropolis"><%= __('reset') %></span>
         </div>
       </div>
-      <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" onclick="displayClose()" />
+      <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" data-action="displayClose" />
       <h1 class="containersTitle"><%= __('option') %></h1>
       <div id="optionElementsContainer">
         <div id="optionSelectorContainer">
-          <span class="optionSelectors optionSelected" onclick="optionSelect(0)"><%= __('general') %></span>
-          <span class="optionSelectors" onclick="optionSelect(1)"><%= __('screen') %></span>
-          <span class="optionSelectors" onclick="optionSelect(2)"><%= __('sound') %></span>
-          <span class="optionSelectors" onclick="optionSelect(3)"><%= __('input') %></span>
-          <span class="optionSelectors" onclick="optionSelect(4)"><%= __('game') %></span>
-          <span class="optionSelectors" onclick="optionSelect(5)"><%= __('editor_title') %></span>
+          <span class="optionSelectors optionSelected" data-action="optionSelect" data-arg="0"><%= __('general') %></span>
+          <span class="optionSelectors" data-action="optionSelect" data-arg="1"><%= __('screen') %></span>
+          <span class="optionSelectors" data-action="optionSelect" data-arg="2"><%= __('sound') %></span>
+          <span class="optionSelectors" data-action="optionSelect" data-arg="3"><%= __('input') %></span>
+          <span class="optionSelectors" data-action="optionSelect" data-arg="4"><%= __('game') %></span>
+          <span class="optionSelectors" data-action="optionSelect" data-arg="5"><%= __('editor_title') %></span>
         </div>
         <div class="optionContentsContainer optionShow" id="optionGeneral">
           <p class="optionTitle"><%= __('my_info') %></p>
@@ -460,19 +460,19 @@
             <p class="optionValue" id="optionName">USERNAME</p>
           </div>
           <div class="optionValueContainer">
-            <a class="optionButton" onclick="logout()" id="logoutButton"><%= __('logout') %></a>
+            <a class="optionButton" data-action="logout" id="logoutButton"><%= __('logout') %></a>
           </div>
           <p class="optionTitle"><%= __('language') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('general_language') %></p>
-            <select class="optionSelect" id="langSelector" onchange="langChanged(this)">
+            <select class="optionSelect" id="langSelector" data-change="langChanged">
               <option value="ko">한국어</option>
               <option value="en">English</option>
             </select>
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('music_artist') %></p>
-            <select class="optionSelect" id="langDetailSelector" onchange="settingChanged(this, 'detailLang')">
+            <select class="optionSelect" id="langDetailSelector" data-setting="detailLang">
               <option value="original"><%= __('show_original') %></option>
               <option value="english"><%= __('show_english') %></option>
             </select>
@@ -481,18 +481,18 @@
           <p class="optionTitle"><%= __('game') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('coupon_code_enter') %></p>
-            <a class="optionButton" onclick="couponEnter()"><%= __('apply') %></a>
+            <a class="optionButton" data-action="couponEnter"><%= __('apply') %></a>
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('retry_tutorial') %></p>
-            <a class="optionButton" onclick="window.location.href = '<%= url %>/tutorial'"><%= __('move') %></a>
+            <a class="optionButton" data-action="goTutorial"><%= __('move') %></a>
           </div>
         </div>
         <div class="optionContentsContainer" id="optionDisplay">
           <p class="optionTitle"><%= __('resolution') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('canvas') %></p>
-            <select class="optionSelect" id="canvasResSelector" onchange="settingChanged(this, 'canvasRes')">
+            <select class="optionSelect" id="canvasResSelector" data-setting="canvasRes">
               <option value="100">100%</option>
               <option value="75">75%</option>
               <option value="50">50%</option>
@@ -501,7 +501,7 @@
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('album_art') %></p>
-            <select class="optionSelect" id="albumResSelector" onchange="settingChanged(this, 'albumRes')">
+            <select class="optionSelect" id="albumResSelector" data-setting="albumRes">
               <option value="100">100%</option>
               <option value="75">75%</option>
               <option value="50">50%</option>
@@ -510,7 +510,7 @@
           <p class="optionTitle"><%= __('details') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('sync') %></p>
-            <a class="optionButton" onclick="visualSyncSetting()" id="syncButton">0ms</a>
+            <a class="optionButton" data-action="visualSyncSetting" id="syncButton">0ms</a>
           </div>
         </div>
         <div class="optionContentsContainer" id="optionSound">
@@ -518,32 +518,32 @@
           <p class="optionValue"><%= __('sound_volume_tip') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('volume_all') %></p>
-            <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" oninput="settingChanged(this, 'volumeMaster')" />
+            <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" data-setting="volumeMaster" />
             <p class="optionValue volumeMasterValue">50%</p>
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('volume_song') %></p>
-            <input type="range" min="0" max="100" value="100" id="volumeSong" class="optionSlider" oninput="settingChanged(this, 'volumeSong')" />
+            <input type="range" min="0" max="100" value="100" id="volumeSong" class="optionSlider" data-setting="volumeSong" />
             <p class="optionValue" id="volumeSongValue">100%</p>
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('volume_hitsound') %></p>
-            <input type="range" min="0" max="100" value="100" id="volumeHit" class="optionSlider" oninput="settingChanged(this, 'volumeHitsound')" />
+            <input type="range" min="0" max="100" value="100" id="volumeHit" class="optionSlider" data-setting="volumeHitsound" />
             <p class="optionValue" id="volumeHitValue">100%</p>
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('volume_effect') %></p>
-            <input type="range" min="0" max="100" value="100" id="volumeEft" class="optionSlider" oninput="settingChanged(this, 'volumeEffect')" />
+            <input type="range" min="0" max="100" value="100" id="volumeEft" class="optionSlider" data-setting="volumeEffect" />
             <p class="optionValue" id="volumeEftValue">100%</p>
           </div>
           <p class="optionTitle"><%= __('details') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('offset') %></p>
-            <a class="optionButton" onclick="offsetSetting()" id="offsetButton">0ms</a>
+            <a class="optionButton" data-action="offsetSetting" id="offsetButton">0ms</a>
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('resolution') %></p>
-            <select class="optionSelect" id="soundResSelector" onchange="settingChanged(this, 'soundRes')">
+            <select class="optionSelect" id="soundResSelector" data-setting="soundRes">
               <option>96kbps</option>
               <option>128kbps</option>
               <option>192kbps</option>
@@ -554,13 +554,13 @@
           <p class="optionTitle"><%= __('mouse') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('sensitivity') %></p>
-            <input type="range" min="100" max="250" value="100" id="inputSensitive" class="optionSlider" oninput="settingChanged(this, 'sensitive')" />
+            <input type="range" min="100" max="250" value="100" id="inputSensitive" class="optionSlider" data-setting="sensitive" />
             <p id="sensitiveValue" class="optionValue">1x</p>
           </div>
           <p class="optionValue"><%= __('sensitivity_warning') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('wheel') %></p>
-            <select class="optionSelect" id="wheelSelector" onchange="settingChanged(this, 'wheel')">
+            <select class="optionSelect" id="wheelSelector" data-setting="wheel">
               <option value="0"><%= __('wheel_forward') %></option>
               <option value="1"><%= __('wheel_reverse') %></option>
             </select>
@@ -568,7 +568,7 @@
           <p class="optionTitle"><%= __('keyboard') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('input_key') %></p>
-            <select class="optionSelect" id="inputSelector" onchange="settingChanged(this, 'inputKey')">
+            <select class="optionSelect" id="inputSelector" data-setting="inputKey">
               <option value="0"><%= __('all_key') %></option>
               <option value="1"><%= __('alphabet_key') %></option>
               <option value="2"><%= __('zx_key') %></option>
@@ -576,54 +576,54 @@
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('click_with_mouse') %></p>
-            <input type="checkbox" class="optionCheckbox" id="mouseCheck" onchange="settingChanged(this, 'inputMouse')" />
+            <input type="checkbox" class="optionCheckbox" id="mouseCheck" data-setting="inputMouse" />
           </div>
         </div>
         <div class="optionContentsContainer" id="optionGame">
           <p class="optionTitle"><%= __('visual') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('skin') %></p>
-            <select class="optionSelect" id="skinSelector" onchange="settingChanged(this, 'skin')"></select>
+            <select class="optionSelect" id="skinSelector" data-setting="skin"></select>
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('cursor_size') %></p>
-            <input type="range" min="5" max="20" value="10" id="inputSize" class="optionSlider" oninput="settingChanged(this, 'inputSize')" />
+            <input type="range" min="5" max="20" value="10" id="inputSize" class="optionSlider" data-setting="inputSize" />
             <p id="inputSizeValue" class="optionValue">1x</p>
           </div>
           <p class="optionValue"><%= __('cursor_size_warning') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('apply_to_judge') %></p>
-            <input type="checkbox" class="optionCheckbox" id="judgeSkin" onchange="settingChanged(this, 'judgeSkin')" />
+            <input type="checkbox" class="optionCheckbox" id="judgeSkin" data-setting="judgeSkin" />
           </div>
           <p class="optionTitle"><%= __('hide_judge') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle">Perfect</p>
-            <input type="checkbox" class="optionCheckbox" id="judgePerfect" onchange="settingChanged(this, 'Perfect')" />
+            <input type="checkbox" class="optionCheckbox" id="judgePerfect" data-setting="Perfect" />
             <p class="optionSemiTitle">Great</p>
-            <input type="checkbox" class="optionCheckbox" id="judgeGreat" onchange="settingChanged(this, 'Great')" />
+            <input type="checkbox" class="optionCheckbox" id="judgeGreat" data-setting="Great" />
             <p class="optionSemiTitle">Good</p>
-            <input type="checkbox" class="optionCheckbox" id="judgeGood" onchange="settingChanged(this, 'Good')" />
+            <input type="checkbox" class="optionCheckbox" id="judgeGood" data-setting="Good" />
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle">Bad</p>
-            <input type="checkbox" class="optionCheckbox" id="judgeBad" onchange="settingChanged(this, 'Bad')" />
+            <input type="checkbox" class="optionCheckbox" id="judgeBad" data-setting="Bad" />
             <p class="optionSemiTitle">Miss</p>
-            <input type="checkbox" class="optionCheckbox" id="judgeMiss" onchange="settingChanged(this, 'Miss')" />
+            <input type="checkbox" class="optionCheckbox" id="judgeMiss" data-setting="Miss" />
             <!-- <p class="optionSemiTitle">Bullet</p>
-                    <input type="checkbox" class="optionCheckbox" id="judgeBullet" onchange="settingChanged(this, 'Bullet')"> -->
+                    <input type="checkbox" class="optionCheckbox" id="judgeBullet" data-setting="Bullet"> -->
           </div>
           <p class="optionTitle"><%= __('info') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('frame_counter') %></p>
-            <input type="checkbox" class="optionCheckbox" id="frameCheck" onchange="settingChanged(this, 'frameCounter')" />
+            <input type="checkbox" class="optionCheckbox" id="frameCheck" data-setting="frameCounter" />
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('combo_alert') %></p>
-            <input type="checkbox" class="optionCheckbox" id="comboAlertCheck" onchange="settingChanged(this, 'comboAlert')" />
+            <input type="checkbox" class="optionCheckbox" id="comboAlertCheck" data-setting="comboAlert" />
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('alert_interval') %></p>
-            <select class="optionSelect" id="comboSelector" onchange="settingChanged(this, 'comboCount')">
+            <select class="optionSelect" id="comboSelector" data-setting="comboCount">
               <option>10x</option>
               <option>25x</option>
               <option>50x</option>
@@ -636,17 +636,17 @@
           <p class="optionTitle"><%= __('personalize') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('ignore_cursor_at_editor') %></p>
-            <input type="checkbox" class="optionCheckbox" id="ignoreCursorCheck" onchange="settingChanged(this, 'ignoreCursor')" />
+            <input type="checkbox" class="optionCheckbox" id="ignoreCursorCheck" data-setting="ignoreCursor" />
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('ignore_at_editor') %></p>
-            <input type="checkbox" class="optionCheckbox" id="ignoreEditorCheck" onchange="settingChanged(this, 'ignoreEditor')" />
+            <input type="checkbox" class="optionCheckbox" id="ignoreEditorCheck" data-setting="ignoreEditor" />
           </div>
         </div>
       </div>
     </div>
     <div id="storeContainer" class="containers metropolis">
-      <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" onclick="displayClose()" />
+      <img src="/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" data-action="displayClose" />
       <div id="infoInnerContainer">
         <img src="/images/parts/elements/urlate-v3l-transparent.webp" id="infoImg" />
         <p class="infoTitle"><%= __('info_title3') %></p>
@@ -679,14 +679,14 @@
         <p class="infoText"><%= __('info16') %></p>
       </div>
     </div>
-    <div id="profileContainer" class="containers metropolis" onclick="showProfileBackground(event)">
-      <span id="profileDescription" onclick="return false;"><%= __('profile_description') %></span>
-      <img src="/icons/xmark-circle-ffffff.svg" class="icon clickable closeBtn" onclick="displayClose()" />
+    <div id="profileContainer" class="containers metropolis" data-action="showProfileBackground">
+      <span id="profileDescription" data-action="noop"><%= __('profile_description') %></span>
+      <img src="/icons/xmark-circle-ffffff.svg" class="icon clickable closeBtn" data-action="displayClose" />
       <div id="profileImageContainer"></div>
       <div id="profileNameContainer">
-        <img src="" id="profileImage" class="editable opacity" onclick="changeProfile('picture')" />
+        <img src="" id="profileImage" class="editable opacity" data-action="changeProfile" data-arg="picture" />
         <span id="profileName"></span>
-        <span id="profileBio" class="editable opacity" onclick="changeProfile('alias')"></span>
+        <span id="profileBio" class="editable opacity" data-action="changeProfile" data-arg="alias"></span>
       </div>
       <div class="profileContentsContainer">
         <div class="profileContents">
@@ -748,7 +748,7 @@
     <img src="/images/parts/elements/loading.webp" alt="loading" class="loadingCircle" id="loadingCircle" />
     <div class="overlay" id="volumeOverlay">
       <p class="optionSemiTitle"><%= __('volume') %></p>
-      <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" oninput="settingChanged(this, 'volumeMaster')" />
+      <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" data-setting="volumeMaster" />
       <p class="optionValue volumeMasterValue">50%</p>
     </div>
     <script>
