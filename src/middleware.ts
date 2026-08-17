@@ -13,6 +13,34 @@ const translate = (res: Response, key: string, fallback: string): string => {
   return translated === key ? fallback : translated;
 };
 
+/**
+ * 안내·오류 화면(info·privacy·error)용 정책입니다. 세 화면은 스크립트를 하나도
+ * 부르지 않아 script-src를 통째로 막을 수 있고, 그래서 nonce도 필요 없습니다.
+ * 나중에 누군가 인라인 스크립트를 넣으면 조용히 동작하는 대신 바로 막히므로,
+ * 이 화면들이 정적이라는 전제가 깨지는 순간 드러납니다.
+ *
+ * default-src를 'none'으로 두고 실제로 쓰는 것만 하나씩 엽니다. 인라인 style
+ * 속성도 없어 style-src에 unsafe-inline을 넣지 않았습니다.
+ *
+ * 오류 화면과 같은 정책을 쓰기 때문에 여기에 둡니다. index에서 정의해 가져가면
+ * 순환 참조가 됩니다.
+ */
+const STATIC_PAGE_CSP = [
+  "default-src 'none'",
+  "script-src 'none'",
+  "style-src 'self' https://fonts.googleapis.com https://cdn.jsdelivr.net",
+  "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
+  // 파비콘과 안내 화면의 아이콘뿐이고 전부 이 서버에서 옵니다.
+  "img-src 'self'",
+  "base-uri 'none'",
+  "form-action 'none'",
+  "frame-ancestors 'self'",
+].join("; ");
+
+export const setStaticPageCsp = (res: Response): void => {
+  res.setHeader("Content-Security-Policy", STATIC_PAGE_CSP);
+};
+
 const MESSAGES: Record<number, { key: string; title: string; description: string }> = {
   404: {
     key: "error_404",
@@ -51,6 +79,9 @@ export const sendError = (req: Request, res: Response, status: number): void => 
   // req.accepts honours the order of the Accept header. fetch/XHR usually asks
   // for JSON first, so they get JSON instead of the page.
   if (req.accepts(["html", "json"]) === "html") {
+    // 어느 경로에서 왔든 오류 화면 자체는 정적입니다. 원래 경로에 걸려 있던
+    // 넉넉한 정책을 그대로 물려받지 않도록 여기서 다시 지정합니다.
+    setStaticPageCsp(res);
     res.render(
       "error",
       {
