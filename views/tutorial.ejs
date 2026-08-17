@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
   </head>
-  <body oncontextmenu="return false" ondragstart="return false" onselect="return false">
+  <body>
     <div id="colorOverlayContainer"></div>
     <div id="blackOverlayContainer"></div>
     <div id="scoreContainer">
@@ -74,10 +74,10 @@
       </div>
       <span id="urlate"><strong>URLATE</strong> LITE</span>
       <div id="skip">
-        <div id="retryButton" onclick="retry()">
+        <div id="retryButton">
           <img src="/icons/retry.svg" id="retryIcon" />
         </div>
-        <div id="nextButton" onclick="finish()">
+        <div id="nextButton">
           <span>Next</span>
           <img src="/icons/next.svg" id="nextIcon" />
         </div>
@@ -86,9 +86,9 @@
     <div id="menuContainer">
       <span id="menuTitle">Paused</span>
       <div id="menuBox">
-        <div id="resume" class="menuBtn" onclick="resume()"><span>Resume</span></div>
-        <div id="retry" class="menuBtn" onclick="retry()"><span>Retry</span></div>
-        <div id="backToHome" class="menuBtn" onclick="home()"><span>Back to home</span></div>
+        <div id="resume" class="menuBtn"><span>Resume</span></div>
+        <div id="retry" class="menuBtn"><span>Retry</span></div>
+        <div id="backToHome" class="menuBtn"><span>Back to home</span></div>
       </div>
       <span id="menuVolume"><%= __('menu_volume') %></span>
     </div>
@@ -120,10 +120,10 @@
     </div>
     <div class="overlay" id="volumeOverlay">
       <p class="optionSemiTitle"><%= __('volume') %></p>
-      <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" oninput="settingChanged(this, 'volumeMaster')" />
+      <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" />
       <p class="optionValue" id="volumeMasterValue">50%</p>
     </div>
-    <script>
+    <script nonce="<%= cspNonce %>">
       const cdn = "<%= cdn %>";
       const url = "<%= url %>";
       const api = "<%= api %>";

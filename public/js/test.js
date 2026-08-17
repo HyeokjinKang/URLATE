@@ -824,7 +824,7 @@ const resume = () => {
   floatingResumeContainer.style.opacity = 1;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const retry = () => {
   if (isResultShowing) return location.reload();
   blackOverlayContainer.classList.add("show");
@@ -885,17 +885,17 @@ const retry = () => {
   }, 100);
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const editor = () => {
   window.location.href = `${url}/editor${background == "0" ? "?background=0" : ""}`;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const home = () => {
   window.location.href = `${url}/game?initialize=0`;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const settingChanged = (e, v) => {
   if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
@@ -1093,3 +1093,18 @@ document.getElementById("componentCanvas").addEventListener("mousedown", (event)
 document.getElementById("componentCanvas").addEventListener("mouseup", (event) => {
   checkHoldNote(`${event.button}mouse`);
 });
+
+// CSP를 걸기 위해 마크업의 on* 속성에서 옮겨온 것들입니다.
+document.addEventListener("contextmenu", (event) => event.preventDefault());
+document.addEventListener("dragstart", (event) => event.preventDefault());
+document.addEventListener("selectstart", (event) => event.preventDefault());
+
+document.querySelector(".volumeMaster").addEventListener("input", (event) => {
+  settingChanged(event.target, "volumeMaster");
+});
+document.getElementById("retryButton").addEventListener("click", retry);
+document.getElementById("nextButton").addEventListener("click", editor);
+document.getElementById("resume").addEventListener("click", resume);
+document.getElementById("retry").addEventListener("click", retry);
+document.getElementById("backToEditor").addEventListener("click", editor);
+document.getElementById("backToHome").addEventListener("click", home);

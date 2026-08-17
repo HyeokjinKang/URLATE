@@ -49,9 +49,9 @@ app.set("view engine", "ejs");
 app.set("views", __dirname + "/../views");
 app.use(cookieParser());
 
-// Baseline security headers. CSP is applied per-route on the account pages only;
-// the rest still carry inline handlers (editor 136, game 97) that a global policy
-// would break.
+// Baseline security headers. CSP is applied per-route: the account pages and the
+// three play screens carry it, while editor (136 inline handlers) and game (97)
+// still need the markup cleaned up before a policy can hold there.
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
@@ -111,11 +111,60 @@ const authPageCsp = (nonce: string, withGsi: boolean) => {
   ].join("; ");
 };
 
+const SOCKET_IO_ORIGIN = "https://cdn.socket.io";
+
+/**
+ * 플레이 화면(play·test·tutorial)용 정책입니다. 계정 화면과 쓰는 출처가 거의
+ * 겹치지 않아 정책을 합치면 양쪽 모두에게 필요 없는 권한을 열어주게 됩니다.
+ *
+ * 세 화면은 마크업과 스크립트 구조가 같아 정책 하나를 공유합니다.
+ */
+const playPageCsp = (nonce: string) => {
+  // socket.io는 폴링(https)으로 붙었다가 웹소켓으로 승격하므로 두 스킴이 다
+  // 필요합니다. 하나만 열어두면 승격 단계나 최초 연결 중 하나가 막힙니다.
+  const gameSocket = config.project.game.replace(/^https:/, "wss:");
+
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}' ${SOCKET_IO_ORIGIN}`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
+    "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
+    // 앨범아트와 배경이 CDN에서 옵니다.
+    `img-src 'self' data: ${config.project.cdn}`,
+    // Howler는 기본적으로 Web Audio로 받아 connect-src를 타지만, 브라우저가
+    // 지원하지 않으면 <audio>로 떨어져 media-src를 탑니다. 어느 쪽으로 가든
+    // 곡이 재생되도록 둘 다 열어둡니다.
+    `media-src 'self' ${config.project.cdn}`,
+    // 패턴·스킨 JSON과 곡 파일(CDN), 기록·설정 API, 게임 서버 소켓입니다.
+    // jsdelivr는 개발자 도구를 열었을 때 폰트 CSS의 소스맵을 받아옵니다.
+    `connect-src 'self' ${config.project.api} ${config.project.cdn} ${config.project.game} ${gameSocket} https://cdn.jsdelivr.net`,
+    "frame-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'self'",
+    "object-src 'none'",
+  ].join("; ");
+};
+
 // 요청마다 새로 만듭니다. 재사용하면 공격자가 값을 알아내 인라인 스크립트를
 // 통과시킬 수 있어 nonce의 의미가 사라집니다.
 const withAuthPageCsp = (res: Response, withGsi: boolean): string => {
   const nonce = randomBytes(16).toString("base64");
   res.setHeader("Content-Security-Policy", authPageCsp(nonce, withGsi));
+  return nonce;
+};
+
+/**
+ * 계정 화면과 달리 Report-Only로 시작합니다. 세 화면은 로그인 세션이 있어야
+ * 열려서 브라우저로 위반을 직접 수집하지 못했고, 정책은 코드에서 쓰이는 출처를
+ * 훑어 세운 것입니다. 곧바로 강제하면 빠뜨린 출처 하나에 곡이 안 받아지거나
+ * 소켓이 끊겨 게임이 멈춥니다.
+ *
+ * 실제 플레이에서 콘솔에 위반이 남지 않는 것을 확인한 뒤 강제로 바꿔야 합니다.
+ */
+const withPlayPageCsp = (res: Response): string => {
+  const nonce = randomBytes(16).toString("base64");
+  res.setHeader("Content-Security-Policy-Report-Only", playPageCsp(nonce));
   return nonce;
 };
 
@@ -356,6 +405,7 @@ app.get("/test", gateLimiter, requireAuth, async (req, res) => {
     url: config.project.url,
     api: config.project.api,
     game: config.project.game,
+    cspNonce: withPlayPageCsp(res),
     ver: config.project.mode == "test" ? Date.now() : version,
   });
 });
@@ -366,6 +416,7 @@ app.get("/play", gateLimiter, requireAuth, async (req, res) => {
     url: config.project.url,
     api: config.project.api,
     game: config.project.game,
+    cspNonce: withPlayPageCsp(res),
     ver: config.project.mode == "test" ? Date.now() : version,
   });
 });
@@ -376,6 +427,7 @@ app.get("/tutorial", gateLimiter, requireAuth, async (req, res) => {
     url: config.project.url,
     api: config.project.api,
     game: config.project.game,
+    cspNonce: withPlayPageCsp(res),
     ver: config.project.mode == "test" ? Date.now() : version,
   });
 });
