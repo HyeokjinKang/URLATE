@@ -1,4 +1,6 @@
 /* global Pace, Howler, Howl, url, cdn, api */
+// 값은 페이지의 인라인 <script>와 클래식 라이브러리가 심습니다. 모듈은 전역 스코프를
+// 통해 그 값들을 그대로 읽을 수 있어 추가 조치가 필요 없습니다.
 let upperBound, lowerBound, numberWithCommas, easeOutSine, easeOutQuad;
 let Factory, Updater, Renderer;
 (async () => {
