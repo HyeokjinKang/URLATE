@@ -337,7 +337,9 @@ const checkIntroReady = () => {
   if (introReady.done || !(introReady.video1 && introReady.video2 && introReady.minDelay)) return;
   introReady.done = true;
   document.getElementById("pressAnywhere").textContent = pressAnywhere;
-  warningContainer.onclick = warningSkip;
+  // 마크업에 미리 박아두면 인트로 준비 전에도 눌립니다. 준비가 끝난 시점에
+  // 속성을 달아 기존 조건을 그대로 지킵니다.
+  warningContainer.dataset.action = "warningSkip";
 };
 
 const watchIntroVideo = (video, key) => {
@@ -372,9 +374,9 @@ const intro1skip = () => {
   }
 };
 
-intro1video.onended = () => {
+intro1video.addEventListener("ended", () => {
   intro1skip();
-};
+});
 
 const intro2skip = () => {
   intro2video.pause();
@@ -394,9 +396,9 @@ const intro2skip = () => {
   }
 };
 
-intro2video.onended = () => {
+intro2video.addEventListener("ended", () => {
   intro2skip();
-};
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   let initialize = new URLSearchParams(window.location.search).get("initialize");
@@ -2139,7 +2141,7 @@ const scrollEvent = (e) => {
   }
 };
 
-document.onkeydown = (e) => {
+document.addEventListener("keydown", (e) => {
   let key = e.key.toLowerCase();
   if (key == "escape") {
     e.preventDefault();
@@ -2196,9 +2198,9 @@ document.onkeydown = (e) => {
     document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
     document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
   }
-};
+});
 
-document.onkeyup = (e) => {
+document.addEventListener("keyup", (e) => {
   let key = e.key.toLowerCase();
   if (display == 7) {
     offsetInput = false;
@@ -2206,7 +2208,7 @@ document.onkeyup = (e) => {
   if (key == "shift") {
     shiftDown = false;
   }
-};
+});
 
 window.addEventListener("resize", initialize);
 window.addEventListener("wheel", scrollEvent);
@@ -2266,6 +2268,7 @@ const clickActions = {
   visualSyncReset,
   visualSyncSetting,
   visualSyncUp,
+  warningSkip,
 };
 
 // 숫자 인자는 Number 로 바꿔 넘깁니다. data-* 값은 항상 문자열이라, 그대로
