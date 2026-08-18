@@ -1031,7 +1031,7 @@ const checkHoldNote = (key) => {
   }
 };
 
-document.onkeydown = (e) => {
+document.addEventListener("keydown", (e) => {
   e = e || window.event;
   if (e.repeat) return;
   if (pressingKeys.includes(e.key)) return;
@@ -1063,9 +1063,9 @@ document.onkeydown = (e) => {
     pressingKeys.push(e.key);
     compClicked(true, e.key, false);
   }
-};
+});
 
-document.onkeyup = (e) => {
+document.addEventListener("keyup", (e) => {
   e = e || window.event;
   if (e.key == "Escape") {
     return;
@@ -1073,7 +1073,7 @@ document.onkeyup = (e) => {
     shiftDown = false;
   }
   checkHoldNote(e.key);
-};
+});
 
 window.addEventListener("resize", () => {
   initialize(false);
