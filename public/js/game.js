@@ -528,7 +528,7 @@ const tracksUpdate = () => {
       </div>`;
       continue;
     }
-    songList += `<div class="songSelectionContainer" onclick="songSelected(${i})">
+    songList += `<div class="songSelectionContainer" data-action="songSelected" data-arg="${i}">
               <div class="songSelectionInfo">
                 <div class="songSelectionTitle">
                   ${settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name}
@@ -1145,7 +1145,7 @@ const rankUpdate = async () => {
         (e, i) => `<tr>
       <td>${i + 1}</td>
       <td>
-        <div class="rankProfileContainer" onclick="profileScreen('${encodeURIComponent(e.nickname)}')">
+        <div class="rankProfileContainer" data-action="profileScreen" data-arg="${encodeURIComponent(e.nickname)}">
           <img src="${escapeHtml(safeUrl(e.picture))}" class="rankProfile ${e.explicit % 2 == 1 ? "blur" : ""}" />
           ${escapeHtml(e.nickname)}
         </div>
@@ -1210,7 +1210,7 @@ const profileUpdate = async (nickname, isMe) => {
       count++;
       document.getElementById("profileBannerContainer").innerHTML += `
         <div class="bannerImage${isMe ? " clickable" : ""}${banners[i].indexOf("(-)") != -1 ? " hidden" : ""}" style="background-image: url('${cdn}/banners/${encodeURIComponent(banners[i].replace("(-)", ""))}.webp')" ${
-          isMe ? `onclick="bannerToggle(${i})"` : ""
+          isMe ? `data-action="bannerToggle" data-arg="${i}"` : ""
         }>
           <div class="bannerHover">
             <img src="/icons/${banners[i].indexOf("(-)") != -1 ? "eye-closed" : "eye"}.svg" class="bannerIcon">
@@ -1385,7 +1385,7 @@ const logout = () => {
   window.location.href = "/logout";
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const bannerToggle = (n) => {
   if (banners[n].indexOf("(-)") == -1) {
     banners[n] = banners[n] + "(-)";
@@ -2000,7 +2000,7 @@ const changeProfile = (e) => {
               let input = document.createElement("input");
               input.type = "file";
               input.accept = "image/*";
-              input.setAttribute("onchange", `picLoaded(event, "${closedBy}")`);
+              input.addEventListener("change", (event) => picLoaded(event, closedBy));
               input.click();
             }
           },
@@ -2010,7 +2010,7 @@ const changeProfile = (e) => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const picLoaded = async (e, type) => {
   loadingOverlayShow();
   const file = e.target.files[0];
@@ -2232,6 +2232,9 @@ window.onpopstate = () => {
 const clickActions = {
   couponEnter,
   changeProfile: (arg) => changeProfile(arg),
+  // 아래 둘은 마크업이 아니라 innerHTML 로 만들어지는 요소에 붙습니다.
+  // 위임이라 나중에 끼워 넣어져도 그대로 걸립니다.
+  bannerToggle: (arg) => bannerToggle(Number(arg)),
   difficultySelected: (arg) => difficultySelected(Number(arg)),
   displayClose,
   goTutorial: () => (window.location.href = `${url}/tutorial`),
@@ -2255,6 +2258,7 @@ const clickActions = {
   rankToggle,
   showProfile: (arg) => showProfile(arg),
   showProfileBackground: (arg, event) => showProfileBackground(event),
+  songSelected: (arg) => songSelected(Number(arg)),
   sortSelected: (arg) => sortSelected(Number(arg)),
   textDisabled,
   tutorialSkip,
