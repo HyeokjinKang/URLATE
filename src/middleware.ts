@@ -20,7 +20,8 @@ const translate = (res: Response, key: string, fallback: string): string => {
  * 이 화면들이 정적이라는 전제가 깨지는 순간 드러납니다.
  *
  * default-src를 'none'으로 두고 실제로 쓰는 것만 하나씩 엽니다. 인라인 style
- * 속성도 없어 style-src에 unsafe-inline을 넣지 않았습니다.
+ * 속성도 없어 style-src에 unsafe-inline을 넣지 않았습니다. 예외는 connect-src
+ * 하나로, 화면이 아니라 개발자 도구가 쓰는 소스맵 때문입니다(아래 참고).
  *
  * 오류 화면과 같은 정책을 쓰기 때문에 여기에 둡니다. index에서 정의해 가져가면
  * 순환 참조가 됩니다.
@@ -30,6 +31,11 @@ const STATIC_PAGE_CSP = [
   "script-src 'none'",
   "style-src 'self' https://fonts.googleapis.com https://cdn.jsdelivr.net",
   "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
+  // 화면이 직접 보내는 요청은 없지만, 개발자 도구를 열면 폰트 CSS의 소스맵
+  // (jsdelivr /sm/*.map)을 받아옵니다. 사용자 동작에는 영향이 없어도 막아두면
+  // 콘솔에 위반이 쌓여 진짜 문제를 가립니다. style-src·font-src로 이미 신뢰하는
+  // 출처라 늘어나는 권한은 없고, 'self'는 쓰지 않으므로 열지 않습니다.
+  "connect-src https://cdn.jsdelivr.net",
   // 파비콘과 안내 화면의 아이콘뿐이고 전부 이 서버에서 옵니다.
   "img-src 'self'",
   "base-uri 'none'",
