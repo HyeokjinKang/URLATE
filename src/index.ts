@@ -5,7 +5,7 @@ import i18n from "./i18n";
 import fetch from "node-fetch";
 import { exec } from "child_process";
 import { logger } from "./logger";
-import { errorHandler, notFoundHandler, sendError } from "./middleware";
+import { errorHandler, notFoundHandler, sendError, setStaticPageCsp } from "./middleware";
 import { initProfile, profileRouter } from "./profile";
 import { URL } from "url";
 import { createHash, randomBytes } from "crypto";
@@ -118,6 +118,7 @@ const withAuthPageCsp = (res: Response, withGsi: boolean): string => {
   res.setHeader("Content-Security-Policy", authPageCsp(nonce, withGsi));
   return nonce;
 };
+
 
 /**
  * 로그인·가입 화면 전용 예산입니다. 두 화면은 요청마다 nonce를 새로 만들기
@@ -381,10 +382,12 @@ app.get("/tutorial", gateLimiter, requireAuth, async (req, res) => {
 });
 
 app.get("/info", (req, res) => {
+  setStaticPageCsp(res);
   res.render("info");
 });
 
 app.get("/privacy", (req, res) => {
+  setStaticPageCsp(res);
   res.render("privacy");
 });
 
