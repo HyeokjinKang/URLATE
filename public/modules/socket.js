@@ -8,9 +8,6 @@ export const socket = io(game, {
   withCredentials: true,
 });
 
-// The one place this module is exposed to the classic scripts, which cannot import it.
-(window.URLATE ??= {}).socket = socket;
-
 document.addEventListener("DOMContentLoaded", () => {
   const img = new Image();
   img.src = "/icons/medal-solid.svg";
