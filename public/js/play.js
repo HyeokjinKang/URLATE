@@ -1,4 +1,6 @@
 /* global Pace, Howler, Howl, url, cdn, api */
+// 값은 페이지의 인라인 <script>와 클래식 라이브러리가 심습니다. 모듈은 전역 스코프를
+// 통해 그 값들을 그대로 읽을 수 있어 추가 조치가 필요 없습니다.
 let upperBound, lowerBound, numberWithCommas, easeOutSine, easeOutQuad;
 let Factory, Updater, Renderer;
 (async () => {
@@ -913,7 +915,7 @@ const resume = () => {
   floatingResumeContainer.style.opacity = 1;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const retry = () => {
   if (isResultShowing) {
     if (localStorage.record < score) localStorage.record = score;
@@ -980,12 +982,12 @@ const retry = () => {
   }, 100);
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const home = () => {
   window.location.href = `${url}/game?initialize=1`;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const settingChanged = (e, v) => {
   if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
@@ -1185,3 +1187,17 @@ document.getElementById("componentCanvas").addEventListener("mousedown", (event)
 document.getElementById("componentCanvas").addEventListener("mouseup", (event) => {
   checkHoldNote(`${event.button}mouse`);
 });
+
+// CSP를 걸기 위해 마크업의 on* 속성에서 옮겨온 것들입니다.
+document.addEventListener("contextmenu", (event) => event.preventDefault());
+document.addEventListener("dragstart", (event) => event.preventDefault());
+document.addEventListener("selectstart", (event) => event.preventDefault());
+
+document.querySelector(".volumeMaster").addEventListener("input", (event) => {
+  settingChanged(event.target, "volumeMaster");
+});
+document.getElementById("retryButton").addEventListener("click", retry);
+document.getElementById("nextButton").addEventListener("click", home);
+document.getElementById("resume").addEventListener("click", resume);
+document.getElementById("retry").addEventListener("click", retry);
+document.getElementById("backToHome").addEventListener("click", home);
