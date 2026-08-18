@@ -49,11 +49,9 @@ const profileNameContainer = document.getElementById("profileNameContainer");
 const slowRate = 110 / 174;
 const fastRate = 174 / 110;
 
-// escapeHtml/safeUrl are shared from modules/utils.js (game.js is a classic script, so import dynamically).
-let escapeHtml, safeUrl;
-(async () => {
-  ({ escapeHtml, safeUrl } = await import("../modules/utils.js"));
-})();
+// 모듈이 된 뒤로는 정적 import 로 받습니다. 동적 import 는 해석되기 전까지
+// 두 함수가 undefined 라, 그 사이에 랭킹이나 프로필이 그려지면 터졌습니다.
+import { escapeHtml, safeUrl } from "../modules/utils.js";
 
 let settings = [];
 let profileSong;
