@@ -115,10 +115,12 @@ const SOCKET_IO_ORIGIN = "https://cdn.socket.io";
 const JSDELIVR_ORIGIN = "https://cdn.jsdelivr.net";
 
 /**
- * 플레이 화면(play·test·tutorial)용 정책입니다. 계정 화면과 쓰는 출처가 거의
- * 겹치지 않아 정책을 합치면 양쪽 모두에게 필요 없는 권한을 열어주게 됩니다.
+ * 플레이 화면(play·test·tutorial)과 에디터가 공유하는 정책입니다. 계정 화면과
+ * 쓰는 출처가 거의 겹치지 않아 합치면 양쪽 모두에게 필요 없는 권한을 열어주게
+ * 됩니다.
  *
- * 세 화면은 마크업과 스크립트 구조가 같아 정책 하나를 공유합니다.
+ * 네 화면은 불러오는 자산이 같습니다. 에디터가 패턴을 내려받을 때 만드는 blob
+ * URL 은 <a download> 로만 쓰여 페치 지시문의 대상이 아닙니다.
  */
 const playPageCsp = (nonce: string) => {
   // socket.io는 폴링(https)으로 붙었다가 웹소켓으로 승격하므로 두 스킴이 다
@@ -129,7 +131,9 @@ const playPageCsp = (nonce: string) => {
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' ${SOCKET_IO_ORIGIN}`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
-    "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
+    // 에디터는 metropolis.css 가 CDN 에서 본문 글꼴을 받아옵니다. play·test·
+    // tutorial 은 쓰지 않지만, 이미 신뢰하는 출처라 정책을 나눌 만큼은 아닙니다.
+    `font-src 'self' https://fonts.gstatic.com ${JSDELIVR_ORIGIN} ${config.project.cdn}`,
     // 앨범아트와 배경이 CDN에서 옵니다.
     `img-src 'self' data: ${config.project.cdn}`,
     // Howler는 기본적으로 Web Audio로 받아 connect-src를 타지만, 브라우저가
@@ -440,6 +444,7 @@ app.get("/editor", gateLimiter, requireAuth, async (req, res) => {
     url: config.project.url,
     api: config.project.api,
     game: config.project.game,
+    cspNonce: withPlayPageCsp(res),
     ver: config.project.mode == "test" ? Date.now() : version,
   });
 });

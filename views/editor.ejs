@@ -18,23 +18,23 @@
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <script data-pace-options='{ "eventLag": false }' src="/js/pace.js"></script>
   </head>
-  <body oncontextmenu="return false" ondragstart="return false" onselect="return false">
+  <body>
     <div id="initialScreenContainer" class="metropolis">
       <br /><br />
       <h2>Editor</h2>
       <div id="initialButtonsContainer">
-        <span id="gotoGame" class="backText clickable" onclick="window.location.href = '<%= url %>/game?initialize=0'"
+        <span id="gotoGame" class="backText clickable" data-action="goGame"
           ><img src="/icons/nav-arrow-left.svg" class="backIcon" /><%= __('goto_game') %></span
         >
-        <span class="initialButtons clickable" onclick="newEditor()"><img src="/icons/design-pencil.svg" class="initialIcon clickable" />New</span>
-        <span class="initialButtons clickable" onclick="loadEditor()"><img src="/icons/arrow-down-right-circle.svg" class="initialIcon clickable" />Load</span>
+        <span class="initialButtons clickable" data-action="newEditor"><img src="/icons/design-pencil.svg" class="initialIcon clickable" />New</span>
+        <span class="initialButtons clickable" data-action="loadEditor"><img src="/icons/arrow-down-right-circle.svg" class="initialIcon clickable" />Load</span>
       </div>
       <div id="songSelectionContainer">
         <div id="songSelection">
-          <span id="gotoMain" class="backText clickable" onclick="gotoMain(true)"><img src="/icons/nav-arrow-left.svg" class="backIcon" /><%= __('cancel') %></span>
+          <span id="gotoMain" class="backText clickable" data-action="gotoMainConfirm"><img src="/icons/nav-arrow-left.svg" class="backIcon" /><%= __('cancel') %></span>
           <h2>Select Song</h2>
           <select id="songSelectBox" class="clickable"></select>
-          <input type="button" class="initlalButtons" value="Select" onclick="songSelected()" />
+          <input type="button" class="initlalButtons" value="Select" data-action="songSelected" />
         </div>
       </div>
     </div>
@@ -156,48 +156,48 @@
       </div>
       <div id="navbar">
         <div id="topLeftBar" class="navbarElements">
-          <span class="backText clickable" onclick="gotoMain()"><img src="/icons/nav-arrow-left.svg" class="backIcon" /><%= __('editor_main') %></span>
+          <span class="backText clickable" data-action="gotoMain"><img src="/icons/nav-arrow-left.svg" class="backIcon" /><%= __('editor_main') %></span>
         </div>
         <div id="topCenterBar" class="navbarElements">
           <span id="songName" class="metropolis">Song Name here</span>
         </div>
         <div id="topRightBar" class="navbarElements">
-          <img src="/icons/sidebar-expand.svg" id="sidebarBtn" class="icon clickable sidebar-expand" onclick="toggleSettings()" />
+          <img src="/icons/sidebar-expand.svg" id="sidebarBtn" class="icon clickable sidebar-expand" data-action="toggleSettings" />
         </div>
       </div>
       <div id="workingSpaceContainer">
         <div id="workingContainer">
           <div id="menuContainer">
-            <img src="/icons/resize.svg" class="menuIcon menuSelected" onclick="changeMode(0)" />
-            <img src="/icons/edit-pencil-solid.svg" class="menuIcon clickable" onclick="changeMode(1)" />
-            <img src="/icons/plus-circle-solid.svg" class="menuIcon clickable" onclick="changeMode(2)" />
+            <img src="/icons/resize.svg" class="menuIcon menuSelected" data-action="changeMode" data-arg="0" />
+            <img src="/icons/edit-pencil-solid.svg" class="menuIcon clickable" data-action="changeMode" data-arg="1" />
+            <img src="/icons/plus-circle-solid.svg" class="menuIcon clickable" data-action="changeMode" data-arg="2" />
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
-            <img src="/icons/play-solid.svg" class="menuIcon clickable" onclick="test()" />
-            <img src="/icons/floppy-disk-solid.svg" class="menuIcon clickable" onclick="save()" />
+            <img src="/icons/play-solid.svg" class="menuIcon clickable" data-action="test" />
+            <img src="/icons/floppy-disk-solid.svg" class="menuIcon clickable" data-action="save" />
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
-            <img src="/icons/magnet-solid.svg" class="menuIcon clickable menuSelected" onclick="toggleMagnet()" />
-            <img src="/icons/orthogonal-view.svg" class="menuIcon clickable menuSelected" onclick="toggleGrid()" />
+            <img src="/icons/magnet-solid.svg" class="menuIcon clickable menuSelected" data-action="toggleMagnet" />
+            <img src="/icons/orthogonal-view.svg" class="menuIcon clickable menuSelected" data-action="toggleGrid" />
             <div id="metronomeContainer">
-              <img src="/icons/metronome.svg" id="metronome" class="menuIcon clickable" onclick="toggleMetronome()" />
+              <img src="/icons/metronome.svg" id="metronome" class="menuIcon clickable" data-action="toggleMetronome" />
             </div>
-            <img src="/icons/one-point-circle.svg" class="menuIcon clickable" onclick="toggleCircle()" />
+            <img src="/icons/one-point-circle.svg" class="menuIcon clickable" data-action="toggleCircle" />
           </div>
           <div id="toolContainer">
-            <img src="/icons/copy.svg" class="toolIcon clickable" onclick="elementCopy()" />
+            <img src="/icons/copy.svg" class="toolIcon clickable" data-action="elementCopy" />
             <span class="toolText">Copy</span>
-            <img src="/icons/paste-clipboard.svg" class="toolIcon clickable" onclick="elementPaste()" />
+            <img src="/icons/paste-clipboard.svg" class="toolIcon clickable" data-action="elementPaste" />
             <span class="toolText">Paste</span>
-            <img src="/icons/keyframes.svg" class="toolIcon clickable" onclick="rangeCopy()" />
+            <img src="/icons/keyframes.svg" class="toolIcon clickable" data-action="rangeCopy" />
             <span class="toolText">Range<br />Copy</span>
-            <img src="/icons/transition-right.svg" class="toolIcon clickable" onclick="rangePaste()" />
+            <img src="/icons/transition-right.svg" class="toolIcon clickable" data-action="rangePaste" />
             <span class="toolText">Range<br />Paste</span>
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
-            <img src="/icons/dot-arrow-right.svg" class="toolIcon clickable" onclick="moveTo()" />
+            <img src="/icons/dot-arrow-right.svg" class="toolIcon clickable" data-action="moveTo" />
             <span class="toolText">Move</span>
-            <img src="/icons/question-mark.svg" class="toolIcon clickable" onmouseover="showHelp()" onmouseout="hideHelp()" />
+            <img src="/icons/question-mark.svg" class="toolIcon clickable" data-mouseover="showHelp" data-mouseout="hideHelp" />
             <span class="toolText">Shortcuts</span>
           </div>
-          <div id="componentView" onmousemove="trackMousePos(event)" onmousedown="compClicked()">
+          <div id="componentView" data-mousemove="trackMousePos" data-mousedown="compClicked">
             <div id="canvasContainer">
               <div id="canvasBackground"></div>
               <canvas id="componentCanvas" width="100%" height="100%"> </canvas>
@@ -216,37 +216,37 @@
                   <p class="settingsSemiTitle">POSITION</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">X</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onkeyup="settingsInput('x', this)" onfocus="textFocused()" onblur="textBlurred()" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="x" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">Y</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onkeyup="settingsInput('y', this)" onfocus="textFocused()" onblur="textBlurred()" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="y" />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onkeyup="settingsInput('Timing', this)" onfocus="textFocused()" onblur="textBlurred()" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">DIRECTION</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onkeyup="settingsInput('Direction', this)" onfocus="textFocused()" onblur="textBlurred()" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Direction" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">DURATION</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onkeyup="settingsInput('Duration', this)" onfocus="textFocused()" onblur="textBlurred()" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Duration" />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">ACTION</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">CHANGE</span>
-                    <input type="button" class="settingsButtons metropolis clickable" onclick="changeNote()" value="▶" />
+                    <input type="button" class="settingsButtons metropolis clickable" data-action="changeNote" value="▶" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">DELETE</span>
-                    <input type="button" class="settingsButtons metropolis clickable" onclick="deleteElement()" value="▶" />
+                    <input type="button" class="settingsButtons metropolis clickable" data-action="deleteElement" value="▶" />
                   </div>
                 </div>
               </div>
@@ -255,33 +255,33 @@
                   <p class="settingsSemiTitle">POSITION</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">SIDE</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Side', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Side" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">LOCATION</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Location', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Location" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">ANGLE</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Angle', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Angle" />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">SPEED</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Speed', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Speed" />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">ACTION</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">DELETE</span>
-                    <input type="button" class="settingsButtons metropolis clickable" onclick="deleteElement()" value="▶" />
+                    <input type="button" class="settingsButtons metropolis clickable" data-action="deleteElement" value="▶" />
                   </div>
                 </div>
               </div>
@@ -290,7 +290,7 @@
                   <p class="settingsSemiTitle">GENERAL</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TYPE</span>
-                    <select class="settingsSelectBox metropolis clickable" id="triggerInitBox" onchange="triggerSet()">
+                    <select class="settingsSelectBox metropolis clickable" id="triggerInitBox" data-change="triggerSet">
                       <option></option>
                       <option>Destroy</option>
                       <option>Destroy All</option>
@@ -308,7 +308,7 @@
                   <p class="settingsSemiTitle">GENERAL</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TYPE</span>
-                    <select class="settingsSelectBox metropolis clickable" id="triggerSelectBox" onchange="triggerSet(true)">
+                    <select class="settingsSelectBox metropolis clickable" id="triggerSelectBox" data-change="triggerSetTrue">
                       <option>Destroy</option>
                       <option>Destroy All</option>
                       <option>BPM</option>
@@ -323,106 +323,106 @@
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TARGET NUM</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('num', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="triggersInput" data-keyup-arg="num" />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">BPM</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="triggersInput('bpm', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-blur="triggersInput" data-blur-arg="bpm" />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">OPACITY</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('opacity', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="triggersInput" data-keyup-arg="opacity" />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">SPEED</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="triggersInput('speed', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-blur="triggersInput" data-blur-arg="speed" />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">V-ALIGN</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="triggersInput('valign', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-blur="triggersInput" data-blur-arg="valign" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">ALIGN</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="triggersInput('align', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-blur="triggersInput" data-blur-arg="align" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">WEIGHT</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('weight', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="triggersInput" data-keyup-arg="weight" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">SIZE</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('size', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="triggersInput" data-keyup-arg="size" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">DURATION</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="triggersInput('duration', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-blur="triggersInput" data-blur-arg="duration" />
                   </div>
                   <p class="settingsSemiTitle">POSITION</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">X</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('x', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="triggersInput" data-keyup-arg="x" />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">Y</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('y', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="triggersInput" data-keyup-arg="y" />
                   </div>
                   <p class="settingsSemiTitle">VALUE</p>
                   <div class="settingsPropertiesIndividual column">
                     <span class="settingsPropertiesTitle">TEXT</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis left" onfocus="textFocused()" onblur="textBlurred()" onkeyup="triggersInput('text', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis left" data-keyup="triggersInput" data-keyup-arg="text" />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="settingsInput('Timing', this)" />
+                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">ACTION</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">DELETE</span>
-                    <input type="button" class="settingsButtons metropolis clickable" onclick="deleteElement()" value="▶" />
+                    <input type="button" class="settingsButtons metropolis clickable" data-action="deleteElement" value="▶" />
                   </div>
                 </div>
               </div>
@@ -440,55 +440,55 @@
                 </div>
                 <div class="settingsPropertiesIndividual">
                   <span class="settingsPropertiesTitle">AUTHOR</span>
-                  <input type="text" class="settingsPropertiesTextbox metropolis left" onfocus="textFocused()" onblur="textBlurred()" value="" />
+                  <input type="text" class="settingsPropertiesTextbox metropolis left" value="" />
                 </div>
                 <div class="settingsPropertiesIndividual column">
                   <span class="settingsPropertiesTitle">COMMENT</span>
-                  <input type="text" class="settingsPropertiesTextbox metropolis left" onfocus="textFocused()" onblur="textBlurred()" value="" />
+                  <input type="text" class="settingsPropertiesTextbox metropolis left" value="" />
                 </div>
               </div>
               <div class="settingsPropertiesContainer">
                 <p class="settingsSemiTitle">PROPERTY</p>
                 <div class="settingsPropertiesIndividual">
                   <span class="settingsPropertiesTitle">BPM</span>
-                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="changeBPM(this)" />
+                  <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="changeBPM" />
                 </div>
                 <div class="settingsPropertiesIndividual">
                   <span class="settingsPropertiesTitle">SPEED</span>
-                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="changeSpeed(this)" value="1" />
+                  <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="changeSpeed" value="1" />
                 </div>
                 <div class="settingsPropertiesIndividual">
                   <span class="settingsPropertiesTitle">SYNC</span>
-                  <input type="text" class="settingsPropertiesTextbox metropolis" onfocus="textFocused()" onblur="textBlurred()" onkeyup="changeOffset(this)" value="0" />
+                  <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="changeOffset" value="0" />
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div id="timelineContainer" onmousemove="trackTimelineMousePos()" onmousedown="tmlClicked()">
+      <div id="timelineContainer" data-mousemove="trackTimelineMousePos" data-mousedown="tmlClicked">
         <div id="timelineInner"></div>
       </div>
       <canvas id="timelineCanvas" width="100%" height="100%"> </canvas>
       <div id="timelineZoomController" class="controllers">
-        <img src="/icons/zoom-in.svg" class="clickable timeline-icon" onclick="zoomIn()" />
-        <img src="/icons/zoom-out.svg" class="clickable timeline-icon" onclick="zoomOut()" />
+        <img src="/icons/zoom-in.svg" class="clickable timeline-icon" data-action="zoomIn" />
+        <img src="/icons/zoom-out.svg" class="clickable timeline-icon" data-action="zoomOut" />
       </div>
       <div id="timelinePlayController" class="controllers">
-        <img src="/icons/play-solid.svg" id="controlBtn" class="clickable timeline-play" onclick="songPlayPause()" />
-        <img src="/icons/stop-solid.svg" class="clickable timeline-icon" onclick="stopBtn()" />
-        <span class="clickable" id="percentage" onclick="changeRate();">100%</span>
+        <img src="/icons/play-solid.svg" id="controlBtn" class="clickable timeline-play" data-action="songPlayPause" />
+        <img src="/icons/stop-solid.svg" class="clickable timeline-icon" data-action="stopBtn" />
+        <span class="clickable" id="percentage" data-action="changeRate">100%</span>
       </div>
       <div id="timelineSplitController" class="controllers">
-        <span class="clickable" id="split" onclick="changeSplit();">1/2</span>
+        <span class="clickable" id="split" data-action="changeSplit">1/2</span>
       </div>
     </div>
     <div class="overlay" id="volumeOverlay">
       <p class="optionSemiTitle"><%= __('volume') %></p>
-      <input type="range" min="0" max="100" value="50" id="volumeMaster" class="optionSlider" oninput="settingChanged(this, 'volumeMaster')" />
+      <input type="range" min="0" max="100" value="50" id="volumeMaster" class="optionSlider" data-setting="volumeMaster" />
       <p class="optionValue" id="volumeMasterValue">50%</p>
     </div>
-    <script>
+    <script nonce="<%= cspNonce %>">
       const moveToAlert = "<%= __('moveToAlert') %>";
       const timeAlert = "<%= __('timeAlert') %>";
       const copiedText = "<%= __('copied') %>";
@@ -514,6 +514,6 @@
     <script src="/lib/howler.min.js"></script>
     <script src="/lib/iziToast.min.js"></script>
     <script type="module" src="/modules/socket.js?v=<%= ver %>"></script>
-    <script src="/js/editor.js?v=<%= ver %>"></script>
+    <script type="module" src="/js/editor.js?v=<%= ver %>"></script>
   </body>
 </html>
