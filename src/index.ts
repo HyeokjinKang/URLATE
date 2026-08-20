@@ -91,16 +91,14 @@ const authPageCsp = (nonce: string, withGsi: boolean) => {
     "default-src 'self'",
     // GSI 클라이언트와 페이지가 심는 전역 설정 스크립트를 허용합니다.
     `script-src 'self' 'nonce-${nonce}'${gsi(GSI_ORIGIN)}`,
-    // GSI 버튼과 웹폰트 CSS가 인라인 스타일을 주입해 nonce로 좁힐 수 없습니다.
+    // GSI 버튼이 인라인 스타일을 주입해 nonce로 좁힐 수 없습니다.
     // accounts.google.com은 GSI가 버튼 스타일시트(/gsi/style)를 받아오는 곳으로,
-    // 빠뜨리면 강제 모드에서 로그인 버튼 모양이 깨집니다.
-    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net${gsi(GSI_ORIGIN)}`,
-    "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
+    // 빠뜨리면 강제 모드에서 로그인 버튼 모양이 깨집니다. 웹폰트(Montserrat·
+    // Pretendard)는 CDN에서 받아옵니다.
+    `style-src 'self' 'unsafe-inline'${gsi(GSI_ORIGIN)}`,
+    `font-src 'self' ${config.project.cdn}`,
     "img-src 'self' data:",
-    // jsdelivr는 개발자 도구를 열었을 때 폰트 CSS의 소스맵(/sm/*.map)을 받아옵니다.
-    // 사용자 동작에는 영향이 없지만, 막아두면 콘솔에 위반이 쌓여 진짜 문제를 가립니다.
-    // 이미 style-src·font-src로 신뢰하는 출처라 여기서 늘어나는 권한은 없습니다.
-    `connect-src 'self' ${config.project.api} https://cdn.jsdelivr.net${gsi(GSI_ORIGIN)}`,
+    `connect-src 'self' ${config.project.api}${gsi(GSI_ORIGIN)}`,
     // 로그인 버튼은 accounts.google.com iframe으로 그려집니다. 가입 화면은
     // 프레임을 전혀 쓰지 않으므로 아예 막습니다.
     withGsi ? `frame-src ${GSI_ORIGIN}` : "frame-src 'none'",
@@ -111,16 +109,14 @@ const authPageCsp = (nonce: string, withGsi: boolean) => {
   ].join("; ");
 };
 
-const SOCKET_IO_ORIGIN = "https://cdn.socket.io";
-const JSDELIVR_ORIGIN = "https://cdn.jsdelivr.net";
-
 /**
  * 플레이 화면(play·test·tutorial)과 에디터가 공유하는 정책입니다. 계정 화면과
  * 쓰는 출처가 거의 겹치지 않아 합치면 양쪽 모두에게 필요 없는 권한을 열어주게
  * 됩니다.
  *
  * 네 화면은 불러오는 자산이 같습니다. 에디터가 패턴을 내려받을 때 만드는 blob
- * URL 은 <a download> 로만 쓰여 페치 지시문의 대상이 아닙니다.
+ * URL 은 <a download> 로만 쓰여 페치 지시문의 대상이 아닙니다. socket.io는 이
+ * 서버에서 직접 내려주므로 script-src 에 외부 출처가 필요 없습니다.
  */
 const playPageCsp = (nonce: string) => {
   // socket.io는 폴링(https)으로 붙었다가 웹소켓으로 승격하므로 두 스킴이 다
@@ -129,11 +125,10 @@ const playPageCsp = (nonce: string) => {
 
   return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' ${SOCKET_IO_ORIGIN}`,
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
-    // 에디터는 metropolis.css 가 CDN 에서 본문 글꼴을 받아옵니다. play·test·
-    // tutorial 은 쓰지 않지만, 이미 신뢰하는 출처라 정책을 나눌 만큼은 아닙니다.
-    `font-src 'self' https://fonts.gstatic.com ${JSDELIVR_ORIGIN} ${config.project.cdn}`,
+    `script-src 'self' 'nonce-${nonce}'`,
+    "style-src 'self' 'unsafe-inline'",
+    // Montserrat·Pretendard·Metropolis 웹폰트가 모두 CDN에서 옵니다.
+    `font-src 'self' ${config.project.cdn}`,
     // 앨범아트와 배경이 CDN에서 옵니다.
     `img-src 'self' data: ${config.project.cdn}`,
     // Howler는 기본적으로 Web Audio로 받아 connect-src를 타지만, 브라우저가
@@ -141,8 +136,7 @@ const playPageCsp = (nonce: string) => {
     // 곡이 재생되도록 둘 다 열어둡니다.
     `media-src 'self' ${config.project.cdn}`,
     // 패턴·스킨 JSON과 곡 파일(CDN), 기록·설정 API, 게임 서버 소켓입니다.
-    // jsdelivr는 개발자 도구를 열었을 때 폰트 CSS의 소스맵을 받아옵니다.
-    `connect-src 'self' ${config.project.api} ${config.project.cdn} ${config.project.game} ${gameSocket} https://cdn.jsdelivr.net`,
+    `connect-src 'self' ${config.project.api} ${config.project.cdn} ${config.project.game} ${gameSocket}`,
     "frame-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -168,11 +162,12 @@ const withAuthPageCsp = (res: Response, withGsi: boolean): string => {
  * 실제 플레이에서 콘솔에 위반이 남지 않는 것을 확인한 뒤 강제로 바꿔야 합니다.
  */
 /**
- * 게임 화면용 정책입니다. 플레이 화면과 대부분 겹치지만 두 가지가 다릅니다.
+ * 게임 화면용 정책입니다. 플레이 화면과 대부분 겹치지만 프로필 사진이 두
+ * 곳에서 온다는 점이 다릅니다. 직접 올린 사진은 CDN 에 있고, 가입 시점에
+ * 받아둔 구글 계정 사진은 googleusercontent 에 있습니다.
  *
- * 랭킹 그래프에 쓰는 chart.js 를 jsdelivr 에서 받아 script-src 에 그 출처가
- * 더 필요하고, 프로필 사진이 두 곳에서 옵니다. 직접 올린 사진은 CDN 에 있고,
- * 가입 시점에 받아둔 구글 계정 사진은 googleusercontent 에 있습니다.
+ * 랭킹 그래프에 쓰는 chart.js 와 socket.io 도 이 서버에서 직접 내려주므로
+ * script-src 에 외부 출처가 필요 없습니다.
  *
  * 플레이 화면과 정책을 합치면 그쪽에 쓰지도 않는 출처를 열어주게 됩니다.
  */
@@ -181,15 +176,14 @@ const gamePageCsp = (nonce: string) => {
 
   return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' ${SOCKET_IO_ORIGIN} ${JSDELIVR_ORIGIN}`,
-    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com ${JSDELIVR_ORIGIN}`,
-    // Metropolis 는 metropolis.css 가 CDN 에서 받아옵니다. 웹폰트 두 곳만
-    // 열어두면 본문 글꼴이 통째로 대체 글꼴로 떨어집니다.
-    `font-src 'self' https://fonts.gstatic.com ${JSDELIVR_ORIGIN} ${config.project.cdn}`,
+    `script-src 'self' 'nonce-${nonce}'`,
+    "style-src 'self' 'unsafe-inline'",
+    // Montserrat·Pretendard·Metropolis 웹폰트가 모두 CDN에서 옵니다.
+    `font-src 'self' ${config.project.cdn}`,
     // 앨범아트·배너는 CDN, 프로필 사진은 CDN 또는 구글 계정 사진입니다.
     `img-src 'self' data: ${config.project.cdn} https://*.googleusercontent.com`,
     `media-src 'self' ${config.project.cdn}`,
-    `connect-src 'self' ${config.project.api} ${config.project.cdn} ${config.project.game} ${gameSocket} ${JSDELIVR_ORIGIN}`,
+    `connect-src 'self' ${config.project.api} ${config.project.cdn} ${config.project.game} ${gameSocket}`,
     "frame-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
