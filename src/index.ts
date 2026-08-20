@@ -112,6 +112,7 @@ const authPageCsp = (nonce: string, withGsi: boolean) => {
 };
 
 const SOCKET_IO_ORIGIN = "https://cdn.socket.io";
+const JSDELIVR_ORIGIN = "https://cdn.jsdelivr.net";
 
 /**
  * 플레이 화면(play·test·tutorial)용 정책입니다. 계정 화면과 쓰는 출처가 거의
@@ -163,6 +164,48 @@ const withAuthPageCsp = (res: Response, withGsi: boolean): string => {
  *
  * 실제 플레이에서 콘솔에 위반이 남지 않는 것을 확인한 뒤 강제로 바꿔야 합니다.
  */
+/**
+ * 게임 화면용 정책입니다. 플레이 화면과 대부분 겹치지만 두 가지가 다릅니다.
+ *
+ * 랭킹 그래프에 쓰는 chart.js 를 jsdelivr 에서 받아 script-src 에 그 출처가
+ * 더 필요하고, 프로필 사진이 두 곳에서 옵니다. 직접 올린 사진은 CDN 에 있고,
+ * 가입 시점에 받아둔 구글 계정 사진은 googleusercontent 에 있습니다.
+ *
+ * 플레이 화면과 정책을 합치면 그쪽에 쓰지도 않는 출처를 열어주게 됩니다.
+ */
+const gamePageCsp = (nonce: string) => {
+  const gameSocket = config.project.game.replace(/^https:/, "wss:");
+
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}' ${SOCKET_IO_ORIGIN} ${JSDELIVR_ORIGIN}`,
+    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com ${JSDELIVR_ORIGIN}`,
+    // Metropolis 는 metropolis.css 가 CDN 에서 받아옵니다. 웹폰트 두 곳만
+    // 열어두면 본문 글꼴이 통째로 대체 글꼴로 떨어집니다.
+    `font-src 'self' https://fonts.gstatic.com ${JSDELIVR_ORIGIN} ${config.project.cdn}`,
+    // 앨범아트·배너는 CDN, 프로필 사진은 CDN 또는 구글 계정 사진입니다.
+    `img-src 'self' data: ${config.project.cdn} https://*.googleusercontent.com`,
+    `media-src 'self' ${config.project.cdn}`,
+    `connect-src 'self' ${config.project.api} ${config.project.cdn} ${config.project.game} ${gameSocket} ${JSDELIVR_ORIGIN}`,
+    "frame-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'self'",
+    "object-src 'none'",
+  ].join("; ");
+};
+
+/**
+ * 플레이 화면과 같은 이유로 Report-Only 로 시작합니다. 로그인 세션이 있어야
+ * 열려서 브라우저로 위반을 수집하지 못했고, 곧바로 강제하면 빠뜨린 출처 하나에
+ * 곡이 안 받아지거나 랭킹 그래프가 통째로 사라집니다.
+ */
+const withGamePageCsp = (res: Response): string => {
+  const nonce = randomBytes(16).toString("base64");
+  res.setHeader("Content-Security-Policy-Report-Only", gamePageCsp(nonce));
+  return nonce;
+};
+
 const withPlayPageCsp = (res: Response): string => {
   const nonce = randomBytes(16).toString("base64");
   res.setHeader("Content-Security-Policy-Report-Only", playPageCsp(nonce));
@@ -386,6 +429,7 @@ app.get("/game", gateLimiter, requireAuth, async (req, res) => {
     url: config.project.url,
     api: config.project.api,
     game: config.project.game,
+    cspNonce: withGamePageCsp(res),
     ver: config.project.mode == "test" ? Date.now() : version,
   });
 });

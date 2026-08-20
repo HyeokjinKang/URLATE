@@ -1,4 +1,6 @@
 /* global Howler, Howl, Pace, Chart, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable1, notAvailable2, medalDesc, alias, nothingHere, rating, couponApplySuccess, couponInvalid1, couponInvalid2, couponUsed, inputEmpty, aliasSelect, pictureMessage, imageError */
+// 값은 페이지의 인라인 <script>와 클래식 라이브러리가 심습니다. 모듈은 전역 스코프를
+// 통해 그대로 읽을 수 있어 추가 조치가 필요 없습니다.
 const langDetailSelector = document.getElementById("langDetailSelector");
 const canvasResSelector = document.getElementById("canvasResSelector");
 const albumResSelector = document.getElementById("albumResSelector");
@@ -47,11 +49,9 @@ const profileNameContainer = document.getElementById("profileNameContainer");
 const slowRate = 110 / 174;
 const fastRate = 174 / 110;
 
-// escapeHtml/safeUrl are shared from modules/utils.js (game.js is a classic script, so import dynamically).
-let escapeHtml, safeUrl;
-(async () => {
-  ({ escapeHtml, safeUrl } = await import("../modules/utils.js"));
-})();
+// 모듈이 된 뒤로는 정적 import 로 받습니다. 동적 import 는 해석되기 전까지
+// 두 함수가 undefined 라, 그 사이에 랭킹이나 프로필이 그려지면 터졌습니다.
+import { escapeHtml, safeUrl } from "../modules/utils.js";
 
 let settings = [];
 let profileSong;
@@ -288,7 +288,7 @@ const sortAsBPM = (a, b) => {
   return a.bpm > b.bpm ? 1 : -1;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const tutorialSkip = () => {
   if (confirm(confirmExit)) {
     document.getElementById("tutorialInformation").classList.remove("fadeInAnim");
@@ -335,7 +335,9 @@ const checkIntroReady = () => {
   if (introReady.done || !(introReady.video1 && introReady.video2 && introReady.minDelay)) return;
   introReady.done = true;
   document.getElementById("pressAnywhere").textContent = pressAnywhere;
-  warningContainer.onclick = warningSkip;
+  // 마크업에 미리 박아두면 인트로 준비 전에도 눌립니다. 준비가 끝난 시점에
+  // 속성을 달아 기존 조건을 그대로 지킵니다.
+  warningContainer.dataset.action = "warningSkip";
 };
 
 const watchIntroVideo = (video, key) => {
@@ -370,9 +372,9 @@ const intro1skip = () => {
   }
 };
 
-intro1video.onended = () => {
+intro1video.addEventListener("ended", () => {
   intro1skip();
-};
+});
 
 const intro2skip = () => {
   intro2video.pause();
@@ -392,9 +394,9 @@ const intro2skip = () => {
   }
 };
 
-intro2video.onended = () => {
+intro2video.addEventListener("ended", () => {
   intro2skip();
-};
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   let initialize = new URLSearchParams(window.location.search).get("initialize");
@@ -526,7 +528,7 @@ const tracksUpdate = () => {
       </div>`;
       continue;
     }
-    songList += `<div class="songSelectionContainer" onclick="songSelected(${i})">
+    songList += `<div class="songSelectionContainer" data-action="songSelected" data-arg="${i}">
               <div class="songSelectionInfo">
                 <div class="songSelectionTitle">
                   ${settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name}
@@ -724,7 +726,7 @@ const songSelected = (n, refreshed, seek) => {
   updateRanks();
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const textDisabled = () => {
   disableText = !disableText;
   if (disableText) {
@@ -736,7 +738,7 @@ const textDisabled = () => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const rateChanged = (e) => {
   e.value = Number(e.value).toFixed(1);
   if (e.value > 2) {
@@ -892,21 +894,21 @@ const stopProfileSong = () => {
   fadeRate(profileSong, 1, fastRate, 300, Date.now());
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const infoScreen = () => {
   display = 4;
   document.getElementById("infoContainer").style.display = "block";
   document.getElementById("infoContainer").classList.add("fadeInAnim");
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const optionScreen = () => {
   display = 2;
   document.getElementById("optionContainer").style.display = "block";
   document.getElementById("optionContainer").classList.add("fadeInAnim");
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const profileScreen = (nickname) => {
   if (nickname) display = 16;
   else display = 15;
@@ -1143,7 +1145,7 @@ const rankUpdate = async () => {
         (e, i) => `<tr>
       <td>${i + 1}</td>
       <td>
-        <div class="rankProfileContainer" onclick="profileScreen('${encodeURIComponent(e.nickname)}')">
+        <div class="rankProfileContainer" data-action="profileScreen" data-arg="${encodeURIComponent(e.nickname)}">
           <img src="${escapeHtml(safeUrl(e.picture))}" class="rankProfile ${e.explicit % 2 == 1 ? "blur" : ""}" />
           ${escapeHtml(e.nickname)}
         </div>
@@ -1208,7 +1210,7 @@ const profileUpdate = async (nickname, isMe) => {
       count++;
       document.getElementById("profileBannerContainer").innerHTML += `
         <div class="bannerImage${isMe ? " clickable" : ""}${banners[i].indexOf("(-)") != -1 ? " hidden" : ""}" style="background-image: url('${cdn}/banners/${encodeURIComponent(banners[i].replace("(-)", ""))}.webp')" ${
-          isMe ? `onclick="bannerToggle(${i})"` : ""
+          isMe ? `data-action="bannerToggle" data-arg="${i}"` : ""
         }>
           <div class="bannerHover">
             <img src="/icons/${banners[i].indexOf("(-)") != -1 ? "eye-closed" : "eye"}.svg" class="bannerIcon">
@@ -1351,7 +1353,7 @@ const profileUpdate = async (nickname, isMe) => {
   loadingOverlayHide();
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const showProfileBackground = (event) => {
   if (event.target.id === "profileContainer") {
     profileContentsContainer.classList.toggle("showBackground");
@@ -1373,17 +1375,17 @@ const fadeRate = (track, start, end, duration, time) => {
   });
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const langChanged = (e) => {
   window.location.href = `${url}/${encodeURIComponent(e.value)}`;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const logout = () => {
   window.location.href = "/logout";
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const bannerToggle = (n) => {
   if (banners[n].indexOf("(-)") == -1) {
     banners[n] = banners[n] + "(-)";
@@ -1417,7 +1419,7 @@ const bannerToggle = (n) => {
     });
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const settingChanged = (e, v) => {
   if (v == "detailLang") {
     settings.general.detailLang = e.value;
@@ -1480,7 +1482,7 @@ const settingChanged = (e, v) => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const showProfile = (name) => {
   loadingShow();
   document.getElementById("infoProfileContainer").style.display = "flex";
@@ -1535,7 +1537,7 @@ const showProfile = (name) => {
     });
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const optionSelect = (n) => {
   document.getElementsByClassName("optionSelected")[0].classList.remove("optionSelected");
   document.getElementsByClassName("optionSelectors")[n].classList.add("optionSelected");
@@ -1600,7 +1602,7 @@ const showRank = () => {
   document.getElementById("selectRankInnerContainer").classList.add("visible");
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetSetting = () => {
   display = 7;
   document.getElementById("offsetContiner").style.display = "flex";
@@ -1678,7 +1680,7 @@ const offsetUpdate = () => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetSpeedUp = () => {
   offsetRate = Number((offsetRate + 0.1).toFixed(1));
   if (offsetRate > 2) offsetRate = 2;
@@ -1686,7 +1688,7 @@ const offsetSpeedUp = () => {
   offsetSpeedText.textContent = offsetRate + "x";
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetSpeedDown = () => {
   offsetRate = Number((offsetRate - 0.1).toFixed(1));
   if (offsetRate <= 0) offsetRate = 0.1;
@@ -1694,7 +1696,7 @@ const offsetSpeedDown = () => {
   offsetSpeedText.textContent = offsetRate + "x";
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetUp = () => {
   offset += 5;
   if (!offset) {
@@ -1704,7 +1706,7 @@ const offsetUp = () => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetDown = () => {
   offset -= 5;
   if (!offset) {
@@ -1714,24 +1716,24 @@ const offsetDown = () => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetReset = () => {
   offset = 0;
   offsetButtonText.textContent = "TAP";
   offsetAverage = [];
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetButtonDown = () => {
   offsetInput = true;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const offsetButtonUp = () => {
   offsetInput = false;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const visualSyncSetting = () => {
   display = 13;
   document.getElementById("visualSyncContainer").style.display = "flex";
@@ -1808,21 +1810,21 @@ const visualSyncSetting = () => {
   visualSyncAnimId = requestAnimationFrame(drawFrame);
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const visualSyncUp = () => {
   visualSyncOffset += 10;
   document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
   document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const visualSyncDown = () => {
   visualSyncOffset -= 10;
   document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
   document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const visualSyncReset = () => {
   visualSyncOffset = 0;
   document.getElementById("visualSyncValueText").textContent = "0ms";
@@ -1837,7 +1839,7 @@ const overlayClose = (s) => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const couponEnter = () => {
   display = 12;
   overlayCodeContainer.style.pointerEvents = "all";
@@ -1900,7 +1902,7 @@ const rankToggle = () => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const changeProfile = (e) => {
   if (profileid == username) {
     switch (e) {
@@ -1998,7 +2000,7 @@ const changeProfile = (e) => {
               let input = document.createElement("input");
               input.type = "file";
               input.accept = "image/*";
-              input.setAttribute("onchange", `picLoaded(event, "${closedBy}")`);
+              input.addEventListener("change", (event) => picLoaded(event, closedBy));
               input.click();
             }
           },
@@ -2008,7 +2010,7 @@ const changeProfile = (e) => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const picLoaded = async (e, type) => {
   loadingOverlayShow();
   const file = e.target.files[0];
@@ -2137,7 +2139,7 @@ const scrollEvent = (e) => {
   }
 };
 
-document.onkeydown = (e) => {
+document.addEventListener("keydown", (e) => {
   let key = e.key.toLowerCase();
   if (key == "escape") {
     e.preventDefault();
@@ -2194,9 +2196,9 @@ document.onkeydown = (e) => {
     document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
     document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
   }
-};
+});
 
-document.onkeyup = (e) => {
+document.addEventListener("keyup", (e) => {
   let key = e.key.toLowerCase();
   if (display == 7) {
     offsetInput = false;
@@ -2204,7 +2206,7 @@ document.onkeyup = (e) => {
   if (key == "shift") {
     shiftDown = false;
   }
-};
+});
 
 window.addEventListener("resize", initialize);
 window.addEventListener("wheel", scrollEvent);
@@ -2221,3 +2223,82 @@ window.onpopstate = () => {
     history.back();
   }
 };
+
+// 아래는 마크업의 on* 속성에서 옮겨온 결선입니다. CSP 를 걸려면 인라인 핸들러가
+// 없어야 하는데, 이 화면은 97개나 있어 요소마다 리스너를 다는 대신 data-* 속성과
+// 위임으로 처리합니다. 새 버튼을 추가할 때도 속성만 붙이면 됩니다.
+
+// 인자 없이 부르는 동작입니다.
+const clickActions = {
+  couponEnter,
+  changeProfile: (arg) => changeProfile(arg),
+  // 아래 둘은 마크업이 아니라 innerHTML 로 만들어지는 요소에 붙습니다.
+  // 위임이라 나중에 끼워 넣어져도 그대로 걸립니다.
+  bannerToggle: (arg) => bannerToggle(Number(arg)),
+  difficultySelected: (arg) => difficultySelected(Number(arg)),
+  displayClose,
+  goTutorial: () => (window.location.href = `${url}/tutorial`),
+  infoScreen,
+  intro1skip,
+  intro2skip,
+  logout,
+  medalDescription,
+  menuSelected: (arg) => menuSelected(Number(arg)),
+  // 설명 문구가 클릭을 삼키던 자리입니다. 아무 일도 하지 않는 게 목적입니다.
+  noop: () => {},
+  offsetDown,
+  offsetReset,
+  offsetSetting,
+  offsetSpeedDown,
+  offsetSpeedUp,
+  offsetUp,
+  optionScreen,
+  optionSelect: (arg) => optionSelect(Number(arg)),
+  profileScreen,
+  rankToggle,
+  showProfile: (arg) => showProfile(arg),
+  showProfileBackground: (arg, event) => showProfileBackground(event),
+  songSelected: (arg) => songSelected(Number(arg)),
+  sortSelected: (arg) => sortSelected(Number(arg)),
+  textDisabled,
+  tutorialSkip,
+  visualSyncDown,
+  visualSyncReset,
+  visualSyncSetting,
+  visualSyncUp,
+  warningSkip,
+};
+
+// 숫자 인자는 Number 로 바꿔 넘깁니다. data-* 값은 항상 문자열이라, 그대로
+// 넘기면 sortSelected("0") 처럼 타입이 달라집니다.
+document.addEventListener("click", (event) => {
+  const target = event.target.closest("[data-action]");
+  if (!target) return;
+  const action = clickActions[target.dataset.action];
+  if (action) action(target.dataset.arg, event);
+});
+
+// 값이 바뀔 때 설정을 저장하는 컨트롤입니다. range 는 input, select·checkbox 는
+// change 로 와서 두 이벤트를 모두 받습니다.
+const handleSettingChange = (event) => {
+  const target = event.target.closest("[data-setting]");
+  if (target) settingChanged(target, target.dataset.setting);
+};
+document.addEventListener("input", handleSettingChange);
+document.addEventListener("change", handleSettingChange);
+
+// 요소 자체를 인자로 받는 select 들입니다.
+const changeActions = { langChanged, rateChanged };
+document.addEventListener("change", (event) => {
+  const target = event.target.closest("[data-change]");
+  if (!target) return;
+  const action = changeActions[target.dataset.change];
+  if (action) action(target);
+});
+
+document.getElementById("offsetTapButton").addEventListener("mousedown", offsetButtonDown);
+document.getElementById("offsetTapButton").addEventListener("mouseup", offsetButtonUp);
+
+document.addEventListener("contextmenu", (event) => event.preventDefault());
+document.addEventListener("dragstart", (event) => event.preventDefault());
+document.addEventListener("selectstart", (event) => event.preventDefault());
