@@ -1,4 +1,6 @@
 /* global Howler, Howl, iziToast, url, api, cdn, syncAlert, timeAlert, copiedText, moveToAlert */
+// 값은 페이지의 인라인 <script>와 클래식 라이브러리가 심습니다. 모듈은 전역 스코프를
+// 통해 그대로 읽을 수 있어 추가 조치가 필요 없습니다.
 let upperBound, lowerBound;
 let Factory, Updater, Renderer, getCos, getSin, calcAngleDegrees;
 (async () => {
@@ -212,18 +214,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// eslint-disable-next-line no-unused-vars
+ 
 const newEditor = () => {
   document.getElementById("initialButtonsContainer").style.display = "none";
   document.getElementById("songSelectionContainer").style.display = "flex";
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const loadEditor = () => {
   let input = document.createElement("input");
   input.type = "file";
   input.accept = ".json";
-  input.setAttribute("onchange", `dataLoaded(event)`);
+  input.addEventListener("change", dataLoaded);
   input.click();
 };
 
@@ -274,11 +276,11 @@ const analyzePattern = (data) => {
   };
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const dataLoaded = (event) => {
   let file = event.target.files[0];
   let reader = new FileReader();
-  reader.onload = (e) => {
+  reader.addEventListener("load", (e) => {
     pattern = JSON.parse(e.target.result);
     console.log(`Analyzing pattern...`);
     const result = analyzePattern(pattern);
@@ -287,7 +289,7 @@ const dataLoaded = (event) => {
       if (songSelectBox.options[i].value == pattern.information.track) songSelectBox.selectedIndex = i;
     }
     songSelected(true);
-  };
+  });
   reader.readAsText(file);
 };
 
@@ -386,7 +388,7 @@ const changeMode = (n) => {
   mode = n;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const changeNote = () => {
   let n = Number(pattern.patterns[selectedCntElement.i].value);
   pattern.patterns[selectedCntElement.i].value = n == 2 ? 0 : n + 1;
@@ -457,7 +459,7 @@ const initialize = (isFirstCalled) => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const gotoMain = (isCalledByMain) => {
   if (isCalledByMain || !preventUnload || confirm("Are you sure you want to leave? There are unsaved changes.")) {
     stopRenderFlag = true;
@@ -1252,7 +1254,7 @@ const save = () => {
   a.click();
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const settingsInput = (v, e) => {
   let element;
   switch (v) {
@@ -1480,7 +1482,7 @@ const settingsInput = (v, e) => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const triggersInput = (v, e) => {
   switch (v) {
     case "x":
@@ -1626,7 +1628,7 @@ const triggersInput = (v, e) => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const moveTo = () => {
   let s = 0;
   iziToast.info({
@@ -1662,7 +1664,7 @@ const moveTo = () => {
   });
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const changeBPM = (e) => {
   if (isNaN(Number(e.value))) {
     iziToast.error({
@@ -1676,7 +1678,7 @@ const changeBPM = (e) => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const changeSpeed = (e) => {
   if (isNaN(Number(e.value))) {
     iziToast.error({
@@ -1702,7 +1704,7 @@ const changeSpeed = (e) => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const changeOffset = (e) => {
   if (isNaN(Number(e.value))) {
     iziToast.error({
@@ -1716,8 +1718,10 @@ const changeOffset = (e) => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
-const trackMousePos = () => {
+ 
+// 예전에는 전역 event(window.event)를 읽었습니다. 위임이 이벤트를 넘겨주므로
+// 인자로 받습니다. 값은 같고, 사라져가는 전역에 기대지 않게 됩니다.
+const trackMousePos = (event) => {
   const width = parseInt((componentViewOW - canvasContainerOW) / 2 + menuContainerOW);
   const x = ((event.clientX - width) / canvasContainerOW) * 200 - 100;
   const y = ((event.clientY - navBarOH) / canvasContainerOH) * 200 - 100;
@@ -1730,8 +1734,9 @@ const trackMousePos = () => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
-const trackTimelineMousePos = () => {
+ 
+// trackMousePos 와 같은 이유로 인자를 받습니다.
+const trackTimelineMousePos = (event) => {
   mouseMode = 1;
   mouseX = event.clientX * pixelRatio;
   mouseY = (event.clientY - Math.floor((window.innerHeight / 100) * 73)) * pixelRatio;
@@ -1832,7 +1837,7 @@ const timelineFollowMouse = (v1, v2, i) => {
   });
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const tmlClicked = () => {
   if (isNaN(Number(song.seek()))) return iziToast.error({ title: "Wait..", message: "Song is not loaded." });
   if (mode == 0) {
@@ -1947,7 +1952,7 @@ const timelineAddElement = () => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const compClicked = () => {
   if (isNaN(Number(song.seek()))) return iziToast.error({ title: "Wait..", message: "Song is not loaded." });
   if (mode == 0) {
@@ -2180,7 +2185,7 @@ const changeSettingsMode = (v1, v2, i) => {
   }
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const triggerSet = (isChanged) => {
   pattern.triggers[selectedCntElement.i].value = (isChanged ? triggerSelectBox : triggerInitBox).selectedIndex - (isChanged ? 0 : 1);
   selectedCntElement = {
@@ -2203,7 +2208,7 @@ const zoomOut = () => {
   isTmlUpdateNeeded = true;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const stopBtn = () => {
   controlBtn.classList.add("timeline-play");
   controlBtn.classList.remove("timeline-pause");
@@ -2411,12 +2416,12 @@ const elementPaste = () => {
   });
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const showHelp = () => {
   document.getElementById("helpContainer").style.display = "flex";
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const hideHelp = () => {
   document.getElementById("helpContainer").style.display = "none";
 };
@@ -2583,7 +2588,7 @@ const scrollEvent = (e) => {
   e.preventDefault();
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const textFocused = () => {
   isTextboxFocused = true;
 };
@@ -2592,7 +2597,7 @@ const textBlurred = () => {
   isTextboxFocused = false;
 };
 
-// eslint-disable-next-line no-unused-vars
+ 
 const settingChanged = (e, v) => {
   if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
@@ -2753,7 +2758,7 @@ window.addEventListener("blur", () => {
   ctrlDown = false;
 });
 
-document.onkeyup = (e) => {
+document.addEventListener("keyup", (e) => {
   e = e || window.event;
   if (isMac ? e.key == "Meta" : e.key == "Control") {
     ctrlDown = false;
@@ -2762,9 +2767,9 @@ document.onkeyup = (e) => {
     shiftDown = false;
     isTmlUpdateNeeded = true;
   }
-};
+});
 
-document.onkeydown = (e) => {
+document.addEventListener("keydown", (e) => {
   e = e || window.event;
   if (e.key == "Escape") {
     if (isSettingsOpened) {
@@ -2882,17 +2887,17 @@ document.onkeydown = (e) => {
       if (selectedValue > 2) selectedValue = 0;
     }
   }
-};
+});
 
-document.body.onmousedown = () => {
+document.body.addEventListener("mousedown", () => {
   mouseDown = true;
-};
+});
 
-document.body.onmouseup = () => {
+document.body.addEventListener("mouseup", () => {
   mouseDown = false;
-};
+});
 
-window.onload = () => {
+window.addEventListener("load", () => {
   if (isMac) {
     const ctrl = document.getElementsByClassName("ctrl");
     for (let i = 0; i < ctrl.length; i++) {
@@ -2911,4 +2916,110 @@ window.onload = () => {
       del[i].innerText = "⌫";
     }
   }
+});
+
+// 아래는 마크업의 on* 속성에서 옮겨온 결선입니다. CSP 를 걸려면 인라인 핸들러가
+// 없어야 하는데 이 화면에만 138개가 있어, 요소마다 리스너를 다는 대신 data-*
+// 속성과 위임으로 처리합니다.
+
+const clickActions = {
+  changeMode: (arg) => changeMode(Number(arg)),
+  changeNote,
+  changeRate,
+  changeSplit,
+  deleteElement,
+  elementCopy,
+  elementPaste,
+  goGame: () => (window.location.href = `${url}/game?initialize=0`),
+  gotoMain,
+  // 저장하지 않고 나가기 전에 한 번 더 묻는 쪽입니다.
+  gotoMainConfirm: () => gotoMain(true),
+  loadEditor,
+  moveTo,
+  newEditor,
+  rangeCopy,
+  rangePaste,
+  save,
+  songPlayPause,
+  songSelected,
+  stopBtn,
+  test,
+  toggleCircle,
+  toggleGrid,
+  toggleMagnet,
+  toggleMetronome,
+  toggleSettings,
+  zoomIn,
+  zoomOut,
 };
+
+document.addEventListener("click", (event) => {
+  const target = event.target.closest("[data-action]");
+  if (!target) return;
+  const action = clickActions[target.dataset.action];
+  if (action) action(target.dataset.arg);
+});
+
+// 입력값을 패턴에 반영하는 것들입니다. 키를 함께 받는 쪽과 요소만 받는 쪽이
+// 있어 인자 유무로 갈립니다.
+const inputActions = { settingsInput, triggersInput, changeBPM, changeOffset, changeSpeed };
+const runInputAction = (target) => {
+  const action = inputActions[target.dataset.keyup];
+  if (!action) return;
+  if (target.dataset.keyupArg === undefined) action(target);
+  else action(target.dataset.keyupArg, target);
+};
+document.addEventListener("keyup", (event) => {
+  const target = event.target.closest?.("[data-keyup]");
+  if (target) runInputAction(target);
+});
+
+// focus·blur 는 버블링하지 않아 위임이 닿지 않습니다. 버블링하는 짝인
+// focusin·focusout 을 씁니다.
+document.addEventListener("focusin", (event) => {
+  if (event.target.closest?.(".settingsPropertiesTextbox")) textFocused();
+});
+document.addEventListener("focusout", (event) => {
+  const target = event.target.closest?.(".settingsPropertiesTextbox");
+  if (!target) return;
+  // 입력 중에 반영하면 어중간한 값이 들어가는 항목들은 포커스를 잃을 때 반영합니다.
+  // triggersInput 이 해당 키에서 textBlurred 를 직접 부르므로 여기서 또 부르지
+  // 않습니다. 원래 마크업도 이 요소들에는 textBlurred 를 걸지 않았습니다.
+  if (target.dataset.blur === "triggersInput") {
+    triggersInput(target.dataset.blurArg, target);
+    return;
+  }
+  textBlurred();
+});
+
+document.addEventListener("input", (event) => {
+  const target = event.target.closest?.("[data-setting]");
+  if (target) settingChanged(target, target.dataset.setting);
+});
+
+const changeActions = { triggerSet: () => triggerSet(), triggerSetTrue: () => triggerSet(true) };
+document.addEventListener("change", (event) => {
+  const target = event.target.closest?.("[data-change]");
+  if (!target) return;
+  const action = changeActions[target.dataset.change];
+  if (action) action();
+});
+
+const mouseActions = { trackMousePos, trackTimelineMousePos, tmlClicked, compClicked, showHelp, hideHelp };
+const delegateMouse = (type, attribute) => {
+  document.addEventListener(type, (event) => {
+    const target = event.target.closest?.(`[data-${attribute}]`);
+    if (!target) return;
+    const action = mouseActions[target.dataset[attribute]];
+    if (action) action(event);
+  });
+};
+delegateMouse("mousemove", "mousemove");
+delegateMouse("mousedown", "mousedown");
+// mouseover·mouseout 은 버블링하므로 위임이 그대로 닿습니다.
+delegateMouse("mouseover", "mouseover");
+delegateMouse("mouseout", "mouseout");
+
+document.addEventListener("contextmenu", (event) => event.preventDefault());
+document.addEventListener("dragstart", (event) => event.preventDefault());
+document.addEventListener("selectstart", (event) => event.preventDefault());
