@@ -180,7 +180,9 @@ const gamePageCsp = (nonce: string) => {
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' ${SOCKET_IO_ORIGIN} ${JSDELIVR_ORIGIN}`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com ${JSDELIVR_ORIGIN}`,
-    `font-src 'self' https://fonts.gstatic.com ${JSDELIVR_ORIGIN}`,
+    // Metropolis 는 metropolis.css 가 CDN 에서 받아옵니다. 웹폰트 두 곳만
+    // 열어두면 본문 글꼴이 통째로 대체 글꼴로 떨어집니다.
+    `font-src 'self' https://fonts.gstatic.com ${JSDELIVR_ORIGIN} ${config.project.cdn}`,
     // 앨범아트·배너는 CDN, 프로필 사진은 CDN 또는 구글 계정 사진입니다.
     `img-src 'self' data: ${config.project.cdn} https://*.googleusercontent.com`,
     `media-src 'self' ${config.project.cdn}`,
