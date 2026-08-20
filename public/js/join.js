@@ -1,10 +1,9 @@
 /* global api, projectUrl, joini18n */
 
-// 응답 본문을 읽기 전에 상태 코드를 봅니다. 4xx·5xx는 본문이 JSON이 아닐 수
-// 있어(프록시가 낸 HTML 오류 페이지 등) 곧바로 json()을 부르면 파싱 오류가 나고,
-// 실제 원인과 무관한 메시지가 사용자에게 노출됩니다.
-// index.js에도 같은 헬퍼가 있습니다. 두 파일 모두 GSI 콜백을 전역으로 노출해야
-// 해서 클래식 스크립트이고, 공유 파일로 빼려면 뷰의 로딩 순서까지 바꿔야 합니다.
+// A 4xx/5xx response body isn't guaranteed to be JSON (a proxy's HTML error page,
+// for example), so check the status before parsing to avoid a misleading error.
+// Duplicated in index.js: both are classic scripts (they expose a GSI callback
+// globally), and sharing this would mean reworking how the views load scripts.
 function readJson(res) {
   if (!res.ok) {
     throw new Error(`${res.status} ${res.statusText}`);
@@ -29,8 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
     .catch((error) => {
-      // 로그인 상태 확인 실패로 가입 화면을 막지는 않습니다. 닉네임을 넣고
-      // 제출하는 흐름은 그대로 쓸 수 있으므로 콘솔에만 남깁니다.
+      // A failed status check shouldn't block the page -- the name field still works.
       console.error(error);
     });
 });
@@ -86,15 +84,13 @@ const check = () => {
         }
       })
       .catch((error) => {
-        // 오류 문자열을 그대로 띄우면 내부 사정만 새어 나가고 사용자는 할 수 있는
-        // 일이 없습니다. 사람에게는 번역된 문구를, 진단용 원문은 콘솔에 남깁니다.
+        // Show a translated message to the user; log the raw error for diagnostics.
         console.error(error);
         alert(joini18n.error);
       });
   }
 };
 
-// CSP를 걸기 위해 제출 버튼의 onclick 속성에서 옮겨온 것입니다.
 document.getElementById("submit").addEventListener("click", check);
 
 document.addEventListener("keydown", (event) => {

@@ -16,24 +16,22 @@ const translate = (res: Response, key: string, fallback: string): string => {
 };
 
 /**
- * 안내·오류 화면(info·privacy·error)용 정책입니다. 세 화면은 스크립트를 하나도
- * 부르지 않아 script-src를 통째로 막을 수 있고, 그래서 nonce도 필요 없습니다.
- * 나중에 누군가 인라인 스크립트를 넣으면 조용히 동작하는 대신 바로 막히므로,
- * 이 화면들이 정적이라는 전제가 깨지는 순간 드러납니다.
+ * Policy for the static screens (info/privacy/error). None of them load any
+ * script, so script-src is blocked outright and no nonce is needed -- if
+ * someone later adds an inline script, it fails loudly instead of silently.
  *
- * default-src를 'none'으로 두고 실제로 쓰는 것만 하나씩 엽니다. 인라인 style
- * 속성도 없어 style-src에 unsafe-inline을 넣지 않았습니다. 웹폰트(Montserrat·
- * Pretendard)는 CDN에서 받아옵니다.
+ * default-src is 'none', with only what's actually used opened back up. There
+ * are no inline style attributes either, so style-src omits 'unsafe-inline'.
  *
- * 오류 화면과 같은 정책을 쓰기 때문에 여기에 둡니다. index에서 정의해 가져가면
- * 순환 참조가 됩니다.
+ * Defined here rather than in index.ts because the error page shares this
+ * policy and importing it from index.ts would create a circular reference.
  */
 const STATIC_PAGE_CSP = [
   "default-src 'none'",
   "script-src 'none'",
   "style-src 'self'",
   `font-src 'self' ${config.project.cdn}`,
-  // 파비콘과 안내 화면의 아이콘뿐이고 전부 이 서버에서 옵니다.
+  // Just the favicon and the info page's icons, all served by this app.
   "img-src 'self'",
   "base-uri 'none'",
   "form-action 'none'",
@@ -82,8 +80,8 @@ export const sendError = (req: Request, res: Response, status: number): void => 
   // req.accepts honours the order of the Accept header. fetch/XHR usually asks
   // for JSON first, so they get JSON instead of the page.
   if (req.accepts(["html", "json"]) === "html") {
-    // 어느 경로에서 왔든 오류 화면 자체는 정적입니다. 원래 경로에 걸려 있던
-    // 넉넉한 정책을 그대로 물려받지 않도록 여기서 다시 지정합니다.
+    // The error page itself is static regardless of where the request came from,
+    // so reset the policy rather than inherit whatever the original route set.
     setStaticPageCsp(res);
     res.render(
       "error",
@@ -114,10 +112,6 @@ export function notFoundHandler(req: Request, res: Response): void {
   sendError(req, res, 404);
 }
 
-/**
- * Express error handling middleware
- * Logs errors and sends appropriate responses
- */
 export function errorHandler(err: any, req: Request, res: Response, next: NextFunction): void {
   logger.error("Request error occurred", err, {
     method: req.method,

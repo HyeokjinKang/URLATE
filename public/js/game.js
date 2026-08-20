@@ -1,6 +1,6 @@
 /* global Howler, Howl, Pace, Chart, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable1, notAvailable2, medalDesc, alias, nothingHere, rating, couponApplySuccess, couponInvalid1, couponInvalid2, couponUsed, inputEmpty, aliasSelect, pictureMessage, imageError */
-// 값은 페이지의 인라인 <script>와 클래식 라이브러리가 심습니다. 모듈은 전역 스코프를
-// 통해 그대로 읽을 수 있어 추가 조치가 필요 없습니다.
+// url/cdn/api etc. are set by the page's inline <script> and by the classic
+// library scripts; a module can read them via global scope with no extra wiring.
 const langDetailSelector = document.getElementById("langDetailSelector");
 const canvasResSelector = document.getElementById("canvasResSelector");
 const albumResSelector = document.getElementById("albumResSelector");
@@ -49,8 +49,6 @@ const profileNameContainer = document.getElementById("profileNameContainer");
 const slowRate = 110 / 174;
 const fastRate = 174 / 110;
 
-// 모듈이 된 뒤로는 정적 import 로 받습니다. 동적 import 는 해석되기 전까지
-// 두 함수가 undefined 라, 그 사이에 랭킹이나 프로필이 그려지면 터졌습니다.
 import { escapeHtml, safeUrl } from "../modules/utils.js";
 
 let settings = [];
@@ -308,7 +306,6 @@ const tutorialSkip = () => {
         }
       })
       .catch((error) => {
-        // alert(`Error occured.\n${error}`);
         console.error(`Error occured.\n${error}`);
         location.reload();
       });
@@ -335,8 +332,7 @@ const checkIntroReady = () => {
   if (introReady.done || !(introReady.video1 && introReady.video2 && introReady.minDelay)) return;
   introReady.done = true;
   document.getElementById("pressAnywhere").textContent = pressAnywhere;
-  // 마크업에 미리 박아두면 인트로 준비 전에도 눌립니다. 준비가 끝난 시점에
-  // 속성을 달아 기존 조건을 그대로 지킵니다.
+  // Set only once ready, rather than in markup, so clicks before that do nothing.
   warningContainer.dataset.action = "warningSkip";
 };
 
@@ -1159,8 +1155,8 @@ const rankUpdate = async () => {
   }
 };
 
-// Profiles are looked up by nickname: the ranking no longer carries userid, and
-// nothing on this screen needs the internal identifier.
+// Profiles are looked up by nickname: the ranking payload carries no userid,
+// and nothing on this screen needs the internal identifier.
 const profileUpdate = async (nickname, isMe) => {
   profileid = nickname;
   const res = await fetch(`${api}/profile/nickname/${encodeURIComponent(nickname)}`, {
@@ -2224,16 +2220,14 @@ window.onpopstate = () => {
   }
 };
 
-// 아래는 마크업의 on* 속성에서 옮겨온 결선입니다. CSP 를 걸려면 인라인 핸들러가
-// 없어야 하는데, 이 화면은 97개나 있어 요소마다 리스너를 다는 대신 data-* 속성과
-// 위임으로 처리합니다. 새 버튼을 추가할 때도 속성만 붙이면 됩니다.
+// Delegated click handlers, keyed by each element's data-action attribute.
 
-// 인자 없이 부르는 동작입니다.
+// Actions invoked without an argument.
 const clickActions = {
   couponEnter,
   changeProfile: (arg) => changeProfile(arg),
-  // 아래 둘은 마크업이 아니라 innerHTML 로 만들어지는 요소에 붙습니다.
-  // 위임이라 나중에 끼워 넣어져도 그대로 걸립니다.
+  // These attach to elements created via innerHTML rather than markup;
+  // delegation still catches them once inserted.
   bannerToggle: (arg) => bannerToggle(Number(arg)),
   difficultySelected: (arg) => difficultySelected(Number(arg)),
   displayClose,
@@ -2244,7 +2238,7 @@ const clickActions = {
   logout,
   medalDescription,
   menuSelected: (arg) => menuSelected(Number(arg)),
-  // 설명 문구가 클릭을 삼키던 자리입니다. 아무 일도 하지 않는 게 목적입니다.
+  // Swallows clicks on the description text; intentionally a no-op.
   noop: () => {},
   offsetDown,
   offsetReset,
@@ -2269,8 +2263,8 @@ const clickActions = {
   warningSkip,
 };
 
-// 숫자 인자는 Number 로 바꿔 넘깁니다. data-* 값은 항상 문자열이라, 그대로
-// 넘기면 sortSelected("0") 처럼 타입이 달라집니다.
+// data-arg is always a string, so numeric actions convert it with Number();
+// otherwise e.g. sortSelected would receive "0" instead of 0.
 document.addEventListener("click", (event) => {
   const target = event.target.closest("[data-action]");
   if (!target) return;
@@ -2278,8 +2272,7 @@ document.addEventListener("click", (event) => {
   if (action) action(target.dataset.arg, event);
 });
 
-// 값이 바뀔 때 설정을 저장하는 컨트롤입니다. range 는 input, select·checkbox 는
-// change 로 와서 두 이벤트를 모두 받습니다.
+// range inputs fire "input", selects and checkboxes fire "change" -- listen for both.
 const handleSettingChange = (event) => {
   const target = event.target.closest("[data-setting]");
   if (target) settingChanged(target, target.dataset.setting);
@@ -2287,7 +2280,7 @@ const handleSettingChange = (event) => {
 document.addEventListener("input", handleSettingChange);
 document.addEventListener("change", handleSettingChange);
 
-// 요소 자체를 인자로 받는 select 들입니다.
+// Selects whose handler needs the element itself, not just its value.
 const changeActions = { langChanged, rateChanged };
 document.addEventListener("change", (event) => {
   const target = event.target.closest("[data-change]");
