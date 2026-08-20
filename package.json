@@ -8,7 +8,7 @@
     "pnpm": "11"
   },
   "name": "urlate",
-  "version": "1.0.0-preview.5",
+  "version": "1.0.0-preview.5-1",
   "description": "URLATE, Online rhythm game based on web technologies.",
   "main": "src/",
   "scripts": {
