@@ -115,14 +115,6 @@ const SOCKET_IO_ORIGIN = "https://cdn.socket.io";
 const JSDELIVR_ORIGIN = "https://cdn.jsdelivr.net";
 
 /**
- * metropolis.css 가 본문 글꼴을 여기서 받아옵니다. 설정의 CDN 을 쓰지 않고
- * 주소를 직접 적어둔 파일이라, 개발 서버에서도 이 출처로 요청이 나갑니다.
- * config.project.cdn 만 열어두면 운영에서는 두 값이 같아 통과하지만 개발에서는
- * 막혀, 환경에 따라 글꼴이 사라지는 차이가 생깁니다.
- */
-const FONT_CDN_ORIGIN = "https://cdn.urlate.coupy.dev";
-
-/**
  * 플레이 화면(play·test·tutorial)과 에디터가 공유하는 정책입니다. 계정 화면과
  * 쓰는 출처가 거의 겹치지 않아 합치면 양쪽 모두에게 필요 없는 권한을 열어주게
  * 됩니다.
@@ -139,9 +131,9 @@ const playPageCsp = (nonce: string) => {
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' ${SOCKET_IO_ORIGIN}`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
-    // 에디터는 metropolis.css 가 본문 글꼴을 받아옵니다. play·test·tutorial 은
-    // 쓰지 않지만, 이미 신뢰하는 출처라 정책을 나눌 만큼의 차이는 아닙니다.
-    `font-src 'self' https://fonts.gstatic.com ${JSDELIVR_ORIGIN} ${FONT_CDN_ORIGIN}`,
+    // 에디터는 metropolis.css 가 CDN 에서 본문 글꼴을 받아옵니다. play·test·
+    // tutorial 은 쓰지 않지만, 이미 신뢰하는 출처라 정책을 나눌 만큼은 아닙니다.
+    `font-src 'self' https://fonts.gstatic.com ${JSDELIVR_ORIGIN} ${config.project.cdn}`,
     // 앨범아트와 배경이 CDN에서 옵니다.
     `img-src 'self' data: ${config.project.cdn}`,
     // Howler는 기본적으로 Web Audio로 받아 connect-src를 타지만, 브라우저가
@@ -192,9 +184,9 @@ const gamePageCsp = (nonce: string) => {
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' ${SOCKET_IO_ORIGIN} ${JSDELIVR_ORIGIN}`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com ${JSDELIVR_ORIGIN}`,
-    // Metropolis 는 metropolis.css 가 받아옵니다. 웹폰트 두 곳만 열어두면
-    // 본문 글꼴이 통째로 대체 글꼴로 떨어집니다.
-    `font-src 'self' https://fonts.gstatic.com ${JSDELIVR_ORIGIN} ${FONT_CDN_ORIGIN}`,
+    // Metropolis 는 metropolis.css 가 CDN 에서 받아옵니다. 웹폰트 두 곳만
+    // 열어두면 본문 글꼴이 통째로 대체 글꼴로 떨어집니다.
+    `font-src 'self' https://fonts.gstatic.com ${JSDELIVR_ORIGIN} ${config.project.cdn}`,
     // 앨범아트·배너는 CDN, 프로필 사진은 CDN 또는 구글 계정 사진입니다.
     `img-src 'self' data: ${config.project.cdn} https://*.googleusercontent.com`,
     `media-src 'self' ${config.project.cdn}`,
