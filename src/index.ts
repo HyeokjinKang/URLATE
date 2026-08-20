@@ -159,7 +159,6 @@ const withAuthPageCsp = (res: Response, withGsi: boolean): string => {
   return nonce;
 };
 
-
 /**
  * 계정 화면과 달리 Report-Only로 시작합니다. 세 화면은 로그인 세션이 있어야
  * 열려서 브라우저로 위반을 직접 수집하지 못했고, 정책은 코드에서 쓰이는 출처를
@@ -199,20 +198,15 @@ const gamePageCsp = (nonce: string) => {
   ].join("; ");
 };
 
-/**
- * 플레이 화면과 같은 이유로 Report-Only 로 시작합니다. 로그인 세션이 있어야
- * 열려서 브라우저로 위반을 수집하지 못했고, 곧바로 강제하면 빠뜨린 출처 하나에
- * 곡이 안 받아지거나 랭킹 그래프가 통째로 사라집니다.
- */
 const withGamePageCsp = (res: Response): string => {
   const nonce = randomBytes(16).toString("base64");
-  res.setHeader("Content-Security-Policy-Report-Only", gamePageCsp(nonce));
+  res.setHeader("Content-Security-Policy", gamePageCsp(nonce));
   return nonce;
 };
 
 const withPlayPageCsp = (res: Response): string => {
   const nonce = randomBytes(16).toString("base64");
-  res.setHeader("Content-Security-Policy-Report-Only", playPageCsp(nonce));
+  res.setHeader("Content-Security-Policy", playPageCsp(nonce));
   return nonce;
 };
 
