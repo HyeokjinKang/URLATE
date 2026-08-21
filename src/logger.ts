@@ -31,7 +31,11 @@ function rotate(filePath: string): void {
   if (fs.existsSync(filePath)) fs.renameSync(filePath, `${filePath}.1`);
 }
 
-function formatLogEntry(level: string, message: string, meta?: any): string {
+function formatLogEntry(
+  level: string,
+  message: string,
+  meta?: Record<string, unknown>,
+): string {
   const timestamp = new Date().toISOString();
   const metaStr = meta ? `\n${JSON.stringify(meta, null, 2)}` : "";
   return `[${timestamp}] [${level}] ${message}${metaStr}\n`;
@@ -57,25 +61,29 @@ function writeToFile(filePath: string, content: string): void {
 }
 
 class Logger {
-  info(message: string, meta?: any): void {
+  info(message: string, meta?: Record<string, unknown>): void {
     signale.info(message);
     const logEntry = formatLogEntry("INFO", message, meta);
     writeToFile(combinedLogPath, logEntry);
   }
 
-  success(message: string, meta?: any): void {
+  success(message: string, meta?: Record<string, unknown>): void {
     signale.success(message);
     const logEntry = formatLogEntry("SUCCESS", message, meta);
     writeToFile(combinedLogPath, logEntry);
   }
 
-  warn(message: string, meta?: any): void {
+  warn(message: string, meta?: Record<string, unknown>): void {
     signale.warn(message);
     const logEntry = formatLogEntry("WARN", message, meta);
     writeToFile(combinedLogPath, logEntry);
   }
 
-  error(message: string, error?: Error | any, meta?: any): void {
+  error(
+    message: string,
+    error?: unknown,
+    meta?: Record<string, unknown>,
+  ): void {
     signale.error(message);
 
     const errorMeta = {
@@ -95,7 +103,11 @@ class Logger {
     writeToFile(combinedLogPath, logEntry);
   }
 
-  fatal(message: string, error?: Error | any, meta?: any): void {
+  fatal(
+    message: string,
+    error?: unknown,
+    meta?: Record<string, unknown>,
+  ): void {
     signale.fatal(message);
 
     const errorMeta = {
@@ -115,7 +127,7 @@ class Logger {
     writeToFile(combinedLogPath, logEntry);
   }
 
-  debug(message: string, meta?: any): void {
+  debug(message: string, meta?: Record<string, unknown>): void {
     signale.debug(message);
     const logEntry = formatLogEntry("DEBUG", message, meta);
     writeToFile(combinedLogPath, logEntry);

@@ -5,22 +5,29 @@ import i18n from "./i18n";
 import fetch from "node-fetch";
 import { exec } from "child_process";
 import { logger } from "./logger";
-import { errorHandler, notFoundHandler, sendError, setStaticPageCsp } from "./middleware";
+import {
+  errorHandler,
+  notFoundHandler,
+  sendError,
+  setStaticPageCsp,
+} from "./middleware";
 import { initProfile, profileRouter } from "./profile";
 import { URL } from "url";
 import { createHash, randomBytes } from "crypto";
 
 let branch;
-exec("git branch --show-current", (err, stdout, stderr) => {
+exec("git branch --show-current", (err, stdout) => {
   if (err) {
     return (branch = "production");
   }
   return (branch = stdout.trim());
 });
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// config.json은 배포마다 내용이 달라 정적 import 대상이 아닙니다.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const config = require(__dirname + "/../config/config.json");
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const version = require(__dirname + "/../package.json").version;
 
 // Must match the value the backend uses to verify the ID token, or login fails silently.
@@ -221,7 +228,12 @@ app.get("/ko", function (req, res) {
 });
 
 app.get("/join", authPageLimiter, (req, res) => {
-  res.render("join", { api: config.project.api, ver: config.project.mode == "test" ? Date.now() : version, url: config.project.url, cspNonce: withAuthPageCsp(res, false) });
+  res.render("join", {
+    api: config.project.api,
+    ver: config.project.mode == "test" ? Date.now() : version,
+    url: config.project.url,
+    cspNonce: withAuthPageCsp(res, false),
+  });
 });
 
 const authRedirects: Record<string, string> = {
@@ -241,10 +253,14 @@ const gatedStatuses = new Set(Object.keys(authRedirects));
  */
 const AUTH_CACHE_TTL_MS = 30 * 1000;
 const AUTH_CACHE_MAX_ENTRIES = 5000;
-const authStatusCache = new Map<string, { status: string; expiresAt: number }>();
+const authStatusCache = new Map<
+  string,
+  { status: string; expiresAt: number }
+>();
 
 // Hashed so live session cookies are not held in memory for the TTL.
-const authCacheKey = (cookie: string) => createHash("sha256").update(cookie).digest("hex");
+const authCacheKey = (cookie: string) =>
+  createHash("sha256").update(cookie).digest("hex");
 
 const readCachedStatus = (key: string): string | null => {
   const entry = authStatusCache.get(key);
@@ -263,7 +279,10 @@ const writeCachedStatus = (key: string, status: string) => {
   if (authStatusCache.size >= AUTH_CACHE_MAX_ENTRIES) {
     authStatusCache.delete(authStatusCache.keys().next().value);
   }
-  authStatusCache.set(key, { status, expiresAt: Date.now() + AUTH_CACHE_TTL_MS });
+  authStatusCache.set(key, {
+    status,
+    expiresAt: Date.now() + AUTH_CACHE_TTL_MS,
+  });
 };
 
 /**
@@ -276,7 +295,9 @@ const writeCachedStatus = (key: string, status: string) => {
 const gateLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 30,
-  skip: (req) => !!req.headers.cookie && readCachedStatus(authCacheKey(req.headers.cookie)) !== null,
+  skip: (req) =>
+    !!req.headers.cookie &&
+    readCachedStatus(authCacheKey(req.headers.cookie)) !== null,
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -324,11 +345,14 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
     // the backend's per-address limit is reached by the site as a whole, not by
     // one visitor.
     if (response.status === 429 || response.status >= 500) {
-      logger.warn("Auth status unavailable", { path: req.path, status: response.status });
+      logger.warn("Auth status unavailable", {
+        path: req.path,
+        status: response.status,
+      });
       return unavailable(req, res);
     }
     if (!response.ok) return res.redirect(config.project.url);
-    const data: any = await response.json();
+    const data = (await response.json()) as { status?: unknown };
     const status = data.status;
     if (typeof status !== "string") return res.redirect(config.project.url);
     writeCachedStatus(key, status);
@@ -377,10 +401,15 @@ const startedHere = (req: Request) => {
  */
 app.get("/logout", logoutLimiter, (req, res) => {
   if (startedHere(req)) {
-    if (req.headers.cookie) authStatusCache.delete(authCacheKey(req.headers.cookie));
+    if (req.headers.cookie)
+      authStatusCache.delete(authCacheKey(req.headers.cookie));
     const sessionCookie = config.project.sessionCookie ?? "urlate";
     res.clearCookie(sessionCookie, { path: "/" });
-    if (config.project.cookieDomain) res.clearCookie(sessionCookie, { path: "/", domain: config.project.cookieDomain });
+    if (config.project.cookieDomain)
+      res.clearCookie(sessionCookie, {
+        path: "/",
+        domain: config.project.cookieDomain,
+      });
   }
 
   res.redirect(`${config.project.api}/auth/logout?redirect=true`);
@@ -453,9 +482,14 @@ app.get("/privacy", (req, res) => {
 
 app.use(profileRouter);
 
-process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
-  logger.fatal("Unhandled Promise Rejection", reason, { promise: promise.toString() });
-});
+process.on(
+  "unhandledRejection",
+  (reason: unknown, promise: Promise<unknown>) => {
+    logger.fatal("Unhandled Promise Rejection", reason, {
+      promise: promise.toString(),
+    });
+  },
+);
 
 process.on("uncaughtException", (error: Error) => {
   logger.fatal("Uncaught Exception", error);
@@ -470,7 +504,9 @@ process.on("uncaughtException", (error: Error) => {
     // would expose the port directly regardless of firewall policy.
     const host = config.project.host ?? "127.0.0.1";
     app.listen(config.project.port, host, () => {
-      logger.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : version}.`);
+      logger.info(
+        `URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : version}.`,
+      );
       logger.success(`HTTP Server running at ${host}:${config.project.port}.`);
     });
   } catch (err) {
