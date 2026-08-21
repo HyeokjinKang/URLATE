@@ -1,1 +1,9 @@
+# 빌드 산출물과 잠금 파일은 포맷 대상이 아닙니다.
+dist/
+pnpm-lock.yaml
+
+# 외부에서 받아 온 파일은 원본 그대로 둡니다.
 *.min.js
+*.min.css
+public/lib/
+public/js/pace.js
