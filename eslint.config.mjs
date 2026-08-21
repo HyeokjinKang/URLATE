@@ -2,6 +2,7 @@ import js from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 import { defineConfig } from "eslint/config";
+import prettier from "eslint-config-prettier/flat";
 
 export default defineConfig([
   {
@@ -31,4 +32,8 @@ export default defineConfig([
     files: ["**/*.{ts,mts,cts}"],
     extends: [tseslint.configs.recommended],
   },
+  // 반드시 마지막입니다. prettier가 담당하는 서식 규칙을 꺼서 둘이 서로를
+  // 되돌리는 것을 막습니다. prettier가 줄을 나눈 자리를 eslint가
+  // no-unexpected-multiline으로 잡던 충돌이 실제로 있었습니다.
+  prettier,
 ]);
