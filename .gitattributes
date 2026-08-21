@@ -1,0 +1,28 @@
+# 줄바꿈을 LF로 통일합니다. 이 파일이 없으면 각자의 편집기·OS 설정에 따라
+# CRLF가 섞여 들어와, 한 줄만 고쳐도 파일 전체가 바뀐 것처럼 보입니다.
+#
+#   text=auto  git이 텍스트로 판단한 파일을 저장소에 LF로 저장합니다.
+#   eol=lf     체크아웃할 때도 LF로 내려줍니다(OS 무관).
+#
+# 이미 커밋된 파일은 자동으로 바뀌지 않습니다. 한 번만
+# `git add --renormalize .` 을 돌려 정리했습니다.
+* text=auto eol=lf
+
+# 바이너리는 어떤 경우에도 변환하지 않습니다. git의 자동 판별에만 맡기지 않고
+# 명시해 둡니다.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.cur   binary
+*.ogg   binary
+*.mp3   binary
+*.wav   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+*.pdf   binary
+*.zip   binary
