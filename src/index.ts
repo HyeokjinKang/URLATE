@@ -23,8 +23,7 @@ const config = require(__dirname + "/../config/config.json");
 
 const version = require(__dirname + "/../package.json").version;
 
-// 백엔드가 ID 토큰을 검증할 때 쓰는 값과 반드시 같아야 합니다. 템플릿에 직접
-// 적어두면 한쪽만 바뀌었을 때 아무 오류 없이 로그인만 조용히 실패합니다.
+// Must match the value the backend uses to verify the ID token, or login fails silently.
 const googleClientId: string = config.google?.clientId;
 if (!googleClientId) {
   logger.fatal("config.google.clientId is missing. Google login cannot work.");
@@ -49,9 +48,7 @@ app.set("view engine", "ejs");
 app.set("views", __dirname + "/../views");
 app.use(cookieParser());
 
-// Baseline security headers. CSP is applied per-route: the account pages and the
-// three play screens carry it, while editor (136 inline handlers) and game (97)
-// still need the markup cleaned up before a policy can hold there.
+// Baseline security headers applied to every response. CSP itself is set per route.
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
@@ -68,39 +65,28 @@ app.use((req, res, next) => {
 app.use(express.static(__dirname + "/../public", { maxAge: "7d" }));
 app.use(i18n);
 
-/**
- * 계정을 다루는 화면에만 거는 CSP입니다. 이 두 화면은 인라인 이벤트 핸들러가
- * 각각 하나뿐이라 정리 비용이 거의 없으면서, 탈취당했을 때 피해는 가장 큽니다.
- *
- * Chromium으로 두 화면을 실제로 열어 위반이 없는 것과, GSI 버튼이 그려지고
- * /auth/status 요청이 통과하는 것까지 확인한 뒤 강제 모드로 두었습니다.
- * 구글 로그인 완료 이후 경로는 자격증명이 필요해 검증하지 못했지만, 그 단계의
- * 요청도 /auth/status와 같은 오리진이라 connect-src가 이미 덮습니다.
- */
+// Google Identity Services origin, used by the login button's script, style and frame.
 const GSI_ORIGIN = "https://accounts.google.com";
 
 /**
- * @param withGsi 구글 로그인을 쓰는 화면인지. 가입 화면은 GSI를 부르지 않으므로
- *   accounts.google.com을 허용할 이유가 없습니다. 두 화면이 정책을 공유하면
- *   가입 화면이 쓰지도 않는 출처를 열어두게 됩니다.
+ * @param withGsi Whether the page uses Google Sign-In. The join page never calls
+ *   GSI, so it has no reason to allow accounts.google.com.
  */
 const authPageCsp = (nonce: string, withGsi: boolean) => {
   const gsi = (directive: string) => (withGsi ? ` ${directive}` : "");
 
   return [
     "default-src 'self'",
-    // GSI 클라이언트와 페이지가 심는 전역 설정 스크립트를 허용합니다.
+    // Allows the GSI client script and the page's own inline config script.
     `script-src 'self' 'nonce-${nonce}'${gsi(GSI_ORIGIN)}`,
-    // GSI 버튼이 인라인 스타일을 주입해 nonce로 좁힐 수 없습니다.
-    // accounts.google.com은 GSI가 버튼 스타일시트(/gsi/style)를 받아오는 곳으로,
-    // 빠뜨리면 강제 모드에서 로그인 버튼 모양이 깨집니다. 웹폰트(Montserrat·
-    // Pretendard)는 CDN에서 받아옵니다.
+    // The GSI button injects inline styles, so 'unsafe-inline' can't be narrowed to
+    // a nonce. accounts.google.com also serves the button's stylesheet (/gsi/style).
     `style-src 'self' 'unsafe-inline'${gsi(GSI_ORIGIN)}`,
     `font-src 'self' ${config.project.cdn}`,
     "img-src 'self' data:",
     `connect-src 'self' ${config.project.api}${gsi(GSI_ORIGIN)}`,
-    // 로그인 버튼은 accounts.google.com iframe으로 그려집니다. 가입 화면은
-    // 프레임을 전혀 쓰지 않으므로 아예 막습니다.
+    // The login button renders in an accounts.google.com iframe. The join page
+    // uses no frames at all, so it blocks them outright.
     withGsi ? `frame-src ${GSI_ORIGIN}` : "frame-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -110,32 +96,33 @@ const authPageCsp = (nonce: string, withGsi: boolean) => {
 };
 
 /**
- * 플레이 화면(play·test·tutorial)과 에디터가 공유하는 정책입니다. 계정 화면과
- * 쓰는 출처가 거의 겹치지 않아 합치면 양쪽 모두에게 필요 없는 권한을 열어주게
- * 됩니다.
+ * Policy shared by the play screens (play/test/tutorial) and the editor. They
+ * load the same assets, and their inline handlers use few enough origins that
+ * merging with the account-page policy would only grant unused permissions.
  *
- * 네 화면은 불러오는 자산이 같습니다. 에디터가 패턴을 내려받을 때 만드는 blob
- * URL 은 <a download> 로만 쓰여 페치 지시문의 대상이 아닙니다. socket.io는 이
- * 서버에서 직접 내려주므로 script-src 에 외부 출처가 필요 없습니다.
+ * The editor's pattern download creates a blob URL, but it's only ever used
+ * through <a download>, so it isn't a target for any fetch directive. socket.io
+ * is served by this app itself, so script-src needs no external origin for it.
  */
 const playPageCsp = (nonce: string) => {
-  // socket.io는 폴링(https)으로 붙었다가 웹소켓으로 승격하므로 두 스킴이 다
-  // 필요합니다. 하나만 열어두면 승격 단계나 최초 연결 중 하나가 막힙니다.
+  // socket.io connects over polling (https) before upgrading to a websocket, so
+  // both schemes are needed -- allowing only one breaks either the initial
+  // connection or the upgrade.
   const gameSocket = config.project.game.replace(/^https:/, "wss:");
 
   return [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}'`,
     "style-src 'self' 'unsafe-inline'",
-    // Montserrat·Pretendard·Metropolis 웹폰트가 모두 CDN에서 옵니다.
+    // The Montserrat, Pretendard and Metropolis webfonts are all served from the CDN.
     `font-src 'self' ${config.project.cdn}`,
-    // 앨범아트와 배경이 CDN에서 옵니다.
+    // Album art and backgrounds come from the CDN.
     `img-src 'self' data: ${config.project.cdn}`,
-    // Howler는 기본적으로 Web Audio로 받아 connect-src를 타지만, 브라우저가
-    // 지원하지 않으면 <audio>로 떨어져 media-src를 탑니다. 어느 쪽으로 가든
-    // 곡이 재생되도록 둘 다 열어둡니다.
+    // Howler prefers Web Audio, which uses connect-src, but falls back to <audio>
+    // (media-src) when that isn't supported. Both are allowed so playback works
+    // either way.
     `media-src 'self' ${config.project.cdn}`,
-    // 패턴·스킨 JSON과 곡 파일(CDN), 기록·설정 API, 게임 서버 소켓입니다.
+    // Pattern/skin JSON and track files (CDN), the record/settings API, and the game socket.
     `connect-src 'self' ${config.project.api} ${config.project.cdn} ${config.project.game} ${gameSocket}`,
     "frame-src 'none'",
     "base-uri 'self'",
@@ -145,8 +132,8 @@ const playPageCsp = (nonce: string) => {
   ].join("; ");
 };
 
-// 요청마다 새로 만듭니다. 재사용하면 공격자가 값을 알아내 인라인 스크립트를
-// 통과시킬 수 있어 nonce의 의미가 사라집니다.
+// Generated fresh per request -- reusing it would let an attacker learn the
+// value and pass off their own inline script, defeating the point of a nonce.
 const withAuthPageCsp = (res: Response, withGsi: boolean): string => {
   const nonce = randomBytes(16).toString("base64");
   res.setHeader("Content-Security-Policy", authPageCsp(nonce, withGsi));
@@ -154,22 +141,13 @@ const withAuthPageCsp = (res: Response, withGsi: boolean): string => {
 };
 
 /**
- * 계정 화면과 달리 Report-Only로 시작합니다. 세 화면은 로그인 세션이 있어야
- * 열려서 브라우저로 위반을 직접 수집하지 못했고, 정책은 코드에서 쓰이는 출처를
- * 훑어 세운 것입니다. 곧바로 강제하면 빠뜨린 출처 하나에 곡이 안 받아지거나
- * 소켓이 끊겨 게임이 멈춥니다.
+ * Policy for the game screen. Mostly the same as the play-screen policy, except
+ * that profile pictures come from two places: uploads live on the CDN, while the
+ * Google account picture captured at signup is served from googleusercontent.
  *
- * 실제 플레이에서 콘솔에 위반이 남지 않는 것을 확인한 뒤 강제로 바꿔야 합니다.
- */
-/**
- * 게임 화면용 정책입니다. 플레이 화면과 대부분 겹치지만 프로필 사진이 두
- * 곳에서 온다는 점이 다릅니다. 직접 올린 사진은 CDN 에 있고, 가입 시점에
- * 받아둔 구글 계정 사진은 googleusercontent 에 있습니다.
- *
- * 랭킹 그래프에 쓰는 chart.js 와 socket.io 도 이 서버에서 직접 내려주므로
- * script-src 에 외부 출처가 필요 없습니다.
- *
- * 플레이 화면과 정책을 합치면 그쪽에 쓰지도 않는 출처를 열어주게 됩니다.
+ * chart.js (the ranking graph) and socket.io are both served by this app itself,
+ * so script-src needs no external origin for either. Merging this with the play
+ * screens' policy would grant them origins they never use.
  */
 const gamePageCsp = (nonce: string) => {
   const gameSocket = config.project.game.replace(/^https:/, "wss:");
@@ -178,9 +156,9 @@ const gamePageCsp = (nonce: string) => {
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}'`,
     "style-src 'self' 'unsafe-inline'",
-    // Montserrat·Pretendard·Metropolis 웹폰트가 모두 CDN에서 옵니다.
+    // The Montserrat, Pretendard and Metropolis webfonts are all served from the CDN.
     `font-src 'self' ${config.project.cdn}`,
-    // 앨범아트·배너는 CDN, 프로필 사진은 CDN 또는 구글 계정 사진입니다.
+    // Album art and banners come from the CDN; profile pictures from the CDN or a Google account picture.
     `img-src 'self' data: ${config.project.cdn} https://*.googleusercontent.com`,
     `media-src 'self' ${config.project.cdn}`,
     `connect-src 'self' ${config.project.api} ${config.project.cdn} ${config.project.game} ${gameSocket}`,
@@ -205,24 +183,18 @@ const withPlayPageCsp = (res: Response): string => {
 };
 
 /**
- * 로그인·가입 화면 전용 예산입니다. 두 화면은 요청마다 nonce를 새로 만들기
- * 때문에 호출 수가 그대로 난수 생성 비용이 됩니다.
- *
- * gateLimiter를 재사용하지 않습니다. 그쪽은 인증 캐시가 있으면 건너뛰는데,
- * 여기는 아직 로그인하지 않은 방문자가 오는 곳이라 그 조건이 성립하지 않습니다.
- *
- * 그래서 한도를 gateLimiter보다 넉넉하게 둡니다. gateLimiter는 캐시 적중분을
- * 건너뛰어 공유 주소 뒤의 사용자끼리 예산을 뺏지 않게 하는데, 이 화면은 모두가
- * 미인증 상태로 들어오므로 그 장치가 없습니다. PC방처럼 여러 명이 한 주소를
- * 쓰는 환경에서 좁게 잡으면 정상 방문자가 진입 자체를 못 합니다.
+ * Own budget for the login/join screens, separate from gateLimiter. That one
+ * skips its count on an auth-cache hit, but every visitor here is signed out,
+ * so that escape hatch never applies -- the limit is set generously so users
+ * behind a shared address (e.g. a NAT) aren't locked out of signing in.
  */
 const authPageLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 240,
   standardHeaders: true,
   legacyHeaders: false,
-  // 기본 응답은 평문 한 줄이라 랜딩 페이지에서 장애처럼 보입니다. 나머지 오류와
-  // 같은 화면·번역을 쓰도록 넘깁니다.
+  // The default response is a bare line of text, which looks broken on a landing
+  // page. Route it through the same error screen as everything else.
   handler: (req, res) => sendError(req, res, 429),
 });
 
@@ -325,9 +297,8 @@ const unavailable = (req: Request, res: Response) => {
 };
 
 /**
- * Gate the pages that only make sense for a signed-in player. The status ->
- * destination mapping is the one the pages used to run in the browser; doing it
- * here means the check cannot be skipped by disabling JavaScript.
+ * Gate the pages that only make sense for a signed-in player. Doing this
+ * server-side means the check cannot be skipped by disabling JavaScript.
  */
 const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   // Depends on the session, so neither the CDN nor the browser may cache it.
@@ -495,8 +466,8 @@ process.on("uncaughtException", (error: Error) => {
   try {
     await initProfile();
 
-    // 리버스 프록시가 앞에 있으므로 기본값은 루프백입니다. 와일드카드로 열면
-    // 포트가 방화벽 정책과 무관하게 외부에 그대로 노출됩니다.
+    // Defaults to loopback since a reverse proxy sits in front; a wildcard bind
+    // would expose the port directly regardless of firewall policy.
     const host = config.project.host ?? "127.0.0.1";
     app.listen(config.project.port, host, () => {
       logger.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : version}.`);

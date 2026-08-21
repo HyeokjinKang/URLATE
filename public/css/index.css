@@ -125,8 +125,8 @@ body {
   pointer-events: none;
 }
 
-/* GSI 스크립트가 차단됐을 때만 드러납니다. 로그인만 막힌 상황이므로 화면
-   전체를 가리지 않고 버튼 자리 옆에 안내만 둡니다. */
+/* Only shown when the GSI script is blocked. Since only login is affected, this
+   sits next to the button instead of covering the whole screen. */
 #loginNotice {
   z-index: 1;
   margin: 1vh;

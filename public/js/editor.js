@@ -1,6 +1,6 @@
 /* global Howler, Howl, iziToast, url, api, cdn, syncAlert, timeAlert, copiedText, moveToAlert */
-// 값은 페이지의 인라인 <script>와 클래식 라이브러리가 심습니다. 모듈은 전역 스코프를
-// 통해 그대로 읽을 수 있어 추가 조치가 필요 없습니다.
+// url/cdn/api etc. are set by the page's inline <script> and by the classic
+// library scripts; a module can read them via global scope with no extra wiring.
 let upperBound, lowerBound;
 let Factory, Updater, Renderer, getCos, getSin, calcAngleDegrees;
 (async () => {
@@ -271,7 +271,7 @@ const analyzePattern = (data) => {
 
   return {
     speed: data.information.speed,
-    noteDensity: calculateDensity(notePerBeat, 0.25, 1.5), // 4박자당 1개 = 0.25, 2박자당 3개 = 1.5
+    noteDensity: calculateDensity(notePerBeat, 0.25, 1.5), // 1 per 4 beats = 0.25, 3 per 2 beats = 1.5
     bulletDensity: calculateLogDensity(bulletPerBeat, 20, 100),
   };
 };
@@ -1719,8 +1719,6 @@ const changeOffset = (e) => {
 };
 
  
-// 예전에는 전역 event(window.event)를 읽었습니다. 위임이 이벤트를 넘겨주므로
-// 인자로 받습니다. 값은 같고, 사라져가는 전역에 기대지 않게 됩니다.
 const trackMousePos = (event) => {
   const width = parseInt((componentViewOW - canvasContainerOW) / 2 + menuContainerOW);
   const x = ((event.clientX - width) / canvasContainerOW) * 200 - 100;
@@ -1735,7 +1733,6 @@ const trackMousePos = (event) => {
 };
 
  
-// trackMousePos 와 같은 이유로 인자를 받습니다.
 const trackTimelineMousePos = (event) => {
   mouseMode = 1;
   mouseX = event.clientX * pixelRatio;
@@ -2918,10 +2915,7 @@ window.addEventListener("load", () => {
   }
 });
 
-// 아래는 마크업의 on* 속성에서 옮겨온 결선입니다. CSP 를 걸려면 인라인 핸들러가
-// 없어야 하는데 이 화면에만 138개가 있어, 요소마다 리스너를 다는 대신 data-*
-// 속성과 위임으로 처리합니다.
-
+// Delegated click handlers, keyed by each element's data-action attribute.
 const clickActions = {
   changeMode: (arg) => changeMode(Number(arg)),
   changeNote,
@@ -2932,7 +2926,7 @@ const clickActions = {
   elementPaste,
   goGame: () => (window.location.href = `${url}/game?initialize=0`),
   gotoMain,
-  // 저장하지 않고 나가기 전에 한 번 더 묻는 쪽입니다.
+  // Confirms before leaving unsaved work.
   gotoMainConfirm: () => gotoMain(true),
   loadEditor,
   moveTo,
@@ -2960,8 +2954,7 @@ document.addEventListener("click", (event) => {
   if (action) action(target.dataset.arg);
 });
 
-// 입력값을 패턴에 반영하는 것들입니다. 키를 함께 받는 쪽과 요소만 받는 쪽이
-// 있어 인자 유무로 갈립니다.
+// Some of these take a key argument along with the element, others just the element.
 const inputActions = { settingsInput, triggersInput, changeBPM, changeOffset, changeSpeed };
 const runInputAction = (target) => {
   const action = inputActions[target.dataset.keyup];
@@ -2974,17 +2967,15 @@ document.addEventListener("keyup", (event) => {
   if (target) runInputAction(target);
 });
 
-// focus·blur 는 버블링하지 않아 위임이 닿지 않습니다. 버블링하는 짝인
-// focusin·focusout 을 씁니다.
+// focus/blur don't bubble, so delegation can't catch them; use the bubbling
+// equivalents, focusin/focusout, instead.
 document.addEventListener("focusin", (event) => {
   if (event.target.closest?.(".settingsPropertiesTextbox")) textFocused();
 });
 document.addEventListener("focusout", (event) => {
   const target = event.target.closest?.(".settingsPropertiesTextbox");
   if (!target) return;
-  // 입력 중에 반영하면 어중간한 값이 들어가는 항목들은 포커스를 잃을 때 반영합니다.
-  // triggersInput 이 해당 키에서 textBlurred 를 직접 부르므로 여기서 또 부르지
-  // 않습니다. 원래 마크업도 이 요소들에는 textBlurred 를 걸지 않았습니다.
+  // triggersInput already calls textBlurred for these keys, so it isn't called again here.
   if (target.dataset.blur === "triggersInput") {
     triggersInput(target.dataset.blurArg, target);
     return;
@@ -3016,7 +3007,6 @@ const delegateMouse = (type, attribute) => {
 };
 delegateMouse("mousemove", "mousemove");
 delegateMouse("mousedown", "mousedown");
-// mouseover·mouseout 은 버블링하므로 위임이 그대로 닿습니다.
 delegateMouse("mouseover", "mouseover");
 delegateMouse("mouseout", "mouseout");
 

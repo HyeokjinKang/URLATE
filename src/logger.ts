@@ -31,18 +31,12 @@ function rotate(filePath: string): void {
   if (fs.existsSync(filePath)) fs.renameSync(filePath, `${filePath}.1`);
 }
 
-/**
- * Format log entry with timestamp
- */
 function formatLogEntry(level: string, message: string, meta?: any): string {
   const timestamp = new Date().toISOString();
   const metaStr = meta ? `\n${JSON.stringify(meta, null, 2)}` : "";
   return `[${timestamp}] [${level}] ${message}${metaStr}\n`;
 }
 
-/**
- * Write log to file
- */
 function writeToFile(filePath: string, content: string): void {
   try {
     const bytes = Buffer.byteLength(content, "utf8");
@@ -62,9 +56,6 @@ function writeToFile(filePath: string, content: string): void {
   }
 }
 
-/**
- * Logger class for centralized logging
- */
 class Logger {
   info(message: string, meta?: any): void {
     signale.info(message);

@@ -262,8 +262,6 @@ body {
   left: 0;
   position: absolute;
   z-index: 2;
-  /*overflow-y: scroll;
-  overflow-x: scroll;*/
   background-color: #fff;
   width: 100vw;
   height: 27vh;
@@ -418,7 +416,6 @@ body {
 #initialScreenContainer {
   width: 100vw;
   height: 100vh;
-  /*display: none;*/
 }
 
 #initialButtonsContainer {
