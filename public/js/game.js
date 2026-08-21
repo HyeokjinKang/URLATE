@@ -24,9 +24,13 @@ const langSelector = document.getElementById("langSelector");
 const selectSongContainer = document.getElementById("selectSongContainer");
 const trackModsText = document.getElementById("trackModsText");
 const selectTitle = document.getElementById("selectTitle");
-const overlayPaymentContainer = document.getElementById("overlayPaymentContainer");
+const overlayPaymentContainer = document.getElementById(
+  "overlayPaymentContainer",
+);
 const overlayCodeContainer = document.getElementById("overlayCodeContainer");
-const overlayLoadingContainer = document.getElementById("overlayLoadingContainer");
+const overlayLoadingContainer = document.getElementById(
+  "overlayLoadingContainer",
+);
 const loadingCircle = document.getElementById("loadingCircle");
 const loadingOverlayCircle = document.getElementById("loadingOverlayCircle");
 const goldMedal = document.getElementById("goldMedal");
@@ -41,7 +45,9 @@ const offsetSpeedText = document.getElementById("offsetSpeedText");
 const volumeOverlay = document.getElementById("volumeOverlay");
 const codeInput = document.getElementById("codeInput");
 const CPLTrack = document.getElementById("CPLTrack");
-const profileContentsContainer = document.getElementsByClassName("profileContentsContainer")[0];
+const profileContentsContainer = document.getElementsByClassName(
+  "profileContentsContainer",
+)[0];
 const profileImageContainer = document.getElementById("profileImageContainer");
 const profileDescription = document.getElementById("profileDescription");
 const profileNameContainer = document.getElementById("profileNameContainer");
@@ -152,28 +158,40 @@ const settingApply = () => {
   document.getElementById("wheelSelector").value = settings.input.wheelReverse;
   document.getElementById("inputSelector").value = settings.input.keys;
   for (let i = 0; i <= 1; i++) {
-    document.getElementsByClassName("volumeMaster")[i].value = settings.sound.volume.master * 100;
-    document.getElementsByClassName("volumeMasterValue")[i].textContent = Math.round(settings.sound.volume.master * 100) + "%";
+    document.getElementsByClassName("volumeMaster")[i].value =
+      settings.sound.volume.master * 100;
+    document.getElementsByClassName("volumeMasterValue")[i].textContent =
+      Math.round(settings.sound.volume.master * 100) + "%";
   }
-  document.getElementById("volumeSong").value = settings.sound.volume.music * 100;
-  document.getElementById("volumeHit").value = settings.sound.volume.hitSound * 100;
-  document.getElementById("volumeEft").value = settings.sound.volume.effect * 100;
+  document.getElementById("volumeSong").value =
+    settings.sound.volume.music * 100;
+  document.getElementById("volumeHit").value =
+    settings.sound.volume.hitSound * 100;
+  document.getElementById("volumeEft").value =
+    settings.sound.volume.effect * 100;
   document.getElementById("inputSensitive").value = settings.input.sens * 100;
   document.getElementById("inputSize").value = settings.game.size * 10;
   document.getElementById("mouseCheck").checked = settings.input.mouse;
   document.getElementById("judgeSkin").checked = settings.game.judgeSkin;
-  document.getElementById("judgePerfect").checked = settings.game.applyJudge.Perfect;
-  document.getElementById("judgeGreat").checked = settings.game.applyJudge.Great;
+  document.getElementById("judgePerfect").checked =
+    settings.game.applyJudge.Perfect;
+  document.getElementById("judgeGreat").checked =
+    settings.game.applyJudge.Great;
   document.getElementById("judgeGood").checked = settings.game.applyJudge.Good;
   document.getElementById("judgeBad").checked = settings.game.applyJudge.Bad;
   document.getElementById("judgeMiss").checked = settings.game.applyJudge.Miss;
   document.getElementById("frameCheck").checked = settings.game.counter;
-  document.getElementById("ignoreCursorCheck").checked = settings.editor.denyCursor;
-  document.getElementById("ignoreEditorCheck").checked = settings.editor.denySkin;
+  document.getElementById("ignoreCursorCheck").checked =
+    settings.editor.denyCursor;
+  document.getElementById("ignoreEditorCheck").checked =
+    settings.editor.denySkin;
   document.getElementById("comboAlertCheck").checked = settings.game.comboAlert;
-  volumeSongValue.textContent = Math.round(settings.sound.volume.music * 100) + "%";
-  volumeHitValue.textContent = Math.round(settings.sound.volume.hitSound * 100) + "%";
-  volumeEftValue.textContent = Math.round(settings.sound.volume.effect * 100) + "%";
+  volumeSongValue.textContent =
+    Math.round(settings.sound.volume.music * 100) + "%";
+  volumeHitValue.textContent =
+    Math.round(settings.sound.volume.hitSound * 100) + "%";
+  volumeEftValue.textContent =
+    Math.round(settings.sound.volume.effect * 100) + "%";
   offsetButton.textContent = settings.sound.offset + "ms";
   sensitiveValue.textContent = settings.input.sens + "x";
   inputSizeValue.textContent = settings.game.size + "x";
@@ -273,8 +291,10 @@ const sortAsProducer = (a, b) => {
 
 const difficultyCache = new Map();
 const sortAsDifficulty = (a, b) => {
-  if (!difficultyCache.has(a.fileName)) difficultyCache.set(a.fileName, JSON.parse(a.difficulty));
-  if (!difficultyCache.has(b.fileName)) difficultyCache.set(b.fileName, JSON.parse(b.difficulty));
+  if (!difficultyCache.has(a.fileName))
+    difficultyCache.set(a.fileName, JSON.parse(a.difficulty));
+  if (!difficultyCache.has(b.fileName))
+    difficultyCache.set(b.fileName, JSON.parse(b.difficulty));
   const da = difficultyCache.get(a.fileName)[difficultySelection];
   const db = difficultyCache.get(b.fileName)[difficultySelection];
   if (da == db) return 0;
@@ -286,13 +306,16 @@ const sortAsBPM = (a, b) => {
   return a.bpm > b.bpm ? 1 : -1;
 };
 
- 
 const tutorialSkip = () => {
   if (confirm(confirmExit)) {
-    document.getElementById("tutorialInformation").classList.remove("fadeInAnim");
+    document
+      .getElementById("tutorialInformation")
+      .classList.remove("fadeInAnim");
     document.getElementById("tutorialInformation").classList.add("fadeOutAnim");
     setTimeout(() => {
-      document.getElementById("tutorialInformation").classList.remove("fadeOutAnim");
+      document
+        .getElementById("tutorialInformation")
+        .classList.remove("fadeOutAnim");
       document.getElementById("tutorialInformation").style.display = "none";
     }, 500);
     fetch(`${api}/tutorial`, {
@@ -326,10 +349,19 @@ const warningSkip = () => {
 
 // Intro gate: enable "press anywhere" once both intro videos are loaded
 // and the warning screen has been shown for at least 3 seconds.
-const introReady = { video1: false, video2: false, minDelay: false, done: false };
+const introReady = {
+  video1: false,
+  video2: false,
+  minDelay: false,
+  done: false,
+};
 
 const checkIntroReady = () => {
-  if (introReady.done || !(introReady.video1 && introReady.video2 && introReady.minDelay)) return;
+  if (
+    introReady.done ||
+    !(introReady.video1 && introReady.video2 && introReady.minDelay)
+  )
+    return;
   introReady.done = true;
   document.getElementById("pressAnywhere").textContent = pressAnywhere;
   // Set only once ready, rather than in markup, so clicks before that do nothing.
@@ -395,7 +427,9 @@ intro2video.addEventListener("ended", () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  let initialize = new URLSearchParams(window.location.search).get("initialize");
+  let initialize = new URLSearchParams(window.location.search).get(
+    "initialize",
+  );
   iniMode = initialize == null ? -1 : Number(initialize);
   history.pushState("", null, null);
   setTimeout(() => {
@@ -423,7 +457,8 @@ document.addEventListener("DOMContentLoaded", () => {
     .then((data) => {
       if (data.result == "success") {
         data = data.data;
-        document.getElementById("noticeText").textContent = `${new Date(data.date).toLocaleDateString()} | ${data[`title_${lang}`]}`;
+        document.getElementById("noticeText").textContent =
+          `${new Date(data.date).toLocaleDateString()} | ${data[`title_${lang}`]}`;
         document.getElementById("noticeText").href = data[`url_${lang}`];
       }
     });
@@ -443,7 +478,8 @@ document.addEventListener("DOMContentLoaded", () => {
         tutorial = data.tutorial;
         picture = data.picture;
         document.getElementById("profilePic").src = picture;
-        if (data.explicit % 2 == 1) document.getElementById("profilePic").classList.add("blur");
+        if (data.explicit % 2 == 1)
+          document.getElementById("profilePic").classList.add("blur");
         document.getElementById("name").textContent = username;
         document.getElementById("optionName").textContent = username;
         langSelector.value = lang;
@@ -465,9 +501,13 @@ document.addEventListener("DOMContentLoaded", () => {
               tracks.sort(sortAsName);
               // sortSelected already runs tracksUpdate, so skip it when a saved sort was restored.
               if (!restoreSortSettings()) tracksUpdate();
-              Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
-              intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
-              intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
+              Howler.volume(
+                settings.sound.volume.master * settings.sound.volume.music,
+              );
+              intro1video.volume =
+                settings.sound.volume.master * settings.sound.volume.music;
+              intro2video.volume =
+                settings.sound.volume.master * settings.sound.volume.music;
             } else {
               alert("Failed to load song list.");
               console.error("Failed to load song list.");
@@ -494,8 +534,12 @@ const restoreSortSettings = () => {
   const savedDifficulty = Number(localStorage.difficultySelection ?? 0);
   if (savedDifficulty > 0 && savedDifficulty <= 2) {
     difficultySelection = savedDifficulty;
-    document.getElementsByClassName("difficultySelected")[0].classList.remove("difficultySelected");
-    document.getElementsByClassName("difficulty")[savedDifficulty].classList.add("difficultySelected");
+    document
+      .getElementsByClassName("difficultySelected")[0]
+      .classList.remove("difficultySelected");
+    document
+      .getElementsByClassName("difficulty")
+      [savedDifficulty].classList.add("difficultySelected");
   }
   const savedSort = Number(localStorage.sort ?? 0);
   if (savedSort > 0 && savedSort <= 3) {
@@ -547,14 +591,26 @@ const tracksUpdate = () => {
 
   selectSongContainer.innerHTML = songList;
 
-  const defaultRecord = (type) => ({ rank: type == 1 ? "rankL" : "rankQ", record: 0, medal: 0, maxcombo: 0 });
+  const defaultRecord = (type) => ({
+    rank: type == 1 ? "rankL" : "rankQ",
+    record: 0,
+    medal: 0,
+    maxcombo: 0,
+  });
 
-  fetch(`${api}/trackRecords/${username}`, { method: "GET", credentials: "include" })
+  fetch(`${api}/trackRecords/${username}`, {
+    method: "GET",
+    credentials: "include",
+  })
     .then((res) => res.json())
     .then((data) => {
       const records = data.result == "success" ? data.records : {};
       fetchTargets.forEach((i) => {
-        trackRecords[i] = [defaultRecord(tracks[i].type), defaultRecord(tracks[i].type), defaultRecord(tracks[i].type)];
+        trackRecords[i] = [
+          defaultRecord(tracks[i].type),
+          defaultRecord(tracks[i].type),
+          defaultRecord(tracks[i].type),
+        ];
         const results = records[tracks[i].fileName];
         if (results && results.length) {
           for (let j = 0; j < 3; j++) {
@@ -573,7 +629,9 @@ const tracksUpdate = () => {
         } else if (tracks[i].type == 1) {
           const rankEl = document.getElementsByClassName("ranks")[i];
           rankEl.className = "ranks rankL";
-          document.getElementsByClassName("songSelectionInfo")[i].classList.add("locked");
+          document
+            .getElementsByClassName("songSelectionInfo")
+            [i].classList.add("locked");
         }
       });
       if (iniMode != -1) {
@@ -595,19 +653,26 @@ const sortSelected = (n, isInitializing) => {
   localStorage.sort = n;
   const currentSong = getSong(songSelection);
   let seek = currentSong?.seek() ?? 0;
-  Array.prototype.forEach.call(document.getElementsByClassName("sortText"), (e) => {
-    if (e.classList.contains("selected")) e.classList.remove("selected");
-  });
+  Array.prototype.forEach.call(
+    document.getElementsByClassName("sortText"),
+    (e) => {
+      if (e.classList.contains("selected")) e.classList.remove("selected");
+    },
+  );
   document.getElementsByClassName("sortText")[n].classList.add("selected");
   const sortArray = [sortAsName, sortAsProducer, sortAsDifficulty, sortAsBPM];
   currentSong?.stop();
   const prevName = tracks[songSelection]?.fileName;
-  const prevRecords = new Map(tracks.map((track, i) => [track.fileName, trackRecords[i]]));
+  const prevRecords = new Map(
+    tracks.map((track, i) => [track.fileName, trackRecords[i]]),
+  );
   tracks.sort(sortAsName);
   tracks.sort(sortArray[n]);
   trackRecords = tracks.map((track) => prevRecords.get(track.fileName));
   tracksUpdate();
-  const index = prevName ? tracks.findIndex((obj) => obj.fileName == prevName) : -1;
+  const index = prevName
+    ? tracks.findIndex((obj) => obj.fileName == prevName)
+    : -1;
   if (index != -1) songSelection = index;
   if (!isInitializing && index != -1) songSelected(index, true, seek);
 };
@@ -616,7 +681,9 @@ const songSelected = (n, refreshed, seek) => {
   loadingShow();
   if (songSelection == n && !refreshed) {
     //play
-    if (JSON.parse(tracks[songSelection].difficulty)[difficultySelection] == 0) {
+    if (
+      JSON.parse(tracks[songSelection].difficulty)[difficultySelection] == 0
+    ) {
       alert(`${notAvailable1}\n${notAvailable2}`);
     } else {
       display = 0;
@@ -628,9 +695,12 @@ const songSelected = (n, refreshed, seek) => {
         localStorage.rate = rate;
         localStorage.disableText = disableText;
         localStorage.difficultySelection = difficultySelection;
-        localStorage.difficulty = JSON.parse(tracks[songSelection].difficulty)[difficultySelection];
+        localStorage.difficulty = JSON.parse(tracks[songSelection].difficulty)[
+          difficultySelection
+        ];
         localStorage.songName = tracks[songSelection].fileName;
-        localStorage.record = trackRecords[songSelection][difficultySelection].record;
+        localStorage.record =
+          trackRecords[songSelection][difficultySelection].record;
         window.location.href = `${url}/play`;
       }, 2000);
     }
@@ -643,7 +713,10 @@ const songSelected = (n, refreshed, seek) => {
   trackModsText.textContent = "No";
   trackModsText.classList.remove("enabled");
   if (!(songSelection == -1 && tracks[n].name == "URLATE Theme")) {
-    document.getElementById("songNameText").textContent = settings.general.detailLang == "original" ? tracks[n].originalName : tracks[n].name;
+    document.getElementById("songNameText").textContent =
+      settings.general.detailLang == "original"
+        ? tracks[n].originalName
+        : tracks[n].name;
     if (themeSong.playing()) {
       themeSong.fade(1, 0, 500);
       setTimeout(() => {
@@ -667,11 +740,21 @@ const songSelected = (n, refreshed, seek) => {
     }, 200);
   }
   if (document.getElementsByClassName("songSelected")[0]) {
-    document.getElementsByClassName("songSelected")[0].classList.remove("songSelected");
+    document
+      .getElementsByClassName("songSelected")[0]
+      .classList.remove("songSelected");
   }
-  document.getElementsByClassName("songSelectionContainer")[n].classList.add("songSelected");
-  selectTitle.textContent = settings.general.detailLang == "original" ? tracks[n].originalName : tracks[n].name;
-  CPLTrack.textContent = settings.general.detailLang == "original" ? tracks[n].originalName : tracks[n].name;
+  document
+    .getElementsByClassName("songSelectionContainer")
+    [n].classList.add("songSelected");
+  selectTitle.textContent =
+    settings.general.detailLang == "original"
+      ? tracks[n].originalName
+      : tracks[n].name;
+  CPLTrack.textContent =
+    settings.general.detailLang == "original"
+      ? tracks[n].originalName
+      : tracks[n].name;
   let fontSize = 5;
   selectTitle.style.fontSize = `5vh`;
   while (selectTitle.offsetWidth > window.innerWidth / 4) {
@@ -679,17 +762,26 @@ const songSelected = (n, refreshed, seek) => {
     fontSize -= 0.5;
   }
   document.getElementById("selectArtist").textContent = tracks[n].producer;
-  document.getElementById("selectAlbum").src = `${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.webp`;
-  document.getElementById("CPLAlbum").src = `${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.webp`;
+  document.getElementById("selectAlbum").src =
+    `${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.webp`;
+  document.getElementById("CPLAlbum").src =
+    `${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.webp`;
   for (let i = 0; i <= 2; i++) {
-    document.getElementsByClassName("difficultyNumber")[i].textContent = JSON.parse(tracks[n].difficulty)[i];
+    document.getElementsByClassName("difficultyNumber")[i].textContent =
+      JSON.parse(tracks[n].difficulty)[i];
   }
-  document.getElementById("selectBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.webp")`;
+  document.getElementById("selectBackground").style.backgroundImage =
+    `url("${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.webp")`;
   setTimeout(
     () => {
-      const selectedElement = document.getElementsByClassName("songSelectionContainer")[n];
+      const selectedElement = document.getElementsByClassName(
+        "songSelectionContainer",
+      )[n];
       if (selectedElement) {
-        selectedElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        selectedElement.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
       }
     },
     songSelection != -1 ? 0 : 200,
@@ -697,11 +789,17 @@ const songSelected = (n, refreshed, seek) => {
   if (songSelection != -1) {
     document.getElementsByClassName("ranks")[songSelection].className = "ranks";
     if (trackRecords[songSelection][2].rank != "rankQ") {
-      document.getElementsByClassName("ranks")[songSelection].classList.add(trackRecords[songSelection][2].rank);
+      document
+        .getElementsByClassName("ranks")
+        [songSelection].classList.add(trackRecords[songSelection][2].rank);
     } else if (trackRecords[songSelection][1].rank != "rankQ") {
-      document.getElementsByClassName("ranks")[songSelection].classList.add(trackRecords[songSelection][1].rank);
+      document
+        .getElementsByClassName("ranks")
+        [songSelection].classList.add(trackRecords[songSelection][1].rank);
     } else {
-      document.getElementsByClassName("ranks")[songSelection].classList.add(trackRecords[songSelection][0].rank);
+      document
+        .getElementsByClassName("ranks")
+        [songSelection].classList.add(trackRecords[songSelection][0].rank);
     }
   }
   fetch(`${api}/trackInfo/${tracks[n].fileName}`, {
@@ -722,7 +820,6 @@ const songSelected = (n, refreshed, seek) => {
   updateRanks();
 };
 
- 
 const textDisabled = () => {
   disableText = !disableText;
   if (disableText) {
@@ -734,7 +831,6 @@ const textDisabled = () => {
   }
 };
 
- 
 const rateChanged = (e) => {
   e.value = Number(e.value).toFixed(1);
   if (e.value > 2) {
@@ -746,10 +842,13 @@ const rateChanged = (e) => {
 };
 
 const updateRanks = () => {
-  fetch(`${api}/records/${tracks[songSelection].fileName}/${difficultySelection + 1}/record/DESC/${username}`, {
-    method: "GET",
-    credentials: "include",
-  })
+  fetch(
+    `${api}/records/${tracks[songSelection].fileName}/${difficultySelection + 1}/record/DESC/${username}`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  )
     .then((res) => res.json())
     .then((data) => {
       if (data.rank != 0) {
@@ -776,7 +875,8 @@ const updateRanks = () => {
         prevScore = data[i].record;
       }
       loadingHide();
-      document.getElementById("selectRankScoreContainer").innerHTML = innerContent;
+      document.getElementById("selectRankScoreContainer").innerHTML =
+        innerContent;
     });
 };
 
@@ -800,7 +900,9 @@ const gameLoaded = () => {
   setTimeout(() => {
     if (tutorial >= 3) {
       document.getElementById("tutorialInformation").style.display = "flex";
-      document.getElementById("tutorialInformation").classList.add("fadeInAnim");
+      document
+        .getElementById("tutorialInformation")
+        .classList.add("fadeInAnim");
     }
   }, 300);
   setTimeout(() => {
@@ -836,7 +938,10 @@ const gameLoaded = () => {
 };
 
 Pace.on("done", () => {
-  const nameStyle = window.getComputedStyle(document.getElementById("name"), null);
+  const nameStyle = window.getComputedStyle(
+    document.getElementById("name"),
+    null,
+  );
   const nameWidth = parseFloat(nameStyle.getPropertyValue("width"));
   if (nameWidth > 265) {
     document.getElementById("name").style.fontSize = "2.2vh";
@@ -890,21 +995,18 @@ const stopProfileSong = () => {
   fadeRate(profileSong, 1, fastRate, 300, Date.now());
 };
 
- 
 const infoScreen = () => {
   display = 4;
   document.getElementById("infoContainer").style.display = "block";
   document.getElementById("infoContainer").classList.add("fadeInAnim");
 };
 
- 
 const optionScreen = () => {
   display = 2;
   document.getElementById("optionContainer").style.display = "block";
   document.getElementById("optionContainer").classList.add("fadeInAnim");
 };
 
- 
 const profileScreen = (nickname) => {
   if (nickname) display = 16;
   else display = 15;
@@ -973,8 +1075,11 @@ const displayClose = () => {
     } else if (display == 6) {
       //PLAY Rank
       document.getElementById("selectRankContainer").style.opacity = "0";
-      document.getElementById("selectRankContainer").style.pointerEvents = "none";
-      document.getElementById("selectRankInnerContainer").classList.remove("visible");
+      document.getElementById("selectRankContainer").style.pointerEvents =
+        "none";
+      document
+        .getElementById("selectRankInnerContainer")
+        .classList.remove("visible");
       display = 1;
       isRankOpened = false;
       return;
@@ -995,7 +1100,9 @@ const displayClose = () => {
       }
       offsetSong.fade(1, 0, 500);
       setTimeout(() => {
-        document.getElementById("offsetContiner").classList.remove("fadeOutAnim");
+        document
+          .getElementById("offsetContiner")
+          .classList.remove("fadeOutAnim");
         document.getElementById("offsetContiner").style.display = "none";
         offsetSong.stop();
       }, 500);
@@ -1043,10 +1150,16 @@ const displayClose = () => {
         themeSong.fade(0, 1, 500);
       }
       offsetSong.fade(1, 0, 500);
-      document.getElementById("visualSyncContainer").classList.remove("fadeInAnim");
-      document.getElementById("visualSyncContainer").classList.add("fadeOutAnim");
+      document
+        .getElementById("visualSyncContainer")
+        .classList.remove("fadeInAnim");
+      document
+        .getElementById("visualSyncContainer")
+        .classList.add("fadeOutAnim");
       setTimeout(() => {
-        document.getElementById("visualSyncContainer").classList.remove("fadeOutAnim");
+        document
+          .getElementById("visualSyncContainer")
+          .classList.remove("fadeOutAnim");
         document.getElementById("visualSyncContainer").style.display = "none";
         offsetSong.stop();
       }, 500);
@@ -1098,11 +1211,15 @@ const menuSelected = (n) => {
     display = 1;
     if (songSelection == -1) {
       // Restore the last played song; pick a random one only when there is nothing to restore.
-      const savedIndex = localStorage.songName ? tracks.findIndex((e) => e.fileName == localStorage.songName) : -1;
+      const savedIndex = localStorage.songName
+        ? tracks.findIndex((e) => e.fileName == localStorage.songName)
+        : -1;
       if (savedIndex != -1 && tracks[savedIndex].type != 3) {
         songSelected(savedIndex);
       } else {
-        const playable = tracks.map((t, i) => (t.type != 3 ? i : -1)).filter((i) => i != -1);
+        const playable = tracks
+          .map((t, i) => (t.type != 3 ? i : -1))
+          .filter((i) => i != -1);
         if (playable.length > 0) {
           songSelected(playable[Math.floor(Math.random() * playable.length)]);
         }
@@ -1110,8 +1227,12 @@ const menuSelected = (n) => {
     }
     document.getElementById("selectContainer").style.display = "flex";
     document.getElementById("selectContainer").classList.add("fadeInAnim");
-    document.getElementsByClassName("tracksSelection")[1].classList.remove("selected");
-    document.getElementsByClassName("tracksSelection")[0].classList.add("selected");
+    document
+      .getElementsByClassName("tracksSelection")[1]
+      .classList.remove("selected");
+    document
+      .getElementsByClassName("tracksSelection")[0]
+      .classList.add("selected");
   } else if (n == 1) {
     //editor
     window.location.href = `${url}/editor`;
@@ -1159,10 +1280,13 @@ const rankUpdate = async () => {
 // and nothing on this screen needs the internal identifier.
 const profileUpdate = async (nickname, isMe) => {
   profileid = nickname;
-  const res = await fetch(`${api}/profile/nickname/${encodeURIComponent(nickname)}`, {
-    method: "GET",
-    credentials: "include",
-  });
+  const res = await fetch(
+    `${api}/profile/nickname/${encodeURIComponent(nickname)}`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
   let profile = await res.json();
   if (profile.result == "success") {
     let rank = Number(profile.rank);
@@ -1187,19 +1311,30 @@ const profileUpdate = async (nickname, isMe) => {
     if (profile.explicit % 2 == 1) {
       document.getElementById("profileImage").classList.add("blur");
     }
-    document.getElementById("profileImageContainer").style.backgroundImage = `url("${safeUrl(profile.background)}")`;
+    document.getElementById("profileImageContainer").style.backgroundImage =
+      `url("${safeUrl(profile.background)}")`;
     document.getElementById("profileImage").src = safeUrl(profile.picture);
     document.getElementById("profileName").textContent = profile.nickname;
-    document.getElementById("profileBio").textContent = `| ${alias[profile.alias]}`;
-    document.getElementById("profileRank").textContent = `#${numberWithCommas(rank)}`;
-    document.getElementById("profileChart").style.height = document.getElementById("profileStat").clientHeight + "px";
-    document.getElementsByClassName("profileStatValue")[0].textContent = (Number(profile.rating) / 100).toFixed(2);
-    document.getElementsByClassName("profileStatValue")[1].textContent = numberWithCommas(Number(profile.scoreSum));
-    document.getElementsByClassName("profileStatValue")[2].textContent = `${Number(profile.accuracy).toFixed(2)}%`;
-    document.getElementsByClassName("profileStatValue")[3].textContent = profile.playtime;
-    document.getElementsByClassName("profileStatValue")[4].textContent = profile["1stNum"];
+    document.getElementById("profileBio").textContent =
+      `| ${alias[profile.alias]}`;
+    document.getElementById("profileRank").textContent =
+      `#${numberWithCommas(rank)}`;
+    document.getElementById("profileChart").style.height =
+      document.getElementById("profileStat").clientHeight + "px";
+    document.getElementsByClassName("profileStatValue")[0].textContent = (
+      Number(profile.rating) / 100
+    ).toFixed(2);
+    document.getElementsByClassName("profileStatValue")[1].textContent =
+      numberWithCommas(Number(profile.scoreSum));
+    document.getElementsByClassName("profileStatValue")[2].textContent =
+      `${Number(profile.accuracy).toFixed(2)}%`;
+    document.getElementsByClassName("profileStatValue")[3].textContent =
+      profile.playtime;
+    document.getElementsByClassName("profileStatValue")[4].textContent =
+      profile["1stNum"];
     banners = JSON.parse(profile.banner);
-    document.getElementById("profileBanner").innerHTML = `<div id="profileBannerContainer"></div>`;
+    document.getElementById("profileBanner").innerHTML =
+      `<div id="profileBannerContainer"></div>`;
     let count = 0;
     for (let i = 0; i < banners.length; i++) {
       if (banners[i].indexOf("(-)") != -1 && !isMe) continue;
@@ -1213,22 +1348,30 @@ const profileUpdate = async (nickname, isMe) => {
           </div>
         </div>`;
     }
-    if (count == 0) document.getElementById("profileBanner").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
+    if (count == 0)
+      document.getElementById("profileBanner").innerHTML =
+        `<span class="nothingHere">${nothingHere}</span>`;
     let recentPlay = JSON.parse(profile.recentPlay);
     if (recentPlay.length == 0) {
       document.getElementsByClassName("profileStatValue")[5].textContent = "-";
-      document.getElementById("profileRecentPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
+      document.getElementById("profileRecentPlay").innerHTML =
+        `<span class="nothingHere">${nothingHere}</span>`;
     } else {
       // Fetch the whole recent play list at once instead of asking per record id.
-      const recentRes = await fetch(`${api}/recentPlays/nickname/${encodeURIComponent(nickname)}`, { method: "GET", credentials: "include" }).then((res) => res.json());
-      const recentResults = recentRes.result == "success" ? recentRes.results : [];
+      const recentRes = await fetch(
+        `${api}/recentPlays/nickname/${encodeURIComponent(nickname)}`,
+        { method: "GET", credentials: "include" },
+      ).then((res) => res.json());
+      const recentResults =
+        recentRes.result == "success" ? recentRes.results : [];
       let recentHTML = "";
       for (let i = 0; i < recentResults.length; i++) {
         const data = recentResults[i];
         if (data) {
           if (i == 0) {
             const recentDate = new Date(data.date);
-            document.getElementsByClassName("profileStatValue")[5].textContent = `${recentDate.toLocaleDateString()}`;
+            document.getElementsByClassName("profileStatValue")[5].textContent =
+              `${recentDate.toLocaleDateString()}`;
           }
           const song = tracks.find((e) => e.fileName == data.filename);
           const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
@@ -1260,12 +1403,15 @@ const profileUpdate = async (nickname, isMe) => {
     if (bestRecords.result == "success") {
       document.getElementById("profileBestPlay").innerHTML = "";
       bestRecords = bestRecords.results;
-      if (bestRecords.length == 0) document.getElementById("profileBestPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
+      if (bestRecords.length == 0)
+        document.getElementById("profileBestPlay").innerHTML =
+          `<span class="nothingHere">${nothingHere}</span>`;
       for (let i = 0; i < bestRecords.length; i++) {
         const data = bestRecords[i];
         const song = tracks.find((e) => e.fileName == data.filename);
         const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
-        document.getElementById("profileBestPlay").innerHTML += `<div class="playContainer">
+        document.getElementById("profileBestPlay").innerHTML +=
+          `<div class="playContainer">
         <div class="playContainerLeft">
           <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${escapeHtml(difficulty)}</span>
           <img src="${cdn}/albums/50/${song.fileName}.webp" class="playAlbum" />
@@ -1283,23 +1429,36 @@ const profileUpdate = async (nickname, isMe) => {
       </div>`;
       }
     }
-    document.getElementsByClassName("profileMedalText")[0].textContent = profile.ap;
-    document.getElementsByClassName("profileMedalText")[1].textContent = profile.fc;
-    document.getElementsByClassName("profileMedalText")[2].textContent = profile.clear;
+    document.getElementsByClassName("profileMedalText")[0].textContent =
+      profile.ap;
+    document.getElementsByClassName("profileMedalText")[1].textContent =
+      profile.fc;
+    document.getElementsByClassName("profileMedalText")[2].textContent =
+      profile.clear;
     let labels = [];
     let date = Date.now();
     let rankHistory = JSON.parse(profile.rankHistory);
     for (let i = 0; i <= rankHistory.length; i++) {
       let day = new Date(date - 86400000 * i);
-      if (rankHistory.length == 0) labels.push(`${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate()}`.padStart(2, "0")}`);
-      labels.push(`${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate()}`.padStart(2, "0")}`);
+      if (rankHistory.length == 0)
+        labels.push(
+          `${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate()}`.padStart(2, "0")}`,
+        );
+      labels.push(
+        `${`${day.getMonth() + 1}`.padStart(2, "0")}-${`${day.getDate()}`.padStart(2, "0")}`,
+      );
     }
     labels.reverse();
     let data = [...rankHistory, rank];
     if (rankHistory.length == 0) data.push(rank);
     const chart = document.getElementById("rankChart");
     const chartCtx = chart.getContext("2d");
-    let gradientFill = chartCtx.createLinearGradient(0, 0, 0, document.getElementById("profileChart").clientHeight);
+    let gradientFill = chartCtx.createLinearGradient(
+      0,
+      0,
+      0,
+      document.getElementById("profileChart").clientHeight,
+    );
     gradientFill.addColorStop(0, "rgba(255, 255, 255, 0.5)");
     gradientFill.addColorStop(1, "rgba(255, 255, 255, 0)");
     if (chartVar) chartVar.destroy();
@@ -1349,7 +1508,6 @@ const profileUpdate = async (nickname, isMe) => {
   loadingOverlayHide();
 };
 
- 
 const showProfileBackground = (event) => {
   if (event.target.id === "profileContainer") {
     profileContentsContainer.classList.toggle("showBackground");
@@ -1371,25 +1529,25 @@ const fadeRate = (track, start, end, duration, time) => {
   });
 };
 
- 
 const langChanged = (e) => {
   window.location.href = `${url}/${encodeURIComponent(e.value)}`;
 };
 
- 
 const logout = () => {
   window.location.href = "/logout";
 };
 
- 
 const bannerToggle = (n) => {
   if (banners[n].indexOf("(-)") == -1) {
     banners[n] = banners[n] + "(-)";
     document.getElementsByClassName("bannerImage")[n].classList.add("hidden");
-    document.getElementsByClassName("bannerIcon")[n].src = "/icons/eye-closed.svg";
+    document.getElementsByClassName("bannerIcon")[n].src =
+      "/icons/eye-closed.svg";
   } else {
     banners[n] = banners[n].replace("(-)", "");
-    document.getElementsByClassName("bannerImage")[n].classList.remove("hidden");
+    document
+      .getElementsByClassName("bannerImage")
+      [n].classList.remove("hidden");
     document.getElementsByClassName("bannerIcon")[n].src = "/icons/eye.svg";
   }
   fetch(`${api}/profile/banner`, {
@@ -1415,7 +1573,6 @@ const bannerToggle = (n) => {
     });
 };
 
- 
 const settingChanged = (e, v) => {
   if (v == "detailLang") {
     settings.general.detailLang = e.value;
@@ -1426,15 +1583,18 @@ const settingChanged = (e, v) => {
   } else if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
     for (let i = 0; i <= 1; i++) {
-      document.getElementsByClassName("volumeMasterValue")[i].textContent = Math.round(e.value) + "%";
+      document.getElementsByClassName("volumeMasterValue")[i].textContent =
+        Math.round(e.value) + "%";
     }
     overlayTime = Date.now();
     setTimeout(() => {
       overlayClose("volume");
     }, 1500);
     Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
-    intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
-    intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
+    intro1video.volume =
+      settings.sound.volume.master * settings.sound.volume.music;
+    intro2video.volume =
+      settings.sound.volume.master * settings.sound.volume.music;
   } else if (v == "volumeSong") {
     settings.sound.volume.music = e.value / 100;
     volumeSongValue.textContent = Math.round(e.value) + "%";
@@ -1463,7 +1623,14 @@ const settingChanged = (e, v) => {
   } else if (v == "inputSize") {
     settings.game.size = e.value / 10;
     inputSizeValue.textContent = e.value / 10 + "x";
-  } else if (v == "Perfect" || v == "Great" || v == "Good" || v == "Bad" || v == "Miss" || v == "Bullet") {
+  } else if (
+    v == "Perfect" ||
+    v == "Great" ||
+    v == "Good" ||
+    v == "Bad" ||
+    v == "Miss" ||
+    v == "Bullet"
+  ) {
     settings.game.applyJudge[v] = e.checked;
   } else if (v == "frameCounter") {
     settings.game.counter = e.checked;
@@ -1478,7 +1645,6 @@ const settingChanged = (e, v) => {
   }
 };
 
- 
 const showProfile = (name) => {
   loadingShow();
   document.getElementById("infoProfileContainer").style.display = "flex";
@@ -1491,8 +1657,10 @@ const showProfile = (name) => {
     .then((data) => {
       let info = JSON.parse(data.data);
       document.getElementById("infoProfileName").textContent = info[0].name;
-      document.getElementById("infoProfilePosition").textContent = info[0].position;
-      document.getElementById("infoProfileImg").src = `images/credits/${info[0].profile}`;
+      document.getElementById("infoProfilePosition").textContent =
+        info[0].position;
+      document.getElementById("infoProfileImg").src =
+        `images/credits/${info[0].profile}`;
       let innerHTML = `<div class="infoProfilePart">
                           <img src="/icons/quote.svg" class="infoIcon">
                           <span id="quote">${info[0].quote}</span>
@@ -1533,23 +1701,35 @@ const showProfile = (name) => {
     });
 };
 
- 
 const optionSelect = (n) => {
-  document.getElementsByClassName("optionSelected")[0].classList.remove("optionSelected");
-  document.getElementsByClassName("optionSelectors")[n].classList.add("optionSelected");
-  document.getElementsByClassName("optionShow")[0].classList.remove("optionShow");
-  document.getElementsByClassName("optionContentsContainer")[n].classList.add("optionShow");
+  document
+    .getElementsByClassName("optionSelected")[0]
+    .classList.remove("optionSelected");
+  document
+    .getElementsByClassName("optionSelectors")
+    [n].classList.add("optionSelected");
+  document
+    .getElementsByClassName("optionShow")[0]
+    .classList.remove("optionShow");
+  document
+    .getElementsByClassName("optionContentsContainer")
+    [n].classList.add("optionShow");
 };
 
 const updateDetails = (n) => {
-  document.getElementById("bulletDensity").textContent = bulletDensities[difficultySelection];
-  document.getElementById("bulletDensityValue").style.width = `${bulletDensities[difficultySelection]}%`;
-  document.getElementById("noteDensity").textContent = noteDensities[difficultySelection];
-  document.getElementById("noteDensityValue").style.width = `${noteDensities[difficultySelection]}%`;
+  document.getElementById("bulletDensity").textContent =
+    bulletDensities[difficultySelection];
+  document.getElementById("bulletDensityValue").style.width =
+    `${bulletDensities[difficultySelection]}%`;
+  document.getElementById("noteDensity").textContent =
+    noteDensities[difficultySelection];
+  document.getElementById("noteDensityValue").style.width =
+    `${noteDensities[difficultySelection]}%`;
   document.getElementById("bpmText").textContent = bpm;
   document.getElementById("bpmValue").style.width = `${bpm / 3}%`;
   document.getElementById("speed").textContent = speeds[difficultySelection];
-  document.getElementById("speedValue").style.width = `${(speeds[difficultySelection] / 5) * 100}%`;
+  document.getElementById("speedValue").style.width =
+    `${(speeds[difficultySelection] / 5) * 100}%`;
   let starText = "";
   for (let i = 0; i < difficulties[difficultySelection]; i++) {
     starText += "★";
@@ -1558,9 +1738,13 @@ const updateDetails = (n) => {
     starText += "☆";
   }
   document.getElementById("selectStars").textContent = starText;
-  document.getElementById("selectScoreValue").textContent = numberWithCommas(`${trackRecords[n][difficultySelection].record}`.padStart(9, "0"));
+  document.getElementById("selectScoreValue").textContent = numberWithCommas(
+    `${trackRecords[n][difficultySelection].record}`.padStart(9, "0"),
+  );
   document.getElementsByClassName("ranks")[n].className = "ranks";
-  document.getElementsByClassName("ranks")[n].classList.add(trackRecords[n][difficultySelection].rank);
+  document
+    .getElementsByClassName("ranks")
+    [n].classList.add(trackRecords[n][difficultySelection].rank);
   let recordMedal = trackRecords[n][difficultySelection].medal;
   goldMedal.style.opacity = "0.1";
   silverMedal.style.opacity = "0.1";
@@ -1581,8 +1765,12 @@ const updateDetails = (n) => {
 const difficultySelected = (n, isInitializing) => {
   difficultySelection = n;
   localStorage.difficultySelection = n;
-  document.getElementsByClassName("difficultySelected")[0].classList.remove("difficultySelected");
-  document.getElementsByClassName("difficulty")[n].classList.add("difficultySelected");
+  document
+    .getElementsByClassName("difficultySelected")[0]
+    .classList.remove("difficultySelected");
+  document
+    .getElementsByClassName("difficulty")
+    [n].classList.add("difficultySelected");
   updateDetails(songSelection);
   updateRanks();
   if (localStorage.sort == "2" && !isInitializing) {
@@ -1594,11 +1782,11 @@ const showRank = () => {
   isRankOpened = true;
   display = 6;
   document.getElementById("selectRankContainer").style.opacity = "1";
-  document.getElementById("selectRankContainer").style.pointerEvents = "visible";
+  document.getElementById("selectRankContainer").style.pointerEvents =
+    "visible";
   document.getElementById("selectRankInnerContainer").classList.add("visible");
 };
 
- 
 const offsetSetting = () => {
   display = 7;
   document.getElementById("offsetContiner").style.display = "flex";
@@ -1620,7 +1808,8 @@ const offsetUpdate = () => {
   const audioLatency = (ctx?.outputLatency ?? 0) + (ctx?.baseLatency ?? 0);
   const seek = Math.max(0, offsetSong.seek() - audioLatency);
   const beatPosition = seek % beat;
-  const beatOffset = beatPosition <= beat / 1.5 ? beatPosition : beatPosition - beat;
+  const beatOffset =
+    beatPosition <= beat / 1.5 ? beatPosition : beatPosition - beat;
   const remain = (beatOffset * 1000) / offsetRate;
 
   const eraseColor = "#ffffff";
@@ -1644,12 +1833,19 @@ const offsetUpdate = () => {
   if (offsetInput) {
     offsetInputCircle.style.backgroundColor = fillColor;
     if (!offsetPrevInput) {
-      if (offsetAverage[offsetAverage.length - 1] - remain >= 50 || offsetAverage[offsetAverage.length - 1] + remain <= -50) {
+      if (
+        offsetAverage[offsetAverage.length - 1] - remain >= 50 ||
+        offsetAverage[offsetAverage.length - 1] + remain <= -50
+      ) {
         offsetAverage = [];
       }
       offsetAverage.push(parseInt(remain));
       let avr = 0;
-      for (let i = offsetAverage.length - 1; i >= (offsetAverage.length - 10 < 0 ? 0 : offsetAverage.length - 10); i--) {
+      for (
+        let i = offsetAverage.length - 1;
+        i >= (offsetAverage.length - 10 < 0 ? 0 : offsetAverage.length - 10);
+        i--
+      ) {
         avr += offsetAverage[i];
       }
       avr = avr / (offsetAverage.length >= 10 ? 10 : offsetAverage.length);
@@ -1676,7 +1872,6 @@ const offsetUpdate = () => {
   }
 };
 
- 
 const offsetSpeedUp = () => {
   offsetRate = Number((offsetRate + 0.1).toFixed(1));
   if (offsetRate > 2) offsetRate = 2;
@@ -1684,7 +1879,6 @@ const offsetSpeedUp = () => {
   offsetSpeedText.textContent = offsetRate + "x";
 };
 
- 
 const offsetSpeedDown = () => {
   offsetRate = Number((offsetRate - 0.1).toFixed(1));
   if (offsetRate <= 0) offsetRate = 0.1;
@@ -1692,7 +1886,6 @@ const offsetSpeedDown = () => {
   offsetSpeedText.textContent = offsetRate + "x";
 };
 
- 
 const offsetUp = () => {
   offset += 5;
   if (!offset) {
@@ -1702,7 +1895,6 @@ const offsetUp = () => {
   }
 };
 
- 
 const offsetDown = () => {
   offset -= 5;
   if (!offset) {
@@ -1712,29 +1904,26 @@ const offsetDown = () => {
   }
 };
 
- 
 const offsetReset = () => {
   offset = 0;
   offsetButtonText.textContent = "TAP";
   offsetAverage = [];
 };
 
- 
 const offsetButtonDown = () => {
   offsetInput = true;
 };
 
- 
 const offsetButtonUp = () => {
   offsetInput = false;
 };
 
- 
 const visualSyncSetting = () => {
   display = 13;
   document.getElementById("visualSyncContainer").style.display = "flex";
   document.getElementById("visualSyncContainer").classList.add("fadeInAnim");
-  document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
+  document.getElementById("visualSyncValueText").textContent =
+    visualSyncOffset + "ms";
 
   // Play offsetSong, same as the offset setting screen.
   if (songSelection != -1) {
@@ -1757,7 +1946,8 @@ const visualSyncSetting = () => {
 
     // Compute the audio based seek the same way offsetUpdate does.
     const howlerCtx = Howler.ctx;
-    const audioLatency = (howlerCtx?.outputLatency ?? 0) + (howlerCtx?.baseLatency ?? 0);
+    const audioLatency =
+      (howlerCtx?.outputLatency ?? 0) + (howlerCtx?.baseLatency ?? 0);
     const seek = Math.max(0, offsetSong.seek() - audioLatency);
 
     const cycle = beat * 2; // one note every two beats
@@ -1785,7 +1975,13 @@ const visualSyncSetting = () => {
     vsCtx.strokeStyle = "#373737";
     vsCtx.lineWidth = lineW;
     vsCtx.beginPath();
-    vsCtx.arc(0, 0, noteR, 1.5 * Math.PI, 1.5 * Math.PI + (safeP / 50) * Math.PI);
+    vsCtx.arc(
+      0,
+      0,
+      noteR,
+      1.5 * Math.PI,
+      1.5 * Math.PI + (safeP / 50) * Math.PI,
+    );
     vsCtx.stroke();
 
     vsCtx.fillStyle = "#373737";
@@ -1806,21 +2002,20 @@ const visualSyncSetting = () => {
   visualSyncAnimId = requestAnimationFrame(drawFrame);
 };
 
- 
 const visualSyncUp = () => {
   visualSyncOffset += 10;
-  document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
+  document.getElementById("visualSyncValueText").textContent =
+    visualSyncOffset + "ms";
   document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
 };
 
- 
 const visualSyncDown = () => {
   visualSyncOffset -= 10;
-  document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
+  document.getElementById("visualSyncValueText").textContent =
+    visualSyncOffset + "ms";
   document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
 };
 
- 
 const visualSyncReset = () => {
   visualSyncOffset = 0;
   document.getElementById("visualSyncValueText").textContent = "0ms";
@@ -1835,7 +2030,6 @@ const overlayClose = (s) => {
   }
 };
 
- 
 const couponEnter = () => {
   display = 12;
   overlayCodeContainer.style.pointerEvents = "all";
@@ -1898,7 +2092,6 @@ const rankToggle = () => {
   }
 };
 
- 
 const changeProfile = (e) => {
   if (profileid == username) {
     switch (e) {
@@ -1906,7 +2099,8 @@ const changeProfile = (e) => {
         let element = "";
         let options = "";
         for (let i = 0; i < alias.length; i++) {
-          if (ownedAlias.has(i)) options += `<option value="${i}"${i == aliasNum ? " selected" : ""}>${alias[i]}</option>`;
+          if (ownedAlias.has(i))
+            options += `<option value="${i}"${i == aliasNum ? " selected" : ""}>${alias[i]}</option>`;
         }
         iziToast.show({
           overlay: true,
@@ -1959,7 +2153,8 @@ const changeProfile = (e) => {
                     });
                 }
                 aliasNum = Number(element);
-                document.getElementById("profileBio").textContent = `| ${alias[aliasNum]}`;
+                document.getElementById("profileBio").textContent =
+                  `| ${alias[aliasNum]}`;
                 loadingOverlayHide();
               },
               true,
@@ -1987,7 +2182,11 @@ const changeProfile = (e) => {
             [
               "<button>Background</button>",
               (instance, toast) => {
-                instance.hide({ transitionOut: "fadeOut" }, toast, "background");
+                instance.hide(
+                  { transitionOut: "fadeOut" },
+                  toast,
+                  "background",
+                );
               },
             ],
           ],
@@ -1996,7 +2195,9 @@ const changeProfile = (e) => {
               let input = document.createElement("input");
               input.type = "file";
               input.accept = "image/*";
-              input.addEventListener("change", (event) => picLoaded(event, closedBy));
+              input.addEventListener("change", (event) =>
+                picLoaded(event, closedBy),
+              );
               input.click();
             }
           },
@@ -2006,7 +2207,6 @@ const changeProfile = (e) => {
   }
 };
 
- 
 const picLoaded = async (e, type) => {
   loadingOverlayShow();
   const file = e.target.files[0];
@@ -2038,11 +2238,17 @@ const picLoaded = async (e, type) => {
           title: "Success!",
         });
         if (type == "background") {
-          document.getElementById("profileImageContainer").style.backgroundImage = `url("${data.url}")`;
+          document.getElementById(
+            "profileImageContainer",
+          ).style.backgroundImage = `url("${data.url}")`;
           if (data.explicit) {
-            document.getElementById("profileImageContainer").classList.add("blur");
+            document
+              .getElementById("profileImageContainer")
+              .classList.add("blur");
           } else {
-            document.getElementById("profileImageContainer").classList.remove("blur");
+            document
+              .getElementById("profileImageContainer")
+              .classList.remove("blur");
           }
         } else {
           document.getElementById("profileImage").src = data.url;
@@ -2083,25 +2289,32 @@ const scrollEvent = (e) => {
       if (delta == 1) {
         //UP
         if (settings.sound.volume.master <= 0.95) {
-          settings.sound.volume.master = Math.round((settings.sound.volume.master + 0.05) * 100) / 100;
+          settings.sound.volume.master =
+            Math.round((settings.sound.volume.master + 0.05) * 100) / 100;
         } else {
           settings.sound.volume.master = 1;
         }
       } else {
         //DOWN
         if (settings.sound.volume.master >= 0.05) {
-          settings.sound.volume.master = Math.round((settings.sound.volume.master - 0.05) * 100) / 100;
+          settings.sound.volume.master =
+            Math.round((settings.sound.volume.master - 0.05) * 100) / 100;
         } else {
           settings.sound.volume.master = 0;
         }
       }
       for (let i = 0; i <= 1; i++) {
-        document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
-        document.getElementsByClassName("volumeMasterValue")[i].textContent = `${Math.round(settings.sound.volume.master * 100)}%`;
+        document.getElementsByClassName("volumeMaster")[i].value = Math.round(
+          settings.sound.volume.master * 100,
+        );
+        document.getElementsByClassName("volumeMasterValue")[i].textContent =
+          `${Math.round(settings.sound.volume.master * 100)}%`;
       }
       Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
-      intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
-      intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
+      intro1video.volume =
+        settings.sound.volume.master * settings.sound.volume.music;
+      intro2video.volume =
+        settings.sound.volume.master * settings.sound.volume.music;
       volumeOverlay.classList.add("overlayOpen");
       overlayTime = Date.now();
       setTimeout(() => {
@@ -2168,7 +2381,9 @@ document.addEventListener("keydown", (e) => {
       }
     } else if (key == "tab") {
       e.preventDefault();
-      difficultySelected(difficultySelection + 1 == 3 ? 0 : difficultySelection + 1);
+      difficultySelected(
+        difficultySelection + 1 == 3 ? 0 : difficultySelection + 1,
+      );
     } else if (key == "enter") {
       e.preventDefault();
       songSelected(songSelection);
@@ -2189,7 +2404,8 @@ document.addEventListener("keydown", (e) => {
       e.preventDefault();
       visualSyncOffset--;
     }
-    document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
+    document.getElementById("visualSyncValueText").textContent =
+      visualSyncOffset + "ms";
     document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
   }
 });
@@ -2289,8 +2505,12 @@ document.addEventListener("change", (event) => {
   if (action) action(target);
 });
 
-document.getElementById("offsetTapButton").addEventListener("mousedown", offsetButtonDown);
-document.getElementById("offsetTapButton").addEventListener("mouseup", offsetButtonUp);
+document
+  .getElementById("offsetTapButton")
+  .addEventListener("mousedown", offsetButtonDown);
+document
+  .getElementById("offsetTapButton")
+  .addEventListener("mouseup", offsetButtonUp);
 
 document.addEventListener("contextmenu", (event) => event.preventDefault());
 document.addEventListener("dragstart", (event) => event.preventDefault());

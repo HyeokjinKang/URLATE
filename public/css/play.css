@@ -1,7 +1,10 @@
 :root {
   --font-stack-base:
-    "Pretendard JP Variable", "Pretendard JP", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Hiragino Sans", "Apple SD Gothic Neo", Meiryo,
-    "Noto Sans JP", "Noto Sans KR", "Malgun Gothic", Osaka, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+    "Pretendard JP Variable", "Pretendard JP", Pretendard, -apple-system,
+    BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI",
+    "Hiragino Sans", "Apple SD Gothic Neo", Meiryo, "Noto Sans JP",
+    "Noto Sans KR", "Malgun Gothic", Osaka, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
   --font-montserrat: "Montserrat", var(--font-stack-base);
 }
 

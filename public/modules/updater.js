@@ -14,7 +14,13 @@ export default class Updater {
    * @param {number} baseSpeed - the song's base speed
    * @returns {{x: number, y: number, angle: number}}
    */
-  static bulletPos(bullet, currentBeat, triggers, baseSpeed, creationSpeed = null) {
+  static bulletPos(
+    bullet,
+    currentBeat,
+    triggers,
+    baseSpeed,
+    creationSpeed = null,
+  ) {
     let currentSpeed;
     let triggerStart;
     let triggerEnd;
@@ -73,7 +79,8 @@ export default class Updater {
     const result = out ?? {};
     result.progress = (1 - (note.beat - currentBeat) / renderDuration) * 100;
     result.tailProgress = ((currentBeat - note.beat) / note.duration) * 100;
-    result.endProgress = (1 - (note.beat + note.duration - currentBeat) / renderDuration) * 100;
+    result.endProgress =
+      (1 - (note.beat + note.duration - currentBeat) / renderDuration) * 100;
     return result;
   }
 
