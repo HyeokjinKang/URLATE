@@ -7,7 +7,7 @@ import prettier from "eslint-config-prettier/flat";
 export default defineConfig([
   {
     // Build output and vendored files aren't lint targets.
-    ignores: ["dist/**", "public/lib/**", "public/js/pace.js", "**/*.min.js"],
+    ignores: ["dist/**", "public/lib/**", "**/*.min.js"],
   },
   {
     // Server code.
