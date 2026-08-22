@@ -1,1 +1,8 @@
+# Build output and lockfiles aren't format targets.
+dist/
+pnpm-lock.yaml
+
+# Vendored files stay as-is.
 *.min.js
+*.min.css
+public/lib/

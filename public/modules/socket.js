@@ -48,7 +48,10 @@ socket.on("disconnect", (reason) => {
 socket.on("connect_error", (err) => {
   // The server rejects an unauthenticated handshake outright, so there is
   // nothing to retry here -- reconnecting would just loop.
-  if (err && (err.data?.code === "unauthorized" || err.message === "unauthorized")) {
+  if (
+    err &&
+    (err.data?.code === "unauthorized" || err.message === "unauthorized")
+  ) {
     socket.disconnect();
     alert(socketi18n.unauthorized);
     window.location.href = "/logout";
@@ -87,13 +90,17 @@ socket.on("achievement", (data) => {
   for (const achievement of data) {
     console.log(achievement.rewards);
     JSON.parse(achievement.rewards).forEach((reward) => {
-      [...document.getElementsByClassName("achievementOverlay")].forEach((element, i) => {
-        element.style.bottom = `${7 * (i + 1)}vh`;
-      });
+      [...document.getElementsByClassName("achievementOverlay")].forEach(
+        (element, i) => {
+          element.style.bottom = `${7 * (i + 1)}vh`;
+        },
+      );
       const div = document.createElement("div");
       div.classList.add("achievementOverlay");
       document.getElementById("achievementsContainer").appendChild(div);
-      document.getElementsByClassName("achievementOverlay")[achievementCount].innerHTML = `
+      document.getElementsByClassName("achievementOverlay")[
+        achievementCount
+      ].innerHTML = `
         <div class="achievementInner">
           <div class="achievementInnerLeft">
             <div class="achievementMedal">

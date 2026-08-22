@@ -3,7 +3,15 @@
  * Canvas drawing for the game.
  */
 import { Config, JudgeSkin, KeyInputColors, DiffColors } from "./constants.js";
-import { getSin, getCos, hexadecimal, easeInQuad, easeOutQuad, easeOutQuart, numberWithCommas } from "./utils.js";
+import {
+  getSin,
+  getCos,
+  hexadecimal,
+  easeInQuad,
+  easeOutQuad,
+  easeOutQuart,
+  numberWithCommas,
+} from "./utils.js";
 
 /** Takes the data and renders it into the canvas context. */
 export default class Renderer {
@@ -58,9 +66,17 @@ export default class Renderer {
       style = sizeMap.get(size);
       if (!style) {
         // A cached gradient is built relative to (x, y) as the origin (usually 0, 0)
-        style = ctx.createLinearGradient(x - size, y - size, x + size, y + size);
+        style = ctx.createLinearGradient(
+          x - size,
+          y - size,
+          x + size,
+          y + size,
+        );
         for (let s = 0; s < skinPart.stops.length; s++) {
-          style.addColorStop(skinPart.stops[s].percentage / 100, skinPart.stops[s].color);
+          style.addColorStop(
+            skinPart.stops[s].percentage / 100,
+            skinPart.stops[s].color,
+          );
         }
         sizeMap.set(size, style);
       }
@@ -100,7 +116,9 @@ export default class Renderer {
     this.CONFIG = {
       UI: {
         DEFAULT_FONT_SIZE: Math.round(refY * Config.UI.DEFAULT_FONT_SIZE),
-        DEBUG_TEXT_LINE_WIDTH: Math.round(refX * Config.UI.DEBUG_TEXT_LINE_WIDTH),
+        DEBUG_TEXT_LINE_WIDTH: Math.round(
+          refX * Config.UI.DEBUG_TEXT_LINE_WIDTH,
+        ),
         SCORE_PANEL: {
           X_BASE: Math.round(refX * Config.UI.SCORE_PANEL.X_BASE),
           Y_BASE: Math.round(refY * Config.UI.SCORE_PANEL.Y_BASE),
@@ -127,20 +145,30 @@ export default class Renderer {
       },
       FINAL_EFFECT: {
         BACKGROUND: {
-          FONT_SIZE: Math.round(refY * Config.FINAL_EFFECT.BACKGROUND.FONT_SIZE),
+          FONT_SIZE: Math.round(
+            refY * Config.FINAL_EFFECT.BACKGROUND.FONT_SIZE,
+          ),
           START_X: Math.round(refX * Config.FINAL_EFFECT.BACKGROUND.START_X),
           FINAL_X: Math.round(refX * Config.FINAL_EFFECT.BACKGROUND.FINAL_X),
           Y: Math.round(refY * Config.FINAL_EFFECT.BACKGROUND.Y),
         },
         MAIN: {
           LINE_WIDTH: Math.round(refX * Config.FINAL_EFFECT.MAIN.LINE_WIDTH),
-          FONT_SIZE_START: Math.round(refY * Config.FINAL_EFFECT.MAIN.FONT_SIZE_START),
-          FONT_SIZE_END: Math.round(refY * Config.FINAL_EFFECT.MAIN.FONT_SIZE_END),
+          FONT_SIZE_START: Math.round(
+            refY * Config.FINAL_EFFECT.MAIN.FONT_SIZE_START,
+          ),
+          FONT_SIZE_END: Math.round(
+            refY * Config.FINAL_EFFECT.MAIN.FONT_SIZE_END,
+          ),
         },
         OUTLINE: {
           LINE_WIDTH: Math.round(refX * Config.FINAL_EFFECT.OUTLINE.LINE_WIDTH),
-          FONT_SIZE_START: Math.round(refY * Config.FINAL_EFFECT.OUTLINE.FONT_SIZE_START),
-          FONT_SIZE_END: Math.round(refY * Config.FINAL_EFFECT.OUTLINE.FONT_SIZE_END),
+          FONT_SIZE_START: Math.round(
+            refY * Config.FINAL_EFFECT.OUTLINE.FONT_SIZE_START,
+          ),
+          FONT_SIZE_END: Math.round(
+            refY * Config.FINAL_EFFECT.OUTLINE.FONT_SIZE_END,
+          ),
         },
       },
     };
@@ -186,7 +214,14 @@ export default class Renderer {
   note(note, state) {
     const { ctx, skin } = this;
     const { x, y, value: type, direction } = note;
-    const { globalAlpha, progress, tailProgress, endProgress, isGrabbed, isSelected } = state;
+    const {
+      globalAlpha,
+      progress,
+      tailProgress,
+      endProgress,
+      isGrabbed,
+      isSelected,
+    } = state;
 
     // A finished note is not drawn
     if (type !== 2 && progress >= 130) return;
@@ -342,7 +377,13 @@ export default class Renderer {
         ctx.stroke();
       } else if (tailProgress <= 100) {
         // held
-        ctx.arc(0, 0, w, 1.5 * Math.PI + (tailProgress / 50) * Math.PI, 1.5 * Math.PI);
+        ctx.arc(
+          0,
+          0,
+          w,
+          1.5 * Math.PI + (tailProgress / 50) * Math.PI,
+          1.5 * Math.PI,
+        );
         ctx.lineTo(0, 0);
         ctx.fill();
         ctx.beginPath();
@@ -402,9 +443,17 @@ export default class Renderer {
         this.outlinedText(`Bullet_${bullet.debugIndex}`, cx, cy - 1.5 * w);
       }
       ctx.textBaseline = "top";
-      this.outlinedText(`(Angle: ${bullet.direction === "L" ? realAngle : realAngle - 180})`, cx, cy + 1.5 * w);
+      this.outlinedText(
+        `(Angle: ${bullet.direction === "L" ? realAngle : realAngle - 180})`,
+        cx,
+        cy + 1.5 * w,
+      );
       if (bullet.location !== undefined) {
-        this.outlinedText(`(Loc: ${bullet.location})`, cx, cy + 1.5 * w + this.CONFIG.UI.DEFAULT_FONT_SIZE);
+        this.outlinedText(
+          `(Loc: ${bullet.location})`,
+          cx,
+          cy + 1.5 * w + this.CONFIG.UI.DEFAULT_FONT_SIZE,
+        );
       }
 
       ctx.fillStyle = "#ebd534";
@@ -412,13 +461,16 @@ export default class Renderer {
     // (editor) object that was hit
     else if (isHit) {
       ctx.fillStyle = "#fb4934";
-    }
-    else {
+    } else {
       this.#applyStyle(skin.bullet, 0, 0, w, 100, false);
-      if (skin.bullet.outline) this.#applyStyle(skin.bullet.outline, 0, 0, w, 100, true);
+      if (skin.bullet.outline)
+        this.#applyStyle(skin.bullet.outline, 0, 0, w, 100, true);
     }
 
-    const visualAngleRad = Math.atan2(getSin(realAngle) * canvasH, getCos(realAngle) * canvasW);
+    const visualAngleRad = Math.atan2(
+      getSin(realAngle) * canvasH,
+      getCos(realAngle) * canvasW,
+    );
     const visualAngle = (visualAngleRad * 180) / Math.PI;
 
     ctx.save();
@@ -444,7 +496,8 @@ export default class Renderer {
     ctx.fillStyle = "#fff";
 
     let fontSize;
-    if (size.includes("vh")) fontSize = (canvasH / 100) * Number(size.split("vh")[0]) + "px";
+    if (size.includes("vh"))
+      fontSize = (canvasH / 100) * Number(size.split("vh")[0]) + "px";
     else fontSize = size;
 
     ctx.font = `${weight} ${fontSize} Montserrat, Pretendard JP Variable`;
@@ -482,7 +535,9 @@ export default class Renderer {
       } else {
         // eases back after release
         if (now < clickedMs + conf.RELEASE_ANIM_LENGTH) {
-          const progress = (clickedMs + conf.RELEASE_ANIM_LENGTH - now) / conf.RELEASE_ANIM_LENGTH;
+          const progress =
+            (clickedMs + conf.RELEASE_ANIM_LENGTH - now) /
+            conf.RELEASE_ANIM_LENGTH;
           w = w + adder * progress;
         }
       }
@@ -492,12 +547,14 @@ export default class Renderer {
     ctx.translate(cx, cy);
 
     this.#applyStyle(skin.cursor, 0, 0, w, 100, false);
-    if (skin.cursor.type === "gradient") ctx.shadowColor = skin.cursor.stops[0].color;
+    if (skin.cursor.type === "gradient")
+      ctx.shadowColor = skin.cursor.stops[0].color;
     else ctx.shadowColor = skin.cursor.color;
 
     if (skin.cursor.outline) {
       this.#applyStyle(skin.cursor.outline, 0, 0, w, 100, true);
-      if (skin.cursor.outline.type === "gradient") ctx.shadowColor = skin.cursor.outline.stops[0].color;
+      if (skin.cursor.outline.type === "gradient")
+        ctx.shadowColor = skin.cursor.outline.stops[0].color;
       else ctx.shadowColor = skin.cursor.outline.color;
     }
 
@@ -533,12 +590,18 @@ export default class Renderer {
       const deg = judgeKey == "miss" ? Config.JUDGE_EFFECT.MISS_ANIM_ROTATE : 0;
       const animDeg = deg * easeOutProgress;
 
-      const yAdder = judgeKey == "miss" ? Config.JUDGE_EFFECT.MISS_ANIM_Y_ADDER : Config.JUDGE_EFFECT.DEFAULT_ANIM_Y_ADDER;
+      const yAdder =
+        judgeKey == "miss"
+          ? Config.JUDGE_EFFECT.MISS_ANIM_Y_ADDER
+          : Config.JUDGE_EFFECT.DEFAULT_ANIM_Y_ADDER;
       const animY = -(canvasH / 1000) * yAdder * easeOutProgress;
 
       const opacity = Math.max(0, 100 - easeInProgress * 100);
 
-      const skinPart = isJudgeSkin && skin.judges[judgeKey] ? skin.judges[judgeKey] : JudgeSkin[judgeKey];
+      const skinPart =
+        isJudgeSkin && skin.judges[judgeKey]
+          ? skin.judges[judgeKey]
+          : JudgeSkin[judgeKey];
 
       ctx.save();
       ctx.beginPath();
@@ -585,10 +648,14 @@ export default class Renderer {
         styleTarget = skin.cursor.outline ? skin.cursor.outline : skin.cursor;
       }
 
-      const startW = this.CONFIG.CURSOR.SIZE + this.CONFIG.CURSOR.ANIM_SIZE_ADDER;
+      const startW =
+        this.CONFIG.CURSOR.SIZE + this.CONFIG.CURSOR.ANIM_SIZE_ADDER;
       const expandW = this.CONFIG.NOTE_CLICK_EFFECT.SIZE;
       const width = ~~(startW + expandW * easeOutProgress);
-      const lineWidth = ~~((1 - easeOutProgress) * this.CONFIG.NOTE_CLICK_EFFECT.LINE_WIDTH);
+      const lineWidth = ~~(
+        (1 - easeOutProgress) *
+        this.CONFIG.NOTE_CLICK_EFFECT.LINE_WIDTH
+      );
       const opacity = effectConf.OPACITY - easeInProgress * effectConf.OPACITY;
 
       if (lineWidth <= 0 || opacity <= 0 || width <= 0) continue;
@@ -657,7 +724,13 @@ export default class Renderer {
     const text = effectNum == 0 ? "ALL PERFECT" : "FULL COMBO";
     const p = easeOutQuart(Math.min(1, (now - effectMs) / duration));
 
-    const baseAlpha = Math.max(0, Math.min((now - effectMs) / 200, Math.min(1, (effectMs + duration - 500 - now) / 500)));
+    const baseAlpha = Math.max(
+      0,
+      Math.min(
+        (now - effectMs) / 200,
+        Math.min(1, (effectMs + duration - 500 - now) / 500),
+      ),
+    );
 
     ctx.save();
 
@@ -676,7 +749,12 @@ export default class Renderer {
     let effectX = ~~(effectStartX + (effectFinalX - effectStartX) * p);
     let effectY = -backgroundY;
 
-    let grd = ctx.createLinearGradient(effectX, effectY, effectX, effectY + backgroundSize);
+    let grd = ctx.createLinearGradient(
+      effectX,
+      effectY,
+      effectX,
+      effectY + backgroundSize,
+    );
     grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
     grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
     ctx.fillStyle = grd;
@@ -690,7 +768,12 @@ export default class Renderer {
     effectX = ~~(effectStartX + (effectFinalX - effectStartX) * p);
     effectY = canvasH + backgroundY;
 
-    grd = ctx.createLinearGradient(effectX, effectY - backgroundSize, effectX, effectY);
+    grd = ctx.createLinearGradient(
+      effectX,
+      effectY - backgroundSize,
+      effectX,
+      effectY,
+    );
     grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
     grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
     ctx.fillStyle = grd;
@@ -704,10 +787,13 @@ export default class Renderer {
 
     const mainTextSizeStart = this.CONFIG.FINAL_EFFECT.MAIN.FONT_SIZE_START;
     const mainTextSizeFinal = this.CONFIG.FINAL_EFFECT.MAIN.FONT_SIZE_END;
-    const outlineTextSizeStart = this.CONFIG.FINAL_EFFECT.OUTLINE.FONT_SIZE_START;
+    const outlineTextSizeStart =
+      this.CONFIG.FINAL_EFFECT.OUTLINE.FONT_SIZE_START;
     const outlineTextSizeFinal = this.CONFIG.FINAL_EFFECT.OUTLINE.FONT_SIZE_END;
-    const mainTextSize = mainTextSizeStart + (mainTextSizeFinal - mainTextSizeStart) * p;
-    const outlineTextSize = outlineTextSizeStart + (outlineTextSizeFinal - outlineTextSizeStart) * p;
+    const mainTextSize =
+      mainTextSizeStart + (mainTextSizeFinal - mainTextSizeStart) * p;
+    const outlineTextSize =
+      outlineTextSizeStart + (outlineTextSizeFinal - outlineTextSizeStart) * p;
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -716,7 +802,12 @@ export default class Renderer {
     let strokeStyle;
     if (effectNum == 0) {
       // All Perfect: Gradient
-      let g = ctx.createLinearGradient(mainTextX, ~~(mainTextY - outlineTextSize / 2), mainTextX, ~~(mainTextY + outlineTextSize / 2));
+      let g = ctx.createLinearGradient(
+        mainTextX,
+        ~~(mainTextY - outlineTextSize / 2),
+        mainTextX,
+        ~~(mainTextY + outlineTextSize / 2),
+      );
       g.addColorStop(0, "#f581ff");
       g.addColorStop(0.5, "#77B6F4");
       g.addColorStop(1, "#43DDA6");
@@ -805,7 +896,11 @@ export default class Renderer {
       const judge = keyInput[i].judge;
       let color = KeyInputColors[judge];
 
-      const boxX = canvasW * 0.08 - canvasH / 15 + (keyInput.length - i - 1) * (canvasW / 100 + canvasW / 200) - animX;
+      const boxX =
+        canvasW * 0.08 -
+        canvasH / 15 +
+        (keyInput.length - i - 1) * (canvasW / 100 + canvasW / 200) -
+        animX;
       const boxY = canvasH * 0.05;
       const boxSize = canvasW / 100;
 
@@ -964,7 +1059,11 @@ export default class Renderer {
     // Speed & BPM (bottom left)
     if (speed !== undefined && bpm !== undefined) {
       ctx.textAlign = "left";
-      ctx.fillText(`Speed : ${speed}, BPM : ${bpm}`, canvasW / 100, canvasH - canvasH / 60);
+      ctx.fillText(
+        `Speed : ${speed}, BPM : ${bpm}`,
+        canvasW / 100,
+        canvasH - canvasH / 60,
+      );
     }
 
     // FPS (bottom right)

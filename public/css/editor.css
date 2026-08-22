@@ -1,7 +1,10 @@
 :root {
   --font-stack-base:
-    "Pretendard JP Variable", "Pretendard JP", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Hiragino Sans", "Apple SD Gothic Neo", Meiryo,
-    "Noto Sans JP", "Noto Sans KR", "Malgun Gothic", Osaka, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+    "Pretendard JP Variable", "Pretendard JP", Pretendard, -apple-system,
+    BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI",
+    "Hiragino Sans", "Apple SD Gothic Neo", Meiryo, "Noto Sans JP",
+    "Noto Sans KR", "Malgun Gothic", Osaka, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
   --font-montserrat: "Montserrat", var(--font-stack-base);
   --font-metropolis: "Metropolis", var(--font-stack-base);
 }
@@ -141,24 +144,28 @@ body {
 }
 
 .icon {
-  filter: invert(35%) sepia(0%) saturate(0%) hue-rotate(64deg) brightness(92%) contrast(96%);
+  filter: invert(35%) sepia(0%) saturate(0%) hue-rotate(64deg) brightness(92%)
+    contrast(96%);
   width: 1.2vw;
 }
 
 .menuIcon {
-  filter: invert(70%) sepia(53%) saturate(0%) hue-rotate(222deg) brightness(100%) contrast(95%);
+  filter: invert(70%) sepia(53%) saturate(0%) hue-rotate(222deg)
+    brightness(100%) contrast(95%);
   width: 1.3vw;
   margin-top: 3vh;
 }
 
 .toolIcon {
-  filter: invert(70%) sepia(53%) saturate(0%) hue-rotate(222deg) brightness(100%) contrast(95%);
+  filter: invert(70%) sepia(53%) saturate(0%) hue-rotate(222deg)
+    brightness(100%) contrast(95%);
   width: 1.3vw;
   margin-top: 3vh;
 }
 
 .toolIcon:hover {
-  filter: invert(25%) sepia(0%) saturate(0%) hue-rotate(64deg) brightness(92%) contrast(96%);
+  filter: invert(25%) sepia(0%) saturate(0%) hue-rotate(64deg) brightness(92%)
+    contrast(96%);
 }
 
 .toolText {
@@ -169,7 +176,8 @@ body {
 }
 
 .menuSelected {
-  filter: invert(25%) sepia(0%) saturate(0%) hue-rotate(64deg) brightness(92%) contrast(96%);
+  filter: invert(25%) sepia(0%) saturate(0%) hue-rotate(64deg) brightness(92%)
+    contrast(96%);
 }
 
 .backIcon {
@@ -178,7 +186,8 @@ body {
 }
 
 #horizontalLine {
-  filter: invert(83%) sepia(53%) saturate(0%) hue-rotate(222deg) brightness(100%) contrast(95%);
+  filter: invert(83%) sepia(53%) saturate(0%) hue-rotate(222deg)
+    brightness(100%) contrast(95%);
   width: 2vw;
   height: 2px;
   background-color: #000;
@@ -511,7 +520,8 @@ body {
   align-items: center;
   bottom: 23.5vh;
   left: 1vw;
-  filter: invert(30%) sepia(0%) saturate(572%) hue-rotate(158deg) brightness(102%) contrast(86%);
+  filter: invert(30%) sepia(0%) saturate(572%) hue-rotate(158deg)
+    brightness(102%) contrast(86%);
 }
 
 #timelineSplitController {

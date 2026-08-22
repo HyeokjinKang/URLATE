@@ -5,7 +5,12 @@ let upperBound, lowerBound, numberWithCommas, easeOutSine;
 let Factory, Updater, Renderer;
 (async () => {
   try {
-    const [utils, factory, updater, renderer] = await Promise.all([import("../modules/utils.js"), import("../modules/factory.js"), import("../modules/updater.js"), import("../modules/renderer.js")]);
+    const [utils, factory, updater, renderer] = await Promise.all([
+      import("../modules/utils.js"),
+      import("../modules/factory.js"),
+      import("../modules/updater.js"),
+      import("../modules/renderer.js"),
+    ]);
 
     ({ upperBound, lowerBound, numberWithCommas, easeOutSine } = utils);
     Factory = factory.default;
@@ -21,12 +26,18 @@ let Factory, Updater, Renderer;
 const menuContainer = document.getElementById("menuContainer");
 const canvasContainer = document.getElementById("canvasContainer");
 const rankImg = document.getElementById("rankImg");
-const floatingArrowContainer = document.getElementById("floatingArrowContainer");
-const floatingResultContainer = document.getElementById("floatingResultContainer");
+const floatingArrowContainer = document.getElementById(
+  "floatingArrowContainer",
+);
+const floatingResultContainer = document.getElementById(
+  "floatingResultContainer",
+);
 const scoreContainer = document.getElementById("scoreContainer");
 const blackOverlayContainer = document.getElementById("blackOverlayContainer");
 const colorOverlayContainer = document.getElementById("colorOverlayContainer");
-const floatingResumeContainer = document.getElementById("floatingResumeContainer");
+const floatingResumeContainer = document.getElementById(
+  "floatingResumeContainer",
+);
 const volumeMasterValue = document.getElementById("volumeMasterValue");
 const volumeOverlay = document.getElementById("volumeOverlay");
 const canvas = document.getElementById("componentCanvas");
@@ -122,7 +133,8 @@ let canvasW = 0,
   canvasH = 0,
   canvasOW = 0,
   canvasOH = 0;
-const FONT_STACK = "Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
+const FONT_STACK =
+  "Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
 let UIFontNormal = "";
 const albumImg = new Image();
 
@@ -150,7 +162,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-const calcBeats = (seek = song.seek() * 1000) => Number((bpmsync.beat + (seek - (offset + sync + audioLatency * 1000) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+const calcBeats = (seek = song.seek() * 1000) =>
+  Number(
+    (
+      bpmsync.beat +
+      (seek - (offset + sync + audioLatency * 1000) - bpmsync.ms) /
+        (60000 / bpm)
+    ).toPrecision(10),
+  );
 
 const calcBulletCreationSpeeds = () =>
   pattern.bullets.map((b) => {
@@ -164,7 +183,8 @@ const calcBulletCreationSpeeds = () =>
 
 const initialize = (isFirstCalled) => {
   canvasW = (window.innerWidth * pixelRatio * settings.display.canvasRes) / 100;
-  canvasH = (window.innerHeight * pixelRatio * settings.display.canvasRes) / 100;
+  canvasH =
+    (window.innerHeight * pixelRatio * settings.display.canvasRes) / 100;
   canvas.width = canvasW;
   canvas.height = canvasH;
   UIFontNormal = `500 ${canvasH / 30}px ${FONT_STACK}`;
@@ -210,22 +230,33 @@ const initialize = (isFirstCalled) => {
         document.getElementById("scoreDifficultyName").textContent = "Mode";
         document.getElementById("albumDifficulty").textContent = "Tutorial";
         document.getElementById("albumDifficultyNum").textContent = "Mode";
-        document.getElementById("artist").textContent = pattern.information.producer;
-        document.getElementById("scoreArtist").textContent = pattern.information.producer;
-        document.getElementById("authorNamespace").textContent = pattern.information.author;
+        document.getElementById("artist").textContent =
+          pattern.information.producer;
+        document.getElementById("scoreArtist").textContent =
+          pattern.information.producer;
+        document.getElementById("authorNamespace").textContent =
+          pattern.information.author;
         document.getElementById("scoreTitle").textContent = "Tutorial";
         document.getElementById("title").textContent = "Tutorial";
-        document.getElementById("albumContainer").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-        document.getElementById("canvasBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-        document.getElementById("scoreBackground").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-        document.getElementById("scoreAlbum").style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
+        document.getElementById("albumContainer").style.backgroundImage =
+          `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
+        document.getElementById("canvasBackground").style.backgroundImage =
+          `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
+        document.getElementById("scoreBackground").style.backgroundImage =
+          `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
+        document.getElementById("scoreAlbum").style.backgroundImage =
+          `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
         albumImg.src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.webp`;
       });
     fetch(`${cdn}/skins/${settings.game.skin}.json`)
       .then((res) => res.json())
       .then((data) => {
         skin = data;
-        Draw = new Renderer(ctx, { canvasW, canvasH, cursorZoom: settings.game.size }, skin);
+        Draw = new Renderer(
+          ctx,
+          { canvasW, canvasH, cursorZoom: settings.game.size },
+          skin,
+        );
       })
       .catch((error) => {
         alert(`Error occured.\n${error}`);
@@ -271,7 +302,8 @@ const settingApply = () => {
   hide.miss = settings.game.applyJudge.Miss;
   frameCounter = settings.game.counter;
   volumeMasterInput.value = Math.round(settings.sound.volume.master * 100);
-  volumeMasterValue.textContent = Math.round(settings.sound.volume.master * 100) + "%";
+  volumeMasterValue.textContent =
+    Math.round(settings.sound.volume.master * 100) + "%";
 };
 
 const playSong = () => {
@@ -349,7 +381,10 @@ const cntRender = () => {
 
     const renderTexts = [];
 
-    while (currentTriggerIndex < pattern.triggers.length && pattern.triggers[currentTriggerIndex].beat <= beats) {
+    while (
+      currentTriggerIndex < pattern.triggers.length &&
+      pattern.triggers[currentTriggerIndex].beat <= beats
+    ) {
       const trigger = pattern.triggers[currentTriggerIndex];
       if (trigger.value == 0) {
         if (!destroyedBullets.has(trigger.num)) {
@@ -376,7 +411,10 @@ const cntRender = () => {
     let textStart = lowerBound(pattern.triggers, beats - 32);
     for (let i = textStart; i < textEnd; i++) {
       if (pattern.triggers[i].value == 5) {
-        if (pattern.triggers[i].beat <= beats && beats <= pattern.triggers[i].beat + pattern.triggers[i].duration) {
+        if (
+          pattern.triggers[i].beat <= beats &&
+          beats <= pattern.triggers[i].beat + pattern.triggers[i].duration
+        ) {
           renderTexts.push(pattern.triggers[i]);
         }
       }
@@ -393,27 +431,66 @@ const cntRender = () => {
     for (let i = start; i < end; i++) {
       const p = (1 - (pattern.patterns[i].beat - beats) / renderDuration) * 100;
       if (p >= 50) {
-        trackMouseSelection(i, 0, pattern.patterns[i].value, pattern.patterns[i].x, pattern.patterns[i].y, beats, seekMs);
+        trackMouseSelection(
+          i,
+          0,
+          pattern.patterns[i].value,
+          pattern.patterns[i].x,
+          pattern.patterns[i].y,
+          beats,
+          seekMs,
+        );
       }
     }
-    const _noteState = { progress: 0, tailProgress: 0, endProgress: 0, globalAlpha, isGrabbed: false };
+    const _noteState = {
+      progress: 0,
+      tailProgress: 0,
+      endProgress: 0,
+      globalAlpha,
+      isGrabbed: false,
+    };
     for (let i = end - 1; i >= start; i--) {
       Updater.noteProgress(pattern.patterns[i], beats, speed, _noteState);
       _noteState.globalAlpha = globalAlpha;
       _noteState.isGrabbed = grabbedNotes.has(i);
       Draw.note(pattern.patterns[i], _noteState);
 
-      if (_noteState.progress >= 120 && !destroyedNotes.has(i) && (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)) {
+      if (
+        _noteState.progress >= 120 &&
+        !destroyedNotes.has(i) &&
+        (pattern.patterns[i].value == 2
+          ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`))
+          : true)
+      ) {
         calculateScore("miss", i, true);
-        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Miss"));
+        judgeParticles.push(
+          Factory.createJudge(
+            pattern.patterns[i].x,
+            pattern.patterns[i].y,
+            judgeSkin,
+            "Miss",
+          ),
+        );
         miss++;
         showOverlay();
         missPoint.push(seekMs);
         keyInput.push({ judge: "Miss", key: "-", time: now });
-      } else if (_noteState.tailProgress >= 100 && grabbedNotes.has(i) && !grabbedNotes.has(`${i}!`) && pattern.patterns[i].value == 2) {
+      } else if (
+        _noteState.tailProgress >= 100 &&
+        grabbedNotes.has(i) &&
+        !grabbedNotes.has(`${i}!`) &&
+        pattern.patterns[i].value == 2
+      ) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
-        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Perfect"));
+        judgeParticles.push(
+          Factory.createJudge(
+            pattern.patterns[i].x,
+            pattern.patterns[i].y,
+            judgeSkin,
+            "Perfect",
+          ),
+        );
         calculateScore("Perfect", i, true);
         keyInput.push({ judge: "Perfect", key: "-", time: now });
       }
@@ -424,7 +501,13 @@ const cntRender = () => {
       if (!destroyedBullets.has(i) || explodingBullets.has(i)) {
         const bullet = pattern.bullets[i];
 
-        const pos = Updater.bulletPos(bullet, beats, pattern.triggers, pattern.information.speed, bulletCreationSpeeds[i]);
+        const pos = Updater.bulletPos(
+          bullet,
+          beats,
+          pattern.triggers,
+          pattern.information.speed,
+          bulletCreationSpeeds[i],
+        );
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
           destroyParticles.push(...Factory.createExplosions(pos.x, pos.y));
@@ -474,7 +557,10 @@ const cntRender = () => {
     Draw.systemInfoUI({ speed: nowSpeed, bpm, fps: displayFPS });
     Draw.progressBarUI(percentage);
 
-    Draw.cursor({ x: mouseX, y: mouseY }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
+    Draw.cursor(
+      { x: mouseX, y: mouseY },
+      { isClicked: mouseClicked != false, clickedMs: mouseClickedMs },
+    );
 
     if (effectMs != 0 && effectNum != -1) {
       Draw.finalEffect(effectNum, effectMs);
@@ -509,9 +595,15 @@ const calculateResult = () => {
   document.getElementById("badResult").textContent = bad;
   document.getElementById("missResult").textContent = miss;
   document.getElementById("bulletResult").textContent = bullet;
-  document.getElementById("scoreText").textContent = numberWithCommas(`${score}`);
+  document.getElementById("scoreText").textContent = numberWithCommas(
+    `${score}`,
+  );
   document.getElementById("comboText").textContent = `${maxCombo}x`;
-  let accuracy = (((perfect + (great / 10) * 7 + good / 2 + (bad / 10) * 3) / (perfect + great + good + bad + miss + bullet)) * 100).toFixed(1);
+  let accuracy = (
+    ((perfect + (great / 10) * 7 + good / 2 + (bad / 10) * 3) /
+      (perfect + great + good + bad + miss + bullet)) *
+    100
+  ).toFixed(1);
   document.getElementById("accuracyText").textContent = `${accuracy}%`;
   let rank;
   if (accuracy >= 98 && bad == 0 && miss == 0 && bullet == 0) {
@@ -529,7 +621,12 @@ const calculateResult = () => {
     rank = "F";
   }
   rankImg.src = `/images/parts/elements/${rank}.webp`;
-  document.getElementById("scoreInfoRank").style.setProperty("--background", `url('/images/parts/elements/${rank}back.webp')`);
+  document
+    .getElementById("scoreInfoRank")
+    .style.setProperty(
+      "--background",
+      `url('/images/parts/elements/${rank}back.webp')`,
+    );
   setTimeout(
     () => {
       canvasContainer.style.opacity = "0";
@@ -570,7 +667,13 @@ const calculateResult = () => {
   missCtx.lineWidth = 2;
   for (let i = 0; i < missPoint.length; i++) {
     missCtx.beginPath();
-    missCtx.arc(missCanvas.width * (missPoint[i] / length), missCanvas.height * 0.8, missCanvas.height * 0.1, 0, 2 * Math.PI);
+    missCtx.arc(
+      missCanvas.width * (missPoint[i] / length),
+      missCanvas.height * 0.8,
+      missCanvas.height * 0.1,
+      0,
+      2 * Math.PI,
+    );
     missCtx.fill();
     missCtx.stroke();
   }
@@ -579,7 +682,11 @@ const calculateResult = () => {
     missCtx.font = UIFontNormal;
     missCtx.textAlign = "right";
     missCtx.textBaseline = "bottom";
-    missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
+    missCtx.fillText(
+      "Perfect!",
+      missCanvas.width - 10,
+      missCanvas.height * 0.8 - 10,
+    );
   }
   fetch(`${api}/tutorial`, {
     method: "PUT",
@@ -599,14 +706,28 @@ const calculateResult = () => {
 
 const trackMouseSelection = (i, v1, v2, x, y, beats, seekMs) => {
   if (song.playing()) {
-    const powX = ((((mouseX - x) * canvasOW) / 200) * pixelRatio * settings.display.canvasRes) / 100;
-    const powY = ((((mouseY - y) * canvasOH) / 200) * pixelRatio * settings.display.canvasRes) / 100;
+    const powX =
+      ((((mouseX - x) * canvasOW) / 200) *
+        pixelRatio *
+        settings.display.canvasRes) /
+      100;
+    const powY =
+      ((((mouseY - y) * canvasOH) / 200) *
+        pixelRatio *
+        settings.display.canvasRes) /
+      100;
     const distSq = powX * powX + powY * powY;
     switch (v1) {
       case 0: {
         const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
-        const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
-        if (distSq <= (canvasW / 40) * (canvasW / 40) && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 130) && p >= 0) {
+        const t =
+          ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) *
+          100;
+        if (
+          distSq <= (canvasW / 40) * (canvasW / 40) &&
+          (pattern.patterns[i].value == 2 ? t <= 100 : p <= 130) &&
+          p >= 0
+        ) {
           pointingCntElement.push({ v1, v2, i });
         }
         break;
@@ -630,7 +751,11 @@ const trackMouseSelection = (i, v1, v2, x, y, beats, seekMs) => {
         ctx.fillStyle = "#F55";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
-        ctx.fillText(`trackMouseSelection:Undefined element.`, canvasW / 100, canvasH / 100);
+        ctx.fillText(
+          `trackMouseSelection:Undefined element.`,
+          canvasW / 100,
+          canvasH / 100,
+        );
         console.error(`trackMouseSelection:Undefined element.`);
     }
   }
@@ -644,7 +769,12 @@ const showOverlay = () => {
 };
 
 const compClicked = (isTyped, key, isWheel) => {
-  if ((!isTyped && !settings.input.mouse && !isWheel) || isMenuOpened || !menuAllowed || mouseClicked == key) {
+  if (
+    (!isTyped && !settings.input.mouse && !isWheel) ||
+    isMenuOpened ||
+    !menuAllowed ||
+    mouseClicked == key
+  ) {
     return;
   }
   if (!song.playing() && isPaused) {
@@ -683,7 +813,10 @@ const compClicked = (isTyped, key, isWheel) => {
         } else if (beats >= beat - goodJudge && beats <= beat) {
           judge = "Good";
           good++;
-        } else if ((beats >= beat - badJudge && beats <= beat) || beat <= beats) {
+        } else if (
+          (beats >= beat - badJudge && beats <= beat) ||
+          beat <= beats
+        ) {
           judge = "Bad";
           bad++;
         } else {
@@ -698,11 +831,19 @@ const compClicked = (isTyped, key, isWheel) => {
       }
       calculateScore(judge, el.i);
       judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge));
-      keyInput.push({ judge, key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
+      keyInput.push({
+        judge,
+        key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•",
+        time: Date.now(),
+      });
       return;
     }
   }
-  keyInput.push({ judge: "Empty", key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•", time: Date.now() });
+  keyInput.push({
+    judge: "Empty",
+    key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•",
+    time: Date.now(),
+  });
   clickParticles.push(Factory.createClickDefault(mouseX, mouseY));
 };
 
@@ -749,9 +890,17 @@ const calculateScore = (judge, i, ignoreMs) => {
     comboAlertCount = combo;
   }
   if (i == patternLength - 1) {
-    if (pattern.bullets.length) destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
+    if (pattern.bullets.length)
+      destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
     effectMs = Date.now();
-    if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
+    if (
+      perfect != 0 &&
+      great == 0 &&
+      good == 0 &&
+      bad == 0 &&
+      miss == 0 &&
+      bullet == 0
+    ) {
       effectNum = 0;
     } else if (bad == 0 && miss == 0 && bullet == 0) {
       effectNum = 1;
@@ -778,7 +927,8 @@ const doneLoading = () => {
     });
     setTimeout(() => {
       document.getElementById("loadingContainer").style.display = "none";
-      document.getElementById("componentCanvas").style.transitionDuration = "0s";
+      document.getElementById("componentCanvas").style.transitionDuration =
+        "0s";
       menuAllowed = true;
     }, 1000);
     setTimeout(() => {
@@ -815,7 +965,6 @@ const resume = () => {
   floatingResumeContainer.style.opacity = 1;
 };
 
- 
 const retry = () => {
   if (isResultShowing) return location.reload();
   blackOverlayContainer.classList.add("show");
@@ -876,7 +1025,6 @@ const retry = () => {
   }, 100);
 };
 
- 
 const home = () => {
   if (confirm(confirmExit)) {
     fetch(`${api}/tutorial`, {
@@ -898,7 +1046,6 @@ const home = () => {
   }
 };
 
- 
 const settingChanged = (e, v) => {
   if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
@@ -920,7 +1067,6 @@ const overlayClose = (s) => {
   }
 };
 
- 
 const finish = () => {
   window.location.href = `${url}/game?initialize=0`;
 };
@@ -942,14 +1088,16 @@ const globalScrollEvent = (e) => {
       if (delta == 1) {
         //UP
         if (settings.sound.volume.master <= 0.95) {
-          settings.sound.volume.master = Math.round((settings.sound.volume.master + 0.05) * 100) / 100;
+          settings.sound.volume.master =
+            Math.round((settings.sound.volume.master + 0.05) * 100) / 100;
         } else {
           settings.sound.volume.master = 1;
         }
       } else {
         //DOWN
         if (settings.sound.volume.master >= 0.05) {
-          settings.sound.volume.master = Math.round((settings.sound.volume.master - 0.05) * 100) / 100;
+          settings.sound.volume.master =
+            Math.round((settings.sound.volume.master - 0.05) * 100) / 100;
         } else {
           settings.sound.volume.master = 0;
         }
@@ -1009,21 +1157,46 @@ const checkHoldNote = (key) => {
   const beats = calcBeats();
   mouseClicked = false;
   mouseClickedMs = date;
-  if (pressingKeys.includes(key)) pressingKeys.splice(pressingKeys.indexOf(key), 1);
-  if (Object.hasOwn(keyPressing, key) && grabbedNotes.has(keyPressing[key]) && !grabbedNotes.has(`${keyPressing[key]}!`)) {
+  if (pressingKeys.includes(key))
+    pressingKeys.splice(pressingKeys.indexOf(key), 1);
+  if (
+    Object.hasOwn(keyPressing, key) &&
+    grabbedNotes.has(keyPressing[key]) &&
+    !grabbedNotes.has(`${keyPressing[key]}!`)
+  ) {
     grabbedNotes.delete(keyPressing[key]);
     grabbedNotes.add(`${keyPressing[key]}!`);
-    if (pattern.patterns[keyPressing[key]].beat + pattern.patterns[keyPressing[key]].duration - 1 / 3 > beats) {
+    if (
+      pattern.patterns[keyPressing[key]].beat +
+        pattern.patterns[keyPressing[key]].duration -
+        1 / 3 >
+      beats
+    ) {
       medalCheck(medal);
-      pattern.patterns[keyPressing[key]].beat = beats - pattern.patterns[keyPressing[key]].duration;
+      pattern.patterns[keyPressing[key]].beat =
+        beats - pattern.patterns[keyPressing[key]].duration;
       calculateScore("Miss", keyPressing[key], true);
-      judgeParticles.push(Factory.createJudge(pattern.patterns[keyPressing[key]].x, pattern.patterns[keyPressing[key]].y, judgeSkin, "Miss"));
+      judgeParticles.push(
+        Factory.createJudge(
+          pattern.patterns[keyPressing[key]].x,
+          pattern.patterns[keyPressing[key]].y,
+          judgeSkin,
+          "Miss",
+        ),
+      );
       miss++;
       showOverlay();
       missPoint.push(song.seek() * 1000);
       keyInput.push({ judge: "Miss", key: "-", time: date });
     } else {
-      judgeParticles.push(Factory.createJudge(pattern.patterns[keyPressing[key]].x, pattern.patterns[keyPressing[key]].y, judgeSkin, "Perfect"));
+      judgeParticles.push(
+        Factory.createJudge(
+          pattern.patterns[keyPressing[key]].x,
+          pattern.patterns[keyPressing[key]].y,
+          judgeSkin,
+          "Perfect",
+        ),
+      );
       calculateScore("Perfect", keyPressing[key], true);
       keyInput.push({ judge: "Perfect", key: "-", time: date });
     }
@@ -1094,13 +1267,19 @@ window.addEventListener("blur", () => {
 });
 
 window.addEventListener("wheel", globalScrollEvent);
-document.getElementById("componentCanvas").addEventListener("pointermove", trackMousePos);
-document.getElementById("componentCanvas").addEventListener("mousedown", (event) => {
-  compClicked(false, `${event.button}mouse`, false);
-});
-document.getElementById("componentCanvas").addEventListener("mouseup", (event) => {
-  checkHoldNote(`${event.button}mouse`);
-});
+document
+  .getElementById("componentCanvas")
+  .addEventListener("pointermove", trackMousePos);
+document
+  .getElementById("componentCanvas")
+  .addEventListener("mousedown", (event) => {
+    compClicked(false, `${event.button}mouse`, false);
+  });
+document
+  .getElementById("componentCanvas")
+  .addEventListener("mouseup", (event) => {
+    checkHoldNote(`${event.button}mouse`);
+  });
 
 document.addEventListener("contextmenu", (event) => event.preventDefault());
 document.addEventListener("dragstart", (event) => event.preventDefault());

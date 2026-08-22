@@ -71,7 +71,10 @@ const check = () => {
           window.location.href = `${projectUrl}/game`;
         } else {
           // A rejection the user fixes by changing the name stays next to the field.
-          const reason = { "Exist Name": joini18n.nameExist, "Reserved Name": joini18n.nameReserved }[data.error];
+          const reason = {
+            "Exist Name": joini18n.nameExist,
+            "Reserved Name": joini18n.nameReserved,
+          }[data.error];
           if (reason) {
             const el = document.getElementById("nameExist");
             el.textContent = reason;

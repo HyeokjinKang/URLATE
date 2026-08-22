@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { logger } from "./logger";
 
+// config.json differs per deployment, so it can't be a static import target.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const config = require(__dirname + "/../config/config.json");
 
 /**
@@ -42,7 +44,10 @@ export const setStaticPageCsp = (res: Response): void => {
   res.setHeader("Content-Security-Policy", STATIC_PAGE_CSP);
 };
 
-const MESSAGES: Record<number, { key: string; title: string; description: string }> = {
+const MESSAGES: Record<
+  number,
+  { key: string; title: string; description: string }
+> = {
   404: {
     key: "error_404",
     title: "Page not found",
@@ -51,12 +56,14 @@ const MESSAGES: Record<number, { key: string; title: string; description: string
   429: {
     key: "error_429",
     title: "Too many requests",
-    description: "Requests came in faster than we allow. Please wait a moment and try again.",
+    description:
+      "Requests came in faster than we allow. Please wait a moment and try again.",
   },
   503: {
     key: "error_503",
     title: "Service unavailable",
-    description: "Something we depend on is not responding. Please try again in a moment.",
+    description:
+      "Something we depend on is not responding. Please try again in a moment.",
   },
   500: {
     key: "error_500",
@@ -71,10 +78,18 @@ const MESSAGES: Record<number, { key: string; title: string; description: string
  * Browser navigations get a page, everything else gets JSON: this server serves
  * both pages and the upload API, so neither format can be the only one.
  */
-export const sendError = (req: Request, res: Response, status: number): void => {
+export const sendError = (
+  req: Request,
+  res: Response,
+  status: number,
+): void => {
   const message = MESSAGES[status] ?? MESSAGES[500];
   const title = translate(res, `${message.key}_title`, message.title);
-  const description = translate(res, `${message.key}_desc`, message.description);
+  const description = translate(
+    res,
+    `${message.key}_desc`,
+    message.description,
+  );
 
   res.status(status);
   // req.accepts honours the order of the Accept header. fetch/XHR usually asks
@@ -112,7 +127,12 @@ export function notFoundHandler(req: Request, res: Response): void {
   sendError(req, res, 404);
 }
 
-export function errorHandler(err: any, req: Request, res: Response, next: NextFunction): void {
+export function errorHandler(
+  err: unknown,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
   logger.error("Request error occurred", err, {
     method: req.method,
     url: req.url,
@@ -129,6 +149,12 @@ export function errorHandler(err: any, req: Request, res: Response, next: NextFu
   // The stack never goes into a response: it carries absolute paths and dependency
   // versions, and the pm2 config sets no NODE_ENV, so branching on that would leak
   // it in production too.
-  const statusCode = err.statusCode || err.status || 500;
+  // Error object shape isn't guaranteed, so narrow before reading it.
+  const { statusCode: sc, status } = (err ?? {}) as {
+    statusCode?: unknown;
+    status?: unknown;
+  };
+  const candidate = typeof sc === "number" ? sc : status;
+  const statusCode = typeof candidate === "number" ? candidate : 500;
   sendError(req, res, statusCode >= 400 && statusCode < 600 ? statusCode : 500);
 }

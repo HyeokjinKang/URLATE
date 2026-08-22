@@ -11,7 +11,8 @@ import { logger } from "./logger";
 import { URL } from "url";
 import { randomUUID } from "crypto";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// config.json differs per deployment, so it can't be a static import target.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const config = require(__dirname + "/../config/config.json");
 
 // node-fetch has no default timeout: a hung backend would pin the request handler.
@@ -31,7 +32,10 @@ const uploadLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-const BUNNY_PATH = String(config.bunny?.path ?? "profiles").replace(/^\/+|\/+$/g, "");
+const BUNNY_PATH = String(config.bunny?.path ?? "profiles").replace(
+  /^\/+|\/+$/g,
+  "",
+);
 
 // A storage upload pushes up to 3MB over the network, so it needs more room than
 // a backend call.
@@ -39,16 +43,19 @@ const BUNNY_TIMEOUT_MS = 15000;
 
 // Only files we uploaded may be deleted. A name that does not match may be a
 // default image or an avatar we do not own.
-const PROFILE_FILENAME = /^[0-9]+-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$/;
+const PROFILE_FILENAME =
+  /^[0-9]+-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$/;
 
 // Never deleted, whatever a profile points at. pfp.webp is the shared default
 // picture: removing it would blank out every user still on it.
 const PROTECTED_FILENAMES = new Set(["pfp.webp"]);
 
-const bunnyStorageUrl = (filename: string) => `https://${config.bunny.endpoint}/${config.bunny.storageZone}/${BUNNY_PATH}/${filename}`;
+const bunnyStorageUrl = (filename: string) =>
+  `https://${config.bunny.endpoint}/${config.bunny.storageZone}/${BUNNY_PATH}/${filename}`;
 
 // The address browsers fetch: a pull zone sits in front of the storage zone.
-const bunnyPublicUrl = (filename: string) => `${config.project.cdn}/${BUNNY_PATH}/${filename}`;
+const bunnyPublicUrl = (filename: string) =>
+  `${config.project.cdn}/${BUNNY_PATH}/${filename}`;
 
 const uploadToBunny = async (filename: string, buffer: Buffer) => {
   const response = await fetch(bunnyStorageUrl(filename), {
@@ -60,7 +67,8 @@ const uploadToBunny = async (filename: string, buffer: Buffer) => {
     body: buffer,
     signal: AbortSignal.timeout(BUNNY_TIMEOUT_MS),
   });
-  if (!response.ok) throw new Error(`BunnyCDN storage responded with ${response.status}`);
+  if (!response.ok)
+    throw new Error(`BunnyCDN storage responded with ${response.status}`);
 };
 
 const deleteFromBunny = async (filename: string) => {
@@ -70,15 +78,23 @@ const deleteFromBunny = async (filename: string) => {
     signal: AbortSignal.timeout(BUNNY_TIMEOUT_MS),
   });
   // A file that is already gone answers 404, which is the state we wanted.
-  if (!response.ok && response.status !== 404) throw new Error(`BunnyCDN storage responded with ${response.status}`);
+  if (!response.ok && response.status !== 404)
+    throw new Error(`BunnyCDN storage responded with ${response.status}`);
 };
 
 // Once the file is in the storage zone, a later failure would leave it there
 // unreferenced. Clean up behind the response instead of holding it.
-const discardUpload = (filename: string | null, context: Record<string, unknown>) => {
+const discardUpload = (
+  filename: string | null,
+  context: Record<string, unknown>,
+) => {
   if (!filename) return;
   deleteFromBunny(filename).catch((err) => {
-    logger.warn("Failed to remove a rejected upload from BunnyCDN", { ...context, filename, error: err });
+    logger.warn("Failed to remove a rejected upload from BunnyCDN", {
+      ...context,
+      filename,
+      error: err,
+    });
   });
 };
 
@@ -92,7 +108,8 @@ const oldStorageFile = (fileUrl: string): string | null => {
   } catch {
     return null;
   }
-  if (PROTECTED_FILENAMES.has(filename) || !PROFILE_FILENAME.test(filename)) return null;
+  if (PROTECTED_FILENAMES.has(filename) || !PROFILE_FILENAME.test(filename))
+    return null;
   return filename;
 };
 
@@ -111,9 +128,15 @@ const upload = multer({
 }).single("img");
 
 const imageToTensor = async (fileBuffer) => {
-  const { data, info } = await sharp(fileBuffer).raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = await sharp(fileBuffer)
+    .raw()
+    .toBuffer({ resolveWithObject: true });
 
-  return tf.tensor3d(new Uint8Array(data), [info.height, info.width, info.channels], "int32");
+  return tf.tensor3d(
+    new Uint8Array(data),
+    [info.height, info.width, info.channels],
+    "int32",
+  );
 };
 
 /**
@@ -135,8 +158,12 @@ const resolveSessionUserid = async (req): Promise<string | null> => {
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
     if (!response.ok) return null;
-    const data: any = await response.json();
-    if (data.result !== "success" || !data.user || !data.user.userid) return null;
+    const data = (await response.json()) as {
+      result?: unknown;
+      user?: { userid?: unknown };
+    };
+    if (data.result !== "success" || !data.user || !data.user.userid)
+      return null;
     return String(data.user.userid);
   } catch (err) {
     logger.warn("Failed to resolve session userid", { error: err });
@@ -145,8 +172,13 @@ const resolveSessionUserid = async (req): Promise<string | null> => {
 };
 
 const assertBunnyConfig = () => {
-  const missing = ["endpoint", "storageZone", "accessKey"].filter((key) => !config.bunny?.[key]);
-  if (missing.length) throw new Error(`Missing BunnyCDN storage config: bunny.${missing.join(", bunny.")}`);
+  const missing = ["endpoint", "storageZone", "accessKey"].filter(
+    (key) => !config.bunny?.[key],
+  );
+  if (missing.length)
+    throw new Error(
+      `Missing BunnyCDN storage config: bunny.${missing.join(", bunny.")}`,
+    );
 };
 
 // Config check and model load have to finish before the server accepts traffic:
@@ -162,195 +194,252 @@ export const initProfile = async () => {
 
 export const profileRouter = Router();
 
-profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => {
-  if (!/^[0-9]+$/.test(req.params.userid)) {
-    res.status(400).json({
-      result: "failed",
-      message: "Invalid userid format",
-      error: "Bad userid",
-    });
-    return;
-  }
-
-  // Authenticate before multer, sharp and the NSFW model spend any work.
-  const sessionUserid = await resolveSessionUserid(req);
-  if (!sessionUserid) {
-    res.status(401).json({
-      result: "failed",
-      message: "Login required",
-      error: "Unauthorized",
-    });
-    return;
-  }
-  if (sessionUserid !== req.params.userid) {
-    logger.warn("Rejected profile upload for a different user", {
-      sessionUserid,
-      requested: req.params.userid,
-    });
-    res.status(403).json({
-      result: "failed",
-      message: "You can only update your own profile",
-      error: "Forbidden",
-    });
-    return;
-  }
-
-  let type = "";
-  let width = 256;
-  let height = 256;
-  if (req.params.type == "picture") {
-    type = "picture";
-  } else if (req.params.type == "background") {
-    width = 2560;
-    height = null;
-    type = "background";
-  } else {
-    res.status(400).json({
-      result: "failed",
-      message: "Error occured while uploading",
-      error: "Invalid type",
-    });
-    return;
-  }
-
-  let oldFileUrl: string | null = null;
-  try {
-    const profileResponse = await fetch(`${config.project.api}/profile/${req.params.userid}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      signal: AbortSignal.timeout(API_TIMEOUT_MS),
-    });
-    const profileData: any = await profileResponse.json();
-    if (profileData.result === "success" && profileData.user && profileData.user[type]) {
-      oldFileUrl = profileData.user[type];
+profileRouter.post(
+  "/profile/:userid/:type",
+  uploadLimiter,
+  async (req, res) => {
+    if (!/^[0-9]+$/.test(req.params.userid)) {
+      res.status(400).json({
+        result: "failed",
+        message: "Invalid userid format",
+        error: "Bad userid",
+      });
+      return;
     }
-  } catch (err) {
-    logger.warn("Failed to fetch existing profile data", { userid: req.params.userid, type, error: err });
-  }
 
-  upload(req, res, async (err) => {
-    if (err) {
-      if (err instanceof multer.MulterError) err = err.message;
-      else err = err.code;
-      logger.error("File upload error", err, { userid: req.params.userid, type: req.params.type });
+    // Authenticate before multer, sharp and the NSFW model spend any work.
+    const sessionUserid = await resolveSessionUserid(req);
+    if (!sessionUserid) {
+      res.status(401).json({
+        result: "failed",
+        message: "Login required",
+        error: "Unauthorized",
+      });
+      return;
+    }
+    if (sessionUserid !== req.params.userid) {
+      logger.warn("Rejected profile upload for a different user", {
+        sessionUserid,
+        requested: req.params.userid,
+      });
+      res.status(403).json({
+        result: "failed",
+        message: "You can only update your own profile",
+        error: "Forbidden",
+      });
+      return;
+    }
+
+    let type = "";
+    let width = 256;
+    let height = 256;
+    if (req.params.type == "picture") {
+      type = "picture";
+    } else if (req.params.type == "background") {
+      width = 2560;
+      height = null;
+      type = "background";
+    } else {
       res.status(400).json({
         result: "failed",
         message: "Error occured while uploading",
+        error: "Invalid type",
+      });
+      return;
+    }
+
+    let oldFileUrl: string | null = null;
+    try {
+      const profileResponse = await fetch(
+        `${config.project.api}/profile/${req.params.userid}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          signal: AbortSignal.timeout(API_TIMEOUT_MS),
+        },
+      );
+      const profileData = (await profileResponse.json()) as {
+        result?: unknown;
+        user?: Record<string, string | undefined>;
+      };
+      if (
+        profileData.result === "success" &&
+        profileData.user &&
+        profileData.user[type]
+      ) {
+        oldFileUrl = profileData.user[type];
+      }
+    } catch (err) {
+      logger.warn("Failed to fetch existing profile data", {
+        userid: req.params.userid,
+        type,
         error: err,
       });
-      return;
-    }
-    const file = req.file;
-    if (!file || file.mimetype.indexOf("image") == -1) {
-      logger.warn("Invalid file upload attempt", { userid: req.params.userid, type: req.params.type, mimetype: file?.mimetype });
-      res.status(400).json({
-        result: "failed",
-        message: "Error occured while uploading",
-        error: "Invalid file type",
-      });
-      return;
     }
 
-    // multer's callback is not an Express handler, so a rejection here is not
-    // turned into a response -- the request would hang.
-    let fileBuffer: Buffer;
-    let explicit = false;
-    try {
-      fileBuffer = await sharp(file.buffer)
-        .resize({ width, height })
-        .flatten({ background: "#ffffff" })
-        .webp({
-          quality: 70,
-          effort: 6,
-        })
-        .toBuffer();
-      const image = await imageToTensor(fileBuffer);
-      const predictions = await model.classify(image);
-      image.dispose();
-      if (predictions[0].className != "Drawing" && predictions[0].className != "Neutral") explicit = true;
-    } catch (e) {
-      logger.error("Failed to process the uploaded image", e, { userid: req.params.userid, type: req.params.type });
-      res.status(400).json({
-        result: "failed",
-        message: "Error occured while uploading",
-        error: "Invalid image",
-      });
-      return;
-    }
-
-    // Date.now() alone collides: two uploads in the same millisecond overwrite
-    // each other's image.
-    const filename = `${Date.now()}-${randomUUID()}.webp`;
-    try {
-      await uploadToBunny(filename, fileBuffer);
-    } catch (e) {
-      logger.error("Failed to upload the image to BunnyCDN", e, { userid: req.params.userid, type: req.params.type, filename });
-      res.status(502).json({
-        result: "failed",
-        message: "Error occured while uploading",
-        error: "Storage upload failed",
-      });
-      return;
-    }
-
-    const publicUrl = bunnyPublicUrl(filename);
-
-    fetch(`${config.project.api}/profile/${type}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      signal: AbortSignal.timeout(API_TIMEOUT_MS),
-      body: JSON.stringify({
-        explicit,
-        // Verified against the backend session, never the raw path segment.
-        userid: sessionUserid,
-        value: publicUrl,
-        secret: config.project.secretKey,
-      }),
-    })
-      .then((res) => res.json())
-      .then((json: any) => {
-        if (json.result == "failed") {
-          discardUpload(filename, { userid: req.params.userid, type: req.params.type });
-          logger.error("Profile update API error", null, { message: json.message, userid: req.params.userid });
-          res.status(400).json({
-            result: "failed",
-            message: "Error occured while uploading",
-            error: json.message,
-          });
-          return;
-        }
-
-        if (oldFileUrl) {
-          // Delete the old file without blocking the response.
-          (async () => {
-            const oldFilename = oldStorageFile(oldFileUrl);
-            if (!oldFilename) {
-              logger.info(`Kept the previous ${type} image, which we did not upload`, { userid: req.params.userid, oldFileUrl });
-              return;
-            }
-            try {
-              await deleteFromBunny(oldFilename);
-              logger.info(`Deleted old ${type} file`, { userid: req.params.userid, oldFilename });
-            } catch (err) {
-              logger.warn(`Failed to delete old ${type} file`, { userid: req.params.userid, oldFileUrl, error: err });
-            }
-          })();
-        }
-
-        res.status(200).json({ result: "success", url: publicUrl, explicit });
-      })
-      .catch((err) => {
-        discardUpload(filename, { userid: req.params.userid, type: req.params.type });
-        logger.error("Profile update fetch error", err, { userid: req.params.userid });
-        res.status(500).json({
+    upload(req, res, async (err) => {
+      if (err) {
+        if (err instanceof multer.MulterError) err = err.message;
+        else err = err.code;
+        logger.error("File upload error", err, {
+          userid: req.params.userid,
+          type: req.params.type,
+        });
+        res.status(400).json({
           result: "failed",
           message: "Error occured while uploading",
-          error: "Internal server error",
+          error: err,
         });
-      });
-  });
-});
+        return;
+      }
+      const file = req.file;
+      if (!file || file.mimetype.indexOf("image") == -1) {
+        logger.warn("Invalid file upload attempt", {
+          userid: req.params.userid,
+          type: req.params.type,
+          mimetype: file?.mimetype,
+        });
+        res.status(400).json({
+          result: "failed",
+          message: "Error occured while uploading",
+          error: "Invalid file type",
+        });
+        return;
+      }
+
+      // multer's callback is not an Express handler, so a rejection here is not
+      // turned into a response -- the request would hang.
+      let fileBuffer: Buffer;
+      let explicit = false;
+      try {
+        fileBuffer = await sharp(file.buffer)
+          .resize({ width, height })
+          .flatten({ background: "#ffffff" })
+          .webp({
+            quality: 70,
+            effort: 6,
+          })
+          .toBuffer();
+        const image = await imageToTensor(fileBuffer);
+        const predictions = await model.classify(image);
+        image.dispose();
+        if (
+          predictions[0].className != "Drawing" &&
+          predictions[0].className != "Neutral"
+        )
+          explicit = true;
+      } catch (e) {
+        logger.error("Failed to process the uploaded image", e, {
+          userid: req.params.userid,
+          type: req.params.type,
+        });
+        res.status(400).json({
+          result: "failed",
+          message: "Error occured while uploading",
+          error: "Invalid image",
+        });
+        return;
+      }
+
+      // Date.now() alone collides: two uploads in the same millisecond overwrite
+      // each other's image.
+      const filename = `${Date.now()}-${randomUUID()}.webp`;
+      try {
+        await uploadToBunny(filename, fileBuffer);
+      } catch (e) {
+        logger.error("Failed to upload the image to BunnyCDN", e, {
+          userid: req.params.userid,
+          type: req.params.type,
+          filename,
+        });
+        res.status(502).json({
+          result: "failed",
+          message: "Error occured while uploading",
+          error: "Storage upload failed",
+        });
+        return;
+      }
+
+      const publicUrl = bunnyPublicUrl(filename);
+
+      fetch(`${config.project.api}/profile/${type}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        signal: AbortSignal.timeout(API_TIMEOUT_MS),
+        body: JSON.stringify({
+          explicit,
+          // Verified against the backend session, never the raw path segment.
+          userid: sessionUserid,
+          value: publicUrl,
+          secret: config.project.secretKey,
+        }),
+      })
+        .then((res) => res.json())
+        .then((json: { result?: unknown; message?: unknown }) => {
+          if (json.result == "failed") {
+            discardUpload(filename, {
+              userid: req.params.userid,
+              type: req.params.type,
+            });
+            logger.error("Profile update API error", null, {
+              message: json.message,
+              userid: req.params.userid,
+            });
+            res.status(400).json({
+              result: "failed",
+              message: "Error occured while uploading",
+              error: json.message,
+            });
+            return;
+          }
+
+          if (oldFileUrl) {
+            // Delete the old file without blocking the response.
+            (async () => {
+              const oldFilename = oldStorageFile(oldFileUrl);
+              if (!oldFilename) {
+                logger.info(
+                  `Kept the previous ${type} image, which we did not upload`,
+                  { userid: req.params.userid, oldFileUrl },
+                );
+                return;
+              }
+              try {
+                await deleteFromBunny(oldFilename);
+                logger.info(`Deleted old ${type} file`, {
+                  userid: req.params.userid,
+                  oldFilename,
+                });
+              } catch (err) {
+                logger.warn(`Failed to delete old ${type} file`, {
+                  userid: req.params.userid,
+                  oldFileUrl,
+                  error: err,
+                });
+              }
+            })();
+          }
+
+          res.status(200).json({ result: "success", url: publicUrl, explicit });
+        })
+        .catch((err) => {
+          discardUpload(filename, {
+            userid: req.params.userid,
+            type: req.params.type,
+          });
+          logger.error("Profile update fetch error", err, {
+            userid: req.params.userid,
+          });
+          res.status(500).json({
+            result: "failed",
+            message: "Error occured while uploading",
+            error: "Internal server error",
+          });
+        });
+    });
+  },
+);
