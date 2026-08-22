@@ -1,6 +1,3 @@
-# 편집기가 저장할 때부터 규칙을 맞춰 줍니다. .gitattributes(커밋 시 정규화)와
-# prettier(포맷)와 같은 값을 씁니다. 셋이 어긋나면 저장할 때마다 서로를
-# 되돌리게 됩니다.
 root = true
 
 [*]
@@ -12,7 +9,6 @@ indent_style = space
 indent_size = 2
 max_line_length = 80
 
-# 마크다운은 줄 끝 공백 두 개가 줄바꿈이라 지우면 안 됩니다.
 [*.md]
 trim_trailing_whitespace = false
 

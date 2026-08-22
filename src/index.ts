@@ -23,7 +23,7 @@ exec("git branch --show-current", (err, stdout) => {
   return (branch = stdout.trim());
 });
 
-// config.json은 배포마다 내용이 달라 정적 import 대상이 아닙니다.
+// config.json differs per deployment, so it can't be a static import target.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const config = require(__dirname + "/../config/config.json");
 

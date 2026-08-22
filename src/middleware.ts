@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { logger } from "./logger";
 
-// config.json은 배포마다 내용이 달라 정적 import 대상이 아닙니다.
+// config.json differs per deployment, so it can't be a static import target.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const config = require(__dirname + "/../config/config.json");
 
@@ -149,7 +149,7 @@ export function errorHandler(
   // The stack never goes into a response: it carries absolute paths and dependency
   // versions, and the pm2 config sets no NODE_ENV, so branching on that would leak
   // it in production too.
-  // 오류 객체의 모양은 보장되지 않으므로 읽기 전에 좁힙니다.
+  // Error object shape isn't guaranteed, so narrow before reading it.
   const { statusCode: sc, status } = (err ?? {}) as {
     statusCode?: unknown;
     status?: unknown;
