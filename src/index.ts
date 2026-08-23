@@ -12,6 +12,7 @@ import {
   sendError,
   setStaticPageCsp,
 } from "./middleware";
+import { inlineCss } from "./assets";
 import { initProfile, profileRouter } from "./profile";
 import { URL } from "url";
 import { createHash, randomBytes } from "crypto";
@@ -43,6 +44,8 @@ const API_TIMEOUT_MS = 5000;
 
 const app = express();
 app.locals.pretty = true;
+// Views embed their own stylesheets through this rather than linking them.
+app.locals.inlineCss = inlineCss;
 
 // Do not advertise the framework version.
 app.disable("x-powered-by");
