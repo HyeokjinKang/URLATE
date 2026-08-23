@@ -1,3 +1,4 @@
+import compression from "compression";
 import cookieParser from "cookie-parser";
 import express, { NextFunction, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
@@ -67,6 +68,11 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+// Responses go out uncompressed otherwise: the CSS is render-blocking, so the
+// bytes saved here come straight off first paint. Images and fonts are already
+// compressed formats and are skipped by the mime-type check.
+app.use(compression());
 
 // Static assets are cache-busted via ?v=<ver>, so a long max-age is safe.
 app.use(express.static(__dirname + "/../public", { maxAge: "7d" }));
