@@ -46,6 +46,8 @@ const app = express();
 app.locals.pretty = true;
 // Views embed their own stylesheets through this rather than linking them.
 app.locals.inlineCss = inlineCss;
+// Fonts come from the CDN, so every page opens the connection up front.
+app.locals.cdn = config.project.cdn;
 
 // Do not advertise the framework version.
 app.disable("x-powered-by");
