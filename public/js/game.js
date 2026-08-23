@@ -1,4 +1,4 @@
-/* global Howler, Howl, Pace, Chart, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable1, notAvailable2, medalDesc, alias, nothingHere, rating, couponApplySuccess, couponInvalid1, couponInvalid2, couponUsed, inputEmpty, aliasSelect, pictureMessage, imageError */
+/* global Howler, Howl, Pace, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable1, notAvailable2, medalDesc, alias, nothingHere, rating, couponApplySuccess, couponInvalid1, couponInvalid2, couponUsed, inputEmpty, aliasSelect, pictureMessage, imageError */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
 const langDetailSelector = document.getElementById("langDetailSelector");
@@ -141,6 +141,31 @@ let offsetSong = new Howl({
 
 let songPlayTimeout;
 let chartVar;
+let chartLib = null;
+
+/**
+ * Load Chart.js on demand.
+ *
+ * It is 208KB and the only thing that uses it is the rank graph on the profile
+ * screen, so loading it with the page made every entry to the game screen pay
+ * for it. Resolves with the Chart constructor; the promise is kept so repeated
+ * profile opens reuse the one load.
+ */
+const loadChart = () => {
+  if (chartLib) return chartLib;
+  chartLib = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "/lib/chart.min.js";
+    script.onload = () => resolve(window.Chart);
+    // Drop the cached promise so a later open can try again.
+    script.onerror = () => {
+      chartLib = null;
+      reject(new Error("Failed to load chart.min.js"));
+    };
+    document.head.appendChild(script);
+  });
+  return chartLib;
+};
 
 const initialize = () => {
   const canvasRes = settings.display ? settings.display.canvasRes / 100 : 1;
@@ -1461,46 +1486,54 @@ const profileUpdate = async (nickname, isMe) => {
     );
     gradientFill.addColorStop(0, "rgba(255, 255, 255, 0.5)");
     gradientFill.addColorStop(1, "rgba(255, 255, 255, 0)");
-    if (chartVar) chartVar.destroy();
-    chartVar = new Chart(chart, {
-      type: "line",
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            data: data,
-            borderColor: "#ffffff",
-            pointRadius: 0,
-            borderWidth: 2,
-            tension: 0,
-            fill: "start",
-            backgroundColor: gradientFill,
-          },
-        ],
-      },
-      options: {
-        maintainAspectRatio: false,
-        interaction: {
-          intersect: false,
-          axis: "x",
-          mode: "nearest",
+    // 그래프 라이브러리를 못 받아와도 프로필의 나머지는 이미 그려진 뒤입니다.
+    // 여기서 삼키지 않으면 아래 loadingOverlayHide() 가 실행되지 않아 로딩
+    // 오버레이가 걸린 채로 남습니다.
+    try {
+      const Chart = await loadChart();
+      if (chartVar) chartVar.destroy();
+      chartVar = new Chart(chart, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              data: data,
+              borderColor: "#ffffff",
+              pointRadius: 0,
+              borderWidth: 2,
+              tension: 0,
+              fill: "start",
+              backgroundColor: gradientFill,
+            },
+          ],
         },
-        plugins: {
-          legend: {
-            display: false,
+        options: {
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            axis: "x",
+            mode: "nearest",
+          },
+          plugins: {
+            legend: {
+              display: false,
+            },
+          },
+          scales: {
+            x: {
+              display: false,
+            },
+            y: {
+              display: false,
+              reverse: true,
+            },
           },
         },
-        scales: {
-          x: {
-            display: false,
-          },
-          y: {
-            display: false,
-            reverse: true,
-          },
-        },
-      },
-    });
+      });
+    } catch (e) {
+      console.error(e);
+    }
   } else {
     alert(`Error occured.\n${profile.error}`);
     console.error(`Error occured.\n${profile.error}`);
