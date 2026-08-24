@@ -13,6 +13,15 @@ const CACHE = config.project.mode !== "test";
 const cache = new Map<string, string>();
 
 const read = (name: string): string => {
+  // Prevent path traversal (e.g. "../secrets") if a template ever passes a variable.
+  if (
+    path.posix.basename(name) !== name ||
+    name.includes("..") ||
+    name.includes("\\")
+  ) {
+    throw new Error(`Invalid stylesheet name: ${name}`);
+  }
+
   const cached = cache.get(name);
   if (cached !== undefined) return cached;
 
