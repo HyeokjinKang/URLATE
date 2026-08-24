@@ -1,3 +1,4 @@
+import compression from "compression";
 import cookieParser from "cookie-parser";
 import express, { NextFunction, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
@@ -11,6 +12,7 @@ import {
   sendError,
   setStaticPageCsp,
 } from "./middleware";
+import { inlineCss } from "./assets";
 import { initProfile, profileRouter } from "./profile";
 import { URL } from "url";
 import { createHash, randomBytes } from "crypto";
@@ -60,6 +62,7 @@ app.locals.url = config.project.url;
 app.locals.api = config.project.api;
 app.locals.game = config.project.game;
 app.locals.cdn = config.project.cdn;
+app.locals.inlineCss = inlineCss;
 
 // Baseline security headers applied to every response. CSP itself is set per route.
 app.use((req, res, next) => {
@@ -73,6 +76,8 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+app.use(compression());
 
 // Static assets are cache-busted via ?v=<ver>, so a long max-age is safe.
 app.use(express.static(__dirname + "/../public", { maxAge: "7d" }));

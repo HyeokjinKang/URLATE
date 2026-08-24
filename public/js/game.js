@@ -1,4 +1,4 @@
-/* global Howler, Howl, Pace, Chart, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable1, notAvailable2, medalDesc, alias, nothingHere, rating, couponApplySuccess, couponInvalid1, couponInvalid2, couponUsed, inputEmpty, aliasSelect, pictureMessage, imageError */
+/* global Howler, Howl, Pace, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable1, notAvailable2, medalDesc, alias, nothingHere, rating, couponApplySuccess, couponInvalid1, couponInvalid2, couponUsed, inputEmpty, aliasSelect, pictureMessage, imageError */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
 const langDetailSelector = document.getElementById("langDetailSelector");
@@ -141,6 +141,29 @@ let offsetSong = new Howl({
 
 let songPlayTimeout;
 let chartVar;
+let chartLib = null;
+
+/**
+ * Load Chart.js on demand, for the profile screen's rank graph.
+ *
+ * Resolves with the Chart constructor; the promise is cached so repeated opens
+ * reuse the one load.
+ */
+const loadChart = () => {
+  if (chartLib) return chartLib;
+  chartLib = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "/lib/chart.min.js";
+    script.onload = () => resolve(window.Chart);
+    // Drop the cached promise so a later open can try again.
+    script.onerror = () => {
+      chartLib = null;
+      reject(new Error("Failed to load chart.min.js"));
+    };
+    document.head.appendChild(script);
+  });
+  return chartLib;
+};
 
 const initialize = () => {
   const canvasRes = settings.display ? settings.display.canvasRes / 100 : 1;
@@ -1461,46 +1484,53 @@ const profileUpdate = async (nickname, isMe) => {
     );
     gradientFill.addColorStop(0, "rgba(255, 255, 255, 0.5)");
     gradientFill.addColorStop(1, "rgba(255, 255, 255, 0)");
-    if (chartVar) chartVar.destroy();
-    chartVar = new Chart(chart, {
-      type: "line",
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            data: data,
-            borderColor: "#ffffff",
-            pointRadius: 0,
-            borderWidth: 2,
-            tension: 0,
-            fill: "start",
-            backgroundColor: gradientFill,
-          },
-        ],
-      },
-      options: {
-        maintainAspectRatio: false,
-        interaction: {
-          intersect: false,
-          axis: "x",
-          mode: "nearest",
+    // Without this the throw would skip loadingOverlayHide() below, leaving the
+    // loading overlay stuck over an otherwise finished profile.
+    try {
+      const Chart = await loadChart();
+      if (chartVar) chartVar.destroy();
+      chartVar = new Chart(chart, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              data: data,
+              borderColor: "#ffffff",
+              pointRadius: 0,
+              borderWidth: 2,
+              tension: 0,
+              fill: "start",
+              backgroundColor: gradientFill,
+            },
+          ],
         },
-        plugins: {
-          legend: {
-            display: false,
+        options: {
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            axis: "x",
+            mode: "nearest",
+          },
+          plugins: {
+            legend: {
+              display: false,
+            },
+          },
+          scales: {
+            x: {
+              display: false,
+            },
+            y: {
+              display: false,
+              reverse: true,
+            },
           },
         },
-        scales: {
-          x: {
-            display: false,
-          },
-          y: {
-            display: false,
-            reverse: true,
-          },
-        },
-      },
-    });
+      });
+    } catch (e) {
+      console.error(e);
+    }
   } else {
     alert(`Error occured.\n${profile.error}`);
     console.error(`Error occured.\n${profile.error}`);
@@ -2511,6 +2541,50 @@ document
 document
   .getElementById("offsetTapButton")
   .addEventListener("mouseup", offsetButtonUp);
+
+/**
+ * Fetch the images of the panels that have not been opened yet.
+ *
+ * Serial and in document order: the menu icons come first in the markup, and a
+ * one-at-a-time queue keeps this off the track and album requests.
+ */
+const warmDeferredImages = () => {
+  const urls = [];
+  const seen = new Set();
+  for (const img of document.querySelectorAll('img[loading="lazy"]')) {
+    const src = img.getAttribute("src");
+    // An empty src is filled in later by script; skip those and duplicates.
+    if (src && !seen.has(src)) {
+      seen.add(src);
+      urls.push(src);
+    }
+  }
+
+  let i = 0;
+  const next = () => {
+    if (i >= urls.length) return;
+    const img = new Image();
+    // Move on either way; opening the panel retries.
+    img.onload = next;
+    img.onerror = next;
+    img.src = urls[i++];
+  };
+  next();
+};
+
+// load can be held up indefinitely by one slow CDN resource, so cap the wait.
+let warmScheduled = false;
+const scheduleWarm = () => {
+  if (warmScheduled) return;
+  warmScheduled = true;
+  if (window.requestIdleCallback) {
+    requestIdleCallback(warmDeferredImages, { timeout: 5000 });
+  } else {
+    setTimeout(warmDeferredImages, 1000);
+  }
+};
+window.addEventListener("load", scheduleWarm);
+setTimeout(scheduleWarm, 10000);
 
 document.addEventListener("contextmenu", (event) => event.preventDefault());
 document.addEventListener("dragstart", (event) => event.preventDefault());
