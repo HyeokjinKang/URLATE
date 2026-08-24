@@ -18,7 +18,7 @@
     "dev": "supervisor dist/index.js",
     "start": "pm2 start ecosystem.config.js",
     "stop": "pm2 stop URLATE-v3l-frontend",
-    "minify": "for f in public/js/*.js; do terser \"$f\" --compress --mangle --output \"$f\"; done",
+    "minify": "for f in public/js/*.js public/modules/*.js; do terser \"$f\" --compress --mangle --output \"$f\"; done",
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
