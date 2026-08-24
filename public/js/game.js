@@ -144,12 +144,10 @@ let chartVar;
 let chartLib = null;
 
 /**
- * Load Chart.js on demand.
+ * Load Chart.js on demand, for the profile screen's rank graph.
  *
- * It is 208KB and the only thing that uses it is the rank graph on the profile
- * screen, so loading it with the page made every entry to the game screen pay
- * for it. Resolves with the Chart constructor; the promise is kept so repeated
- * profile opens reuse the one load.
+ * Resolves with the Chart constructor; the promise is cached so repeated opens
+ * reuse the one load.
  */
 const loadChart = () => {
   if (chartLib) return chartLib;
@@ -1486,9 +1484,8 @@ const profileUpdate = async (nickname, isMe) => {
     );
     gradientFill.addColorStop(0, "rgba(255, 255, 255, 0.5)");
     gradientFill.addColorStop(1, "rgba(255, 255, 255, 0)");
-    // 그래프 라이브러리를 못 받아와도 프로필의 나머지는 이미 그려진 뒤입니다.
-    // 여기서 삼키지 않으면 아래 loadingOverlayHide() 가 실행되지 않아 로딩
-    // 오버레이가 걸린 채로 남습니다.
+    // Without this the throw would skip loadingOverlayHide() below, leaving the
+    // loading overlay stuck over an otherwise finished profile.
     try {
       const Chart = await loadChart();
       if (chartVar) chartVar.destroy();
@@ -2546,22 +2543,16 @@ document
   .addEventListener("mouseup", offsetButtonUp);
 
 /**
- * Fetch the images of the panels the player has not opened yet.
+ * Fetch the images of the panels that have not been opened yet.
  *
- * They carry loading="lazy" so they stay out of the game screen's own load,
- * but that alone means opening a panel starts the download from scratch. Once
- * this screen has finished loading and the main thread is idle, pull them in
- * quietly so the panel is ready by the time it is opened.
- *
- * One at a time and in document order: the menu icons come first in the markup
- * and are the first thing shown, and a serial queue keeps this from competing
- * with the track and album requests the screen makes while playing.
+ * Serial and in document order: the menu icons come first in the markup, and a
+ * one-at-a-time queue keeps this off the track and album requests.
  */
 const warmDeferredImages = () => {
   const urls = [];
   for (const img of document.querySelectorAll('img[loading="lazy"]')) {
     const src = img.getAttribute("src");
-    // src 가 비었거나(스크립트가 나중에 채웁니다) 이미 큐에 있으면 건너뜁니다.
+    // An empty src is filled in later by script; skip those and duplicates.
     if (src && !urls.includes(src)) urls.push(src);
   }
 
@@ -2569,7 +2560,7 @@ const warmDeferredImages = () => {
   const next = () => {
     if (i >= urls.length) return;
     const img = new Image();
-    // 실패해도 다음으로 넘어갑니다. 어차피 화면을 열 때 다시 시도합니다.
+    // Move on either way; opening the panel retries.
     img.onload = next;
     img.onerror = next;
     img.src = urls[i++];
@@ -2577,8 +2568,7 @@ const warmDeferredImages = () => {
   next();
 };
 
-// load 는 이 화면이 받는 것을 다 받은 시점이지만, CDN 자원 하나가 늦어지면
-// 오지 않을 수도 있습니다. 시간 상한을 함께 두어 어느 쪽이든 한 번은 돕니다.
+// load can be held up indefinitely by one slow CDN resource, so cap the wait.
 let warmScheduled = false;
 const scheduleWarm = () => {
   if (warmScheduled) return;

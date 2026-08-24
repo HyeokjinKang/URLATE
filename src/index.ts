@@ -44,9 +44,7 @@ const API_TIMEOUT_MS = 5000;
 
 const app = express();
 app.locals.pretty = true;
-// Views embed their own stylesheets through this rather than linking them.
 app.locals.inlineCss = inlineCss;
-// Fonts come from the CDN, so every page opens the connection up front.
 app.locals.cdn = config.project.cdn;
 
 // Do not advertise the framework version.
@@ -74,9 +72,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Responses go out uncompressed otherwise: the CSS is render-blocking, so the
-// bytes saved here come straight off first paint. Images and fonts are already
-// compressed formats and are skipped by the mime-type check.
 app.use(compression());
 
 // Static assets are cache-busted via ?v=<ver>, so a long max-age is safe.
