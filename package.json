@@ -18,7 +18,7 @@
     "dev": "supervisor dist/index.js",
     "start": "pm2 start ecosystem.config.js",
     "stop": "pm2 stop URLATE-v3l-frontend",
-    "obfuscate": "javascript-obfuscator public/js/ --output public/js/ --debug-protection false --numbers-to-expressions true --self-defending true",
+    "minify": "for f in public/js/*.js; do terser \"$f\" --compress --mangle --output \"$f\"; done",
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
@@ -48,9 +48,9 @@
     "eslint": "^10.8.1",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.11.0",
-    "javascript-obfuscator": "^4.2.2",
     "prettier": "^3.9.6",
     "supervisor": "^0.12.0",
+    "terser": "^5.50.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.67.0"
   }
