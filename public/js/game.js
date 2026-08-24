@@ -2550,10 +2550,14 @@ document
  */
 const warmDeferredImages = () => {
   const urls = [];
+  const seen = new Set();
   for (const img of document.querySelectorAll('img[loading="lazy"]')) {
     const src = img.getAttribute("src");
     // An empty src is filled in later by script; skip those and duplicates.
-    if (src && !urls.includes(src)) urls.push(src);
+    if (src && !seen.has(src)) {
+      seen.add(src);
+      urls.push(src);
+    }
   }
 
   let i = 0;
