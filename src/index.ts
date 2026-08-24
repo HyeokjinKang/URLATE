@@ -55,6 +55,12 @@ app.set("view engine", "ejs");
 app.set("views", __dirname + "/../views");
 app.use(cookieParser());
 
+// Shared across every view -- set once instead of passing on each render().
+app.locals.url = config.project.url;
+app.locals.api = config.project.api;
+app.locals.game = config.project.game;
+app.locals.cdn = config.project.cdn;
+
 // Baseline security headers applied to every response. CSP itself is set per route.
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
@@ -207,9 +213,6 @@ const authPageLimiter = rateLimit({
 
 app.get("/", authPageLimiter, (req, res) => {
   res.render("index", {
-    url: config.project.url,
-    api: config.project.api,
-    game: config.project.game,
     googleClientId: googleClientId,
     cspNonce: withAuthPageCsp(res, true),
     ver: config.project.mode == "test" ? Date.now() : version,
@@ -229,9 +232,7 @@ app.get("/ko", function (req, res) {
 
 app.get("/join", authPageLimiter, (req, res) => {
   res.render("join", {
-    api: config.project.api,
     ver: config.project.mode == "test" ? Date.now() : version,
-    url: config.project.url,
     cspNonce: withAuthPageCsp(res, false),
   });
 });
@@ -417,10 +418,6 @@ app.get("/logout", logoutLimiter, (req, res) => {
 
 app.get("/game", gateLimiter, requireAuth, async (req, res) => {
   res.render("game", {
-    cdn: config.project.cdn,
-    url: config.project.url,
-    api: config.project.api,
-    game: config.project.game,
     cspNonce: withGamePageCsp(res),
     ver: config.project.mode == "test" ? Date.now() : version,
   });
@@ -428,10 +425,6 @@ app.get("/game", gateLimiter, requireAuth, async (req, res) => {
 
 app.get("/editor", gateLimiter, requireAuth, async (req, res) => {
   res.render("editor", {
-    cdn: config.project.cdn,
-    url: config.project.url,
-    api: config.project.api,
-    game: config.project.game,
     cspNonce: withPlayPageCsp(res),
     ver: config.project.mode == "test" ? Date.now() : version,
   });
@@ -439,10 +432,6 @@ app.get("/editor", gateLimiter, requireAuth, async (req, res) => {
 
 app.get("/test", gateLimiter, requireAuth, async (req, res) => {
   res.render("test", {
-    cdn: config.project.cdn,
-    url: config.project.url,
-    api: config.project.api,
-    game: config.project.game,
     cspNonce: withPlayPageCsp(res),
     ver: config.project.mode == "test" ? Date.now() : version,
   });
@@ -450,10 +439,6 @@ app.get("/test", gateLimiter, requireAuth, async (req, res) => {
 
 app.get("/play", gateLimiter, requireAuth, async (req, res) => {
   res.render("play", {
-    cdn: config.project.cdn,
-    url: config.project.url,
-    api: config.project.api,
-    game: config.project.game,
     cspNonce: withPlayPageCsp(res),
     ver: config.project.mode == "test" ? Date.now() : version,
   });
@@ -461,10 +446,6 @@ app.get("/play", gateLimiter, requireAuth, async (req, res) => {
 
 app.get("/tutorial", gateLimiter, requireAuth, async (req, res) => {
   res.render("tutorial", {
-    cdn: config.project.cdn,
-    url: config.project.url,
-    api: config.project.api,
-    game: config.project.game,
     cspNonce: withPlayPageCsp(res),
     ver: config.project.mode == "test" ? Date.now() : version,
   });
