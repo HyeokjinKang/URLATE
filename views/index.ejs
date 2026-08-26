@@ -7,12 +7,14 @@
     <meta property="og:url" content="<%= url %>" />
     <meta property="description" content="Avoid & Get on the tempo, URLATE" />
     <meta property="og:description" content="Avoid & Get on the tempo, URLATE" />
-    <meta property="og:image" content="/images/mainImage.png" />
+    <meta property="og:image" content="<%= url %>/images/thumbnail.png" />
+    <%# Keep these in step with thumbnail.png if it is ever replaced. %>
+    <meta property="og:image:width" content="1240" />
+    <meta property="og:image:height" content="592" />
     <meta name="naver-site-verification" content="7ae378668c928c7b17400b60b364b844a751c1f1" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
-    <link rel="stylesheet" href="/css/montserrat.css" />
-    <link rel="stylesheet" href="/css/pretendard.css" />
-    <link rel="stylesheet" href="/css/index.css?v=<%= ver %>" />
+    <link rel="preconnect" href="<%= cdn %>" crossorigin />
+    <%- inlineCss("montserrat", "pretendard", "index") %>
     <title>URLATE</title>
   </head>
   <body>
