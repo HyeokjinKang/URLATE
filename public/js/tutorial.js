@@ -620,12 +620,12 @@ const calculateResult = () => {
   } else {
     rank = "F";
   }
-  rankImg.src = `/images/parts/elements/${rank}.webp`;
+  rankImg.src = `/images/ranks/${rank.toLowerCase()}.webp`;
   document
     .getElementById("scoreInfoRank")
     .style.setProperty(
       "--background",
-      `url('/images/parts/elements/${rank}back.webp')`,
+      `url('/images/ranks/${rank.toLowerCase()}-back.webp')`,
     );
   setTimeout(
     () => {

@@ -21,14 +21,14 @@
       <h2>Editor</h2>
       <div id="initialButtonsContainer">
         <span id="gotoGame" class="backText clickable" data-action="goGame"
-          ><img src="/icons/nav-arrow-left.svg" class="backIcon" /><%= __('goto_game') %></span
+          ><img src="/images/icons/nav-arrow-left.svg" class="backIcon" /><%= __('goto_game') %></span
         >
-        <span class="initialButtons clickable" data-action="newEditor"><img src="/icons/design-pencil.svg" class="initialIcon clickable" />New</span>
-        <span class="initialButtons clickable" data-action="loadEditor"><img src="/icons/arrow-down-right-circle.svg" class="initialIcon clickable" />Load</span>
+        <span class="initialButtons clickable" data-action="newEditor"><img src="/images/icons/design-pencil.svg" class="initialIcon clickable" />New</span>
+        <span class="initialButtons clickable" data-action="loadEditor"><img src="/images/icons/arrow-down-right-circle.svg" class="initialIcon clickable" />Load</span>
       </div>
       <div id="songSelectionContainer">
         <div id="songSelection">
-          <span id="gotoMain" class="backText clickable" data-action="gotoMainConfirm"><img src="/icons/nav-arrow-left.svg" class="backIcon" /><%= __('cancel') %></span>
+          <span id="gotoMain" class="backText clickable" data-action="gotoMainConfirm"><img src="/images/icons/nav-arrow-left.svg" class="backIcon" /><%= __('cancel') %></span>
           <h2>Select Song</h2>
           <select id="songSelectBox" class="clickable"></select>
           <input type="button" class="initlalButtons" value="Select" data-action="songSelected" />
@@ -153,45 +153,45 @@
       </div>
       <div id="navbar">
         <div id="topLeftBar" class="navbarElements">
-          <span class="backText clickable" data-action="gotoMain"><img src="/icons/nav-arrow-left.svg" class="backIcon" /><%= __('editor_main') %></span>
+          <span class="backText clickable" data-action="gotoMain"><img src="/images/icons/nav-arrow-left.svg" class="backIcon" /><%= __('editor_main') %></span>
         </div>
         <div id="topCenterBar" class="navbarElements">
           <span id="songName" class="metropolis">Song Name here</span>
         </div>
         <div id="topRightBar" class="navbarElements">
-          <img src="/icons/sidebar-expand.svg" id="sidebarBtn" class="icon clickable sidebar-expand" data-action="toggleSettings" />
+          <img src="/images/icons/sidebar-expand.svg" id="sidebarBtn" class="icon clickable sidebar-expand" data-action="toggleSettings" />
         </div>
       </div>
       <div id="workingSpaceContainer">
         <div id="workingContainer">
           <div id="menuContainer">
-            <img src="/icons/resize.svg" class="menuIcon menuSelected" data-action="changeMode" data-arg="0" />
-            <img src="/icons/edit-pencil-solid.svg" class="menuIcon clickable" data-action="changeMode" data-arg="1" />
-            <img src="/icons/plus-circle-solid.svg" class="menuIcon clickable" data-action="changeMode" data-arg="2" />
+            <img src="/images/icons/resize.svg" class="menuIcon menuSelected" data-action="changeMode" data-arg="0" />
+            <img src="/images/icons/edit-pencil-solid.svg" class="menuIcon clickable" data-action="changeMode" data-arg="1" />
+            <img src="/images/icons/plus-circle-solid.svg" class="menuIcon clickable" data-action="changeMode" data-arg="2" />
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
-            <img src="/icons/play-solid.svg" class="menuIcon clickable" data-action="test" />
-            <img src="/icons/floppy-disk-solid.svg" class="menuIcon clickable" data-action="save" />
+            <img src="/images/icons/play-solid.svg" class="menuIcon clickable" data-action="test" />
+            <img src="/images/icons/floppy-disk-solid.svg" class="menuIcon clickable" data-action="save" />
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
-            <img src="/icons/magnet-solid.svg" class="menuIcon clickable menuSelected" data-action="toggleMagnet" />
-            <img src="/icons/orthogonal-view.svg" class="menuIcon clickable menuSelected" data-action="toggleGrid" />
+            <img src="/images/icons/magnet-solid.svg" class="menuIcon clickable menuSelected" data-action="toggleMagnet" />
+            <img src="/images/icons/orthogonal-view.svg" class="menuIcon clickable menuSelected" data-action="toggleGrid" />
             <div id="metronomeContainer">
-              <img src="/icons/metronome.svg" id="metronome" class="menuIcon clickable" data-action="toggleMetronome" />
+              <img src="/images/icons/metronome.svg" id="metronome" class="menuIcon clickable" data-action="toggleMetronome" />
             </div>
-            <img src="/icons/one-point-circle.svg" class="menuIcon clickable" data-action="toggleCircle" />
+            <img src="/images/icons/one-point-circle.svg" class="menuIcon clickable" data-action="toggleCircle" />
           </div>
           <div id="toolContainer">
-            <img src="/icons/copy.svg" class="toolIcon clickable" data-action="elementCopy" />
+            <img src="/images/icons/copy.svg" class="toolIcon clickable" data-action="elementCopy" />
             <span class="toolText">Copy</span>
-            <img src="/icons/paste-clipboard.svg" class="toolIcon clickable" data-action="elementPaste" />
+            <img src="/images/icons/paste-clipboard.svg" class="toolIcon clickable" data-action="elementPaste" />
             <span class="toolText">Paste</span>
-            <img src="/icons/keyframes.svg" class="toolIcon clickable" data-action="rangeCopy" />
+            <img src="/images/icons/keyframes.svg" class="toolIcon clickable" data-action="rangeCopy" />
             <span class="toolText">Range<br />Copy</span>
-            <img src="/icons/transition-right.svg" class="toolIcon clickable" data-action="rangePaste" />
+            <img src="/images/icons/transition-right.svg" class="toolIcon clickable" data-action="rangePaste" />
             <span class="toolText">Range<br />Paste</span>
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
-            <img src="/icons/dot-arrow-right.svg" class="toolIcon clickable" data-action="moveTo" />
+            <img src="/images/icons/dot-arrow-right.svg" class="toolIcon clickable" data-action="moveTo" />
             <span class="toolText">Move</span>
-            <img src="/icons/question-mark.svg" class="toolIcon clickable" data-mouseover="showHelp" data-mouseout="hideHelp" />
+            <img src="/images/icons/question-mark.svg" class="toolIcon clickable" data-mouseover="showHelp" data-mouseout="hideHelp" />
             <span class="toolText">Shortcuts</span>
           </div>
           <div id="componentView" data-mousemove="trackMousePos" data-mousedown="compClicked">
@@ -468,12 +468,12 @@
       </div>
       <canvas id="timelineCanvas" width="100%" height="100%"> </canvas>
       <div id="timelineZoomController" class="controllers">
-        <img src="/icons/zoom-in.svg" class="clickable timeline-icon" data-action="zoomIn" />
-        <img src="/icons/zoom-out.svg" class="clickable timeline-icon" data-action="zoomOut" />
+        <img src="/images/icons/zoom-in.svg" class="clickable timeline-icon" data-action="zoomIn" />
+        <img src="/images/icons/zoom-out.svg" class="clickable timeline-icon" data-action="zoomOut" />
       </div>
       <div id="timelinePlayController" class="controllers">
-        <img src="/icons/play-solid.svg" id="controlBtn" class="clickable timeline-play" data-action="songPlayPause" />
-        <img src="/icons/stop-solid.svg" class="clickable timeline-icon" data-action="stopBtn" />
+        <img src="/images/icons/play-solid.svg" id="controlBtn" class="clickable timeline-play" data-action="songPlayPause" />
+        <img src="/images/icons/stop-solid.svg" class="clickable timeline-icon" data-action="stopBtn" />
         <span class="clickable" id="percentage" data-action="changeRate">100%</span>
       </div>
       <div id="timelineSplitController" class="controllers">
