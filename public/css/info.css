@@ -95,7 +95,7 @@ a {
 .link::after {
   margin-right: 0.5em;
   margin-left: 2px;
-  content: url("/images/parts/icons/link.svg");
+  content: url("/images/icons/link.svg");
   width: 0.1em;
 }
 

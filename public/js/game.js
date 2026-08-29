@@ -597,9 +597,9 @@ const tracksUpdate = () => {
                   ${settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name}
                   ${
                     tracks[i].type == 1
-                      ? "<img src='/images/parts/graphicIcons/track_advanced.webp' class='songSelectionIcon'>"
+                      ? "<img src='/images/ui/track-advanced.webp' class='songSelectionIcon'>"
                       : tracks[i].type == 2
-                        ? "<img src='/images/parts/graphicIcons/track_dlc.webp' class='songSelectionIcon'>"
+                        ? "<img src='/images/ui/track-dlc.webp' class='songSelectionIcon'>"
                         : ""
                   }
                 </div>
@@ -1367,7 +1367,7 @@ const profileUpdate = async (nickname, isMe) => {
           isMe ? `data-action="bannerToggle" data-arg="${i}"` : ""
         }>
           <div class="bannerHover">
-            <img src="/icons/${banners[i].indexOf("(-)") != -1 ? "eye-closed" : "eye"}.svg" class="bannerIcon">
+            <img src="/images/icons/${banners[i].indexOf("(-)") != -1 ? "eye-closed" : "eye"}.svg" class="bannerIcon">
           </div>
         </div>`;
     }
@@ -1572,13 +1572,14 @@ const bannerToggle = (n) => {
     banners[n] = banners[n] + "(-)";
     document.getElementsByClassName("bannerImage")[n].classList.add("hidden");
     document.getElementsByClassName("bannerIcon")[n].src =
-      "/icons/eye-closed.svg";
+      "/images/icons/eye-closed.svg";
   } else {
     banners[n] = banners[n].replace("(-)", "");
     document
       .getElementsByClassName("bannerImage")
       [n].classList.remove("hidden");
-    document.getElementsByClassName("bannerIcon")[n].src = "/icons/eye.svg";
+    document.getElementsByClassName("bannerIcon")[n].src =
+      "/images/icons/eye.svg";
   }
   fetch(`${api}/profile/banner`, {
     method: "PUT",
@@ -1692,7 +1693,7 @@ const showProfile = (name) => {
       document.getElementById("infoProfileImg").src =
         `images/credits/${info[0].profile}`;
       let innerHTML = `<div class="infoProfilePart">
-                          <img src="/icons/quote.svg" class="infoIcon">
+                          <img src="/images/icons/quote.svg" class="infoIcon">
                           <span id="quote">${info[0].quote}</span>
                      </div>`;
       for (let i = 1; i < info.length; i++) {
@@ -1716,7 +1717,7 @@ const showProfile = (name) => {
         }
         innerHTML += `
                     <div class="infoProfilePart">
-                        <img src="/icons/${info[i].icon}.svg" class="infoIcon">
+                        <img src="/images/icons/${info[i].icon}.svg" class="infoIcon">
                         ${link == "" ? `<span>` : `<a class="blackLink" href="${link}" target="_blank" rel="noopener noreferrer">`}${info[i].content}${link == "" ? `</span>` : `</a>`}
                     </div>`;
       }

@@ -1036,13 +1036,13 @@ const tmlRender = () => {
         mouseY < tmlCanvasH / 6
       ) {
         timelineContainer.style.cursor =
-          "url('/images/parts/cursor/blueSelect.cur'), pointer";
+          "url('/images/cursors/select.cur'), pointer";
       } else {
         timelineContainer.style.cursor = "";
       }
     } else {
       timelineContainer.style.cursor =
-        "url('/images/parts/cursor/blueSelect.cur'), pointer";
+        "url('/images/cursors/select.cur'), pointer";
     }
   } catch (e) {
     displayMessage("Error", `[Runtime] ${e}`);
@@ -1425,7 +1425,7 @@ const cntRender = () => {
         componentView.style.cursor = "";
       } else {
         componentView.style.cursor =
-          "url('/images/parts/cursor/blueSelect.cur'), pointer";
+          "url('/images/cursors/select.cur'), pointer";
       }
     }
 

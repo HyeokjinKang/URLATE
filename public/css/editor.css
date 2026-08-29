@@ -16,7 +16,7 @@ body {
   background-repeat: repeat;
   width: 100vw;
   height: 100vh;
-  cursor: url("/images/parts/cursor/blueCursor.cur"), default;
+  cursor: url("/images/cursors/default.cur"), default;
   margin: 0;
   padding: 0;
   text-align: center;
@@ -132,11 +132,11 @@ body {
 }
 
 .sidebar-expand {
-  content: url("/icons/sidebar-expand.svg");
+  content: url("/images/icons/sidebar-expand.svg");
 }
 
 .sidebar-collapse {
-  content: url("/icons/sidebar-collapse.svg");
+  content: url("/images/icons/sidebar-collapse.svg");
 }
 
 .backText {
@@ -240,7 +240,7 @@ body {
 }
 
 .clickable {
-  cursor: url("/images/parts/cursor/blueSelect.cur"), pointer;
+  cursor: url("/images/cursors/select.cur"), pointer;
 }
 
 #canvasContainer {
@@ -535,11 +535,11 @@ body {
 }
 
 .timeline-play {
-  content: url("/icons/play-solid.svg");
+  content: url("/images/icons/play-solid.svg");
 }
 
 .timeline-pause {
-  content: url("/icons/pause-solid.svg");
+  content: url("/images/icons/pause-solid.svg");
 }
 
 #metronome {
