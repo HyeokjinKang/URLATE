@@ -13,7 +13,6 @@ import {
   setStaticPageCsp,
 } from "./middleware";
 import { inlineCss } from "./assets";
-import { FeedLang, feedIndexUrl, getFeed, initFeeds } from "./feeds";
 import { initProfile, profileRouter } from "./profile";
 import { URL } from "url";
 import { createHash, randomBytes } from "crypto";
@@ -217,25 +216,12 @@ const authPageLimiter = rateLimit({
   handler: (req, res) => sendError(req, res, 429),
 });
 
-// i18n attaches __() to the response but ships no Express type augmentation.
-// Reading the locale through it keeps the route and the view on one source of
-// truth -- the view asks the same question as `__('lang')`.
-const currentLang = (res: Response): FeedLang =>
-  (res as Response & { __: (phrase: string) => string }).__("lang") === "ko"
-    ? "ko"
-    : "en";
-
 app.get("/", authPageLimiter, (req, res) => {
-  const lang = currentLang(res);
   res.render("index", {
     googleClientId: googleClientId,
     cspNonce: withAuthPageCsp(res, true),
     ver: config.project.mode == "test" ? Date.now() : version,
     branch: branch,
-    announcements: getFeed("announcements", lang),
-    journal: getFeed("journal", lang),
-    announcementsUrl: feedIndexUrl("announcements", lang),
-    journalUrl: feedIndexUrl("journal", lang),
   });
 });
 
@@ -499,9 +485,6 @@ process.on("uncaughtException", (error: Error) => {
 (async () => {
   try {
     await initProfile();
-    // Warms the MIRAI feed cache so the first visitor gets a filled fold. It
-    // never throws -- a failed warm-up leaves the rails empty until the next tick.
-    await initFeeds();
 
     // Defaults to loopback since a reverse proxy sits in front; a wildcard bind
     // would expose the port directly regardless of firewall policy.

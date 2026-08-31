@@ -1,4 +1,4 @@
-/* global api, projectUrl, loginFailed, loginError */
+/* global api, projectUrl, lang, loginFailed, loginError */
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 // The game itself needs a Blink or Gecko engine and a real pointer, so there is
@@ -31,11 +31,104 @@ function sizeSigninButton() {
 
 sizeSigninButton();
 
+// Both rails are filled from the API rather than rendered with the page: the
+// feeds are the one part of the fold that goes stale, and keeping them out of
+// the HTML keeps the document cacheable.
+const FEED_ORIGIN = "https://mirai.urlate.coupy.dev";
+const FEED_LIMIT = 3;
+
+// The API hands back an ISO instant. Rendered in UTC so the date under a title
+// does not shift by a day depending on where the reader is.
+function feedDate(iso) {
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return null;
+  const pad = (n) => String(n).padStart(2, "0");
+  const y = at.getUTCFullYear();
+  const m = pad(at.getUTCMonth() + 1);
+  const d = pad(at.getUTCDate());
+  return { attr: `${y}-${m}-${d}`, text: `${y}.${m}.${d}` };
+}
+
+// Anything that ends up in an href is checked first: a bad or rewritten entry
+// must not be able to put a `javascript:` URL behind a link on the page.
+function feedUrl(raw) {
+  try {
+    const url = new URL(raw);
+    return url.origin === FEED_ORIGIN ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+function feedRow(entry) {
+  const url = feedUrl(entry.url);
+  const date = feedDate(entry.date);
+  if (!url || !date || typeof entry.title !== "string" || !entry.title) {
+    return null;
+  }
+
+  const row = document.createElement("li");
+  row.className = "feed__row";
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+
+  const time = document.createElement("time");
+  time.className = "feed__date";
+  time.dateTime = date.attr;
+  time.textContent = date.text;
+
+  const title = document.createElement("span");
+  title.className = "feed__title";
+  // textContent, not innerHTML -- the title is somebody else's copy.
+  title.textContent = entry.title;
+
+  link.append(time, title);
+  row.append(link);
+  return row;
+}
+
+function fillFeed(name) {
+  const list = document.querySelector(`.feed__list[data-feed="${name}"]`);
+  const empty = document.querySelector(`[data-feed-empty="${name}"]`);
+  if (!list || !empty) return;
+
+  const showEmpty = () => {
+    list.classList.add("hide");
+    empty.classList.remove("hide");
+  };
+
+  fetch(`${api}/${name}/${lang}?limit=${FEED_LIMIT}`)
+    .then(readJson)
+    .then((body) => {
+      if (body.result != "success" || !Array.isArray(body.data)) {
+        throw new Error(`Unexpected ${name} response.`);
+      }
+      const rows = body.data.map(feedRow).filter(Boolean);
+      if (!rows.length) {
+        showEmpty();
+        return;
+      }
+      list.append(...rows);
+    })
+    .catch((error) => {
+      // A rail that cannot load is not worth blocking the page over; say so in
+      // its own space and leave the rest of the fold alone.
+      console.error(error);
+      showEmpty();
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   if (!canPlay) {
     document.querySelector(".plate__enter").classList.add("is-unsupported");
     document.getElementById("unsupportedNotice").classList.remove("hide");
   }
+
+  fillFeed("notices");
+  fillFeed("posts");
 
   fetch(`${api}/auth/status`, {
     method: "GET",

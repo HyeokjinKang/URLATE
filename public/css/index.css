@@ -105,6 +105,12 @@ button:focus-visible {
   outline-offset: 3px;
 }
 
+/* Every pair on this page -- a list and its empty state, the sign-in button and
+   the reason it is missing -- shows one side and hides the other. */
+.hide {
+  display: none;
+}
+
 .rule {
   border: 0;
   height: 0;
@@ -276,10 +282,6 @@ button:focus-visible {
   color: var(--color-on-ink-accent);
 }
 
-#loginNotice.hide {
-  display: none;
-}
-
 /* ---- The two feeds ------------------------------------------------------- */
 
 .feeds {
@@ -332,6 +334,9 @@ button:focus-visible {
   list-style: none;
   background: var(--color-paper);
   border-bottom: 1px solid var(--color-rail);
+  /* The rows arrive after paint, so the box holds their height from the start
+     and the fold does not jump when they land. */
+  min-height: calc(3 * (2 * var(--space-sm) + 1.55rem) + 2 * var(--rule-hair));
 }
 
 .feed .feed__list {
@@ -611,7 +616,6 @@ button:focus-visible {
 }
 
 /* "Sign in" over a message saying you cannot is a label with nothing under it. */
-#unsupportedNotice.hide,
 .is-unsupported .g_id_signin,
 .is-unsupported .plate__enter-label {
   display: none;

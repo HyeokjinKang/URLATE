@@ -81,46 +81,26 @@
         </div>
       </section>
 
+      <%# MIRAI serves English from its root and every other locale from a prefix. %>
+      <% const mirai = __('lang') === 'en' ? 'https://mirai.urlate.coupy.dev' : `https://mirai.urlate.coupy.dev/${__('lang')}`; %>
       <section class="shell feeds" aria-label="<%= __('idx_feeds_label') %>">
         <div class="feed">
           <div class="feed__head">
             <h2 class="label"><%= __('idx_feed_notice') %></h2>
-            <a class="feed__all label" href="<%= announcementsUrl %>" target="_blank" rel="noopener noreferrer"><%= __('idx_feed_all') %> <span aria-hidden="true">&rarr;</span></a>
+            <a class="feed__all label" href="<%= mirai %>/announcements" target="_blank" rel="noopener noreferrer"><%= __('idx_feed_all') %> <span aria-hidden="true">&rarr;</span></a>
           </div>
-          <% if(announcements.length) { %>
-          <ol class="feed__list">
-            <% announcements.forEach(function(item) { %>
-            <li class="feed__row">
-              <a href="<%= item.url %>" target="_blank" rel="noopener noreferrer">
-                <time class="feed__date" datetime="<%= item.iso %>"><%= item.date %></time>
-                <span class="feed__title"><%= item.title %></span>
-              </a>
-            </li>
-            <% }); %>
-          </ol>
-          <% } else { %>
-          <p class="feed__empty"><%= __('idx_feed_empty') %></p>
-          <% } %>
+          <%# Filled by index.js from the API. The list keeps its height while empty
+              so the fold does not move once the rows arrive. %>
+          <ol class="feed__list" data-feed="notices"></ol>
+          <p class="feed__empty hide" data-feed-empty="notices"><%= __('idx_feed_empty') %></p>
         </div>
         <div class="feed feed--second">
           <div class="feed__head">
             <h2 class="label"><%= __('idx_feed_journal') %></h2>
-            <a class="feed__all label" href="<%= journalUrl %>" target="_blank" rel="noopener noreferrer"><%= __('idx_feed_all') %> <span aria-hidden="true">&rarr;</span></a>
+            <a class="feed__all label" href="<%= mirai %>/" target="_blank" rel="noopener noreferrer"><%= __('idx_feed_all') %> <span aria-hidden="true">&rarr;</span></a>
           </div>
-          <% if(journal.length) { %>
-          <ol class="feed__list">
-            <% journal.forEach(function(item) { %>
-            <li class="feed__row">
-              <a href="<%= item.url %>" target="_blank" rel="noopener noreferrer">
-                <time class="feed__date" datetime="<%= item.iso %>"><%= item.date %></time>
-                <span class="feed__title"><%= item.title %></span>
-              </a>
-            </li>
-            <% }); %>
-          </ol>
-          <% } else { %>
-          <p class="feed__empty"><%= __('idx_feed_empty') %></p>
-          <% } %>
+          <ol class="feed__list" data-feed="posts"></ol>
+          <p class="feed__empty hide" data-feed-empty="posts"><%= __('idx_feed_empty') %></p>
         </div>
       </section>
 
