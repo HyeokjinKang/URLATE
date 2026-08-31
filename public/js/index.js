@@ -1,6 +1,11 @@
 /* global api, projectUrl, loginFailed, loginError */
-const safariBlocker = document.getElementById("safariBlocker");
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+// The game itself needs a Blink or Gecko engine and a real pointer, so there is
+// nothing behind the sign-in for Safari or for a touch device. The page still
+// reads -- only signing in is closed off, and the callback below refuses too, so
+// One Tap cannot slip a session past the hidden button.
+const canPlay = !isSafari && window.matchMedia("(pointer: fine)").matches;
 
 // A 4xx/5xx response body isn't guaranteed to be JSON (a proxy's HTML error page,
 // for example), so check the status before parsing to avoid a misleading error.
@@ -12,8 +17,9 @@ function readJson(res) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  if (isSafari) {
-    safariBlocker.classList.remove("hide");
+  if (!canPlay) {
+    document.querySelector(".plate__enter").classList.add("is-unsupported");
+    document.getElementById("unsupportedNotice").classList.remove("hide");
   }
 
   fetch(`${api}/auth/status`, {
@@ -39,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // result is final by this point. Shown inline rather than via alert, since an ad
 // blocker would trigger this on every visit and a popup each time is disruptive.
 window.addEventListener("load", () => {
+  if (!canPlay) return;
   if (!window.google || !window.google.accounts || !window.google.accounts.id) {
     console.error("Google Identity Services failed to load.");
     document.getElementById("loginNotice").classList.remove("hide");
@@ -47,6 +54,9 @@ window.addEventListener("load", () => {
 
 // eslint-disable-next-line no-unused-vars
 function handleCredentialResponse(authResult) {
+  // Reachable via One Tap even with the button hidden.
+  if (!canPlay) return;
+
   fetch(`${api}/auth/login`, {
     method: "POST",
     credentials: "include",

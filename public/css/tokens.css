@@ -13,6 +13,9 @@
   --color-paper-2: oklch(97.2% 0.004 255);
   --color-paper-3: oklch(94.5% 0.005 255);
   --color-rule: oklch(88% 0.006 255);
+  /* The exposed column grid runs behind running text, so it is drawn lighter
+     than the hairlines that divide content. */
+  --color-rail: oklch(93.5% 0.005 255);
   --color-neutral: oklch(60% 0.008 255);
   --color-muted: oklch(46% 0.01 255);
   --color-ink: oklch(16% 0.01 255);

@@ -30,15 +30,11 @@
       data-auto_prompt="true"
       data-use_fedcm_for_prompt="true"
     ></div>
-    <div id="safariBlocker" class="hide"><%= __('safari_alert') %></div>
-
     <%# The theme's ground: the 12 column rules, drawn in public behind everything. %>
     <div class="rails" aria-hidden="true"></div>
 
     <header class="shell mast">
       <p class="mast__issue label">
-        URLATE LITE
-        <span class="mast__sep" aria-hidden="true">·</span>
         <% if(branch != "main") { %>
         <span><%= branch %></span>
         <% } else { %>
@@ -48,7 +44,7 @@
         <span><%= __('idx_issue_state') %></span>
       </p>
       <div class="mast__row">
-        <a class="mast__name" href="/">urlate<i class="period" aria-hidden="true"></i></a>
+        <a class="mast__name" href="/">Project URLATE-v3l<i class="period" aria-hidden="true"></i></a>
         <nav class="mast__nav label" aria-label="<%= __('idx_nav_label') %>">
           <a href="/info"><%= __('idx_nav_info') %></a>
           <a href="https://github.com/HyeokjinKang/URLATE" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -67,18 +63,22 @@
       <section class="plate" aria-labelledby="claim">
         <div class="shell plate__inner">
           <div class="plate__brand">
-            <%# logo-lite.webp sets "LITE" in black beneath the mark, which disappears
-                on the ink plate; this crop is the mark alone, and the masthead's issue
-                line carries the full "URLATE LITE" in type. %>
+            <%# Placeholder until a white version of the mark exists. logo-lite.webp is a
+                semi-transparent violet gradient -- under 5% of it is near-white -- so a
+                white lockup cannot be derived from it; this is the same mark with the
+                black "LITE" wordmark cropped off, since that vanished on the ink plate.
+                To swap: drop the white asset in public/images/brand/ and change the src
+                here and the preload in <head>. %>
             <img src="/images/brand/logo-lite-mark.webp" id="logo" class="plate__logo" alt="<%= __('index_logoAlt') %>" width="1000" height="612" />
-            <h1 class="plate__claim" id="claim"><%= __('idx_claim') %><i class="period period--on-ink" aria-hidden="true"></i></h1>
+            <%# The tagline is the brand's own line and is not translated. %>
+            <h1 class="plate__claim" id="claim" lang="en">Avoid &amp; Get on the tempo<i class="period period--on-ink" aria-hidden="true"></i></h1>
             <p class="plate__lede"><%= __('idx_lede') %></p>
           </div>
           <div class="plate__enter">
             <p class="label plate__enter-label"><%= __('idx_signin') %></p>
             <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
             <p id="loginNotice" class="hide"><%= __('login_blocked') %></p>
-            <p class="plate__note"><%= __('idx_signin_note') %></p>
+            <p id="unsupportedNotice" class="hide"><%= __('idx_unsupported') %></p>
             <p class="plate__warn"><%= __('idx_reset_warning') %></p>
           </div>
         </div>

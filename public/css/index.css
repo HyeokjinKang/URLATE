@@ -12,6 +12,9 @@
  *     mark, the sign-in and both feeds, so it cannot also hold a poster headline.
  *   - The plate is ink rather than the signal ink: the brand mark is white-lettered
  *     with a violet ground, and a violet mark on an ultramarine field fights itself.
+ *   - Display is not force-lowercased. The masthead title and the tagline are set
+ *     strings ("Project URLATE-v3l", "Avoid & Get on the tempo"); case comes from
+ *     the copy, and the copy this file authors is already lowercase.
  */
 
 html {
@@ -58,13 +61,13 @@ body {
   pointer-events: none;
   background-image: repeating-linear-gradient(
     to right,
-    var(--color-rule) 0,
-    var(--color-rule) 1px,
+    var(--color-rail) 0,
+    var(--color-rail) 1px,
     transparent 1px,
     transparent calc(100% / var(--columns))
   );
   /* The gradient draws lines 0/12 through 11/12; this closes the right edge. */
-  box-shadow: inset -1px 0 0 var(--color-rule);
+  box-shadow: inset -1px 0 0 var(--color-rail);
 }
 
 .shell {
@@ -86,9 +89,9 @@ body {
 /* The smallest mark in the kit: a solid square where a full stop would fall. */
 .period {
   display: inline-block;
-  width: 0.52em;
-  height: 0.52em;
-  margin-inline-start: 0.12em;
+  width: 0.3em;
+  height: 0.3em;
+  margin-inline-start: 0.16em;
   background: var(--color-accent);
 }
 
@@ -105,7 +108,7 @@ button:focus-visible {
 .rule {
   border: 0;
   height: 0;
-  margin: 0;
+  margin-block: 0;
 }
 
 .rule--ink {
@@ -148,12 +151,12 @@ button:focus-visible {
   align-items: flex-end;
   font-family: var(--font-display);
   font-weight: var(--display-weight);
-  font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+  font-size: clamp(1.125rem, 2.6vw, 2.25rem);
   letter-spacing: var(--tracking-display);
   line-height: 0.9;
-  text-transform: lowercase;
   color: var(--color-ink);
   text-decoration: none;
+  overflow-wrap: anywhere;
 }
 
 .mast__nav {
@@ -208,14 +211,14 @@ button:focus-visible {
   position: relative;
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: var(--space-lg);
   align-items: end;
   padding-block: var(--space-xl);
 }
 
 .plate__brand {
-  grid-column: 1 / span 7;
+  grid-column: 1 / span 6;
   min-width: 0;
+  padding-inline-end: var(--space-lg);
 }
 
 .plate__enter {
@@ -237,16 +240,18 @@ button:focus-visible {
   font-size: var(--text-display-s);
   letter-spacing: var(--tracking-display);
   line-height: var(--lh-display);
-  text-transform: lowercase;
   overflow-wrap: anywhere;
   color: var(--color-on-ink);
 }
 
 .plate__lede {
   margin: 0;
-  max-width: 44ch;
   font-size: var(--text-md);
   color: var(--color-on-ink-muted);
+}
+
+.g_id_signin {
+  max-width: 400px;
 }
 
 .plate__enter-label {
@@ -254,15 +259,9 @@ button:focus-visible {
   color: var(--color-on-ink-muted);
 }
 
-.plate__note {
-  margin: var(--space-sm) 0 0;
-  font-size: var(--text-sm);
-  color: var(--color-on-ink-muted);
-}
-
 /* The bar: a signal rule cut to the column, never full-bleed. */
 .plate__warn {
-  margin: var(--space-md) 0 0;
+  margin: var(--space-lg) 0 0;
   padding-top: var(--space-2xs);
   border-top: var(--rule-signal) solid var(--color-on-ink-accent);
   font-size: var(--text-sm);
@@ -293,13 +292,14 @@ button:focus-visible {
 }
 
 .feed {
-  grid-column: span 6;
+  grid-column: 1 / span 6;
   min-width: 0;
 }
 
+/* A whole empty column divides the two rails -- cleaner than a hairline, and it
+   keeps both fills flush to a grid line. */
 .feed--second {
-  border-inline-start: var(--rule-hair) solid var(--color-rule);
-  padding-inline-start: var(--space-lg);
+  grid-column: 8 / span 5;
 }
 
 .feed__head {
@@ -307,6 +307,7 @@ button:focus-visible {
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-sm);
+  padding-inline: var(--space-sm);
   padding-bottom: var(--space-2xs);
   border-bottom: var(--rule-thick) solid var(--color-ink);
 }
@@ -330,6 +331,7 @@ button:focus-visible {
   margin: 0;
   padding: 0;
   list-style: none;
+  background: var(--color-paper-2);
 }
 
 .feed__row + .feed__row {
@@ -341,7 +343,7 @@ button:focus-visible {
   grid-template-columns: max-content minmax(0, 1fr);
   gap: var(--space-md);
   align-items: baseline;
-  padding: var(--space-sm) 0;
+  padding: var(--space-sm);
   color: var(--color-ink);
   text-decoration: none;
   transition: background-color var(--dur-short) var(--ease-out);
@@ -360,7 +362,7 @@ button:focus-visible {
 
 .feed__row a:hover,
 .feed__row a:focus-visible {
-  background: var(--color-paper-2);
+  background: var(--color-paper-3);
 }
 
 .feed__row a:hover .feed__title,
@@ -369,7 +371,9 @@ button:focus-visible {
 }
 
 .feed__empty {
-  margin: var(--space-md) 0 0;
+  margin: 0;
+  padding: var(--space-md) var(--space-sm);
+  background: var(--color-paper-2);
   color: var(--color-muted);
   font-size: var(--text-sm);
 }
@@ -381,7 +385,6 @@ button:focus-visible {
   overflow: clip;
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: var(--space-lg);
   align-items: start;
   padding-block: clamp(3.5rem, 8vw, 7rem);
 }
@@ -390,6 +393,10 @@ button:focus-visible {
 .stage__figure {
   position: relative;
   min-width: 0;
+}
+
+.stage__text {
+  padding-inline-end: var(--space-lg);
 }
 
 .stage--right .stage__text {
@@ -430,13 +437,11 @@ button:focus-visible {
   font-size: var(--text-display);
   letter-spacing: var(--tracking-display);
   line-height: var(--lh-display);
-  text-transform: lowercase;
   overflow-wrap: anywhere;
 }
 
 .stage__body {
   margin: 0;
-  max-width: 40ch;
   font-size: var(--text-md);
 }
 
@@ -502,7 +507,6 @@ button:focus-visible {
   font-size: var(--text-display-s);
   letter-spacing: var(--tracking-display);
   line-height: var(--lh-display);
-  text-transform: lowercase;
   overflow-wrap: anywhere;
 }
 
@@ -568,7 +572,7 @@ button:focus-visible {
 
 .colophon p {
   margin: 0;
-  max-width: 78ch;
+  max-width: calc(100% / 12 * 9);
   font-size: var(--text-sm);
   line-height: 1.8;
   color: var(--color-muted);
@@ -590,23 +594,20 @@ button:focus-visible {
   border-bottom-color: var(--color-accent);
 }
 
-/* ---- Safari is turned away before it can try to play --------------------- */
+/* ---- Browsers that cannot run the game ----------------------------------- */
 
-#safariBlocker {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-overlay);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-lg);
-  background: var(--color-ink);
-  color: var(--color-on-ink);
-  font-size: var(--text-md);
-  text-align: center;
+/* The page still reads on Safari and on a phone -- only signing in is closed,
+   since the game behind it needs a mouse, a keyboard and a Blink/Gecko engine. */
+#unsupportedNotice {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-on-ink-accent);
 }
 
-#safariBlocker.hide {
+/* "Sign in" over a message saying you cannot is a label with nothing under it. */
+#unsupportedNotice.hide,
+.is-unsupported .g_id_signin,
+.is-unsupported .plate__enter-label {
   display: none;
 }
 
@@ -618,9 +619,24 @@ button:focus-visible {
      the gap doing the row rhythm. Spans are `1 / -1` rather than `span 12`, or
      the collapsed grid would generate eleven implicit columns. */
   .plate__inner,
-  .feeds,
   .stage {
     grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .feeds {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* One track wide, the column that held the air is gone, so the padding that
+     kept text off the next rail goes with it. */
+  .plate__brand,
+  .stage__text {
+    padding-inline-end: 0;
+  }
+
+  .colophon p {
+    max-width: none;
   }
 
   .plate__brand,
@@ -650,8 +666,6 @@ button:focus-visible {
 
   .feed--second {
     margin-top: var(--space-xl);
-    padding-inline-start: 0;
-    border-inline-start: 0;
   }
 
   .stage__figure {
