@@ -11,10 +11,6 @@ function readJson(res) {
   return res.json();
 }
 
-document.addEventListener("contextmenu", (event) => {
-  event.preventDefault();
-});
-
 document.addEventListener("DOMContentLoaded", () => {
   if (isSafari) {
     safariBlocker.classList.remove("hide");

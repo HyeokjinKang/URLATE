@@ -1,151 +1,748 @@
+/* Hallmark · genre: editorial · macrostructure: Narrative Workflow · theme: Grid
+ * enrichment: none (real captures in ruled figure cells) · nav: N6 masthead (left-slammed)
+ * footer: Ft4 dense colophon · signal ink: ultramarine · pre-emit critique: P5 H5 E4 S5 R5 V4
+ *
+ * Tone: rational, plainspoken, institutional. Audience: someone who has just been
+ * handed a link and does not yet know what URLATE is. One action: sign in.
+ *
+ * Deviations from the Grid spec, all forced by the project rather than chosen:
+ *   - Display is Montserrat 800, not Archivo. The CSP allows one font origin and
+ *     Archivo covers no Korean; Pretendard backs the same stack up.
+ *   - Display tops out at 5.25rem, not 136px. The fold is required to hold the
+ *     mark, the sign-in and both feeds, so it cannot also hold a poster headline.
+ *   - The plate is ink rather than the signal ink: the brand mark is white-lettered
+ *     with a violet ground, and a violet mark on an ultramarine field fights itself.
+ */
+
+html {
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+html,
 body {
-  line-height: 1.2;
+  overflow-x: clip;
+}
+
+body {
   margin: 0;
-  padding: 0;
-  text-align: center;
-  font-family:
-    "Montserrat",
-    "Pretendard JP Variable",
-    "Pretendard JP",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    Roboto,
-    "Helvetica Neue",
-    "Segoe UI",
-    "Hiragino Sans",
-    "Apple SD Gothic Neo",
-    Meiryo,
-    "Noto Sans JP",
-    "Noto Sans KR",
-    "Malgun Gothic",
-    Osaka,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--lh-body);
   font-feature-settings: "ss05";
-  letter-spacing: -0.3px;
-  overflow: hidden;
-  user-select: none;
+  -webkit-font-smoothing: antialiased;
 }
 
-#animContainer {
-  width: 100vw;
-  height: 100vh;
-  background: url(/images/backgrounds/main.webp);
-  background-size: cover;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 0;
+::selection {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+}
+
+/* The ground. Twelve column rules drawn in public, capped to the shell, running
+   the height of the window -- vertical lines look identical fixed or scrolled. */
+.rails {
   position: fixed;
-  top: 0;
-  left: 0;
-}
-
-#logoContainer {
-  position: relative;
-  z-index: 1;
-  width: 100vw;
-  height: 60vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-#buttonContainer {
-  width: 100vw;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  margin-top: 2vh;
-  transition-duration: 0s;
-}
-
-#logo {
-  height: 30vh;
-}
-
-#footerLeft {
-  position: fixed;
-  text-align: left;
-  font-size: 0.8em;
-  color: #aaa;
-  left: 2vh;
-  bottom: 2vh;
-}
-
-#footerRight {
-  text-align: right;
-  position: fixed;
-  font-size: 0.8em;
-  color: #aaa;
-  right: 2vh;
-  bottom: 2vh;
-}
-
-.link {
-  color: #000000dd;
-}
-
-.bottomLang {
-  text-decoration: none;
-  color: #000000dd;
-  font-size: 1em;
-}
-
-#allImage {
-  margin-left: 0.5vw;
-  height: 6vh;
-}
-
-#safariBlocker {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: black;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  opacity: 1;
-  font-size: 1em;
-}
-
-#safariBlocker.hide {
-  font-size: 2em;
-  opacity: 0;
+  inset-block: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100% - 2 * var(--page-gutter), var(--shell));
+  z-index: var(--z-rails);
   pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--color-rule) 0,
+    var(--color-rule) 1px,
+    transparent 1px,
+    transparent calc(100% / var(--columns))
+  );
+  /* The gradient draws lines 0/12 through 11/12; this closes the right edge. */
+  box-shadow: inset -1px 0 0 var(--color-rule);
 }
 
-/* Only shown when the GSI script is blocked. Since only login is affected, this
-   sits next to the button instead of covering the whole screen. */
+.shell {
+  position: relative;
+  z-index: var(--z-content);
+  width: min(100% - 2 * var(--page-gutter), var(--shell));
+  margin-inline: auto;
+}
+
+/* The quiet caps counterpoint to the display: captions, meta rows, table heads. */
+.label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* The smallest mark in the kit: a solid square where a full stop would fall. */
+.period {
+  display: inline-block;
+  width: 0.52em;
+  height: 0.52em;
+  margin-inline-start: 0.12em;
+  background: var(--color-accent);
+}
+
+.period--on-ink {
+  background: var(--color-on-ink-accent);
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: var(--rule-thick) solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.rule {
+  border: 0;
+  height: 0;
+  margin: 0;
+}
+
+.rule--ink {
+  border-top: var(--rule-thick) solid var(--color-ink);
+}
+
+/* ---- N6 masthead, slammed left ------------------------------------------- */
+
+/* Two hairlines set 3px apart -- the masthead's double rule, drawn as the row's
+   own bottom border plus this one rather than as a border-heavy element. */
+.mast {
+  padding-top: var(--space-md);
+  padding-bottom: var(--rule-signal);
+  border-bottom: var(--rule-hair) solid var(--color-ink);
+}
+
+.mast__issue {
+  margin: 0 0 var(--space-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.6ch;
+}
+
+.mast__sep {
+  color: var(--color-rule);
+}
+
+.mast__row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  padding-bottom: var(--space-sm);
+  border-bottom: var(--rule-hair) solid var(--color-ink);
+}
+
+.mast__name {
+  display: inline-flex;
+  align-items: flex-end;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+  letter-spacing: var(--tracking-display);
+  line-height: 0.9;
+  text-transform: lowercase;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.mast__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding-bottom: var(--space-3xs);
+}
+
+.mast__nav a {
+  color: var(--color-ink);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: var(--rule-hair) solid transparent;
+  transition: border-color var(--dur-short) var(--ease-out);
+}
+
+.mast__nav a:hover {
+  border-bottom-color: var(--color-accent);
+}
+
+/* ---- The plate: the page's one flooded band ------------------------------ */
+
+.plate {
+  position: relative;
+  z-index: var(--z-content);
+  overflow: clip;
+  margin-top: var(--space-lg);
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+}
+
+/* The rails carry on across the plate so the grid is never interrupted. */
+.plate::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100% - 2 * var(--page-gutter), var(--shell));
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to right,
+    color-mix(in oklab, var(--color-paper) 15%, transparent) 0,
+    color-mix(in oklab, var(--color-paper) 15%, transparent) 1px,
+    transparent 1px,
+    transparent calc(100% / var(--columns))
+  );
+}
+
+.plate__inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--space-lg);
+  align-items: end;
+  padding-block: var(--space-xl);
+}
+
+.plate__brand {
+  grid-column: 1 / span 7;
+  min-width: 0;
+}
+
+.plate__enter {
+  grid-column: 9 / span 4;
+  min-width: 0;
+}
+
+.plate__logo {
+  display: block;
+  width: clamp(170px, 20vw, 260px);
+  height: auto;
+  margin-bottom: var(--space-md);
+}
+
+.plate__claim {
+  margin: 0 0 var(--space-sm);
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-display-s);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--lh-display);
+  text-transform: lowercase;
+  overflow-wrap: anywhere;
+  color: var(--color-on-ink);
+}
+
+.plate__lede {
+  margin: 0;
+  max-width: 44ch;
+  font-size: var(--text-md);
+  color: var(--color-on-ink-muted);
+}
+
+.plate__enter-label {
+  margin: 0 0 var(--space-sm);
+  color: var(--color-on-ink-muted);
+}
+
+.plate__note {
+  margin: var(--space-sm) 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-on-ink-muted);
+}
+
+/* The bar: a signal rule cut to the column, never full-bleed. */
+.plate__warn {
+  margin: var(--space-md) 0 0;
+  padding-top: var(--space-2xs);
+  border-top: var(--rule-signal) solid var(--color-on-ink-accent);
+  font-size: var(--text-sm);
+  color: var(--color-on-ink);
+}
+
+.plate :focus-visible {
+  outline-color: var(--color-on-ink-accent);
+}
+
 #loginNotice {
-  z-index: 1;
-  margin: 1vh;
-  max-width: 80vw;
-  color: #d98a8a;
-  font-size: 0.8em;
+  margin: var(--space-2xs) 0 0;
+  max-width: 34ch;
+  font-size: var(--text-sm);
+  color: var(--color-on-ink-accent);
 }
 
 #loginNotice.hide {
   display: none;
 }
 
-#policies {
-  z-index: 1;
-  margin: 1vh;
+/* ---- The two feeds ------------------------------------------------------- */
+
+.feeds {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  padding-block: var(--space-xl) var(--space-2xl);
 }
 
-.bottomPolicy {
-  color: #7f89bc;
+.feed {
+  grid-column: span 6;
+  min-width: 0;
+}
+
+.feed--second {
+  border-inline-start: var(--rule-hair) solid var(--color-rule);
+  padding-inline-start: var(--space-lg);
+}
+
+.feed__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-2xs);
+  border-bottom: var(--rule-thick) solid var(--color-ink);
+}
+
+.feed__head h2 {
+  margin: 0;
+  color: var(--color-ink);
+}
+
+.feed__all {
+  color: var(--color-accent);
   text-decoration: none;
-  font-size: 0.8em;
+  white-space: nowrap;
+}
+
+.feed__all:hover {
+  text-decoration: underline;
+}
+
+.feed__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feed__row + .feed__row {
+  border-top: var(--rule-hair) solid var(--color-rule);
+}
+
+.feed__row a {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-md);
+  align-items: baseline;
+  padding: var(--space-sm) 0;
+  color: var(--color-ink);
+  text-decoration: none;
+  transition: background-color var(--dur-short) var(--ease-out);
+}
+
+.feed__date {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+  letter-spacing: 0.02em;
+  color: var(--color-muted);
+}
+
+.feed__title {
+  transition: transform var(--dur-short) var(--ease-out);
+}
+
+.feed__row a:hover,
+.feed__row a:focus-visible {
+  background: var(--color-paper-2);
+}
+
+.feed__row a:hover .feed__title,
+.feed__row a:focus-visible .feed__title {
+  transform: translateX(8px);
+}
+
+.feed__empty {
+  margin: var(--space-md) 0 0;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+/* ---- 1.0 -> 4.0 ---------------------------------------------------------- */
+
+.stage {
+  position: relative;
+  overflow: clip;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--space-lg);
+  align-items: start;
+  padding-block: clamp(3.5rem, 8vw, 7rem);
+}
+
+.stage__text,
+.stage__figure {
+  position: relative;
+  min-width: 0;
+}
+
+.stage--right .stage__text {
+  grid-column: 1 / span 4;
+}
+
+.stage--right .stage__figure {
+  grid-column: 6 / span 7;
+}
+
+.stage--left .stage__text {
+  grid-column: 9 / span 4;
+}
+
+.stage--left .stage__figure {
+  grid-column: 1 / span 7;
+}
+
+.stage--wide .stage__text {
+  grid-column: 1 / span 6;
+}
+
+.stage--wide .stage__figure {
+  grid-column: 1 / span 12;
+  margin-top: var(--space-md);
+}
+
+.stage__no {
+  margin: 0 0 var(--space-2xs);
+  color: var(--color-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.stage__title {
+  margin: 0 0 var(--space-sm);
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-display);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--lh-display);
+  text-transform: lowercase;
+  overflow-wrap: anywhere;
+}
+
+.stage__body {
+  margin: 0;
+  max-width: 40ch;
+  font-size: var(--text-md);
+}
+
+.stage__figure {
+  margin: 0;
+}
+
+.stage__figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: var(--rule-hair) solid var(--color-rule);
+}
+
+.stage__figure figcaption {
+  margin-top: var(--space-2xs);
+}
+
+/* The numeral is an object, not a heading: cropped by the band edge, set behind
+   the stage it indexes. It sits under the text column, so it follows the text
+   as that column steps across the page. */
+.stage__numeral {
+  position: absolute;
+  bottom: -0.2em;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: clamp(120px, 22vw, 320px);
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  color: color-mix(in oklab, var(--color-ink) 8%, transparent);
+  user-select: none;
+}
+
+.stage--right .stage__numeral {
+  left: 0;
+}
+
+.stage--left .stage__numeral {
+  right: 0;
+}
+
+/* 4.0's figure runs the full width beneath the text, so the only edge left to
+   crop against is the top one. */
+.stage--wide .stage__numeral {
+  right: 0;
+  top: -0.24em;
+  bottom: auto;
+}
+
+/* ---- The spec sheet: the one band with no figure ------------------------- */
+
+.spec {
+  padding-block: var(--space-lg) clamp(4rem, 8vw, 7rem);
+}
+
+.spec__title {
+  position: relative;
+  margin: 0 0 var(--space-lg);
+  padding-top: var(--space-md);
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-display-s);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--lh-display);
+  text-transform: lowercase;
+  overflow-wrap: anywhere;
+}
+
+.spec__title::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(64px, 12vw, 160px);
+  height: var(--rule-signal);
+  background: var(--color-accent);
+}
+
+.spec__list {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  margin: 0;
+  border-top: var(--rule-hair) solid var(--color-rule);
+}
+
+.spec__cell {
+  grid-column: span 4;
+  min-width: 0;
+  padding: var(--space-md) var(--space-md) var(--space-md) 0;
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+  border-inline-start: var(--rule-hair) solid var(--color-rule);
+  padding-inline-start: var(--space-md);
+}
+
+/* The band reads as one ruled object, so the row's leading cell has no rule. */
+.spec__cell:nth-child(3n + 1) {
+  border-inline-start: 0;
+  padding-inline-start: 0;
+}
+
+.spec__cell dt {
+  margin-bottom: var(--space-2xs);
+}
+
+.spec__cell dd {
+  margin: 0;
+}
+
+.spec__cell dd a {
+  display: block;
+  width: fit-content;
+  color: var(--color-accent);
+  text-decoration: none;
+  border-bottom: var(--rule-hair) solid transparent;
+  transition: border-color var(--dur-short) var(--ease-out);
+}
+
+.spec__cell dd a:hover {
+  border-bottom-color: var(--color-accent);
+}
+
+/* ---- Ft4 colophon -------------------------------------------------------- */
+
+.colophon {
+  padding-block: var(--space-md) var(--space-2xl);
+  border-top: var(--rule-thick) solid var(--color-ink);
+}
+
+.colophon p {
+  margin: 0;
+  max-width: 78ch;
+  font-size: var(--text-sm);
+  line-height: 1.8;
+  color: var(--color-muted);
+}
+
+.colophon a {
+  color: var(--color-ink);
+  text-decoration: none;
+  white-space: nowrap;
+  margin-inline-end: 0.4em;
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+  transition:
+    color var(--dur-short) var(--ease-out),
+    border-color var(--dur-short) var(--ease-out);
+}
+
+.colophon a:hover {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+/* ---- Safari is turned away before it can try to play --------------------- */
+
+#safariBlocker {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+  font-size: var(--text-md);
+  text-align: center;
+}
+
+#safariBlocker.hide {
+  display: none;
+}
+
+/* ---- Narrower ------------------------------------------------------------ */
+
+@media (max-width: 1024px) {
+  /* Eleven 32px gutters do not fit inside a phone-width shell: held at twelve
+     tracks the bands overflow by the whole gap total. One track instead, with
+     the gap doing the row rhythm. Spans are `1 / -1` rather than `span 12`, or
+     the collapsed grid would generate eleven implicit columns. */
+  .plate__inner,
+  .feeds,
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .plate__brand,
+  .plate__enter,
+  .feed,
+  .stage--right .stage__text,
+  .stage--left .stage__text,
+  .stage--wide .stage__text,
+  .stage--right .stage__figure,
+  .stage--left .stage__figure,
+  .stage--wide .stage__figure {
+    grid-column: 1 / -1;
+  }
+
+  .plate__inner {
+    padding-block: var(--space-lg);
+  }
+
+  .plate__enter {
+    padding-top: var(--space-lg);
+    border-top: var(--rule-hair) solid var(--color-on-ink-rule);
+  }
+
+  .plate__logo {
+    width: clamp(150px, 42vw, 220px);
+  }
+
+  .feed--second {
+    margin-top: var(--space-xl);
+    padding-inline-start: 0;
+    border-inline-start: 0;
+  }
+
+  .stage__figure {
+    margin-top: var(--space-sm);
+  }
+
+  .stage__numeral {
+    display: none;
+  }
+
+  .spec__cell {
+    grid-column: span 6;
+  }
+
+  .spec__cell:nth-child(3n + 1) {
+    border-inline-start: var(--rule-hair) solid var(--color-rule);
+    padding-inline-start: var(--space-md);
+  }
+
+  .spec__cell:nth-child(2n + 1) {
+    border-inline-start: 0;
+    padding-inline-start: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --columns: 4;
+  }
+
+  .mast__row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  /* Four things have to share a phone's first screen, so the plate gives up
+     what it can and the feeds start as close to the fold as they will go. */
+  .plate__inner {
+    padding-block: var(--space-md);
+    gap: var(--space-md);
+  }
+
+  .plate__logo {
+    width: clamp(130px, 36vw, 180px);
+    margin-bottom: var(--space-sm);
+  }
+
+  .plate__lede {
+    font-size: var(--text-base);
+  }
+
+  .plate__enter {
+    padding-top: var(--space-md);
+  }
+
+  .feeds {
+    padding-block: var(--space-lg) var(--space-xl);
+  }
+
+  .mast__nav {
+    gap: var(--space-sm) var(--space-md);
+  }
+
+  .feed__row a {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3xs);
+  }
+
+  .spec__cell {
+    grid-column: 1 / span 12;
+    border-inline-start: 0;
+    padding-inline-start: 0;
+  }
+
+  .spec__cell:nth-child(3n + 1),
+  .spec__cell:nth-child(2n + 1) {
+    border-inline-start: 0;
+    padding-inline-start: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation: none !important;
+  }
 }

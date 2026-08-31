@@ -1,0 +1,92 @@
+/* Hallmark · tokens · theme: Grid · genre: editorial
+ * axes: light paper / grotesk-heavy lowercase display / cool ultramarine signal
+ *
+ * Grid's own build hint calls for Archivo. This project self-hosts Montserrat,
+ * Pretendard and Metropolis on its CDN and the CSP allows no other font origin,
+ * so the display role is carried by Montserrat 800 lowercase. Pretendard sits
+ * behind it in the same stack for Korean, which Montserrat does not cover.
+ */
+
+:root {
+  /* Paper is faintly cool and never #fff; ink is cool near-black, never #000. */
+  --color-paper: oklch(99% 0.003 255);
+  --color-paper-2: oklch(97.2% 0.004 255);
+  --color-paper-3: oklch(94.5% 0.005 255);
+  --color-rule: oklch(88% 0.006 255);
+  --color-neutral: oklch(60% 0.008 255);
+  --color-muted: oklch(46% 0.01 255);
+  --color-ink: oklch(16% 0.01 255);
+
+  /* One signal ink for the whole page. Ultramarine: technical, institutional,
+     and near enough the brand mark's blue end not to fight it. */
+  --color-accent: oklch(45% 0.19 264);
+  --color-accent-deep: oklch(36% 0.16 264);
+  --color-accent-ink: var(--color-paper);
+  --color-focus: var(--color-accent);
+
+  /* Reads on the ink plate only. */
+  --color-on-ink: oklch(96% 0.004 255);
+  --color-on-ink-muted: oklch(74% 0.008 255);
+  --color-on-ink-rule: oklch(34% 0.012 255);
+  --color-on-ink-accent: oklch(78% 0.13 264);
+
+  --font-display:
+    "Montserrat", "Pretendard JP Variable", "Pretendard JP", Pretendard,
+    -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", sans-serif;
+  --font-body: var(--font-display);
+  --display-weight: 800;
+  --tracking-display: -0.045em;
+  --tracking-label: 0.09em;
+
+  /* Major third, from a 16px body. */
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 1rem;
+  --text-md: 1.25rem;
+  --text-lg: 1.5625rem;
+  --text-xl: 1.9531rem;
+  --text-2xl: 2.4414rem;
+  --text-3xl: 3.0518rem;
+  --text-display: clamp(2.5rem, 5.4vw + 0.5rem, 5.25rem);
+  --text-display-s: clamp(1.875rem, 3.2vw + 0.75rem, 3.25rem);
+
+  --lh-display: 0.92;
+  --lh-body: 1.55;
+
+  /* 4pt scale. */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+  --space-4xl: 8rem;
+
+  --rule-hair: 1px;
+  --rule-thick: 2px;
+  --rule-signal: 3px;
+
+  /* Grid draws with hairlines and one flooded plate. Nothing is a card. */
+  --radius-card: 0;
+  --shadow-card: none;
+
+  --shell: 1280px;
+  --page-gutter: clamp(1rem, 3.5vw, 3rem);
+  --columns: 12;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-instant: 100ms;
+  --dur-short: 180ms;
+  --dur-mid: 320ms;
+
+  --z-rails: 0;
+  --z-content: 1;
+  --z-sticky: 10;
+  --z-overlay: 100;
+}
