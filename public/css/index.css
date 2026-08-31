@@ -539,18 +539,13 @@ button:focus-visible {
 }
 
 .spec__cell {
+  background-color: var(--color-paper);
   grid-column: span 4;
   min-width: 0;
   padding: var(--space-md) var(--space-md) var(--space-md) 0;
   border-bottom: var(--rule-hair) solid var(--color-rule);
   border-inline-start: var(--rule-hair) solid var(--color-rule);
   padding-inline-start: var(--space-md);
-}
-
-/* The band reads as one ruled object, so the row's leading cell has no rule. */
-.spec__cell:nth-child(3n + 1) {
-  border-inline-start: 0;
-  padding-inline-start: 0;
 }
 
 .spec__cell dt {
