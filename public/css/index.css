@@ -213,13 +213,13 @@ button:focus-visible {
 }
 
 .plate__brand {
-  grid-column: 1 / span 6;
+  grid-column: 1 / span 8;
   min-width: 0;
   padding-inline-end: var(--space-lg);
 }
 
 .plate__enter {
-  grid-column: 9 / span 4;
+  grid-column: 9 / span 3;
   min-width: 0;
 }
 
@@ -254,15 +254,6 @@ button:focus-visible {
 .plate__enter-label {
   margin: 0 0 var(--space-sm);
   color: var(--color-on-ink-muted);
-}
-
-/* The bar: a signal rule cut to the column, never full-bleed. */
-.plate__warn {
-  margin: var(--space-lg) 0 0;
-  padding-top: var(--space-2xs);
-  border-top: var(--rule-signal) solid var(--color-on-ink-accent);
-  font-size: var(--text-sm);
-  color: var(--color-on-ink);
 }
 
 .plate :focus-visible {
