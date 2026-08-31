@@ -620,6 +620,10 @@ button:focus-visible {
 /* ---- Narrower ------------------------------------------------------------ */
 
 @media (max-width: 1024px) {
+  :root {
+    --columns: 6;
+  }
+
   /* Eleven 32px gutters do not fit inside a phone-width shell: held at twelve
      tracks the bands overflow by the whole gap total. One track instead, with
      the gap doing the row rhythm. Spans are `1 / -1` rather than `span 12`, or
