@@ -476,7 +476,7 @@ button:focus-visible {
    as that column steps across the page. */
 .stage__numeral {
   position: absolute;
-  bottom: -0.2em;
+  bottom: 0;
   margin: 0;
   font-family: var(--font-display);
   font-weight: var(--display-weight);
@@ -499,7 +499,7 @@ button:focus-visible {
    crop against is the top one. */
 .stage--wide .stage__numeral {
   right: 0;
-  top: -0.24em;
+  top: 0em;
   bottom: auto;
 }
 
