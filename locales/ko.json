@@ -200,6 +200,7 @@
   "idx_feeds_label": "MIRAI 최근 글",
   "idx_feed_notice": "공지",
   "idx_feed_journal": "블로그",
+  "idx_feed_loading": "불러오는 중",
   "idx_feed_all": "전체 보기",
   "idx_feed_empty": "지금은 MIRAI에서 글을 불러오지 못했습니다.",
   "idx_stage1_title": "고른다",

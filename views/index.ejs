@@ -89,18 +89,30 @@
             <h2 class="label"><%= __('idx_feed_notice') %></h2>
             <a class="feed__all label" href="<%= mirai %>/announcements" target="_blank" rel="noopener noreferrer"><%= __('idx_feed_all') %> <span aria-hidden="true">&rarr;</span></a>
           </div>
-          <%# Filled by index.js from the API. The list keeps its height while empty
-              so the fold does not move once the rows arrive. %>
-          <ol class="feed__list" data-feed="notices"></ol>
-          <p class="feed__empty hide" data-feed-empty="notices"><%= __('idx_feed_empty') %></p>
+          <%# Filled by index.js from the API. The box holds the height of three rows
+              through all three states, so the fold does not move as they swap. %>
+          <div class="feed__body" data-feed="notices" aria-busy="true">
+            <p class="feed__status label" data-feed-status>
+              <%= __('idx_feed_loading') %>
+              <span class="feed__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            </p>
+            <ol class="feed__list hide" data-feed-list></ol>
+            <p class="feed__empty hide" data-feed-empty><%= __('idx_feed_empty') %></p>
+          </div>
         </div>
         <div class="feed feed--second">
           <div class="feed__head">
             <h2 class="label"><%= __('idx_feed_journal') %></h2>
             <a class="feed__all label" href="<%= mirai %>/" target="_blank" rel="noopener noreferrer"><%= __('idx_feed_all') %> <span aria-hidden="true">&rarr;</span></a>
           </div>
-          <ol class="feed__list" data-feed="posts"></ol>
-          <p class="feed__empty hide" data-feed-empty="posts"><%= __('idx_feed_empty') %></p>
+          <div class="feed__body" data-feed="posts" aria-busy="true">
+            <p class="feed__status label" data-feed-status>
+              <%= __('idx_feed_loading') %>
+              <span class="feed__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            </p>
+            <ol class="feed__list hide" data-feed-list></ol>
+            <p class="feed__empty hide" data-feed-empty><%= __('idx_feed_empty') %></p>
+          </div>
         </div>
       </section>
 

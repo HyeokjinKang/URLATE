@@ -328,23 +328,62 @@ button:focus-visible {
   border-bottom-color: var(--color-accent);
 }
 
+/* The ruled box that holds whichever of the three states applies. It keeps the
+   height of three rows throughout, so the fold does not move as they swap. */
+.feed__body {
+  background: var(--color-paper);
+  border-bottom: var(--rule-hair) solid var(--color-rail);
+  border-left: var(--rule-hair) solid var(--color-rail);
+  min-height: calc(3 * (2 * var(--space-sm) + 1.55rem) + 2 * var(--rule-hair));
+}
+
+.feed--second .feed__body {
+  border-right: var(--rule-hair) solid var(--color-rail);
+}
+
 .feed__list {
   margin: 0;
   padding: 0;
   list-style: none;
-  background: var(--color-paper);
-  border-bottom: 1px solid var(--color-rail);
-  /* The rows arrive after paint, so the box holds their height from the start
-     and the fold does not jump when they land. */
-  min-height: calc(3 * (2 * var(--space-sm) + 1.55rem) + 2 * var(--rule-hair));
 }
 
-.feed .feed__list {
-  border-left: 1px solid var(--color-rail);
+.feed__status {
+  margin: 0;
+  padding: var(--space-md) var(--space-sm);
 }
 
-.feed--second .feed__list {
-  border-right: 1px solid var(--color-rail);
+/* Three squares from the page's own mark kit rather than a spinner: the sheet
+   has no curves on it, and a rotating disc would be the only one. */
+.feed__dots {
+  display: inline-flex;
+  gap: 0.25em;
+  margin-inline-start: 0.6em;
+}
+
+.feed__dots i {
+  width: 0.4em;
+  height: 0.4em;
+  background: var(--color-accent);
+  animation: feed-pulse 1.1s var(--ease-in-out) infinite;
+}
+
+.feed__dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.feed__dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes feed-pulse {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
 .feed__row + .feed__row {
@@ -389,7 +428,6 @@ button:focus-visible {
 .feed__empty {
   margin: 0;
   padding: var(--space-md) var(--space-sm);
-  background: var(--color-paper);
   color: var(--color-muted);
   font-size: var(--text-sm);
 }

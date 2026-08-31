@@ -91,13 +91,18 @@ function feedRow(entry) {
 }
 
 function fillFeed(name) {
-  const list = document.querySelector(`.feed__list[data-feed="${name}"]`);
-  const empty = document.querySelector(`[data-feed-empty="${name}"]`);
-  if (!list || !empty) return;
+  const box = document.querySelector(`.feed__body[data-feed="${name}"]`);
+  if (!box) return;
+  const status = box.querySelector("[data-feed-status]");
+  const list = box.querySelector("[data-feed-list]");
+  const empty = box.querySelector("[data-feed-empty]");
+  if (!status || !list || !empty) return;
 
-  const showEmpty = () => {
-    list.classList.add("hide");
-    empty.classList.remove("hide");
+  // The three states are exclusive: whichever one settles replaces the wait.
+  const settle = (shown) => {
+    status.classList.add("hide");
+    shown.classList.remove("hide");
+    box.setAttribute("aria-busy", "false");
   };
 
   fetch(`${api}/${name}/${lang}?limit=${FEED_LIMIT}`)
@@ -108,16 +113,17 @@ function fillFeed(name) {
       }
       const rows = body.data.map(feedRow).filter(Boolean);
       if (!rows.length) {
-        showEmpty();
+        settle(empty);
         return;
       }
       list.append(...rows);
+      settle(list);
     })
     .catch((error) => {
       // A rail that cannot load is not worth blocking the page over; say so in
       // its own space and leave the rest of the fold alone.
       console.error(error);
-      showEmpty();
+      settle(empty);
     });
 }
 

@@ -200,6 +200,7 @@
   "idx_feeds_label": "Latest from MIRAI",
   "idx_feed_notice": "Announcements",
   "idx_feed_journal": "Journal",
+  "idx_feed_loading": "Loading",
   "idx_feed_all": "See all",
   "idx_feed_empty": "Could not load anything from MIRAI just now.",
   "idx_stage1_title": "pick",
