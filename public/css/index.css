@@ -296,7 +296,7 @@ button:focus-visible {
 /* A whole empty column divides the two rails -- cleaner than a hairline, and it
    keeps both fills flush to a grid line. */
 .feed--second {
-  grid-column: 8 / span 5;
+  grid-column: 7 / span 6;
 }
 
 .feed__head {
@@ -318,17 +318,28 @@ button:focus-visible {
   color: var(--color-accent);
   text-decoration: none;
   white-space: nowrap;
+  transition: border-color var(--dur-short) var(--ease-out);
+  border-bottom: var(--rule-hair) solid transparent;
 }
 
 .feed__all:hover {
-  text-decoration: underline;
+  border-bottom-color: var(--color-accent);
 }
 
 .feed__list {
   margin: 0;
   padding: 0;
   list-style: none;
-  background: var(--color-paper-2);
+  background: var(--color-paper);
+  border-bottom: 1px solid var(--color-rail);
+}
+
+.feed .feed__list {
+  border-left: 1px solid var(--color-rail);
+}
+
+.feed--second .feed__list {
+  border-right: 1px solid var(--color-rail);
 }
 
 .feed__row + .feed__row {
@@ -354,6 +365,9 @@ button:focus-visible {
 }
 
 .feed__title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   transition: transform var(--dur-short) var(--ease-out);
 }
 
@@ -370,7 +384,7 @@ button:focus-visible {
 .feed__empty {
   margin: 0;
   padding: var(--space-md) var(--space-sm);
-  background: var(--color-paper-2);
+  background: var(--color-paper);
   color: var(--color-muted);
   font-size: var(--text-sm);
 }
