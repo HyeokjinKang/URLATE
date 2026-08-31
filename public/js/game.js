@@ -472,6 +472,23 @@ document.addEventListener("DOMContentLoaded", () => {
     intro2container.style.display = "flex";
   }
 
+  // The header shows the newest MIRAI announcement. Its own request, so a slow
+  // or failing feed never delays the profile call the screen actually needs.
+  fetch(`${api}/notices/${lang}?limit=1`)
+    .then((res) => res.json())
+    .then((body) => {
+      const entry = Array.isArray(body.data) ? body.data[0] : null;
+      if (body.result != "success" || !entry) return;
+      const link = document.getElementById("noticeText");
+      link.textContent = `${new Date(entry.date).toLocaleDateString()} | ${entry.title}`;
+      link.href = entry.url;
+      document.getElementById("noticeSlot").classList.remove("hide");
+    })
+    .catch((error) => {
+      // Nothing else on the screen depends on it; leave the slot hidden.
+      console.error(error);
+    });
+
   // Signed-out visitors were already turned away by the server gate.
   fetch(`${api}/user`, {
     method: "GET",

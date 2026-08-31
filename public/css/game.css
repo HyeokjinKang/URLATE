@@ -2745,6 +2745,14 @@ input[type="number"] {
   align-items: center;
 }
 
+#noticeSlot {
+  display: contents;
+}
+
+#noticeSlot.hide {
+  display: none;
+}
+
 #noticeText {
   color: #000;
   text-decoration: none;

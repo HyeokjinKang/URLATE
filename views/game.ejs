@@ -59,10 +59,12 @@
         <span id="name" class="metropolis" data-action="profileScreen">USERNAME</span>
       </div>
       <div id="headerRight">
-        <% if(notice) { %>
-        <a id="noticeText" href="<%= notice.url %>" target="_blank" rel="noopener noreferrer"><%= notice.date %> | <%= notice.title %></a>
-        <div id="line"></div>
-        <% } %>
+        <%# Filled by game.js. The wrapper is display: contents, so hiding it takes
+            the divider with the link and leaves no gap in the header row. %>
+        <span id="noticeSlot" class="hide">
+          <a id="noticeText" target="_blank" rel="noopener noreferrer"></a>
+          <div id="line"></div>
+        </span>
         <img src="/images/icons/info-circle.svg" class="icon clickable" data-action="infoScreen" />
         <div id="line"></div>
         <img src="/images/icons/settings.svg" class="icon clickable" data-action="optionScreen" />
