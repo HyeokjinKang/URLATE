@@ -22,8 +22,7 @@
 
   /* One signal ink for the whole page. Ultramarine: technical, institutional,
      and near enough the brand mark's blue end not to fight it. */
-  --color-accent: oklch(45% 0.19 264);
-  --color-accent-deep: oklch(36% 0.16 264);
+  --color-accent: oklch(52.8% 0.2053 272);
   --color-accent-ink: var(--color-paper);
   --color-focus: var(--color-accent);
 
@@ -31,7 +30,7 @@
   --color-on-ink: oklch(96% 0.004 255);
   --color-on-ink-muted: oklch(74% 0.008 255);
   --color-on-ink-rule: oklch(34% 0.012 255);
-  --color-on-ink-accent: oklch(78% 0.13 264);
+  --color-on-ink-accent: oklch(58.2% 0.2201 273);
 
   --font-display:
     "Montserrat", "Pretendard JP Variable", "Pretendard JP", Pretendard,
