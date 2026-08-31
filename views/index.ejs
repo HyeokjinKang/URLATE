@@ -68,10 +68,10 @@
             <img src="/images/brand/logo-white.webp" id="logo" class="plate__logo" alt="URLATE" width="1000" height="590" />
             <%# The tagline is the brand's own line and is not translated. %>
             <h1 class="plate__claim" id="claim" lang="en">Avoid &amp; Get on the tempo<i class="period period--on-ink" aria-hidden="true"></i></h1>
-            <p class="plate__lede"><%= __('idx_lede') %></p>
+            <p class="plate__lede"><%= __('idx_lede_1') %><br><%= __('idx_lede_2') %></p>
           </div>
           <div class="plate__enter">
-            <p class="label plate__enter-label"><%= __('idx_signin') %></p>
+            <p class="label plate__enter-label"><%= __('idx_signin') %> →</p>
             <%# data-width is set from the measured column in index.js -- a fixed 400
                 (GSI's widest) overflows the column on a narrow desktop window. %>
             <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-locale="<%= __('lang') %>" data-size="large" data-logo_alignment="left"></div>
@@ -218,9 +218,10 @@
 
     <footer class="shell colophon">
       <p>
-        URLATE LITE, <%= __('idx_colophon_version') %>
-        <% if(branch != "main") { %><b><%= branch %></b><% } else { %><b><%= ver %></b><% } %>.
+        URLATE LITE,
         <%= __('idx_colophon_body') %>
+        © Coupyworks, 2026.
+        <br>
         <a href="/privacy"><%= __('idx_colophon_privacy') %></a>
         <a href="/info"><%= __('idx_colophon_info') %></a>
         <a href="https://mirai.urlate.coupy.dev/" target="_blank" rel="noopener noreferrer">MIRAI</a>
