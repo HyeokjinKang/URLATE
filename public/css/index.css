@@ -129,11 +129,6 @@ button:focus-visible {
   margin: 0 0 var(--space-sm);
   display: flex;
   flex-wrap: wrap;
-  gap: 0 0.6ch;
-}
-
-.mast__sep {
-  color: var(--color-rule);
 }
 
 .mast__row {
@@ -160,21 +155,23 @@ button:focus-visible {
 }
 
 .mast__nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-md);
+  display: grid;
   padding-bottom: var(--space-3xs);
+  width: calc(3 * 100% / var(--columns));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .mast__nav a {
   color: var(--color-ink);
   text-decoration: none;
   white-space: nowrap;
+  text-align: right;
   border-bottom: var(--rule-hair) solid transparent;
   transition: border-color var(--dur-short) var(--ease-out);
 }
 
 .mast__nav a:hover {
+  color: var(--color-accent);
   border-bottom-color: var(--color-accent);
 }
 
@@ -702,6 +699,10 @@ button:focus-visible {
     gap: var(--space-sm);
   }
 
+  .mast__nav a {
+    text-align: left;
+  }
+
   /* Four things have to share a phone's first screen, so the plate gives up
      what it can and the feeds start as close to the fold as they will go. */
   .plate__inner {
@@ -724,10 +725,6 @@ button:focus-visible {
 
   .feeds {
     padding-block: var(--space-lg) var(--space-xl);
-  }
-
-  .mast__nav {
-    gap: var(--space-sm) var(--space-md);
   }
 
   .feed__row a {

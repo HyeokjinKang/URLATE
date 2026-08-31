@@ -192,7 +192,6 @@
   "error_home": "Back to the main page",
   "nameReserved": "The nickname you entered cannot be used.",
   "join_error": "An error occurred while registering.",
-  "idx_issue_state": "in development",
   "idx_nav_label": "Primary",
   "idx_nav_info": "Info",
   "idx_lede": "An open-source rhythm game that runs in a browser tab. There is nothing to install.",
