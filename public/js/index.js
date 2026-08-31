@@ -16,6 +16,21 @@ function readJson(res) {
   return res.json();
 }
 
+// GSI renders the button at one fixed pixel width and caps data-width at 400px,
+// so a hard-coded value either falls short of the column or breaks out of it.
+// Measured from the column instead, before the async GSI script has loaded --
+// this file is parsed at the end of the body, so the element is already there.
+function sizeSigninButton() {
+  const slot = document.querySelector(".plate__enter");
+  const button = document.querySelector(".g_id_signin");
+  if (!slot || !button) return;
+  // 200 is GSI's floor; below that it renders at 200 regardless and overflows.
+  const width = Math.max(200, Math.min(400, Math.floor(slot.clientWidth)));
+  button.dataset.width = String(width);
+}
+
+sizeSigninButton();
+
 document.addEventListener("DOMContentLoaded", () => {
   if (!canPlay) {
     document.querySelector(".plate__enter").classList.add("is-unsupported");

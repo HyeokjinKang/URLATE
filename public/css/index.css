@@ -247,13 +247,22 @@ button:focus-visible {
   color: var(--color-on-ink-muted);
 }
 
-.g_id_signin {
-  max-width: 400px;
-}
-
 .plate__enter-label {
   margin: 0 0 var(--space-sm);
   color: var(--color-on-ink-muted);
+}
+
+/* index.js sizes the button to the column, but GSI caps data-width at 400px and
+   only re-renders on a fresh call -- so past that cap, and after a resize, the
+   rendered width no longer matches. The wrapper and the button element it writes
+   are pinned to the column to cover both: the label inside already flex-grows,
+   so the mark and text stay put as it widens, and nothing spills past the rail
+   when the column narrows under whatever width GSI last rendered. */
+.g_id_signin,
+.g_id_signin > div,
+.g_id_signin div[role="button"] {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 .plate :focus-visible {

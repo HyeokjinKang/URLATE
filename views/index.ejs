@@ -72,7 +72,9 @@
           </div>
           <div class="plate__enter">
             <p class="label plate__enter-label"><%= __('idx_signin') %></p>
-            <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
+            <%# data-width is set from the measured column in index.js -- a fixed 400
+                (GSI's widest) overflows the column on a narrow desktop window. %>
+            <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-locale="<%= __('lang') %>" data-size="large" data-logo_alignment="left"></div>
             <p id="loginNotice" class="hide"><%= __('login_blocked') %></p>
             <p id="unsupportedNotice" class="hide"><%= __('idx_unsupported') %></p>
           </div>
