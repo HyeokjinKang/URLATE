@@ -436,9 +436,13 @@ app.get("/logout", logoutLimiter, (req, res) => {
 });
 
 app.get("/game", gateLimiter, requireAuth, async (req, res) => {
+  // The header's notice comes from the same MIRAI feed the landing page reads,
+  // rendered here rather than fetched by the client: the data is already in
+  // memory, so the header arrives filled instead of popping in a moment later.
   res.render("game", {
     cspNonce: withGamePageCsp(res),
     ver: config.project.mode == "test" ? Date.now() : version,
+    notice: getFeed("announcements", currentLang(res))[0] ?? null,
   });
 });
 

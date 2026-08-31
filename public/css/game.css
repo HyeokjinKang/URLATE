@@ -2749,6 +2749,12 @@ input[type="number"] {
   color: #000;
   text-decoration: none;
   font-size: 1.8vh;
+  /* MIRAI writes announcement titles longer than the old notice table's, and the
+     header is a fixed-width flex row -- an unbounded title pushes the icons. */
+  max-width: 30vw;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 #profileBannerContainer {

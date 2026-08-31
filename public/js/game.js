@@ -472,20 +472,6 @@ document.addEventListener("DOMContentLoaded", () => {
     intro2container.style.display = "flex";
   }
 
-  fetch(`${api}/notice/${lang}`, {
-    method: "GET",
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.result == "success") {
-        data = data.data;
-        document.getElementById("noticeText").textContent =
-          `${new Date(data.date).toLocaleDateString()} | ${data[`title_${lang}`]}`;
-        document.getElementById("noticeText").href = data[`url_${lang}`];
-      }
-    });
-
   // Signed-out visitors were already turned away by the server gate.
   fetch(`${api}/user`, {
     method: "GET",
