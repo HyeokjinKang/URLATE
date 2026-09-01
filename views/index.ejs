@@ -16,7 +16,7 @@
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <link rel="preconnect" href="<%= cdn %>" crossorigin />
     <%# The mark on the plate is the fold's largest paint; it should not wait on the stylesheet. %>
-    <link rel="preload" as="image" href="/images/brand/logo-white.webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/images/brand/logo-lite-mark.webp" fetchpriority="high" />
     <%- inlineCss("montserrat", "pretendard", "tokens", "index") %>
     <title>URLATE</title>
   </head>
@@ -64,11 +64,14 @@
       <section class="plate" aria-labelledby="claim">
         <div class="shell plate__inner">
           <div class="plate__brand">
-            <%# The white mark, restored in this branch. The colour variant is a violet
-                gradient that reads as a smear on the ink plate, and its black "LITE"
-                wordmark disappears there outright. %>
-            <%# index_logoAlt is the tagline, which the h1 below already reads out. %>
-            <img src="/images/brand/logo-white.webp" id="logo" class="plate__logo" alt="URLATE" width="1000" height="590" />
+            <%# The colour mark, cropped off logo-lite.webp: the "LITE" beneath it is set
+                in black and disappears against the plate. The bloom behind it is drawn
+                in CSS, so the mark reads as lit rather than pasted onto the band.
+                alt is the wordmark, not index_logoAlt -- that key is the tagline, which
+                the h1 below already reads out. %>
+            <span class="plate__mark">
+              <img src="/images/brand/logo-lite-mark.webp" id="logo" class="plate__logo" alt="URLATE" width="1000" height="612" />
+            </span>
             <%# The tagline is the brand's own line and is not translated. %>
             <h1 class="plate__claim" id="claim" lang="en">Avoid &amp; Get on the tempo<i class="period period--on-ink" aria-hidden="true"></i></h1>
             <p class="plate__lede"><%= __('idx_lede_1') %><br><%= __('idx_lede_2') %></p>

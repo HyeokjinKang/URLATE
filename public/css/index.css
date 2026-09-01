@@ -192,24 +192,6 @@ button:focus-visible {
   color: var(--color-on-ink);
 }
 
-/* The rails carry on across the plate so the grid is never interrupted. */
-.plate::before {
-  content: "";
-  position: absolute;
-  inset-block: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(100% - 2 * var(--page-gutter), var(--shell));
-  pointer-events: none;
-  background-image: repeating-linear-gradient(
-    to right,
-    color-mix(in oklab, var(--color-paper) 15%, transparent) 0,
-    color-mix(in oklab, var(--color-paper) 15%, transparent) 1px,
-    transparent 1px,
-    transparent calc(100% / var(--columns))
-  );
-}
-
 .plate__inner {
   position: relative;
   display: grid;
@@ -229,11 +211,37 @@ button:focus-visible {
   min-width: 0;
 }
 
+/* Holds the bloom behind the mark. Both are positioned, so source order puts the
+   mark on top without reaching for a z-index. */
+.plate__mark {
+  position: relative;
+  display: block;
+  width: fit-content;
+  margin-bottom: var(--space-md);
+}
+
+.plate__mark::before {
+  z-index: -1;
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 400%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--color-bloom) 34%, transparent),
+    transparent
+  );
+}
+
 .plate__logo {
+  position: relative;
   display: block;
   width: clamp(170px, 20vw, 260px);
   height: auto;
-  margin-bottom: var(--space-md);
 }
 
 .plate__claim {
