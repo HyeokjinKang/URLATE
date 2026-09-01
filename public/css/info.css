@@ -23,42 +23,34 @@
   overflow-wrap: anywhere;
 }
 
-/* A section opens the way a band does on the landing page: an ink rule, then
-   the heading sitting directly under it. */
-.title {
-  display: block;
-  margin: var(--space-2xl) 0 var(--space-md);
+.doc__meta {
+  margin: 0;
+}
+
+/* A section opens the way a band does on the landing page: an ink rule, then the
+   heading sitting directly under it. */
+.doc__section {
+  margin-top: var(--space-2xl);
   padding-top: var(--space-sm);
   border-top: var(--rule-thick) solid var(--color-ink);
+}
+
+.doc__title {
+  margin: 0 0 var(--space-md);
   font-family: var(--font-display);
   font-weight: var(--display-weight);
   font-size: var(--text-md);
   letter-spacing: -0.02em;
 }
 
-.doc h1 + .title {
-  margin-top: var(--space-lg);
-}
-
-.content {
-  display: block;
+.doc p {
   max-width: 74ch;
-  margin-bottom: var(--space-md);
+  margin: 0 0 var(--space-sm);
 }
 
-.content + .content {
-  margin-top: calc(var(--space-md) * -1 + var(--space-sm));
-}
-
-.copyright {
-  display: block;
-  margin-bottom: var(--space-2xs);
-  font-size: var(--text-sm);
+.doc__note {
   color: var(--color-muted);
-}
-
-.title + .copyright {
-  margin-top: calc(var(--space-md) * -1);
+  font-size: var(--text-sm);
 }
 
 strong,
@@ -66,38 +58,117 @@ b {
   font-weight: 700;
 }
 
-/* ---- The credits table --------------------------------------------------- */
+/* ---- Lists --------------------------------------------------------------- */
 
-.doc table {
-  width: 100%;
+.doc__list {
   max-width: 74ch;
-  margin-bottom: var(--space-md);
-  border-collapse: collapse;
+  margin: 0 0 var(--space-md);
+  padding-left: var(--space-lg);
 }
 
-.doc td {
-  padding: var(--space-sm) var(--space-md) var(--space-sm) 0;
+.doc__list li {
+  margin-bottom: var(--space-2xs);
+}
+
+.doc__list p {
+  margin: 0;
+}
+
+.doc__list--plain {
+  list-style: none;
+  padding-left: 0;
+}
+
+/* The dash keeps the shape the document was written in without asking a list
+   item to be a paragraph that starts with one. */
+.doc__list--plain > li {
+  padding-left: 1.1em;
+  text-indent: -1.1em;
+}
+
+.doc__list--plain > li::before {
+  content: "—";
+  margin-right: 0.5em;
+  color: var(--color-muted);
+}
+
+.doc__list--plain .doc__list {
+  margin-top: var(--space-2xs);
+  margin-bottom: 0;
+  text-indent: 0;
+}
+
+/* ---- Ruled fact rows, as on the landing page's spec sheet ---------------- */
+
+.doc__facts {
+  max-width: 74ch;
+  margin: 0 0 var(--space-md);
   border-top: var(--rule-hair) solid var(--color-rule);
-  vertical-align: baseline;
 }
 
-.doc tr > td:first-of-type {
-  width: 34%;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.doc tr:last-child > td {
+.doc__fact {
+  display: grid;
+  grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
   border-bottom: var(--rule-hair) solid var(--color-rule);
 }
 
+.doc__fact dt {
+  margin: 0;
+}
+
+.doc__fact dd {
+  margin: 0;
+}
+
+.doc__fact dd p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---- The credits table --------------------------------------------------- */
+
+.credits {
+  width: 100%;
+  max-width: 74ch;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.credits th,
+.credits td {
+  padding: var(--space-sm) var(--space-md) var(--space-sm) 0;
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+  vertical-align: baseline;
+  font-weight: 400;
+}
+
+.credits tr:first-child th,
+.credits tr:first-child td {
+  border-top: var(--rule-hair) solid var(--color-rule);
+}
+
+.credits th {
+  width: 34%;
+}
+
+.credits__name {
+  font-weight: 700;
+}
+
 /* One track per line, so a producer with several reads as a list. */
-.doc td .link {
+.credits td a {
   display: block;
   width: fit-content;
 }
 
-.doc td img {
+.credits td span {
+  display: block;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.credits img {
   height: 1em;
   margin-left: 0.35em;
   vertical-align: -0.12em;
@@ -120,8 +191,9 @@ b {
   border-bottom-color: var(--color-accent);
 }
 
-/* The icon links in the table carry a mark, not a label, so no rule under them. */
-.doc td a:has(img) {
+/* The icon links carry a mark, not a label, so no rule under them. */
+.doc a:has(img) {
+  display: inline;
   border-bottom: 0;
 }
 
@@ -130,26 +202,32 @@ b {
     padding-block: var(--space-xl) var(--space-2xl);
   }
 
-  .doc table,
-  .doc tbody,
-  .doc tr,
-  .doc td {
+  .credits,
+  .credits tbody,
+  .credits tr,
+  .credits th,
+  .credits td {
     display: block;
     width: auto;
   }
 
-  .doc td {
+  .credits th,
+  .credits td {
     padding: 0 0 var(--space-2xs);
-    border-top: 0;
+    border: 0;
   }
 
-  .doc tr {
+  .credits tr {
     padding-block: var(--space-sm);
+    border-bottom: var(--rule-hair) solid var(--color-rule);
+  }
+
+  .credits tr:first-child {
     border-top: var(--rule-hair) solid var(--color-rule);
   }
 
-  .doc tr > td:first-of-type {
-    width: auto;
-    white-space: normal;
+  .doc__fact {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3xs);
   }
 }
