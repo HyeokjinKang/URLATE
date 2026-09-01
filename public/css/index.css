@@ -230,11 +230,19 @@ button:focus-visible {
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  background: radial-gradient(
-    closest-side,
-    color-mix(in oklab, var(--color-bloom) 34%, transparent),
-    transparent
-  );
+  /* A flat field of the bloom colour with fractal noise blended into it, then cut
+     to shape by the mask -- doing the falloff in the mask rather than in the fill
+     is what keeps the grain from stopping at a square edge.
+     The noise is desaturated and carries its own low opacity: at full strength it
+     is a grey field rather than a texture, and soft-light lifts the whole band
+     off its black. */
+  background-color: color-mix(in oklab, var(--color-bloom) 34%, transparent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)' opacity='0.2'/%3E%3C/svg%3E");
+  background-size: var(--grain-tile) var(--grain-tile);
+  background-blend-mode: soft-light;
+  /* Only the alpha of these is read; the colour is not a page colour. */
+  -webkit-mask-image: radial-gradient(closest-side, #000, transparent);
+  mask-image: radial-gradient(closest-side, #000, transparent);
 }
 
 .plate__logo {

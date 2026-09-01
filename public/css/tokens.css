@@ -30,8 +30,10 @@
   --color-on-ink: oklch(96% 0.004 255);
   --color-on-ink-muted: oklch(74% 0.008 255);
   --color-on-ink-rule: oklch(34% 0.012 255);
-  /* The light the mark sits in on the plate, taken off the mark's own violet. */
+  /* The light the mark sits in on the plate, taken off the mark's own violet, and
+     the tile the grain in it repeats on. */
   --color-bloom: oklch(60% 0.2 285);
+  --grain-tile: 160px;
 
   --color-on-ink-accent: oklch(58.2% 0.2201 273);
 
