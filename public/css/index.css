@@ -259,6 +259,7 @@ button:focus-visible {
   margin: 0;
   font-size: var(--text-md);
   color: var(--color-on-ink-muted);
+  white-space: pre-line;
 }
 
 .plate__enter-label {
