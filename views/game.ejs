@@ -34,7 +34,7 @@
     <div id="warningContainer" class="introContainer">
       <span id="warningTitle"><%= __('warning') %></span>
       <div id="warningInner">
-        <span><%= __('warning1') %><br /><%= __('warning2') %><%= __('warning3') %><br /><br /><%= __('warning4') %><br /><%= __('warning5') %><br /><br /><%= __('warning6') %></span>
+        <span><%= __('warning_body') %></span>
       </div>
       <span id="pressAnywhere"><%= __('loading') %></span>
     </div>
@@ -73,7 +73,7 @@
     <div id="tutorialInformation" class="containers metropolis">
       <div id="tutorialInfoTop" class="tutorialInner">
         <h1 class="containersTitle"><span class="light">Welcome to</span> URLATE!</h1>
-        <span id="tutorialText"><%= __('tutorial_information_1') %><br /><%= __('tutorial_information_2') %></span>
+        <span id="tutorialText"><%= __('tutorial_information') %></span>
       </div>
       <div id="tutorialInfoMid" class="tutorialInner">
         <img src="/images/ui/elements.webp" alt="O O O" loading="lazy" />
@@ -766,8 +766,7 @@
       const bulletDensity = "<%= __('bullet_density') %>";
       const noteDensity = "<%= __('note_density') %>";
       const speed = "<%= __('speed') %>";
-      const notAvailable1 = "<%= __('not_available_1') %>";
-      const notAvailable2 = "<%= __('not_available_2') %>";
+      const notAvailable = <%- JSON.stringify(__('not_available')) %>;
       const rating = "<%= __('rating') %>";
       const nothingHere = "<%= __('nothing_here') %>";
       const imageError = "<%= __('image_error') %>";

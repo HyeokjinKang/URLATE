@@ -1,4 +1,4 @@
-/* global Howler, Howl, Pace, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable1, notAvailable2, medalDesc, alias, nothingHere, rating, couponApplySuccess, couponInvalid1, couponInvalid2, couponUsed, inputEmpty, aliasSelect, pictureMessage, imageError */
+/* global Howler, Howl, Pace, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable, medalDesc, alias, nothingHere, rating, couponApplySuccess, couponInvalid1, couponInvalid2, couponUsed, inputEmpty, aliasSelect, pictureMessage, imageError */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
 const langDetailSelector = document.getElementById("langDetailSelector");
@@ -710,7 +710,7 @@ const songSelected = (n, refreshed, seek) => {
     if (
       JSON.parse(tracks[songSelection].difficulty)[difficultySelection] == 0
     ) {
-      alert(`${notAvailable1}\n${notAvailable2}`);
+      alert(notAvailable);
     } else {
       display = 0;
       document.getElementById("selectInnerContainer").classList.add("fadeOut");
