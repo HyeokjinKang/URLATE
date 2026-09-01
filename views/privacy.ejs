@@ -1,14 +1,21 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>URLATE 개인정보처리방침</title>
-  <link rel="preconnect" href="<%= cdn %>" crossorigin />
-  <link rel="stylesheet" href="/css/montserrat.css" />
-  <link rel="stylesheet" href="/css/pretendard.css" />
-  <link rel="stylesheet" href="/css/info.css">
-  <link rel="shortcut icon" href="/images/favicon.ico">
-<body>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>URLATE 개인정보처리방침</title>
+    <link rel="preconnect" href="<%= cdn %>" crossorigin />
+    <%# Linked rather than inlined: the static CSP has no 'unsafe-inline' style-src. %>
+    <link rel="stylesheet" href="/css/montserrat.css" />
+    <link rel="stylesheet" href="/css/pretendard.css" />
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/css/chrome.css" />
+    <link rel="stylesheet" href="/css/info.css" />
+    <link rel="shortcut icon" href="/images/favicon.ico" />
+  </head>
+  <body>
+    <%- include('partials/masthead', { page: 'privacy' }) %>
+    <main class="shell doc">
     <h1>URLATE-v3l 개인정보처리방침</h1>
     <span class="title">서문</span>
     <span class="content">팀크루아상 URLATE 개발팀(이하 ‘서비스 개발팀’)은  「개인정보 보호법」 및 관계 법령이 정한 바를 철저하게 준수하며 서비스 이용자(이하 ‘사용자’)의 개인정보를 안전하게 처리 및 보관하고 있습니다.<br>이에 「개인정보 보호법」 제30조에 따라 사용자에게 개인정보 처리에 관한 절차 및 기준을 안내하고, 각종 개인정보 문의를 원활하게 처리할 수 있도록 하기 위하여 다음과 같이 개인정보 처리방침을 수립·공개합니다.</span>
@@ -113,5 +120,7 @@
       이 개인정보 처리방침은 2023.08.02.부터 적용됩니다.<br>
       본 개인정보 처리방침이 개정되는 경우 서비스 내의 팝업과 이메일을 통해 공지합니다.
     </span>
-</body>
+    </main>
+    <%- include('partials/colophon', { page: 'privacy' }) %>
+  </body>
 </html>

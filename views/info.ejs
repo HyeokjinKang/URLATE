@@ -1,16 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= __('lang') %>">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="<%= cdn %>" crossorigin />
+    <%# Linked rather than inlined: the static CSP has no 'unsafe-inline' style-src. %>
     <link rel="stylesheet" href="/css/montserrat.css" />
     <link rel="stylesheet" href="/css/pretendard.css" />
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/css/chrome.css" />
     <link rel="stylesheet" href="/css/info.css" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <title>URLATE Info</title>
   </head>
   <body>
+    <%- include('partials/masthead', { page: 'info' }) %>
+    <main class="shell doc">
     <h1>Project URLATE-v3l</h1>
     <span class="copyright">Copyright © Coupyworks, 2025</span>
     <span class="title">Tracks</span>
@@ -200,5 +205,7 @@
     <span class="title">Resources</span>
     <span class="content">URLATE resources are licensed under a <strong>Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License</strong>.</span>
     <span class="copyright">© Coupyworks, 2023</span>
+    </main>
+    <%- include('partials/colophon', { page: 'info' }) %>
   </body>
 </html>

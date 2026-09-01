@@ -456,14 +456,21 @@ app.get("/tutorial", gateLimiter, requireAuth, async (req, res) => {
   });
 });
 
+// Both wear the same masthead as the landing page, which reads the build it is
+// looking at.
+const staticPageLocals = () => ({
+  ver: config.project.mode == "test" ? Date.now() : version,
+  branch: branch,
+});
+
 app.get("/info", (req, res) => {
   setStaticPageCsp(res);
-  res.render("info");
+  res.render("info", staticPageLocals());
 });
 
 app.get("/privacy", (req, res) => {
   setStaticPageCsp(res);
-  res.render("privacy");
+  res.render("privacy", staticPageLocals());
 });
 
 app.use(profileRouter);

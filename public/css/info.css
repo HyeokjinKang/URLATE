@@ -1,109 +1,155 @@
-body {
-  line-height: 1.2;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  letter-spacing: -0.3px;
-  font-family:
-    "Montserrat",
-    "Pretendard JP Variable",
-    "Pretendard JP",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    Roboto,
-    "Helvetica Neue",
-    "Segoe UI",
-    "Hiragino Sans",
-    "Apple SD Gothic Neo",
-    Meiryo,
-    "Noto Sans JP",
-    "Noto Sans KR",
-    "Malgun Gothic",
-    Osaka,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    sans-serif;
-  font-feature-settings: "ss05";
-  background-color: white;
-  margin: 3vh 3vw;
-  padding: 0;
+/* Hallmark · document pages (/info, /privacy) · theme: Grid · genre: editorial
+ *
+ * The landing page's language applied to two pages that are only text: the same
+ * sheet, the same masthead and colophon from chrome.css, and the same rule
+ * vocabulary -- a section opens on an ink rule the way the feed heads and the
+ * spec sheet do, and everything else is measure and air.
+ *
+ * These pages are served under the static CSP, which has no 'unsafe-inline' in
+ * style-src, so their stylesheets are linked rather than inlined.
+ */
+
+.doc {
+  padding-block: var(--space-2xl) var(--space-3xl);
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+.doc h1 {
+  margin: 0 0 var(--space-lg);
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-display-s);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--lh-display);
+  overflow-wrap: anywhere;
 }
 
-h1 {
-  font-size: 2em;
+/* A section opens the way a band does on the landing page: an ink rule, then
+   the heading sitting directly under it. */
+.title {
+  display: block;
+  margin: var(--space-2xl) 0 var(--space-md);
+  padding-top: var(--space-sm);
+  border-top: var(--rule-thick) solid var(--color-ink);
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-md);
+  letter-spacing: -0.02em;
 }
 
-span:not(:first-of-type) {
-  display: inline-block;
-  margin-top: 0.2em;
+.doc h1 + .title {
+  margin-top: var(--space-lg);
 }
 
-div {
-  margin-bottom: 0.5em;
+.content {
+  display: block;
+  max-width: 74ch;
+  margin-bottom: var(--space-md);
 }
 
-div + span {
-  margin-top: 0 !important;
-}
-
-strong {
-  font-weight: 600;
-}
-
-td {
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
-tr > td:first-of-type {
-  font-size: 1.3em;
-  font-weight: 700;
-  padding-right: 1em;
-}
-
-a {
-  color: #000;
-  text-decoration: none;
+.content + .content {
+  margin-top: calc(var(--space-md) * -1 + var(--space-sm));
 }
 
 .copyright {
-  font-size: 1em;
-  color: #555;
-  font-style: italic;
+  display: block;
+  margin-bottom: var(--space-2xs);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
 }
 
-.title {
-  margin-top: 1em !important;
-  margin-bottom: 0.5em !important;
-  font-weight: 800;
-  font-size: 1.5em;
-  background-color: #000;
-  color: #fff;
-  padding: 1px 5px;
+.title + .copyright {
+  margin-top: calc(var(--space-md) * -1);
 }
 
-.link::after {
-  margin-right: 0.5em;
-  margin-left: 2px;
-  content: url("/images/icons/link.svg");
-  width: 0.1em;
+strong,
+b {
+  font-weight: 700;
 }
 
-.badgeIcon {
-  height: 5em;
-  margin-right: 1vw;
+/* ---- The credits table --------------------------------------------------- */
+
+.doc table {
+  width: 100%;
+  max-width: 74ch;
+  margin-bottom: var(--space-md);
+  border-collapse: collapse;
+}
+
+.doc td {
+  padding: var(--space-sm) var(--space-md) var(--space-sm) 0;
+  border-top: var(--rule-hair) solid var(--color-rule);
+  vertical-align: baseline;
+}
+
+.doc tr > td:first-of-type {
+  width: 34%;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.doc tr:last-child > td {
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+}
+
+/* One track per line, so a producer with several reads as a list. */
+.doc td .link {
+  display: block;
+  width: fit-content;
+}
+
+.doc td img {
+  height: 1em;
+  margin-left: 0.35em;
+  vertical-align: -0.12em;
 }
 
 .youtubeIcon {
   margin-bottom: -1px;
+}
+
+/* ---- Links --------------------------------------------------------------- */
+
+.doc a {
+  color: var(--color-accent);
+  text-decoration: none;
+  border-bottom: var(--rule-hair) solid transparent;
+  transition: border-color var(--dur-short) var(--ease-out);
+}
+
+.doc a:hover {
+  border-bottom-color: var(--color-accent);
+}
+
+/* The icon links in the table carry a mark, not a label, so no rule under them. */
+.doc td a:has(img) {
+  border-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .doc {
+    padding-block: var(--space-xl) var(--space-2xl);
+  }
+
+  .doc table,
+  .doc tbody,
+  .doc tr,
+  .doc td {
+    display: block;
+    width: auto;
+  }
+
+  .doc td {
+    padding: 0 0 var(--space-2xs);
+    border-top: 0;
+  }
+
+  .doc tr {
+    padding-block: var(--space-sm);
+    border-top: var(--rule-hair) solid var(--color-rule);
+  }
+
+  .doc tr > td:first-of-type {
+    width: auto;
+    white-space: normal;
+  }
 }
