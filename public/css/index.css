@@ -282,12 +282,11 @@ button:focus-visible {
   color: var(--color-on-ink-muted);
 }
 
-/* index.js sizes the button to the column, but GSI caps data-width at 400px and
-   only re-renders on a fresh call -- so past that cap, and after a resize, the
-   rendered width no longer matches. The wrapper and the button element it writes
-   are pinned to the column to cover both: the label inside already flex-grows,
-   so the mark and text stay put as it widens, and nothing spills past the rail
-   when the column narrows under whatever width GSI last rendered. */
+/* GSI renders the button at one fixed pixel width, decided once, and data-width
+   caps out at 400px -- so nothing it is told at render time survives a resize or
+   fills a wider column. The wrapper and the element it writes are pinned to the
+   column instead: the label inside already flex-grows, so the mark and the text
+   stay put as it widens, and nothing spills past the rail when it narrows. */
 .g_id_signin,
 .g_id_signin > div,
 .g_id_signin div[role="button"] {
