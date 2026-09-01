@@ -16,6 +16,28 @@ function readJson(res) {
   return res.json();
 }
 
+// GSI decides the button's width once, when it renders, and it renders again
+// with a personalised label ("Continue as ...") as soon as it knows who is
+// signed in. Left to itself it sizes that second render to the shorter label and
+// the button shrinks mid-page; the width it is given up front is what it keeps
+// across both. CSS cannot stand in for this -- what GSI writes is a cross-origin
+// iframe, and stretching the frame does not stretch the button drawn inside it.
+//
+// Measured from the column rather than hard-coded, since data-width caps at 400
+// and a fixed value either falls short of the column or breaks out of it. Set
+// here, before the async GSI script has read it: this file is parsed at the end
+// of the body, so the element is already there.
+function sizeSigninButton() {
+  const slot = document.querySelector(".plate__enter");
+  const button = document.querySelector(".g_id_signin");
+  if (!slot || !button) return;
+  // 200 is GSI's floor; below that it renders at 200 regardless and overflows.
+  const width = Math.max(200, Math.min(400, Math.floor(slot.clientWidth)));
+  button.dataset.width = String(width);
+}
+
+sizeSigninButton();
+
 // Both rails are filled from the API rather than rendered with the page: the
 // feeds are the one part of the fold that goes stale, and keeping them out of
 // the HTML keeps the document cacheable.
