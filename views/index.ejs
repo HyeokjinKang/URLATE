@@ -17,7 +17,7 @@
     <link rel="preconnect" href="<%= cdn %>" crossorigin />
     <%# The mark on the plate is the fold's largest paint; it should not wait on the stylesheet. %>
     <link rel="preload" as="image" href="/images/brand/logo-lite-mark.webp" fetchpriority="high" />
-    <%- inlineCss("montserrat", "pretendard", "tokens", "index") %>
+    <%- inlineCss("montserrat", "pretendard", "tokens", "chrome", "index") %>
     <title>URLATE</title>
   </head>
   <body>
@@ -36,27 +36,7 @@
     <%# The theme's ground: the 12 column rules, drawn in public behind everything. %>
     <div class="rails" aria-hidden="true"></div>
 
-    <header class="shell mast">
-      <p class="mast__issue label">
-        <% if(branch != "main") { %>
-        <span><%= branch %></span>
-        <% } else { %>
-        <span><%= ver %></span>
-        <% } %>
-      </p>
-      <div class="mast__row">
-        <a class="mast__name" href="/">Project URLATE-v3l<i class="period" aria-hidden="true"></i></a>
-        <nav class="mast__nav label" aria-label="<%= __('idx_nav_label') %>">
-          <a href="/info"><%= __('idx_nav_info') %></a>
-          <a href="https://github.com/HyeokjinKang/URLATE" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <% if(__('lang') == 'en') { %>
-          <a href="/ko" lang="ko">한국어</a>
-          <% } else { %>
-          <a href="/en" lang="en">English</a>
-          <% } %>
-        </nav>
-      </div>
-    </header>
+    <%- include('partials/masthead', { page: 'index' }) %>
 
     <main>
       <%# The one flooded band on the page. The mark and its bloom both need a dark
@@ -214,24 +194,7 @@
       </section>
     </main>
 
-    <footer class="shell colophon">
-      <p>
-        URLATE LITE,
-        <%= __('idx_colophon_body') %>
-        <br>© Coupyworks, 2026.
-        <br>
-        <a href="/privacy"><%= __('idx_colophon_privacy') %></a>
-        <a href="/info"><%= __('idx_colophon_info') %></a>
-        <a href="https://mirai.urlate.coupy.dev/" target="_blank" rel="noopener noreferrer">MIRAI</a>
-        <a href="https://discord.gg/YMhYzPbEYV" target="_blank" rel="noopener noreferrer">Discord</a>
-        <a href="https://x.com/URLATE_" target="_blank" rel="noopener noreferrer">X</a>
-        <% if(__('lang') == 'en') { %>
-        <a href="/ko" lang="ko">한국어</a>
-        <% } else { %>
-        <a href="/en" lang="en">English</a>
-        <% } %>
-      </p>
-    </footer>
+    <%- include('partials/colophon', { page: 'index' }) %>
 
     <script nonce="<%= cspNonce %>">
       const projectUrl = "<%= url %>";

@@ -21,22 +21,6 @@
  *     the copy, and the copy this file authors is already lowercase.
  */
 
-html {
-  box-sizing: border-box;
-  scroll-behavior: smooth;
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: inherit;
-}
-
-html,
-body {
-  overflow-x: clip;
-}
-
 body {
   margin: 0;
   background: var(--color-paper);
@@ -46,11 +30,6 @@ body {
   line-height: var(--lh-body);
   font-feature-settings: "ss05";
   -webkit-font-smoothing: antialiased;
-}
-
-::selection {
-  background: var(--color-accent);
-  color: var(--color-accent-ink);
 }
 
 /* The ground. Twelve column rules drawn in public, capped to the shell, running
@@ -74,45 +53,8 @@ body {
   box-shadow: inset -1px 0 0 var(--color-rail);
 }
 
-.shell {
-  position: relative;
-  z-index: var(--z-content);
-  width: min(100% - 2 * var(--page-gutter), var(--shell));
-  margin-inline: auto;
-}
-
-/* The quiet caps counterpoint to the display: captions, meta rows, table heads. */
-.label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-  color: var(--color-muted);
-}
-
-/* The smallest mark in the kit: a solid square where a full stop would fall. */
-.period {
-  display: inline-block;
-  width: 0.3em;
-  height: 0.3em;
-  margin-inline-start: 0.16em;
-  background: var(--color-accent);
-}
-
 .period--on-ink {
   background: var(--color-on-ink-accent);
-}
-
-a:focus-visible,
-button:focus-visible {
-  outline: var(--rule-thick) solid var(--color-focus);
-  outline-offset: 3px;
-}
-
-/* Every pair on this page -- a list and its empty state, the sign-in button and
-   the reason it is missing -- shows one side and hides the other. */
-.hide {
-  display: none;
 }
 
 .rule {
@@ -126,64 +68,6 @@ button:focus-visible {
 }
 
 /* ---- N6 masthead, slammed left ------------------------------------------- */
-
-/* Two hairlines set 3px apart -- the masthead's double rule, drawn as the row's
-   own bottom border plus this one rather than as a border-heavy element. */
-.mast {
-  padding-top: var(--space-md);
-  padding-bottom: var(--rule-signal);
-  border-bottom: var(--rule-hair) solid var(--color-ink);
-}
-
-.mast__issue {
-  margin: 0 0 var(--space-sm);
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.mast__row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-md);
-  flex-wrap: wrap;
-  padding-bottom: var(--space-sm);
-  border-bottom: var(--rule-hair) solid var(--color-ink);
-}
-
-.mast__name {
-  display: inline-flex;
-  align-items: flex-end;
-  font-family: var(--font-display);
-  font-weight: var(--display-weight);
-  font-size: clamp(1.125rem, 2.6vw, 2.25rem);
-  letter-spacing: var(--tracking-display);
-  line-height: 0.9;
-  color: var(--color-ink);
-  text-decoration: none;
-  overflow-wrap: anywhere;
-}
-
-.mast__nav {
-  display: grid;
-  padding-bottom: var(--space-3xs);
-  width: calc(3 * 100% / var(--columns));
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.mast__nav a {
-  color: var(--color-ink);
-  text-decoration: none;
-  white-space: nowrap;
-  text-align: right;
-  border-bottom: var(--rule-hair) solid transparent;
-  transition: border-color var(--dur-short) var(--ease-out);
-}
-
-.mast__nav a:hover {
-  color: var(--color-accent);
-  border-bottom-color: var(--color-accent);
-}
 
 /* ---- The plate: the page's one flooded band ------------------------------ */
 
@@ -636,35 +520,6 @@ button:focus-visible {
 
 /* ---- Ft4 colophon -------------------------------------------------------- */
 
-.colophon {
-  padding-block: var(--space-md) var(--space-2xl);
-  border-top: var(--rule-thick) solid var(--color-ink);
-}
-
-.colophon p {
-  margin: 0;
-  max-width: calc(100% / 12 * 9);
-  font-size: var(--text-sm);
-  line-height: 1.8;
-  color: var(--color-muted);
-}
-
-.colophon a {
-  color: var(--color-ink);
-  text-decoration: none;
-  white-space: nowrap;
-  margin-inline-end: 0.4em;
-  border-bottom: var(--rule-hair) solid var(--color-rule);
-  transition:
-    color var(--dur-short) var(--ease-out),
-    border-color var(--dur-short) var(--ease-out);
-}
-
-.colophon a:hover {
-  color: var(--color-accent);
-  border-bottom-color: var(--color-accent);
-}
-
 /* ---- Browsers that cannot run the game ----------------------------------- */
 
 /* The page still reads on Safari and on a phone -- only signing in is closed,
@@ -684,10 +539,6 @@ button:focus-visible {
 /* ---- Narrower ------------------------------------------------------------ */
 
 @media (max-width: 1024px) {
-  :root {
-    --columns: 6;
-  }
-
   /* Eleven 32px gutters do not fit inside a phone-width shell: held at twelve
      tracks the bands overflow by the whole gap total. One track instead, with
      the gap doing the row rhythm. Spans are `1 / -1` rather than `span 12`, or
@@ -707,10 +558,6 @@ button:focus-visible {
   .plate__brand,
   .stage__text {
     padding-inline-end: 0;
-  }
-
-  .colophon p {
-    max-width: none;
   }
 
   .plate__brand,
@@ -766,20 +613,6 @@ button:focus-visible {
 }
 
 @media (max-width: 640px) {
-  :root {
-    --columns: 4;
-  }
-
-  .mast__row {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: var(--space-sm);
-  }
-
-  .mast__nav a {
-    text-align: left;
-  }
-
   /* Four things have to share a phone's first screen, so the plate gives up
      what it can and the feeds start as close to the fold as they will go. */
   .plate__inner {
