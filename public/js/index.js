@@ -16,21 +16,6 @@ function readJson(res) {
   return res.json();
 }
 
-// GSI renders the button at one fixed pixel width and caps data-width at 400px,
-// so a hard-coded value either falls short of the column or breaks out of it.
-// Measured from the column instead, before the async GSI script has loaded --
-// this file is parsed at the end of the body, so the element is already there.
-function sizeSigninButton() {
-  const slot = document.querySelector(".plate__enter");
-  const button = document.querySelector(".g_id_signin");
-  if (!slot || !button) return;
-  // 200 is GSI's floor; below that it renders at 200 regardless and overflows.
-  const width = Math.max(200, Math.min(400, Math.floor(slot.clientWidth)));
-  button.dataset.width = String(width);
-}
-
-sizeSigninButton();
-
 // Both rails are filled from the API rather than rendered with the page: the
 // feeds are the one part of the fold that goes stale, and keeping them out of
 // the HTML keeps the document cacheable.
@@ -154,42 +139,80 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+const gsiLoaded = () =>
+  !!(window.google && window.google.accounts && window.google.accounts.id);
+
 function onGsiSettled() {
   // If the script is blocked or fails, the button never renders and the page
   // looks unresponsive. Shown inline rather than via alert, since an ad blocker
   // would trigger this on every visit and a popup each time is disruptive.
-  if (!window.google || !window.google.accounts || !window.google.accounts.id) {
-    console.error("Google Identity Services failed to load.");
-    if (canPlay) {
-      document.getElementById("loginNotice").classList.remove("hide");
-    }
-    return;
+  if (gsiLoaded()) return;
+  console.error("Google Identity Services failed to load.");
+  if (canPlay) {
+    document.getElementById("loginNotice").classList.remove("hide");
   }
+}
 
-  if (!canPlay) return;
-
-  // Asked for here rather than through data-auto_prompt. Left to GSI, the prompt
-  // opens as soon as the library loads -- including on Safari and on phones,
-  // where the button is hidden and the callback refuses, so a FedCM dialog was
-  // still coming up in front of people who cannot sign in at all.
+// Asked for here rather than through data-auto_prompt. Left to GSI, the prompt
+// opens as soon as the library loads -- including on Safari and on phones, where
+// the button is hidden and the callback refuses, so a FedCM dialog was coming up
+// in front of people who cannot sign in at all.
+//
+// On window load specifically, which is where GSI puts its own auto prompt. When
+// its script lands while the page is still parsing it defers reading #g_id_onload
+// to DOMContentLoaded, and until that runs there is no initialised client --
+// prompt() would quietly call initialize() itself, with no config, and GSI would
+// then initialise a second time with the real one.
+function promptSignIn() {
+  if (!canPlay || !gsiLoaded()) return;
   window.google.accounts.id.prompt();
 }
 
-// The GSI script is async: it may run before or after this file. Either way the
-// check happens once, when the library has settled one way or the other.
-if (window.google && window.google.accounts && window.google.accounts.id) {
+// Two things have to have happened before either of those can decide anything:
+// the async GSI script has to have settled, and the page has to have loaded --
+// GSI reads #g_id_onload no later than DOMContentLoaded, and defers its own
+// prompt to load. Whichever finishes second runs them, so the order the script
+// and this file happen to execute in does not matter.
+let gsiSettled = false;
+let pageLoaded = document.readyState === "complete";
+
+function settle() {
+  if (!gsiSettled || !pageLoaded) return;
   onGsiSettled();
+  promptSignIn();
+}
+
+const markGsiSettled = () => {
+  gsiSettled = true;
+  settle();
+};
+
+if (gsiLoaded()) {
+  markGsiSettled();
 } else {
   const gsiScript = document.querySelector(
     'script[src^="https://accounts.google.com/gsi/"]',
   );
   if (gsiScript) {
-    gsiScript.addEventListener("load", onGsiSettled, { once: true });
-    gsiScript.addEventListener("error", onGsiSettled, { once: true });
-  } else {
-    window.addEventListener("load", onGsiSettled, { once: true });
+    gsiScript.addEventListener("load", markGsiSettled, { once: true });
+    gsiScript.addEventListener("error", markGsiSettled, { once: true });
   }
+  // A script element that is already done fires nothing, so load is the backstop.
+  window.addEventListener("load", markGsiSettled, { once: true });
 }
+
+if (!pageLoaded) {
+  window.addEventListener(
+    "load",
+    () => {
+      pageLoaded = true;
+      settle();
+    },
+    { once: true },
+  );
+}
+
+settle();
 
 // eslint-disable-next-line no-unused-vars
 function handleCredentialResponse(authResult) {
