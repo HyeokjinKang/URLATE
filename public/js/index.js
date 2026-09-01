@@ -154,17 +154,42 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// If the GSI script is blocked or fails to load, the button never renders and the
-// page looks unresponsive. The load event fires after async scripts, so the
-// result is final by this point. Shown inline rather than via alert, since an ad
-// blocker would trigger this on every visit and a popup each time is disruptive.
-window.addEventListener("load", () => {
-  if (!canPlay) return;
+function onGsiSettled() {
+  // If the script is blocked or fails, the button never renders and the page
+  // looks unresponsive. Shown inline rather than via alert, since an ad blocker
+  // would trigger this on every visit and a popup each time is disruptive.
   if (!window.google || !window.google.accounts || !window.google.accounts.id) {
     console.error("Google Identity Services failed to load.");
-    document.getElementById("loginNotice").classList.remove("hide");
+    if (canPlay) {
+      document.getElementById("loginNotice").classList.remove("hide");
+    }
+    return;
   }
-});
+
+  if (!canPlay) return;
+
+  // Asked for here rather than through data-auto_prompt. Left to GSI, the prompt
+  // opens as soon as the library loads -- including on Safari and on phones,
+  // where the button is hidden and the callback refuses, so a FedCM dialog was
+  // still coming up in front of people who cannot sign in at all.
+  window.google.accounts.id.prompt();
+}
+
+// The GSI script is async: it may run before or after this file. Either way the
+// check happens once, when the library has settled one way or the other.
+if (window.google && window.google.accounts && window.google.accounts.id) {
+  onGsiSettled();
+} else {
+  const gsiScript = document.querySelector(
+    'script[src^="https://accounts.google.com/gsi/"]',
+  );
+  if (gsiScript) {
+    gsiScript.addEventListener("load", onGsiSettled, { once: true });
+    gsiScript.addEventListener("error", onGsiSettled, { once: true });
+  } else {
+    window.addEventListener("load", onGsiSettled, { once: true });
+  }
+}
 
 // eslint-disable-next-line no-unused-vars
 function handleCredentialResponse(authResult) {

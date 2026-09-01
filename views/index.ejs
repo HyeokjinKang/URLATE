@@ -21,13 +21,16 @@
     <title>URLATE</title>
   </head>
   <body>
+    <%# auto_prompt is off: left on, GSI opens One Tap the moment it loads, before
+        anything on the page has decided whether this platform can play. index.js
+        asks for the prompt instead, once it knows. %>
     <div
       id="g_id_onload"
       data-client_id="<%= googleClientId %>"
       data-context="signin"
       data-ux_mode="popup"
       data-callback="handleCredentialResponse"
-      data-auto_prompt="true"
+      data-auto_prompt="false"
       data-use_fedcm_for_prompt="true"
     ></div>
     <%# The theme's ground: the 12 column rules, drawn in public behind everything. %>
