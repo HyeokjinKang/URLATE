@@ -1,10 +1,10 @@
 /* Hallmark · tokens · theme: Grid · genre: editorial
- * axes: light paper / grotesk-heavy lowercase display / cool ultramarine signal
+ * axes: light paper / grotesk-heavy display / cool ultramarine signal
  *
  * Grid's own build hint calls for Archivo. This project self-hosts Montserrat,
  * Pretendard and Metropolis on its CDN and the CSP allows no other font origin,
- * so the display role is carried by Montserrat 800 lowercase. Pretendard sits
- * behind it in the same stack for Korean, which Montserrat does not cover.
+ * so the display role is carried by Montserrat 800. Pretendard sits behind it in
+ * the same stack for Korean, which Montserrat does not cover.
  */
 
 :root {
@@ -13,8 +13,8 @@
   --color-paper-2: oklch(97.2% 0.004 255);
   --color-paper-3: oklch(94.5% 0.005 255);
   --color-rule: oklch(88% 0.006 255);
-  /* The exposed column grid runs behind running text, so it is drawn lighter
-     than the hairlines that divide content. */
+  /* The exposed column grid and the boxes ruled on it, drawn a step back from the
+     hairlines that divide content, since both run behind running text. */
   --color-rail: oklch(93.5% 0.005 255);
   --color-neutral: oklch(60% 0.008 255);
   --color-muted: oklch(46% 0.01 255);
@@ -31,9 +31,11 @@
   --color-on-ink-muted: oklch(74% 0.008 255);
   --color-on-ink-rule: oklch(34% 0.012 255);
   /* The light the mark sits in on the plate, taken off the mark's own violet, and
-     the tile the grain in it repeats on. */
+     the tile the grain in it repeats on. The tile renders a 160-unit SVG, so this
+     size is what decides how many device pixels one unit covers: 320px puts a
+     grain on a single pixel at 1x, and it halves below for denser grids. */
   --color-bloom: oklch(60% 0.2 285);
-  --grain-tile: 160px;
+  --grain-tile: 320px;
 
   --color-on-ink-accent: oklch(58.2% 0.2201 273);
 
@@ -96,4 +98,13 @@
   --z-content: 1;
   --z-sticky: 10;
   --z-overlay: 100;
+}
+
+/* A grain is only crisp when it lands on one device pixel. Sized in CSS pixels
+   rather than to the display it either blurs across several or aliases beneath
+   one, and either way it reads as a low-resolution image instead of a texture. */
+@media (min-resolution: 2dppx) {
+  :root {
+    --grain-tile: 160px;
+  }
 }

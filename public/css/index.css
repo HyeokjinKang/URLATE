@@ -10,8 +10,12 @@
  *     Archivo covers no Korean; Pretendard backs the same stack up.
  *   - Display tops out at 5.25rem, not 136px. The fold is required to hold the
  *     mark, the sign-in and both feeds, so it cannot also hold a poster headline.
- *   - The plate is ink rather than the signal ink: the brand mark is white-lettered
- *     with a violet ground, and a violet mark on an ultramarine field fights itself.
+ *   - The plate is ink rather than the signal ink. The mark is a violet gradient
+ *     and sits in a bloom of its own colour; both need a dark ground, and a violet
+ *     mark on an ultramarine field would fight itself.
+ *   - The bloom is a wash, which Grid does not allow. It is the brand's own light
+ *     rather than decoration, it is confined to the mark, and it carries a grain
+ *     so it reads as a lit surface instead of a gradient laid over the band.
  *   - Display is not force-lowercased. The masthead title and the tagline are set
  *     strings ("Project URLATE-v3l", "Avoid & Get on the tempo"); case comes from
  *     the copy, and the copy this file authors is already lowercase.
@@ -211,8 +215,8 @@ button:focus-visible {
   min-width: 0;
 }
 
-/* Holds the bloom behind the mark. Both are positioned, so source order puts the
-   mark on top without reaching for a z-index. */
+/* Holds the bloom, which an <img> has no pseudo-element to carry. The bloom is
+   pulled behind on z-index, so the mark stays legible over the brightest part. */
 .plate__mark {
   position: relative;
   display: block;
@@ -233,13 +237,16 @@ button:focus-visible {
   /* A flat field of the bloom colour with fractal noise blended into it, then cut
      to shape by the mask -- doing the falloff in the mask rather than in the fill
      is what keeps the grain from stopping at a square edge.
-     The noise is desaturated and carries its own low opacity: at full strength it
-     is a grey field rather than a texture, and soft-light lifts the whole band
-     off its black. */
+     The noise is desaturated so it grains the violet rather than greying it, and
+     it carries its own low opacity: a full-strength layer reads as a field in its
+     own right rather than as a surface on the light.
+     One octave, and the frequency and the tile are set so a grain lands on one
+     device pixel -- see --grain-tile. Spread across several it stops reading as
+     grain and starts reading as a badly scaled image. */
   background-color: color-mix(in oklab, var(--color-bloom) 34%, transparent);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)' opacity='0.2'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2' numOctaves='1' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)' opacity='0.3'/%3E%3C/svg%3E");
   background-size: var(--grain-tile) var(--grain-tile);
-  background-blend-mode: soft-light;
+  background-blend-mode: color-burn;
   /* Only the alpha of these is read; the colour is not a page colour. */
   -webkit-mask-image: radial-gradient(closest-side, #000, transparent);
   mask-image: radial-gradient(closest-side, #000, transparent);
@@ -312,8 +319,8 @@ button:focus-visible {
   min-width: 0;
 }
 
-/* A whole empty column divides the two rails -- cleaner than a hairline, and it
-   keeps both fills flush to a grid line. */
+/* The two rails meet at column six and divide on their own edges, so each one
+   stays flush to a grid line without a rule drawn between them. */
 .feed--second {
   grid-column: 7 / span 6;
 }
@@ -531,9 +538,9 @@ button:focus-visible {
   margin-top: var(--space-2xs);
 }
 
-/* The numeral is an object, not a heading: cropped by the band edge, set behind
-   the stage it indexes. It sits under the text column, so it follows the text
-   as that column steps across the page. */
+/* The numeral is an object, not a heading: it sits on the band's bottom edge,
+   behind the stage it indexes and under the text column, so it follows that
+   column as it steps across the page. */
 .stage__numeral {
   position: absolute;
   bottom: 0;
@@ -555,8 +562,8 @@ button:focus-visible {
   right: 0;
 }
 
-/* 4.0's figure runs the full width beneath the text, so the only edge left to
-   crop against is the top one. */
+/* 4.0's figure runs the full width beneath the text, so the only edge left for
+   its numeral is the top one. */
 .stage--wide .stage__numeral {
   right: 0;
   top: 0em;
