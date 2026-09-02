@@ -114,7 +114,7 @@ button:focus-visible {
 }
 .mast__nav a[aria-current="page"],
 .colophon a[aria-current="page"] {
-  color: var(--color-muted);
+  color: var(--color-accent);
 }
 
 .mast__nav a:hover {

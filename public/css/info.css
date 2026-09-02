@@ -157,15 +157,10 @@ b {
 }
 
 /* One track per line, so a producer with several reads as a list. */
-.credits td a {
-  display: block;
-  width: fit-content;
-}
-
+.credits td a,
 .credits td span {
   display: block;
-  color: var(--color-muted);
-  font-size: var(--text-sm);
+  width: fit-content;
 }
 
 .credits img {
