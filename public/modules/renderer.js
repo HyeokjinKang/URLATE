@@ -112,7 +112,7 @@ export default class Renderer {
   cacheConfig() {
     const refX = this.canvasW / 1000;
     const refY = this.canvasH / 1000;
-    const _F = "Montserrat, Pretendard JP Variable";
+    const _F = "Montserrat, Pretendard Variable";
     this.CONFIG = {
       UI: {
         DEFAULT_FONT_SIZE: Math.round(refY * Config.UI.DEFAULT_FONT_SIZE),
@@ -500,7 +500,7 @@ export default class Renderer {
       fontSize = (canvasH / 100) * Number(size.split("vh")[0]) + "px";
     else fontSize = size;
 
-    ctx.font = `${weight} ${fontSize} Montserrat, Pretendard JP Variable`;
+    ctx.font = `${weight} ${fontSize} Montserrat, Pretendard Variable`;
     ctx.textAlign = align;
     ctx.textBaseline = valign;
 
@@ -1034,7 +1034,7 @@ export default class Renderer {
 
     const roundedSize = ~~(this.CONFIG.UI.DEFAULT_FONT_SIZE * (1 + comboScale));
     const roundedWeight = ~~(400 * (1 + comboScale * 0.5));
-    ctx.font = `${roundedWeight} ${roundedSize}px Montserrat, Pretendard JP Variable`;
+    ctx.font = `${roundedWeight} ${roundedSize}px Montserrat, Pretendard Variable`;
     ctx.fillText(`${combo}x`, xBase - margin, yBase + fontSize);
 
     ctx.restore();

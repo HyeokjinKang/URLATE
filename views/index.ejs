@@ -1,20 +1,22 @@
 <!DOCTYPE html>
-<html itemscope itemtype="http://schema.org/Article">
+<html lang="<%= __('lang') %>" itemscope itemtype="http://schema.org/Article">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta property="og:title" content="URLATE" />
     <meta property="og:site_name" content="URLATE" />
     <meta property="og:url" content="<%= url %>" />
     <meta property="description" content="Avoid & Get on the tempo, URLATE" />
     <meta property="og:description" content="Avoid & Get on the tempo, URLATE" />
     <meta property="og:image" content="<%= url %>/images/og-thumbnail.png" />
-    <%# Keep these in step with og-thumbnail.png if it is ever replaced. %>
     <meta property="og:image:width" content="1240" />
     <meta property="og:image:height" content="592" />
     <meta name="naver-site-verification" content="7ae378668c928c7b17400b60b364b844a751c1f1" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <link rel="preconnect" href="<%= cdn %>" crossorigin />
-    <%- inlineCss("montserrat", "pretendard", "index") %>
+    <link rel="preload" as="image" href="/images/brand/logo-lite-mark.webp" fetchpriority="high" />
+    <link rel="stylesheet" href="/css/pretendard.css" />
+    <%- inlineCss("montserrat", "tokens", "chrome", "index") %>
     <title>URLATE</title>
   </head>
   <body>
@@ -24,41 +26,155 @@
       data-context="signin"
       data-ux_mode="popup"
       data-callback="handleCredentialResponse"
-      data-auto_prompt="true"
+      data-auto_prompt="false"
       data-use_fedcm_for_prompt="true"
     ></div>
-    <div id="safariBlocker" class="hide"><%= __('safari_alert') %></div>
-    <div id="animContainer" class="widthAnim"></div>
-    <div id="logoContainer">
-      <img src="/images/brand/logo-lite.webp" id="logo" alt="<%= __('index_logoAlt') %>" />
-      <br />
-      <% if(__('lang') == 'en') { %>
-      <a href="/ko" class="bottomLang">English(영어)</a>
-      <% } else { %>
-      <a href="/en" class="bottomLang">한국어(Korean)</a>
-      <% } %>
-    </div>
-    <div id="buttonContainer">
-      <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
-      <div id="loginNotice" class="hide"><%= __('login_blocked') %></div>
-      <div id="policies">
-        <% if(__('lang') == 'en') { %>
-        <a href="/privacy" class="bottomPolicy">Privacy Policy</a>
-        <% } else { %>
-        <a href="/privacy" class="bottomPolicy">개인정보처리방침</a>
-        <% } %>
-      </div>
-    </div>
-    <span id="footerRight">
-      <% if(branch != "main") { %>
-      <span>Working branch: <b><%= branch %></b></span
-      ><br />
-      <% } else { %>
-      <span><%= ver %></span><br />
-      <% } %>
-      <b>안내 사항</b>: 본 게임은 아직 개발 중이며, 누구나 접속이 가능하지만 <b>모든 기록은 초기화될 수 있습니다.</b><br />
-      <b>Notice</b>: This game is still in development, so anyone can access it, but <b>all records can be reset.</b>
-    </span>
+    <div class="rails" aria-hidden="true"></div>
+
+    <%- include('partials/masthead', { page: 'index' }) %>
+
+    <main>
+      <section class="plate" aria-labelledby="claim">
+        <div class="shell plate__inner">
+          <div class="plate__brand">
+            <span class="plate__mark">
+              <img src="/images/brand/logo-lite-mark.webp" id="logo" class="plate__logo" alt="URLATE" width="1000" height="612" />
+            </span>
+            <h1 class="plate__claim" id="claim" lang="en">Avoid &amp; Get on the tempo<i class="period period--on-ink" aria-hidden="true"></i></h1>
+            <p class="plate__lede"><%= __('idx_lede') %></p>
+          </div>
+          <div class="plate__enter">
+            <p class="label plate__enter-label"><%= __('idx_signin') %> →</p>
+            <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-locale="<%= __('lang') %>" data-size="large" data-logo_alignment="left"></div>
+            <p id="loginNotice" class="hide"><%= __('login_blocked') %></p>
+            <p id="unsupportedNotice" class="hide"><%= __('idx_unsupported') %></p>
+          </div>
+        </div>
+      </section>
+
+      <% const mirai = __('lang') === 'en' ? 'https://mirai.urlate.coupy.dev' : `https://mirai.urlate.coupy.dev/${__('lang')}`; %>
+      <section class="shell feeds" aria-label="<%= __('idx_feeds_label') %>">
+        <div class="feed">
+          <div class="feed__head">
+            <h2 class="label"><%= __('idx_feed_notice') %></h2>
+            <a class="feed__all label" href="<%= mirai %>/announcements" target="_blank" rel="noopener noreferrer"><%= __('idx_feed_all') %> <span aria-hidden="true">&rarr;</span></a>
+          </div>
+          <div class="feed__body" data-feed="notices" aria-busy="true">
+            <p class="feed__status label" data-feed-status>
+              <%= __('idx_feed_loading') %>
+              <span class="feed__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            </p>
+            <ol class="feed__list hide" data-feed-list></ol>
+            <p class="feed__empty hide" data-feed-empty><%= __('idx_feed_empty') %></p>
+          </div>
+        </div>
+        <div class="feed feed--second">
+          <div class="feed__head">
+            <h2 class="label"><%= __('idx_feed_journal') %></h2>
+            <a class="feed__all label" href="<%= mirai %>/" target="_blank" rel="noopener noreferrer"><%= __('idx_feed_all') %> <span aria-hidden="true">&rarr;</span></a>
+          </div>
+          <div class="feed__body" data-feed="posts" aria-busy="true">
+            <p class="feed__status label" data-feed-status>
+              <%= __('idx_feed_loading') %>
+              <span class="feed__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            </p>
+            <ol class="feed__list hide" data-feed-list></ol>
+            <p class="feed__empty hide" data-feed-empty><%= __('idx_feed_empty') %></p>
+          </div>
+        </div>
+      </section>
+
+      <hr class="shell rule rule--ink" />
+
+      <section class="shell stage stage--right">
+        <p class="stage__numeral" aria-hidden="true">1</p>
+        <div class="stage__text">
+          <p class="stage__no label">1.0</p>
+          <h2 class="stage__title"><%= __('idx_stage1_title') %></h2>
+          <p class="stage__body"><%= __('idx_stage1_body') %></p>
+        </div>
+        <figure class="stage__figure">
+          <img src="/images/landing/move.webp" width="1400" height="788" loading="lazy" decoding="async" alt="<%= __('idx_stage1_alt') %>" />
+          <figcaption class="label"><%= __('idx_stage1_caption') %></figcaption>
+        </figure>
+      </section>
+
+      <section class="shell stage stage--left">
+        <p class="stage__numeral" aria-hidden="true">2</p>
+        <figure class="stage__figure">
+          <img src="/images/landing/dodge.webp" width="1400" height="788" loading="lazy" decoding="async" alt="<%= __('idx_stage2_alt') %>" />
+          <figcaption class="label"><%= __('idx_stage2_caption') %></figcaption>
+        </figure>
+        <div class="stage__text">
+          <p class="stage__no label">2.0</p>
+          <h2 class="stage__title"><%= __('idx_stage2_title') %></h2>
+          <p class="stage__body"><%= __('idx_stage2_body') %></p>
+        </div>
+      </section>
+
+      <section class="shell stage stage--right">
+        <p class="stage__numeral" aria-hidden="true">3</p>
+        <div class="stage__text">
+          <p class="stage__no label">3.0</p>
+          <h2 class="stage__title"><%= __('idx_stage3_title') %></h2>
+          <p class="stage__body"><%= __('idx_stage3_body') %></p>
+        </div>
+        <figure class="stage__figure">
+          <img src="/images/landing/hit.webp" width="1400" height="788" loading="lazy" decoding="async" alt="<%= __('idx_stage3_alt') %>" />
+          <figcaption class="label"><%= __('idx_stage3_caption') %></figcaption>
+        </figure>
+      </section>
+
+      <section class="shell stage stage--wide">
+        <p class="stage__numeral" aria-hidden="true">4</p>
+        <div class="stage__text">
+          <p class="stage__no label">4.0</p>
+          <h2 class="stage__title"><%= __('idx_stage4_title') %></h2>
+          <p class="stage__body"><%= __('idx_stage4_body') %></p>
+        </div>
+        <figure class="stage__figure">
+          <img src="/images/landing/result.webp" width="1400" height="775" loading="lazy" decoding="async" alt="<%= __('idx_stage4_alt') %>" />
+          <figcaption class="label"><%= __('idx_stage4_caption') %></figcaption>
+        </figure>
+      </section>
+
+      <section class="shell spec" aria-labelledby="spec-title">
+        <h2 class="spec__title" id="spec-title"><%= __('idx_spec_title') %><i class="period" aria-hidden="true"></i></h2>
+        <dl class="spec__list">
+          <div class="spec__cell">
+            <dt class="label"><%= __('idx_spec_browser_k') %></dt>
+            <dd><%= __('idx_spec_browser_v') %></dd>
+          </div>
+          <div class="spec__cell">
+            <dt class="label"><%= __('idx_spec_input_k') %></dt>
+            <dd><%= __('idx_spec_input_v') %></dd>
+          </div>
+          <div class="spec__cell">
+            <dt class="label"><%= __('idx_spec_account_k') %></dt>
+            <dd><%= __('idx_spec_account_v') %></dd>
+          </div>
+          <div class="spec__cell">
+            <dt class="label"><%= __('idx_spec_price_k') %></dt>
+            <dd><%= __('idx_spec_price_v') %></dd>
+          </div>
+          <div class="spec__cell">
+            <dt class="label"><%= __('idx_spec_license_k') %></dt>
+            <dd><%= __('idx_spec_license_v') %></dd>
+          </div>
+          <div class="spec__cell">
+            <dt class="label"><%= __('idx_spec_source_k') %></dt>
+            <dd>
+              <a href="https://github.com/HyeokjinKang/URLATE" target="_blank" rel="noopener noreferrer"><%= __('idx_spec_source_front') %></a>
+              <a href="https://github.com/HyeokjinKang/URLATE-v3l-backend" target="_blank" rel="noopener noreferrer"><%= __('idx_spec_source_back') %></a>
+              <a href="https://mirai.urlate.coupy.dev/docs" target="_blank" rel="noopener noreferrer"><%= __('idx_spec_source_docs') %></a>
+            </dd>
+          </div>
+        </dl>
+      </section>
+    </main>
+
+    <%- include('partials/colophon', { page: 'index' }) %>
+
     <script nonce="<%= cspNonce %>">
       const projectUrl = "<%= url %>";
       const api = "<%= api %>";

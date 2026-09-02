@@ -133,8 +133,7 @@ let canvasW = 0,
   canvasH = 0,
   canvasOW = 0,
   canvasOH = 0;
-const FONT_STACK =
-  "Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard";
+const FONT_STACK = "Montserrat, Pretendard Variable, Pretendard";
 let UIFontNormal = "";
 const albumImg = new Image();
 

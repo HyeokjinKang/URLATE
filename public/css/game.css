@@ -16,8 +16,7 @@ body {
   text-align: center;
   font-family:
     "Montserrat",
-    "Pretendard JP Variable",
-    "Pretendard JP",
+    "Pretendard Variable",
     Pretendard,
     -apple-system,
     BlinkMacSystemFont,
@@ -45,8 +44,7 @@ body {
 .metropolis {
   font-family:
     "Metropolis",
-    "Pretendard JP Variable",
-    "Pretendard JP",
+    "Pretendard Variable",
     Pretendard,
     -apple-system,
     BlinkMacSystemFont,
@@ -835,8 +833,7 @@ p {
   margin-top: 0.5vh;
   font-family:
     "Montserrat",
-    "Pretendard JP Variable",
-    "Pretendard JP",
+    "Pretendard Variable",
     Pretendard,
     -apple-system,
     BlinkMacSystemFont,
@@ -870,8 +867,7 @@ p {
   font-size: 2vh;
   font-family:
     "Montserrat",
-    "Pretendard JP Variable",
-    "Pretendard JP",
+    "Pretendard Variable",
     Pretendard,
     -apple-system,
     BlinkMacSystemFont,
@@ -937,8 +933,7 @@ p {
   font-size: 2vh;
   font-family:
     "Montserrat",
-    "Pretendard JP Variable",
-    "Pretendard JP",
+    "Pretendard Variable",
     Pretendard,
     -apple-system,
     BlinkMacSystemFont,
@@ -1675,8 +1670,7 @@ input[type="number"] {
   margin-top: 1vh;
   font-family:
     "Montserrat",
-    "Pretendard JP Variable",
-    "Pretendard JP",
+    "Pretendard Variable",
     Pretendard,
     -apple-system,
     BlinkMacSystemFont,
@@ -1958,6 +1952,10 @@ input[type="number"] {
   opacity: 0;
 }
 
+#warningInner span {
+  white-space: pre-line;
+}
+
 #intro1container {
   z-index: 501;
 }
@@ -1993,6 +1991,7 @@ input[type="number"] {
 
 #tutorialText {
   font-size: 2vh;
+  white-space: pre-line;
 }
 
 .tutorialInner {
@@ -2745,10 +2744,24 @@ input[type="number"] {
   align-items: center;
 }
 
+#noticeSlot {
+  display: contents;
+}
+
+#noticeSlot.hide {
+  display: none;
+}
+
 #noticeText {
   color: #000;
   text-decoration: none;
   font-size: 1.8vh;
+  /* MIRAI writes announcement titles longer than the old notice table's, and the
+     header is a fixed-width flex row -- an unbounded title pushes the icons. */
+  max-width: 30vw;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 #profileBannerContainer {

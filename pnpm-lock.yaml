@@ -76,6 +76,9 @@ importers:
       prettier:
         specifier: ^3.9.6
         version: 3.9.6
+      prettier-plugin-ejs:
+        specifier: ^1.0.3
+        version: 1.0.3(prettier@3.9.6)
       supervisor:
         specifier: ^0.12.0
         version: 0.12.0
@@ -1242,6 +1245,11 @@ packages:
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
+
+  prettier-plugin-ejs@1.0.3:
+    resolution: {integrity: sha512-wTL4U/ou6dHHp1ZTfS67SHVb/dRgVhpIOTgCvkgdqF/Lw6A472W90dxFtsWSXIR7GmLZRgZb2PdArR9ozxX7cg==}
+    peerDependencies:
+      prettier: 2.x - 3.x
 
   prettier@3.9.6:
     resolution: {integrity: sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g==}
@@ -2682,6 +2690,10 @@ snapshots:
       load-json-file: 4.0.0
 
   prelude-ls@1.2.1: {}
+
+  prettier-plugin-ejs@1.0.3(prettier@3.9.6):
+    dependencies:
+      prettier: 3.9.6
 
   prettier@3.9.6: {}
 

@@ -1,0 +1,21 @@
+<header class="shell mast">
+  <p class="mast__issue label">
+    <% if(branch != "main") { %>
+    <span><%= branch %></span>
+    <% } else { %>
+    <span><%= ver %></span>
+    <% } %>
+  </p>
+  <div class="mast__row">
+    <a class="mast__name" href="/">Project URLATE-v3l<i class="period" aria-hidden="true"></i></a>
+    <nav class="mast__nav label" aria-label="<%= __('idx_nav_label') %>">
+      <a href="/info"<% if(page == "info") { %> aria-current="page"<% } %>><%= __('idx_nav_info') %></a>
+      <a href="https://github.com/HyeokjinKang/URLATE" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <% if(__('lang') == 'en') { %>
+      <a href="/ko" lang="ko">한국어</a>
+      <% } else { %>
+      <a href="/en" lang="en">English</a>
+      <% } %>
+    </nav>
+  </div>
+</header>

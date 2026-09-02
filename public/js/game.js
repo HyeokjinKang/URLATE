@@ -1,4 +1,4 @@
-/* global Howler, Howl, Pace, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable1, notAvailable2, medalDesc, alias, nothingHere, rating, couponApplySuccess, couponInvalid1, couponInvalid2, couponUsed, inputEmpty, aliasSelect, pictureMessage, imageError */
+/* global Howler, Howl, Pace, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable, medalDesc, alias, nothingHere, rating, couponApplySuccess, couponInvalid1, couponInvalid2, couponUsed, inputEmpty, aliasSelect, pictureMessage, imageError */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
 const langDetailSelector = document.getElementById("langDetailSelector");
@@ -472,18 +472,21 @@ document.addEventListener("DOMContentLoaded", () => {
     intro2container.style.display = "flex";
   }
 
-  fetch(`${api}/notice/${lang}`, {
-    method: "GET",
-    credentials: "include",
-  })
+  // The header shows the newest MIRAI announcement. Its own request, so a slow
+  // or failing feed never delays the profile call the screen actually needs.
+  fetch(`${api}/notices/${lang}?limit=1`)
     .then((res) => res.json())
-    .then((data) => {
-      if (data.result == "success") {
-        data = data.data;
-        document.getElementById("noticeText").textContent =
-          `${new Date(data.date).toLocaleDateString()} | ${data[`title_${lang}`]}`;
-        document.getElementById("noticeText").href = data[`url_${lang}`];
-      }
+    .then((body) => {
+      const entry = Array.isArray(body.data) ? body.data[0] : null;
+      if (body.result != "success" || !entry) return;
+      const link = document.getElementById("noticeText");
+      link.textContent = `${new Date(entry.date).toLocaleDateString()} | ${entry.title}`;
+      link.href = entry.url;
+      document.getElementById("noticeSlot").classList.remove("hide");
+    })
+    .catch((error) => {
+      // Nothing else on the screen depends on it; leave the slot hidden.
+      console.error(error);
     });
 
   // Signed-out visitors were already turned away by the server gate.
@@ -707,7 +710,7 @@ const songSelected = (n, refreshed, seek) => {
     if (
       JSON.parse(tracks[songSelection].difficulty)[difficultySelection] == 0
     ) {
-      alert(`${notAvailable1}\n${notAvailable2}`);
+      alert(notAvailable);
     } else {
       display = 0;
       document.getElementById("selectInnerContainer").classList.add("fadeOut");

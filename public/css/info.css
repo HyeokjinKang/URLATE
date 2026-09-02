@@ -1,109 +1,228 @@
-body {
-  line-height: 1.2;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  letter-spacing: -0.3px;
-  font-family:
-    "Montserrat",
-    "Pretendard JP Variable",
-    "Pretendard JP",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    Roboto,
-    "Helvetica Neue",
-    "Segoe UI",
-    "Hiragino Sans",
-    "Apple SD Gothic Neo",
-    Meiryo,
-    "Noto Sans JP",
-    "Noto Sans KR",
-    "Malgun Gothic",
-    Osaka,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    sans-serif;
-  font-feature-settings: "ss05";
-  background-color: white;
-  margin: 3vh 3vw;
-  padding: 0;
+/* Hallmark · document pages (/info, /privacy) · theme: Grid · genre: editorial
+ *
+ * The landing page's language applied to two pages that are only text: the same
+ * sheet, the same masthead and colophon from chrome.css, and the same rule
+ * vocabulary -- a section opens on an ink rule the way the feed heads and the
+ * spec sheet do, and everything else is measure and air.
+ *
+ * These pages are served under the static CSP, which has no 'unsafe-inline' in
+ * style-src, so their stylesheets are linked rather than inlined.
+ */
+
+.doc {
+  padding-block: var(--space-2xl) var(--space-3xl);
 }
 
-* {
+.doc h1 {
+  margin: 0 0 var(--space-lg);
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-display-s);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--lh-display);
+  overflow-wrap: anywhere;
+}
+
+.doc__meta {
   margin: 0;
-  padding: 0;
-  box-sizing: border-box;
 }
 
-h1 {
-  font-size: 2em;
+/* A section opens the way a band does on the landing page: an ink rule, then the
+   heading sitting directly under it. */
+.doc__section {
+  margin-top: var(--space-2xl);
+  padding-top: var(--space-sm);
+  border-top: var(--rule-thick) solid var(--color-ink);
 }
 
-span:not(:first-of-type) {
-  display: inline-block;
-  margin-top: 0.2em;
+.doc__title {
+  margin: 0 0 var(--space-md);
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-md);
+  letter-spacing: -0.02em;
 }
 
-div {
-  margin-bottom: 0.5em;
+.doc p {
+  max-width: 74ch;
+  margin: 0 0 var(--space-sm);
 }
 
-div + span {
-  margin-top: 0 !important;
+.doc__note {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
 }
 
-strong {
-  font-weight: 600;
-}
-
-td {
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
-tr > td:first-of-type {
-  font-size: 1.3em;
+strong,
+b {
   font-weight: 700;
-  padding-right: 1em;
 }
 
-a {
-  color: #000;
-  text-decoration: none;
+/* ---- Lists --------------------------------------------------------------- */
+
+.doc__list {
+  max-width: 74ch;
+  margin: 0 0 var(--space-md);
+  padding-left: var(--space-lg);
 }
 
-.copyright {
-  font-size: 1em;
-  color: #555;
-  font-style: italic;
+.doc__list li {
+  margin-bottom: var(--space-2xs);
 }
 
-.title {
-  margin-top: 1em !important;
-  margin-bottom: 0.5em !important;
-  font-weight: 800;
-  font-size: 1.5em;
-  background-color: #000;
-  color: #fff;
-  padding: 1px 5px;
+.doc__list p {
+  margin: 0;
 }
 
-.link::after {
+.doc__list--plain {
+  list-style: none;
+  padding-left: 0;
+}
+
+/* The dash keeps the shape the document was written in without asking a list
+   item to be a paragraph that starts with one. */
+.doc__list--plain > li {
+  padding-left: 1.1em;
+  text-indent: -1.1em;
+}
+
+.doc__list--plain > li::before {
+  content: "—";
   margin-right: 0.5em;
-  margin-left: 2px;
-  content: url("/images/icons/link.svg");
-  width: 0.1em;
+  color: var(--color-muted);
 }
 
-.badgeIcon {
-  height: 5em;
-  margin-right: 1vw;
+.doc__list--plain .doc__list {
+  margin-top: var(--space-2xs);
+  margin-bottom: 0;
+  text-indent: 0;
+}
+
+/* ---- Ruled fact rows, as on the landing page's spec sheet ---------------- */
+
+.doc__facts {
+  max-width: 74ch;
+  margin: 0 0 var(--space-md);
+  border-top: var(--rule-hair) solid var(--color-rule);
+}
+
+.doc__fact {
+  display: grid;
+  grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+}
+
+.doc__fact dt {
+  margin: 0;
+}
+
+.doc__fact dd {
+  margin: 0;
+}
+
+.doc__fact dd p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---- The credits table --------------------------------------------------- */
+
+.credits {
+  width: 100%;
+  max-width: 74ch;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.credits th,
+.credits td {
+  padding: var(--space-sm) var(--space-md) var(--space-sm) 0;
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+  vertical-align: baseline;
+  font-weight: 400;
+}
+
+.credits tr:first-child th,
+.credits tr:first-child td {
+  border-top: var(--rule-hair) solid var(--color-rule);
+}
+
+.credits th {
+  width: 34%;
+}
+
+.credits__name {
+  font-weight: 700;
+}
+
+/* One track per line, so a producer with several reads as a list. */
+.credits td a,
+.credits td span {
+  display: block;
+  width: fit-content;
+}
+
+.credits img {
+  height: 1em;
+  margin-left: 0.35em;
+  vertical-align: -0.12em;
 }
 
 .youtubeIcon {
   margin-bottom: -1px;
+}
+
+/* ---- Links --------------------------------------------------------------- */
+
+.doc a {
+  color: var(--color-accent);
+  text-decoration: none;
+  border-bottom: var(--rule-hair) solid transparent;
+  transition: border-color var(--dur-short) var(--ease-out);
+}
+
+.doc a:hover {
+  border-bottom-color: var(--color-accent);
+}
+
+/* The icon links carry a mark, not a label, so no rule under them. */
+.doc a:has(img) {
+  display: inline;
+  border-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .doc {
+    padding-block: var(--space-xl) var(--space-2xl);
+  }
+
+  .credits,
+  .credits tbody,
+  .credits tr,
+  .credits th,
+  .credits td {
+    display: block;
+    width: auto;
+  }
+
+  .credits th,
+  .credits td {
+    padding: 0 0 var(--space-2xs);
+    border: 0;
+  }
+
+  .credits tr {
+    padding-block: var(--space-sm);
+    border-bottom: var(--rule-hair) solid var(--color-rule);
+  }
+
+  .credits tr:first-child {
+    border-top: var(--rule-hair) solid var(--color-rule);
+  }
+
+  .doc__fact {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3xs);
+  }
 }
