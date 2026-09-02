@@ -9,22 +9,17 @@
     <meta property="description" content="Avoid & Get on the tempo, URLATE" />
     <meta property="og:description" content="Avoid & Get on the tempo, URLATE" />
     <meta property="og:image" content="<%= url %>/images/og-thumbnail.png" />
-    <%# Keep these in step with og-thumbnail.png if it is ever replaced. %>
     <meta property="og:image:width" content="1240" />
     <meta property="og:image:height" content="592" />
     <meta name="naver-site-verification" content="7ae378668c928c7b17400b60b364b844a751c1f1" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <link rel="preconnect" href="<%= cdn %>" crossorigin />
-    <%# The mark on the plate is the fold's largest paint; it should not wait on the stylesheet. %>
     <link rel="preload" as="image" href="/images/brand/logo-lite-mark.webp" fetchpriority="high" />
     <link rel="stylesheet" href="/css/pretendard.css" />
     <%- inlineCss("montserrat", "tokens", "chrome", "index") %>
     <title>URLATE</title>
   </head>
   <body>
-    <%# auto_prompt is off: left on, GSI opens One Tap the moment it loads, before
-        anything on the page has decided whether this platform can play. index.js
-        asks for the prompt instead, once it knows. %>
     <div
       id="g_id_onload"
       data-client_id="<%= googleClientId %>"
@@ -34,33 +29,22 @@
       data-auto_prompt="false"
       data-use_fedcm_for_prompt="true"
     ></div>
-    <%# The theme's ground: the 12 column rules, drawn in public behind everything. %>
     <div class="rails" aria-hidden="true"></div>
 
     <%- include('partials/masthead', { page: 'index' }) %>
 
     <main>
-      <%# The one flooded band on the page. The mark and its bloom both need a dark
-          ground to read on, and the sign-in belongs beside them. %>
       <section class="plate" aria-labelledby="claim">
         <div class="shell plate__inner">
           <div class="plate__brand">
-            <%# The colour mark, cropped off logo-lite.webp: the "LITE" beneath it is set
-                in black and disappears against the plate. The bloom behind it is drawn
-                in CSS, so the mark reads as lit rather than pasted onto the band.
-                alt is the wordmark, not index_logoAlt -- that key is the tagline, which
-                the h1 below already reads out. %>
             <span class="plate__mark">
               <img src="/images/brand/logo-lite-mark.webp" id="logo" class="plate__logo" alt="URLATE" width="1000" height="612" />
             </span>
-            <%# The tagline is the brand's own line and is not translated. %>
             <h1 class="plate__claim" id="claim" lang="en">Avoid &amp; Get on the tempo<i class="period period--on-ink" aria-hidden="true"></i></h1>
             <p class="plate__lede"><%= __('idx_lede') %></p>
           </div>
           <div class="plate__enter">
             <p class="label plate__enter-label"><%= __('idx_signin') %> →</p>
-            <%# data-width is set from the measured column in index.js -- a fixed 400
-                (GSI's widest) overflows the column on a narrow desktop window. %>
             <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-locale="<%= __('lang') %>" data-size="large" data-logo_alignment="left"></div>
             <p id="loginNotice" class="hide"><%= __('login_blocked') %></p>
             <p id="unsupportedNotice" class="hide"><%= __('idx_unsupported') %></p>
@@ -68,7 +52,6 @@
         </div>
       </section>
 
-      <%# MIRAI serves English from its root and every other locale from a prefix. %>
       <% const mirai = __('lang') === 'en' ? 'https://mirai.urlate.coupy.dev' : `https://mirai.urlate.coupy.dev/${__('lang')}`; %>
       <section class="shell feeds" aria-label="<%= __('idx_feeds_label') %>">
         <div class="feed">
@@ -76,8 +59,6 @@
             <h2 class="label"><%= __('idx_feed_notice') %></h2>
             <a class="feed__all label" href="<%= mirai %>/announcements" target="_blank" rel="noopener noreferrer"><%= __('idx_feed_all') %> <span aria-hidden="true">&rarr;</span></a>
           </div>
-          <%# Filled by index.js from the API. The box holds the height of three rows
-              through all three states, so the fold does not move as they swap. %>
           <div class="feed__body" data-feed="notices" aria-busy="true">
             <p class="feed__status label" data-feed-status>
               <%= __('idx_feed_loading') %>
@@ -105,9 +86,6 @@
 
       <hr class="shell rule rule--ink" />
 
-      <%# 1.0 -> 4.0, the four things a player is doing at once. The occupied side
-          steps across the page so no two stages share a silhouette; 4.0 goes full
-          width and the spec sheet carries no figure at all. %>
       <section class="shell stage stage--right">
         <p class="stage__numeral" aria-hidden="true">1</p>
         <div class="stage__text">
