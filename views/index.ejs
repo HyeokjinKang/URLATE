@@ -17,7 +17,8 @@
     <link rel="preconnect" href="<%= cdn %>" crossorigin />
     <%# The mark on the plate is the fold's largest paint; it should not wait on the stylesheet. %>
     <link rel="preload" as="image" href="/images/brand/logo-lite-mark.webp" fetchpriority="high" />
-    <%- inlineCss("montserrat", "pretendard", "tokens", "chrome", "index") %>
+    <link rel="stylesheet" href="/css/pretendard.css" />
+    <%- inlineCss("montserrat", "tokens", "chrome", "index") %>
     <title>URLATE</title>
   </head>
   <body>

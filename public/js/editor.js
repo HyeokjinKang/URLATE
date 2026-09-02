@@ -792,7 +792,7 @@ const tmlRender = () => {
     tmlCtx.fillStyle = "#111";
     tmlCtx.textAlign = "left";
     tmlCtx.textBaseline = "middle";
-    tmlCtx.font = `${tmlCanvasH / 14}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    tmlCtx.font = `${tmlCanvasH / 14}px Montserrat, Pretendard Variable, Pretendard`;
     tmlCtx.fillText(
       "Note",
       startX * 1.2 + height / 6,
@@ -841,7 +841,7 @@ const tmlRender = () => {
     tmlCtx.fillStyle = "#FFF";
     tmlCtx.fillRect(0, endY, endX, tmlCanvasH - endY);
     tmlCtx.fillRect(0, 0, endX, startY);
-    tmlCtx.font = `${tmlCanvasH / 16}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    tmlCtx.font = `${tmlCanvasH / 16}px Montserrat, Pretendard Variable, Pretendard`;
     tmlCtx.textAlign = "center";
     tmlCtx.textBaseline = "bottom";
     tmlCtx.fillStyle = "#777";
@@ -1000,7 +1000,7 @@ const tmlRender = () => {
     }
 
     //Sync alert text
-    tmlCtx.font = `400 ${tmlCanvasH / 15}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    tmlCtx.font = `400 ${tmlCanvasH / 15}px Montserrat, Pretendard Variable, Pretendard`;
     tmlCtx.fillStyle = "#555";
     tmlCtx.textAlign = "right";
     tmlCtx.textBaseline = "top";
@@ -1061,7 +1061,7 @@ const displayMessage = (type, message) => {
     default:
       cntCtx.fillStyle = "#FFF";
   }
-  cntCtx.font = `600 ${canvasH / 50}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+  cntCtx.font = `600 ${canvasH / 50}px Montserrat, Pretendard Variable, Pretendard`;
   cntCtx.textAlign = "left";
   cntCtx.textBaseline = "top";
   cntCtx.fillText(
@@ -1080,7 +1080,7 @@ const cntRender = () => {
 
     if (!Draw) {
       cntCtx.fillStyle = "#FFF";
-      cntCtx.font = `400 ${canvasH / 30}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+      cntCtx.font = `400 ${canvasH / 30}px Montserrat, Pretendard Variable, Pretendard`;
       cntCtx.textAlign = "center";
       cntCtx.textBaseline = "middle";
       cntCtx.fillText("Loading modules..", canvasW / 2, canvasH / 2);
@@ -1330,7 +1330,7 @@ const cntRender = () => {
 
     cntCtx.beginPath();
     cntCtx.fillStyle = "rgba(255, 255, 255, 0.8)";
-    cntCtx.font = `700 ${canvasH / 50}px Montserrat, Pretendard JP Variable, Pretendard JP, Pretendard`;
+    cntCtx.font = `700 ${canvasH / 50}px Montserrat, Pretendard Variable, Pretendard`;
     cntCtx.textAlign = "center";
     cntCtx.textBaseline = "top";
     cntCtx.fillText(
