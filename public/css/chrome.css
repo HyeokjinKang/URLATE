@@ -20,7 +20,14 @@ body {
   overflow-x: clip;
 }
 body {
-  overflow-x: clip;
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--lh-body);
+  font-feature-settings: "ss05";
+  -webkit-font-smoothing: antialiased;
 }
 ::selection {
   background: var(--color-accent);

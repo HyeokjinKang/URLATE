@@ -21,17 +21,6 @@
  *     the copy, and the copy this file authors is already lowercase.
  */
 
-body {
-  margin: 0;
-  background: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  line-height: var(--lh-body);
-  font-feature-settings: "ss05";
-  -webkit-font-smoothing: antialiased;
-}
-
 /* The ground. Twelve column rules drawn in public, capped to the shell, running
    the height of the window -- vertical lines look identical fixed or scrolled. */
 .rails {
