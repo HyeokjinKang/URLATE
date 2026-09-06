@@ -731,7 +731,7 @@ const tracksUpdate = () => {
 
 const sortSelected = (n, isInitializing) => {
   localStorage.sort = n;
-  saveSelectPreferences();
+  if (!isInitializing) saveSelectPreferences();
   const currentSong = getSong(songSelection);
   let seek = currentSong?.seek() ?? 0;
   Array.prototype.forEach.call(
