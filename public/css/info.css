@@ -1,6 +1,6 @@
-/* Hallmark · document pages (/info, /privacy) · theme: Grid · genre: editorial
+/* Hallmark · document pages (/info, /privacy, /error) · theme: Grid · genre: editorial
  *
- * The landing page's language applied to two pages that are only text: the same
+ * The landing page's language applied to the pages that are only text: the same
  * sheet, the same masthead and colophon from chrome.css, and the same rule
  * vocabulary -- a section opens on an ink rule the way the feed heads and the
  * spec sheet do, and everything else is measure and air.
@@ -171,6 +171,40 @@ b {
 
 .youtubeIcon {
   margin-bottom: -1px;
+}
+
+/* ---- Error --------------------------------------------------------------- */
+
+.doc--error {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: min(58vh, 30rem);
+}
+
+.error__code {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-display);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--lh-display);
+  color: var(--color-accent);
+}
+
+.error__statement {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: var(--rule-thick) solid var(--color-ink);
+}
+
+.error__statement h1 {
+  margin-bottom: var(--space-md);
+}
+
+.error__back {
+  margin-top: var(--space-lg);
+  margin-bottom: 0;
 }
 
 /* ---- Links --------------------------------------------------------------- */

@@ -17,14 +17,6 @@ import { initProfile, profileRouter } from "./profile";
 import { URL } from "url";
 import { createHash, randomBytes } from "crypto";
 
-let branch;
-exec("git branch --show-current", (err, stdout) => {
-  if (err) {
-    return (branch = "production");
-  }
-  return (branch = stdout.trim());
-});
-
 // config.json differs per deployment, so it can't be a static import target.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const config = require(__dirname + "/../config/config.json");
@@ -63,6 +55,11 @@ app.locals.api = config.project.api;
 app.locals.game = config.project.game;
 app.locals.cdn = config.project.cdn;
 app.locals.inlineCss = inlineCss;
+app.locals.ver = config.project.mode == "test" ? Date.now() : version;
+app.locals.branch = "production";
+exec("git branch --show-current", (err, stdout) => {
+  if (!err) app.locals.branch = stdout.trim();
+});
 
 // Baseline security headers applied to every response. CSP itself is set per route.
 app.use((req, res, next) => {
@@ -221,7 +218,6 @@ app.get("/", authPageLimiter, (req, res) => {
     googleClientId: googleClientId,
     cspNonce: withAuthPageCsp(res, true),
     ver: config.project.mode == "test" ? Date.now() : version,
-    branch: branch,
   });
 });
 
@@ -460,7 +456,6 @@ app.get("/tutorial", gateLimiter, requireAuth, async (req, res) => {
 // looking at.
 const staticPageLocals = () => ({
   ver: config.project.mode == "test" ? Date.now() : version,
-  branch: branch,
 });
 
 app.get("/info", (req, res) => {
