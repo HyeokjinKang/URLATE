@@ -1,4 +1,4 @@
-/* global Howler, Howl, Pace, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable, medalDesc, alias, nothingHere, rating, couponApplySuccess, couponInvalid1, couponInvalid2, couponUsed, inputEmpty, aliasSelect, pictureMessage, imageError */
+/* global Howler, Howl, Pace, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable, medalDesc, alias, nothingHere, rating, aliasSelect, pictureMessage, imageError */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
 const langDetailSelector = document.getElementById("langDetailSelector");
@@ -27,7 +27,6 @@ const selectTitle = document.getElementById("selectTitle");
 const overlayPaymentContainer = document.getElementById(
   "overlayPaymentContainer",
 );
-const overlayCodeContainer = document.getElementById("overlayCodeContainer");
 const overlayLoadingContainer = document.getElementById(
   "overlayLoadingContainer",
 );
@@ -43,7 +42,6 @@ const offsetInputCircle = document.getElementById("offsetInputCircle");
 const offsetOffsetCircle = document.getElementById("offsetOffsetCircle");
 const offsetSpeedText = document.getElementById("offsetSpeedText");
 const volumeOverlay = document.getElementById("volumeOverlay");
-const codeInput = document.getElementById("codeInput");
 const CPLTrack = document.getElementById("CPLTrack");
 const profileContentsContainer = document.getElementsByClassName(
   "profileContentsContainer",
@@ -1153,12 +1151,6 @@ const displayClose = () => {
       overlayPaymentContainer.style.opacity = "0";
       display = 8;
       return;
-    } else if (display == 12) {
-      //Coupon code form
-      overlayCodeContainer.style.pointerEvents = "none";
-      overlayCodeContainer.style.opacity = "0";
-      display = 2;
-      return;
     } else if (display == 13) {
       //OPTION VisualSync
       if (visualSyncAnimId) {
@@ -2064,60 +2056,6 @@ const overlayClose = (s) => {
   }
 };
 
-const couponEnter = () => {
-  display = 12;
-  overlayCodeContainer.style.pointerEvents = "all";
-  overlayCodeContainer.style.opacity = "1";
-};
-
-// eslint-disable-next-line no-unused-vars
-const couponApply = () => {
-  if (codeInput.value != "") {
-    overlayLoadingContainer.style.pointerEvents = "all";
-    overlayLoadingContainer.style.opacity = "1";
-    fetch(`${api}/coupon`, {
-      method: "PUT",
-      credentials: "include",
-      body: JSON.stringify({
-        code: codeInput.value,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.result == "success") {
-          alert(couponApplySuccess);
-          location.reload();
-        } else if (data.result == "failed") {
-          if (data.error == "Invalid code") {
-            alert(`${couponInvalid1}\n${couponInvalid2}`);
-          } else if (data.error == "Used code") {
-            alert(couponUsed);
-          } else {
-            alert(`Error occured.\n${data.description}`);
-            console.error(`Error occured.\n${data.description}`);
-          }
-        } else {
-          alert(`Error occured.`);
-          console.error(`Error occured.`);
-        }
-        overlayLoadingContainer.style.pointerEvents = "none";
-        overlayLoadingContainer.style.opacity = "0";
-      })
-      .catch((error) => {
-        alert(`Error occured.\n${error}`);
-        console.error(`Error occured.\n${error}`);
-        location.reload();
-        overlayLoadingContainer.style.pointerEvents = "none";
-        overlayLoadingContainer.style.opacity = "0";
-      });
-  } else {
-    alert(inputEmpty);
-  }
-};
-
 const rankToggle = () => {
   if (isRankOpened) {
     displayClose();
@@ -2474,7 +2412,6 @@ window.onpopstate = () => {
 
 // Actions invoked without an argument.
 const clickActions = {
-  couponEnter,
   changeProfile: (arg) => changeProfile(arg),
   // These attach to elements created via innerHTML rather than markup;
   // delegation still catches them once inserted.

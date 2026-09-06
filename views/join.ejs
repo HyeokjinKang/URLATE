@@ -12,18 +12,18 @@
     <span id="title"><%= __('join') %></span>
     <span id="desc"><%= __('join_desc') %></span>
     <br />
-    <input type="text" name="displayName" placeholder="<%= __('namePlaceholder') %>" id="nickname" class="textbox" pattern="^[a-zA-Z0-9_\-]*$" minlength="5" maxlength="12" required />
-    <span id="nameExist"><%= __('nameExist') %></span>
-    <span id="name"><%= __('nameText') %></span>
+    <input type="text" name="displayName" placeholder="<%= __('name_placeholder') %>" id="nickname" class="textbox" pattern="^[a-zA-Z0-9_\-]*$" minlength="5" maxlength="12" required />
+    <span id="nameExist"><%= __('name_exists') %></span>
+    <span id="name"><%= __('name_rule') %></span>
     <input type="submit" class="button" id="submit" value="<%= __('done') %>" />
-    <h5><a href="/logout" style="color: rgb(0, 135, 197); font-weight: 400"><%= __('mainPage') %></a></h5>
+    <h5><a href="/logout" style="color: rgb(0, 135, 197); font-weight: 400"><%= __('back_to_main') %></a></h5>
     <script nonce="<%= cspNonce %>">
       const projectUrl = "<%= url %>";
       const api = "<%= api %>";
       const lang = "<%= __('lang') %>";
       const joini18n = {
-        nameExist: "<%= __('nameExist') %>",
-        nameReserved: "<%= __('nameReserved') %>",
+        nameExist: "<%= __('name_exists') %>",
+        nameReserved: "<%= __('name_reserved') %>",
         error: "<%= __('join_error') %>",
       };
       if (lang == "en") document.body.style.letterSpacing = "-0.3px";
