@@ -1,14 +1,3 @@
-:root {
-  --font-stack-base:
-    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
-    system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Hiragino Sans",
-    "Apple SD Gothic Neo", Meiryo, "Noto Sans JP", "Noto Sans KR",
-    "Malgun Gothic", Osaka, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol", sans-serif;
-  --font-montserrat: "Montserrat", var(--font-stack-base);
-  --font-metropolis: "Metropolis", var(--font-stack-base);
-}
-
 body {
   line-height: 1.2;
   background: #eee url("/images/backgrounds/editor.webp");

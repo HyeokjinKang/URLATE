@@ -20,10 +20,7 @@
 
   --color-on-ink-accent: oklch(58.2% 0.2201 273);
 
-  --font-display:
-    "Montserrat", "Pretendard Variable", Pretendard, -apple-system,
-    BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR",
-    "Malgun Gothic", sans-serif;
+  --font-display: var(--font-montserrat);
   --font-body: var(--font-display);
   --display-weight: 800;
   --tracking-display: -0.045em;
