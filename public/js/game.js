@@ -492,7 +492,7 @@ document.addEventListener("DOMContentLoaded", () => {
     credentials: "include",
   })
     .then((res) => res.json())
-    .then((data) => {
+    .then(async (data) => {
       if (data.result == "success") {
         data = data.user;
         settings = JSON.parse(data.settings);
@@ -513,6 +513,7 @@ document.addEventListener("DOMContentLoaded", () => {
           skinSelector.appendChild(option);
         }
         settingApply();
+        await hydrateSelectPreferences();
         fetch(`${api}/tracks`, {
           method: "GET",
           credentials: "include",
@@ -552,6 +553,62 @@ document.addEventListener("DOMContentLoaded", () => {
       location.reload();
     });
 });
+
+const SELECT_PREFERENCE_KEYS = ["sort", "difficultySelection", "songName"];
+
+const hydrateSelectPreferences = async () => {
+  if (SELECT_PREFERENCE_KEYS.every((key) => localStorage[key] !== undefined)) {
+    return;
+  }
+  try {
+    const res = await fetch(`${api}/selectPreferences`, {
+      method: "GET",
+      credentials: "include",
+    });
+    const data = await res.json();
+    if (data.result != "success") return;
+    SELECT_PREFERENCE_KEYS.forEach((key) => {
+      const value = data.preferences[key];
+      if (localStorage[key] === undefined && value !== undefined) {
+        localStorage[key] = value;
+      }
+    });
+  } catch (error) {
+    console.error(`Failed to load select preferences.\n${error}`);
+  }
+};
+
+let selectPreferenceSaveTimeout;
+
+const sendSelectPreferences = () => {
+  const preferences = {};
+  SELECT_PREFERENCE_KEYS.forEach((key) => {
+    if (localStorage[key] === undefined) return;
+    preferences[key] =
+      key == "songName" ? localStorage[key] : Number(localStorage[key]);
+  });
+  if (!Object.keys(preferences).length) return;
+  fetch(`${api}/selectPreferences`, {
+    method: "PUT",
+    credentials: "include",
+    keepalive: true,
+    body: JSON.stringify({ preferences }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).catch((error) => {
+    console.error(`Failed to save select preferences.\n${error}`);
+  });
+};
+
+const saveSelectPreferences = (immediate) => {
+  clearTimeout(selectPreferenceSaveTimeout);
+  if (immediate) {
+    sendSelectPreferences();
+    return;
+  }
+  selectPreferenceSaveTimeout = setTimeout(sendSelectPreferences, 500);
+};
 
 const restoreSortSettings = () => {
   const savedDifficulty = Number(localStorage.difficultySelection ?? 0);
@@ -674,6 +731,7 @@ const tracksUpdate = () => {
 
 const sortSelected = (n, isInitializing) => {
   localStorage.sort = n;
+  saveSelectPreferences();
   const currentSong = getSong(songSelection);
   let seek = currentSong?.seek() ?? 0;
   Array.prototype.forEach.call(
@@ -714,16 +772,17 @@ const songSelected = (n, refreshed, seek) => {
       document.getElementById("selectBackground").classList.add("fadeOut");
       clearTimeout(songPlayTimeout);
       getSong(songSelection)?.fade(1, 0, 2000);
+      localStorage.rate = rate;
+      localStorage.disableText = disableText;
+      localStorage.difficultySelection = difficultySelection;
+      localStorage.difficulty = JSON.parse(tracks[songSelection].difficulty)[
+        difficultySelection
+      ];
+      localStorage.songName = tracks[songSelection].fileName;
+      saveSelectPreferences(true);
+      localStorage.record =
+        trackRecords[songSelection][difficultySelection].record;
       setTimeout(() => {
-        localStorage.rate = rate;
-        localStorage.disableText = disableText;
-        localStorage.difficultySelection = difficultySelection;
-        localStorage.difficulty = JSON.parse(tracks[songSelection].difficulty)[
-          difficultySelection
-        ];
-        localStorage.songName = tracks[songSelection].fileName;
-        localStorage.record =
-          trackRecords[songSelection][difficultySelection].record;
         window.location.href = `${url}/play`;
       }, 2000);
     }
@@ -1796,6 +1855,7 @@ const updateDetails = (n) => {
 const difficultySelected = (n, isInitializing) => {
   difficultySelection = n;
   localStorage.difficultySelection = n;
+  saveSelectPreferences();
   document
     .getElementsByClassName("difficultySelected")[0]
     .classList.remove("difficultySelected");
