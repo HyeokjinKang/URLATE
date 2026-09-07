@@ -185,6 +185,7 @@
 }
 
 .feed--second .feed__body {
+  border-left-color: var(--color-rule);
   border-right: var(--rule-hair) solid var(--color-rail);
 }
 
@@ -425,10 +426,18 @@
   background-color: var(--color-paper);
   grid-column: span 4;
   min-width: 0;
-  padding: var(--space-md) var(--space-md) var(--space-md) 0;
+  padding: var(--space-md);
   border-bottom: var(--rule-hair) solid var(--color-rule);
   border-inline-start: var(--rule-hair) solid var(--color-rule);
-  padding-inline-start: var(--space-md);
+  border-inline-end: var(--rule-hair) solid transparent;
+}
+
+.spec__cell:nth-child(3n + 1) {
+  border-inline-start-color: var(--color-rail);
+}
+
+.spec__cell:nth-child(3n) {
+  border-inline-end-color: var(--color-rail);
 }
 
 .spec__cell dt {
@@ -512,6 +521,11 @@
     margin-top: var(--space-xl);
   }
 
+  .feed__body,
+  .feed--second .feed__body {
+    border-inline: var(--rule-hair) solid var(--color-rail);
+  }
+
   .stage--left .stage__text {
     order: -1;
   }
@@ -529,13 +543,19 @@
   }
 
   .spec__cell:nth-child(3n + 1) {
-    border-inline-start: var(--rule-hair) solid var(--color-rule);
-    padding-inline-start: var(--space-md);
+    border-inline-start-color: var(--color-rule);
+  }
+
+  .spec__cell:nth-child(3n) {
+    border-inline-end-color: transparent;
   }
 
   .spec__cell:nth-child(2n + 1) {
-    border-inline-start: 0;
-    padding-inline-start: 0;
+    border-inline-start-color: var(--color-rail);
+  }
+
+  .spec__cell:nth-child(2n) {
+    border-inline-end-color: var(--color-rail);
   }
 }
 
@@ -569,14 +589,11 @@
 
   .spec__cell {
     grid-column: 1 / span 12;
-    border-inline-start: 0;
-    padding-inline-start: 0;
   }
 
-  .spec__cell:nth-child(3n + 1),
+  .spec__cell:nth-child(2n),
   .spec__cell:nth-child(2n + 1) {
-    border-inline-start: 0;
-    padding-inline-start: 0;
+    border-inline-color: var(--color-rail);
   }
 }
 
