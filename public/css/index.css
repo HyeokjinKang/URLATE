@@ -512,6 +512,10 @@
     margin-top: var(--space-xl);
   }
 
+  .stage--left .stage__text {
+    order: -1;
+  }
+
   .stage__figure {
     margin-top: var(--space-sm);
   }
