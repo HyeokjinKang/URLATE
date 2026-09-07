@@ -4,7 +4,7 @@
   font-display: swap;
   src:
     local("Metropolis Regular"),
-    url("https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-Regular.woff")
+    url(https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-Regular.woff)
       format("woff");
 }
 
@@ -14,7 +14,7 @@
   font-display: swap;
   src:
     local("Metropolis Extra Light"),
-    url("https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-ExtraLight.woff")
+    url(https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-ExtraLight.woff)
       format("woff");
 }
 
@@ -24,7 +24,7 @@
   font-display: swap;
   src:
     local("Metropolis Light"),
-    url("https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-Light.woff")
+    url(https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-Light.woff)
       format("woff");
 }
 
@@ -34,7 +34,7 @@
   font-display: swap;
   src:
     local("Metropolis Thin"),
-    url("https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-Thin.woff")
+    url(https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-Thin.woff)
       format("woff");
 }
 
@@ -44,7 +44,7 @@
   font-display: swap;
   src:
     local("Metropolis Medium"),
-    url("https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-Medium.woff")
+    url(https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-Medium.woff)
       format("woff");
 }
 
@@ -54,7 +54,7 @@
   font-display: swap;
   src:
     local("Metropolis Semi Bold"),
-    url("https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-SemiBold.woff")
+    url(https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-SemiBold.woff)
       format("woff");
 }
 
@@ -64,7 +64,7 @@
   font-display: swap;
   src:
     local("Metropolis Bold"),
-    url("https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-Bold.woff")
+    url(https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-Bold.woff)
       format("woff");
 }
 
@@ -74,7 +74,7 @@
   font-display: swap;
   src:
     local("Metropolis Extra Bold"),
-    url("https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-ExtraBold.woff")
+    url(https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-ExtraBold.woff)
       format("woff");
 }
 
@@ -84,6 +84,6 @@
   font-display: swap;
   src:
     local("Metropolis Black"),
-    url("https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-Black.woff")
+    url(https://cdn.urlate.coupy.dev/fonts/metropolis/Metropolis-Black.woff)
       format("woff");
 }

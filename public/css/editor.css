@@ -1,11 +1,11 @@
 body {
   line-height: 1.2;
-  background: #eee url("/images/backgrounds/editor.webp");
+  background: #eee url(/images/backgrounds/editor.webp);
   background-size: 130vw;
   background-repeat: repeat;
   width: 100vw;
   height: 100vh;
-  cursor: url("/images/cursors/default.cur"), default;
+  cursor: url(/images/cursors/default.cur), default;
   margin: 0;
   padding: 0;
   text-align: center;
@@ -121,11 +121,11 @@ body {
 }
 
 .sidebar-expand {
-  content: url("/images/icons/sidebar-expand.svg");
+  content: url(/images/icons/sidebar-expand.svg);
 }
 
 .sidebar-collapse {
-  content: url("/images/icons/sidebar-collapse.svg");
+  content: url(/images/icons/sidebar-collapse.svg);
 }
 
 .backText {
@@ -229,7 +229,7 @@ body {
 }
 
 .clickable {
-  cursor: url("/images/cursors/select.cur"), pointer;
+  cursor: url(/images/cursors/select.cur), pointer;
 }
 
 #canvasContainer {
@@ -524,11 +524,11 @@ body {
 }
 
 .timeline-play {
-  content: url("/images/icons/play-solid.svg");
+  content: url(/images/icons/play-solid.svg);
 }
 
 .timeline-pause {
-  content: url("/images/icons/pause-solid.svg");
+  content: url(/images/icons/pause-solid.svg);
 }
 
 #metronome {

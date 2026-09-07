@@ -9,7 +9,7 @@ body {
   line-height: 1.2;
   background-size: cover;
   background-position: center;
-  background-image: url("/images/backgrounds/main.webp");
+  background-image: url(/images/backgrounds/main.webp);
   user-select: none;
   margin: 0;
   padding: 0;
@@ -222,7 +222,7 @@ p {
   justify-content: center;
   width: 100vw;
   height: 100vh;
-  background-image: url("/images/backgrounds/loading.webp");
+  background-image: url(/images/backgrounds/loading.webp);
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
@@ -445,7 +445,7 @@ p {
 #infoContainer {
   color: #333;
   background-color: #fff;
-  background-image: url("/images/backgrounds/decorations-option.webp");
+  background-image: url(/images/backgrounds/decorations-option.webp);
   background-position: center bottom;
   background-size: cover;
   background-attachment: fixed;
@@ -551,39 +551,39 @@ p {
 }
 
 #profileCoupy {
-  background-image: url("/images/credits/coupy.webp");
+  background-image: url(/images/credits/coupy.webp);
 }
 
 #profileAlta {
-  background-image: url("/images/credits/altari.webp");
+  background-image: url(/images/credits/altari.webp);
 }
 
 #profileShd {
-  background-image: url("/images/credits/sihyeon.webp");
+  background-image: url(/images/credits/sihyeon.webp);
 }
 
 #profileGreenstar {
-  background-image: url("/images/credits/greenstar.webp");
+  background-image: url(/images/credits/greenstar.webp);
 }
 
 #profileRanol {
-  background-image: url("/images/credits/ranol.webp");
+  background-image: url(/images/credits/ranol.webp);
 }
 
 #profileKiwi {
-  background-image: url("/images/credits/kiwiyou.webp");
+  background-image: url(/images/credits/kiwiyou.webp);
 }
 
 #profileHanu {
-  background-image: url("/images/credits/hanukoon.webp");
+  background-image: url(/images/credits/hanukoon.webp);
 }
 
 #profileGeoplex {
-  background-image: url("/images/credits/geoplex.webp");
+  background-image: url(/images/credits/geoplex.webp);
 }
 
 #profileAlkmerlin {
-  background-image: url("/images/credits/alkmerlin.webp");
+  background-image: url(/images/credits/alkmerlin.webp);
 }
 
 #infoProfileContainer {
@@ -697,7 +697,7 @@ p {
   align-items: flex-start;
   justify-content: center;
   background-color: #fff;
-  background-image: url("/images/backgrounds/decorations-advanced.webp");
+  background-image: url(/images/backgrounds/decorations-advanced.webp);
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
@@ -705,7 +705,7 @@ p {
 
 #optionContainer {
   background-color: #fff;
-  background-image: url("/images/backgrounds/decorations-option.webp");
+  background-image: url(/images/backgrounds/decorations-option.webp);
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
@@ -1529,7 +1529,7 @@ input[type="number"] {
   opacity: 0;
   z-index: 101;
   background-color: #fff;
-  background-image: url("/images/backgrounds/decorations-option.webp");
+  background-image: url(/images/backgrounds/decorations-option.webp);
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
