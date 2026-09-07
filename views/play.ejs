@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>URLATE</title>
     <link rel="preconnect" href="<%= cdn %>" crossorigin />
+    <link rel="stylesheet" href="/css/fonts.css?v=<%= ver %>" />
     <link rel="stylesheet" href="/css/montserrat.css" />
     <link rel="stylesheet" href="/css/pretendard.css" />
     <link rel="stylesheet" href="/css/globalSocket.css?v=<%= ver %>" />
@@ -26,7 +27,9 @@
           <br />
           <span id="scoreArtist">Artist</span>
           <br />
-          <span id="scoreDifficulty"><span id="scoreDifficultyNum">?</span> <span id="scoreDifficultyName"></span></span>
+          <span id="scoreDifficulty"
+            ><span id="scoreDifficultyNum">?</span> <span id="scoreDifficultyName"></span
+          ></span>
           <br /><br />
           <canvas id="missPointCanvas"></canvas>
           <br />
@@ -131,8 +134,6 @@
       const api = "<%= api %>";
       const game = "<%= game %>";
       const alias = "<%= __('alias') %>".split(",");
-      const patternError = "<%= __('pattern_error') %>";
-      const returnToGame = "<%= __('return_to_game') %>";
       const lang = "<%= __('lang') %>";
       const socketi18n = {
         connected: "<%= __('socket_status_connected') %>",

@@ -9,33 +9,12 @@ body {
   line-height: 1.2;
   background-size: cover;
   background-position: center;
-  background-image: url("/images/backgrounds/main.webp");
+  background-image: url(/images/backgrounds/main.webp);
   user-select: none;
   margin: 0;
   padding: 0;
   text-align: center;
-  font-family:
-    "Montserrat",
-    "Pretendard JP Variable",
-    "Pretendard JP",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    Roboto,
-    "Helvetica Neue",
-    "Segoe UI",
-    "Hiragino Sans",
-    "Apple SD Gothic Neo",
-    Meiryo,
-    "Noto Sans JP",
-    "Noto Sans KR",
-    "Malgun Gothic",
-    Osaka,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    sans-serif;
+  font-family: var(--font-montserrat);
   font-feature-settings: "ss05";
   letter-spacing: -0.3px;
   overflow-x: hidden;
@@ -43,28 +22,7 @@ body {
 }
 
 .metropolis {
-  font-family:
-    "Metropolis",
-    "Pretendard JP Variable",
-    "Pretendard JP",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    Roboto,
-    "Helvetica Neue",
-    "Segoe UI",
-    "Hiragino Sans",
-    "Apple SD Gothic Neo",
-    Meiryo,
-    "Noto Sans JP",
-    "Noto Sans KR",
-    "Malgun Gothic",
-    Osaka,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    sans-serif;
+  font-family: var(--font-metropolis);
   font-feature-settings: "ss05";
 }
 
@@ -264,7 +222,7 @@ p {
   justify-content: center;
   width: 100vw;
   height: 100vh;
-  background-image: url("/images/backgrounds/loading.webp");
+  background-image: url(/images/backgrounds/loading.webp);
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
@@ -487,7 +445,7 @@ p {
 #infoContainer {
   color: #333;
   background-color: #fff;
-  background-image: url("/images/backgrounds/decorations-option.webp");
+  background-image: url(/images/backgrounds/decorations-option.webp);
   background-position: center bottom;
   background-size: cover;
   background-attachment: fixed;
@@ -593,39 +551,39 @@ p {
 }
 
 #profileCoupy {
-  background-image: url("/images/credits/coupy.webp");
+  background-image: url(/images/credits/coupy.webp);
 }
 
 #profileAlta {
-  background-image: url("/images/credits/altari.webp");
+  background-image: url(/images/credits/altari.webp);
 }
 
 #profileShd {
-  background-image: url("/images/credits/sihyeon.webp");
+  background-image: url(/images/credits/sihyeon.webp);
 }
 
 #profileGreenstar {
-  background-image: url("/images/credits/greenstar.webp");
+  background-image: url(/images/credits/greenstar.webp);
 }
 
 #profileRanol {
-  background-image: url("/images/credits/ranol.webp");
+  background-image: url(/images/credits/ranol.webp);
 }
 
 #profileKiwi {
-  background-image: url("/images/credits/kiwiyou.webp");
+  background-image: url(/images/credits/kiwiyou.webp);
 }
 
 #profileHanu {
-  background-image: url("/images/credits/hanukoon.webp");
+  background-image: url(/images/credits/hanukoon.webp);
 }
 
 #profileGeoplex {
-  background-image: url("/images/credits/geoplex.webp");
+  background-image: url(/images/credits/geoplex.webp);
 }
 
 #profileAlkmerlin {
-  background-image: url("/images/credits/alkmerlin.webp");
+  background-image: url(/images/credits/alkmerlin.webp);
 }
 
 #infoProfileContainer {
@@ -739,7 +697,7 @@ p {
   align-items: flex-start;
   justify-content: center;
   background-color: #fff;
-  background-image: url("/images/backgrounds/decorations-advanced.webp");
+  background-image: url(/images/backgrounds/decorations-advanced.webp);
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
@@ -747,7 +705,7 @@ p {
 
 #optionContainer {
   background-color: #fff;
-  background-image: url("/images/backgrounds/decorations-option.webp");
+  background-image: url(/images/backgrounds/decorations-option.webp);
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
@@ -833,28 +791,7 @@ p {
 
 .optionValue {
   margin-top: 0.5vh;
-  font-family:
-    "Montserrat",
-    "Pretendard JP Variable",
-    "Pretendard JP",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    Roboto,
-    "Helvetica Neue",
-    "Segoe UI",
-    "Hiragino Sans",
-    "Apple SD Gothic Neo",
-    Meiryo,
-    "Noto Sans JP",
-    "Noto Sans KR",
-    "Malgun Gothic",
-    Osaka,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    sans-serif;
+  font-family: var(--font-montserrat);
   font-feature-settings: "ss05";
   font-weight: 400;
   color: #404040;
@@ -868,28 +805,7 @@ p {
   width: 10vw;
   height: 5vh;
   font-size: 2vh;
-  font-family:
-    "Montserrat",
-    "Pretendard JP Variable",
-    "Pretendard JP",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    Roboto,
-    "Helvetica Neue",
-    "Segoe UI",
-    "Hiragino Sans",
-    "Apple SD Gothic Neo",
-    Meiryo,
-    "Noto Sans JP",
-    "Noto Sans KR",
-    "Malgun Gothic",
-    Osaka,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    sans-serif;
+  font-family: var(--font-montserrat);
   font-feature-settings: "ss05";
   letter-spacing: -0.5px;
   color: #fff;
@@ -935,28 +851,7 @@ p {
   text-align: center;
   padding: 1.2vh 3vw 1.2vh 3vw;
   font-size: 2vh;
-  font-family:
-    "Montserrat",
-    "Pretendard JP Variable",
-    "Pretendard JP",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    Roboto,
-    "Helvetica Neue",
-    "Segoe UI",
-    "Hiragino Sans",
-    "Apple SD Gothic Neo",
-    Meiryo,
-    "Noto Sans JP",
-    "Noto Sans KR",
-    "Malgun Gothic",
-    Osaka,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    sans-serif;
+  font-family: var(--font-montserrat);
   font-feature-settings: "ss05";
   letter-spacing: -0.5px;
   color: #fff;
@@ -1380,11 +1275,7 @@ input[type="number"] {
 }
 
 .songSelectionContainer {
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0) 65%,
-    rgba(255, 255, 255, 0.1)
-  );
+  background: linear-gradient(to right, rgba(255, 255, 255, 0) 65%, rgba(255, 255, 255, 0.1));
   background-size: 200% 100%;
   background-position-x: 0%;
   height: 6vh;
@@ -1509,11 +1400,7 @@ input[type="number"] {
 .songSelected {
   --artist-display: none;
   --title-weight: 800;
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0) 30%,
-    rgba(255, 255, 255, 0.5)
-  );
+  background: linear-gradient(to right, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.5));
 }
 
 #selectRankContainer {
@@ -1634,7 +1521,7 @@ input[type="number"] {
   opacity: 0;
   z-index: 101;
   background-color: #fff;
-  background-image: url("/images/backgrounds/decorations-option.webp");
+  background-image: url(/images/backgrounds/decorations-option.webp);
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
@@ -1673,28 +1560,7 @@ input[type="number"] {
 
 .timingText {
   margin-top: 1vh;
-  font-family:
-    "Montserrat",
-    "Pretendard JP Variable",
-    "Pretendard JP",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    Roboto,
-    "Helvetica Neue",
-    "Segoe UI",
-    "Hiragino Sans",
-    "Apple SD Gothic Neo",
-    Meiryo,
-    "Noto Sans JP",
-    "Noto Sans KR",
-    "Malgun Gothic",
-    Osaka,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    sans-serif;
+  font-family: var(--font-montserrat);
   font-feature-settings: "ss05";
   font-size: 2vh;
   font-weight: 400;
@@ -1958,6 +1824,10 @@ input[type="number"] {
   opacity: 0;
 }
 
+#warningInner span {
+  white-space: pre-line;
+}
+
 #intro1container {
   z-index: 501;
 }
@@ -1993,6 +1863,7 @@ input[type="number"] {
 
 #tutorialText {
   font-size: 2vh;
+  white-space: pre-line;
 }
 
 .tutorialInner {
@@ -2745,10 +2616,24 @@ input[type="number"] {
   align-items: center;
 }
 
+#noticeSlot {
+  display: contents;
+}
+
+#noticeSlot.hide {
+  display: none;
+}
+
 #noticeText {
   color: #000;
   text-decoration: none;
   font-size: 1.8vh;
+  /* MIRAI writes announcement titles longer than the old notice table's, and the
+     header is a fixed-width flex row -- an unbounded title pushes the icons. */
+  max-width: 30vw;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 #profileBannerContainer {

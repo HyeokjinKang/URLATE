@@ -5,16 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
     <link rel="preconnect" href="<%= cdn %>" crossorigin />
+    <link rel="stylesheet" href="/css/fonts.css" />
     <link rel="stylesheet" href="/css/montserrat.css" />
     <link rel="stylesheet" href="/css/pretendard.css" />
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/css/chrome.css" />
     <link rel="stylesheet" href="/css/info.css" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <title>URLATE - <%= code %></title>
   </head>
   <body>
-    <h1><%= code %></h1>
-    <span class="title"><%= title %></span>
-    <span class="content"><%= description %></span>
-    <div><a href="/" class="link"><%= home %></a></div>
+    <main class="shell doc doc--error">
+      <p class="error__code"><%= code %></p>
+      <div class="error__statement">
+        <h1><%= title %></h1>
+        <p><%= description %></p>
+        <p class="error__back"><a href="/"><%= home %></a></p>
+      </div>
+    </main>
   </body>
 </html>

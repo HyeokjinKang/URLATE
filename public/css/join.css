@@ -5,28 +5,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: #eee;
-  font-family:
-    "Montserrat",
-    "Pretendard JP Variable",
-    "Pretendard JP",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    Roboto,
-    "Helvetica Neue",
-    "Segoe UI",
-    "Hiragino Sans",
-    "Apple SD Gothic Neo",
-    Meiryo,
-    "Noto Sans JP",
-    "Noto Sans KR",
-    "Malgun Gothic",
-    Osaka,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    sans-serif;
+  font-family: var(--font-montserrat);
   font-feature-settings: "ss05";
   letter-spacing: -0.3px;
   display: flex;
@@ -36,28 +15,7 @@ body {
 }
 
 input {
-  font-family:
-    "Montserrat",
-    "Pretendard JP Variable",
-    "Pretendard JP",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    Roboto,
-    "Helvetica Neue",
-    "Segoe UI",
-    "Hiragino Sans",
-    "Apple SD Gothic Neo",
-    Meiryo,
-    "Noto Sans JP",
-    "Noto Sans KR",
-    "Malgun Gothic",
-    Osaka,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    sans-serif;
+  font-family: var(--font-montserrat);
   font-feature-settings: "ss05";
 }
 

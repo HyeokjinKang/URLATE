@@ -6,24 +6,11 @@ import i18n from "./i18n";
 import fetch from "node-fetch";
 import { exec } from "child_process";
 import { logger } from "./logger";
-import {
-  errorHandler,
-  notFoundHandler,
-  sendError,
-  setStaticPageCsp,
-} from "./middleware";
+import { errorHandler, notFoundHandler, sendError, setStaticPageCsp } from "./middleware";
 import { inlineCss } from "./assets";
 import { initProfile, profileRouter } from "./profile";
 import { URL } from "url";
 import { createHash, randomBytes } from "crypto";
-
-let branch;
-exec("git branch --show-current", (err, stdout) => {
-  if (err) {
-    return (branch = "production");
-  }
-  return (branch = stdout.trim());
-});
 
 // config.json differs per deployment, so it can't be a static import target.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -63,6 +50,11 @@ app.locals.api = config.project.api;
 app.locals.game = config.project.game;
 app.locals.cdn = config.project.cdn;
 app.locals.inlineCss = inlineCss;
+app.locals.ver = config.project.mode == "test" ? Date.now() : version;
+app.locals.branch = "production";
+exec("git branch --show-current", (err, stdout) => {
+  if (!err) app.locals.branch = stdout.trim();
+});
 
 // Baseline security headers applied to every response. CSP itself is set per route.
 app.use((req, res, next) => {
@@ -221,7 +213,6 @@ app.get("/", authPageLimiter, (req, res) => {
     googleClientId: googleClientId,
     cspNonce: withAuthPageCsp(res, true),
     ver: config.project.mode == "test" ? Date.now() : version,
-    branch: branch,
   });
 });
 
@@ -259,14 +250,10 @@ const gatedStatuses = new Set(Object.keys(authRedirects));
  */
 const AUTH_CACHE_TTL_MS = 30 * 1000;
 const AUTH_CACHE_MAX_ENTRIES = 5000;
-const authStatusCache = new Map<
-  string,
-  { status: string; expiresAt: number }
->();
+const authStatusCache = new Map<string, { status: string; expiresAt: number }>();
 
 // Hashed so live session cookies are not held in memory for the TTL.
-const authCacheKey = (cookie: string) =>
-  createHash("sha256").update(cookie).digest("hex");
+const authCacheKey = (cookie: string) => createHash("sha256").update(cookie).digest("hex");
 
 const readCachedStatus = (key: string): string | null => {
   const entry = authStatusCache.get(key);
@@ -301,9 +288,7 @@ const writeCachedStatus = (key: string, status: string) => {
 const gateLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 30,
-  skip: (req) =>
-    !!req.headers.cookie &&
-    readCachedStatus(authCacheKey(req.headers.cookie)) !== null,
+  skip: (req) => !!req.headers.cookie && readCachedStatus(authCacheKey(req.headers.cookie)) !== null,
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -407,8 +392,7 @@ const startedHere = (req: Request) => {
  */
 app.get("/logout", logoutLimiter, (req, res) => {
   if (startedHere(req)) {
-    if (req.headers.cookie)
-      authStatusCache.delete(authCacheKey(req.headers.cookie));
+    if (req.headers.cookie) authStatusCache.delete(authCacheKey(req.headers.cookie));
     const sessionCookie = config.project.sessionCookie ?? "urlate";
     res.clearCookie(sessionCookie, { path: "/" });
     if (config.project.cookieDomain)
@@ -456,26 +440,29 @@ app.get("/tutorial", gateLimiter, requireAuth, async (req, res) => {
   });
 });
 
+// Both wear the same masthead as the landing page, which reads the build it is
+// looking at.
+const staticPageLocals = () => ({
+  ver: config.project.mode == "test" ? Date.now() : version,
+});
+
 app.get("/info", (req, res) => {
   setStaticPageCsp(res);
-  res.render("info");
+  res.render("info", staticPageLocals());
 });
 
 app.get("/privacy", (req, res) => {
   setStaticPageCsp(res);
-  res.render("privacy");
+  res.render("privacy", staticPageLocals());
 });
 
 app.use(profileRouter);
 
-process.on(
-  "unhandledRejection",
-  (reason: unknown, promise: Promise<unknown>) => {
-    logger.fatal("Unhandled Promise Rejection", reason, {
-      promise: promise.toString(),
-    });
-  },
-);
+process.on("unhandledRejection", (reason: unknown, promise: Promise<unknown>) => {
+  logger.fatal("Unhandled Promise Rejection", reason, {
+    promise: promise.toString(),
+  });
+});
 
 process.on("uncaughtException", (error: Error) => {
   logger.fatal("Uncaught Exception", error);
@@ -490,9 +477,7 @@ process.on("uncaughtException", (error: Error) => {
     // would expose the port directly regardless of firewall policy.
     const host = config.project.host ?? "127.0.0.1";
     app.listen(config.project.port, host, () => {
-      logger.info(
-        `URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : version}.`,
-      );
+      logger.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : version}.`);
       logger.success(`HTTP Server running at ${host}:${config.project.port}.`);
     });
   } catch (err) {

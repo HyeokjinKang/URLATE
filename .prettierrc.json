@@ -1,5 +1,6 @@
 {
   "singleQuote": false,
-  "printWidth": 80,
-  "endOfLine": "lf"
+  "printWidth": 120,
+  "endOfLine": "lf",
+  "plugins": ["prettier-plugin-ejs"]
 }
