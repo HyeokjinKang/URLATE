@@ -823,3 +823,20 @@ body {
   transform: translateX(1vw) translateY(2vh) rotate(50deg);
   opacity: 0 !important;
 }
+
+/* ---- Grayscale text ---- */
+#albumContainer,
+#title,
+#artist,
+#loadingUrlate,
+#authorContainer,
+#scoreAlbumInformations,
+#resultContainer,
+#scoreInfoContainer,
+#urlate,
+#skip,
+#menuContainer,
+#floatingResultContainer,
+#floatingResumeContainer {
+  will-change: transform;
+}

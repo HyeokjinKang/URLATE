@@ -2734,3 +2734,44 @@ input[type="number"] {
 .blur {
   filter: blur(5px);
 }
+
+/* ---- Grayscale text ---- */
+#footer,
+#header,
+#warningTitle,
+#warningInner,
+#pressAnywhere,
+.containersTitle,
+#tutorialText,
+#tutorialSkip,
+#selectContainerTopLeft,
+#selectContainerLeft,
+#selectContainerRight,
+#selectRankContainer,
+#CPLContainer,
+#rankTitle,
+#rankTable,
+#infoProfileLeft,
+#infoProfileRight,
+#license,
+.infoTitle,
+.infoSubtitle,
+.profileContainer,
+#infoInnerContainer,
+#optionElementsContainer,
+#offsetTitle,
+.offsetPreviewContainer,
+#offsetDescription,
+#offsetSubDescription,
+#offsetButtonContainer,
+#offsetResetButtonText,
+#visualSyncTitle,
+#visualSyncDescription,
+#visualSyncSubDescription,
+#visualSyncButtonContainer,
+#visualSyncResetButtonText,
+#profileDescription,
+#profileNameContainer,
+.overlayContainer {
+  will-change: transform;
+}

@@ -111,3 +111,13 @@ form {
 #failed.show {
   opacity: 1;
 }
+
+/* ---- Grayscale text ---- */
+#title,
+#desc,
+#name,
+#nameExist,
+#failed,
+h5 {
+  will-change: transform;
+}
