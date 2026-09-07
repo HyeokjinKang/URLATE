@@ -295,12 +295,8 @@
   min-width: 0;
 }
 
-.stage__text {
-  padding-inline-end: var(--space-lg);
-}
-
 .stage--right .stage__text {
-  grid-column: 1 / span 4;
+  grid-column: 1 / span 5;
 }
 
 .stage--right .stage__figure {
@@ -316,7 +312,7 @@
 }
 
 .stage--wide .stage__text {
-  grid-column: 1 / span 6;
+  grid-column: 1 / span 8;
 }
 
 .stage--wide .stage__figure {
@@ -343,6 +339,8 @@
 .stage__body {
   margin: 0;
   font-size: var(--text-md);
+  word-break: auto-phrase;
+  white-space: pre-wrap;
 }
 
 .stage__figure {
