@@ -38,14 +38,32 @@
         <div class="shell plate__inner">
           <div class="plate__brand">
             <span class="plate__mark">
-              <img src="/images/brand/logo-lite-mark.webp" id="logo" class="plate__logo" alt="URLATE" width="1000" height="612" />
+              <img
+                src="/images/brand/logo-lite-mark.webp"
+                id="logo"
+                class="plate__logo"
+                alt="URLATE"
+                width="1000"
+                height="612"
+              />
             </span>
-            <h1 class="plate__claim" id="claim" lang="en">Avoid &amp; Get on the tempo<i class="period period--on-ink" aria-hidden="true"></i></h1>
+            <h1 class="plate__claim" id="claim" lang="en">
+              Avoid &amp; Get on the tempo<i class="period period--on-ink" aria-hidden="true"></i>
+            </h1>
             <p class="plate__lede"><%= __('idx_lede') %></p>
           </div>
           <div class="plate__enter">
             <p class="label plate__enter-label"><%= __('idx_signin') %> →</p>
-            <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-locale="<%= __('lang') %>" data-size="large" data-logo_alignment="left"></div>
+            <div
+              class="g_id_signin"
+              data-type="standard"
+              data-shape="pill"
+              data-theme="outline"
+              data-text="signin_with"
+              data-locale="<%= __('lang') %>"
+              data-size="large"
+              data-logo_alignment="left"
+            ></div>
             <p id="loginNotice" class="hide"><%= __('login_blocked') %></p>
             <p id="unsupportedNotice" class="hide"><%= __('idx_unsupported') %></p>
           </div>
@@ -57,7 +75,10 @@
         <div class="feed">
           <div class="feed__head">
             <h2 class="label"><%= __('idx_feed_notice') %></h2>
-            <a class="feed__all label" href="<%= mirai %>/announcements" target="_blank" rel="noopener noreferrer"><%= __('idx_feed_all') %> <span aria-hidden="true">&rarr;</span></a>
+            <a class="feed__all label" href="<%= mirai %>/announcements" target="_blank" rel="noopener noreferrer"
+              ><%= __('idx_feed_all') %>
+              <span aria-hidden="true">&rarr;</span></a
+            >
           </div>
           <div class="feed__body" data-feed="notices" aria-busy="true">
             <p class="feed__status label" data-feed-status>
@@ -71,7 +92,10 @@
         <div class="feed feed--second">
           <div class="feed__head">
             <h2 class="label"><%= __('idx_feed_journal') %></h2>
-            <a class="feed__all label" href="<%= mirai %>/" target="_blank" rel="noopener noreferrer"><%= __('idx_feed_all') %> <span aria-hidden="true">&rarr;</span></a>
+            <a class="feed__all label" href="<%= mirai %>/" target="_blank" rel="noopener noreferrer"
+              ><%= __('idx_feed_all') %>
+              <span aria-hidden="true">&rarr;</span></a
+            >
           </div>
           <div class="feed__body" data-feed="posts" aria-busy="true">
             <p class="feed__status label" data-feed-status>
@@ -94,7 +118,14 @@
           <p class="stage__body"><%= __('idx_stage1_body') %></p>
         </div>
         <figure class="stage__figure">
-          <img src="/images/landing/move.webp" width="1400" height="788" loading="lazy" decoding="async" alt="<%= __('idx_stage1_alt') %>" />
+          <img
+            src="/images/landing/move.webp"
+            width="1400"
+            height="788"
+            loading="lazy"
+            decoding="async"
+            alt="<%= __('idx_stage1_alt') %>"
+          />
           <figcaption class="label"><%= __('idx_stage1_caption') %></figcaption>
         </figure>
       </section>
@@ -102,7 +133,14 @@
       <section class="shell stage stage--left">
         <p class="stage__numeral" aria-hidden="true">2</p>
         <figure class="stage__figure">
-          <img src="/images/landing/dodge.webp" width="1400" height="788" loading="lazy" decoding="async" alt="<%= __('idx_stage2_alt') %>" />
+          <img
+            src="/images/landing/dodge.webp"
+            width="1400"
+            height="788"
+            loading="lazy"
+            decoding="async"
+            alt="<%= __('idx_stage2_alt') %>"
+          />
           <figcaption class="label"><%= __('idx_stage2_caption') %></figcaption>
         </figure>
         <div class="stage__text">
@@ -120,7 +158,14 @@
           <p class="stage__body"><%= __('idx_stage3_body') %></p>
         </div>
         <figure class="stage__figure">
-          <img src="/images/landing/hit.webp" width="1400" height="788" loading="lazy" decoding="async" alt="<%= __('idx_stage3_alt') %>" />
+          <img
+            src="/images/landing/hit.webp"
+            width="1400"
+            height="788"
+            loading="lazy"
+            decoding="async"
+            alt="<%= __('idx_stage3_alt') %>"
+          />
           <figcaption class="label"><%= __('idx_stage3_caption') %></figcaption>
         </figure>
       </section>
@@ -133,13 +178,22 @@
           <p class="stage__body"><%= __('idx_stage4_body') %></p>
         </div>
         <figure class="stage__figure">
-          <img src="/images/landing/result.webp" width="1400" height="775" loading="lazy" decoding="async" alt="<%= __('idx_stage4_alt') %>" />
+          <img
+            src="/images/landing/result.webp"
+            width="1400"
+            height="775"
+            loading="lazy"
+            decoding="async"
+            alt="<%= __('idx_stage4_alt') %>"
+          />
           <figcaption class="label"><%= __('idx_stage4_caption') %></figcaption>
         </figure>
       </section>
 
       <section class="shell spec" aria-labelledby="spec-title">
-        <h2 class="spec__title" id="spec-title"><%= __('idx_spec_title') %><i class="period" aria-hidden="true"></i></h2>
+        <h2 class="spec__title" id="spec-title">
+          <%= __('idx_spec_title') %><i class="period" aria-hidden="true"></i>
+        </h2>
         <dl class="spec__list">
           <div class="spec__cell">
             <dt class="label"><%= __('idx_spec_browser_k') %></dt>
@@ -164,9 +218,15 @@
           <div class="spec__cell">
             <dt class="label"><%= __('idx_spec_source_k') %></dt>
             <dd>
-              <a href="https://github.com/HyeokjinKang/URLATE" target="_blank" rel="noopener noreferrer"><%= __('idx_spec_source_front') %></a>
-              <a href="https://github.com/HyeokjinKang/URLATE-v3l-backend" target="_blank" rel="noopener noreferrer"><%= __('idx_spec_source_back') %></a>
-              <a href="https://mirai.urlate.coupy.dev/docs" target="_blank" rel="noopener noreferrer"><%= __('idx_spec_source_docs') %></a>
+              <a href="https://github.com/HyeokjinKang/URLATE" target="_blank" rel="noopener noreferrer"
+                ><%= __('idx_spec_source_front') %></a
+              >
+              <a href="https://github.com/HyeokjinKang/URLATE-v3l-backend" target="_blank" rel="noopener noreferrer"
+                ><%= __('idx_spec_source_back') %></a
+              >
+              <a href="https://mirai.urlate.coupy.dev/docs" target="_blank" rel="noopener noreferrer"
+                ><%= __('idx_spec_source_docs') %></a
+              >
             </dd>
           </div>
         </dl>

@@ -31,11 +31,7 @@ function rotate(filePath: string): void {
   if (fs.existsSync(filePath)) fs.renameSync(filePath, `${filePath}.1`);
 }
 
-function formatLogEntry(
-  level: string,
-  message: string,
-  meta?: Record<string, unknown>,
-): string {
+function formatLogEntry(level: string, message: string, meta?: Record<string, unknown>): string {
   const timestamp = new Date().toISOString();
   const metaStr = meta ? `\n${JSON.stringify(meta, null, 2)}` : "";
   return `[${timestamp}] [${level}] ${message}${metaStr}\n`;
@@ -79,11 +75,7 @@ class Logger {
     writeToFile(combinedLogPath, logEntry);
   }
 
-  error(
-    message: string,
-    error?: unknown,
-    meta?: Record<string, unknown>,
-  ): void {
+  error(message: string, error?: unknown, meta?: Record<string, unknown>): void {
     signale.error(message);
 
     const errorMeta = {
@@ -103,11 +95,7 @@ class Logger {
     writeToFile(combinedLogPath, logEntry);
   }
 
-  fatal(
-    message: string,
-    error?: unknown,
-    meta?: Record<string, unknown>,
-  ): void {
+  fatal(message: string, error?: unknown, meta?: Record<string, unknown>): void {
     signale.fatal(message);
 
     const errorMeta = {

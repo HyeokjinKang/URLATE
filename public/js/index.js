@@ -131,8 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-const gsiLoaded = () =>
-  !!(window.google && window.google.accounts && window.google.accounts.id);
+const gsiLoaded = () => !!(window.google && window.google.accounts && window.google.accounts.id);
 
 function onGsiSettled() {
   if (gsiLoaded()) return;
@@ -164,9 +163,7 @@ const markGsiSettled = () => {
 if (gsiLoaded()) {
   markGsiSettled();
 } else {
-  const gsiScript = document.querySelector(
-    'script[src^="https://accounts.google.com/gsi/"]',
-  );
+  const gsiScript = document.querySelector('script[src^="https://accounts.google.com/gsi/"]');
   if (gsiScript) {
     gsiScript.addEventListener("load", markGsiSettled, { once: true });
     gsiScript.addEventListener("error", markGsiSettled, { once: true });

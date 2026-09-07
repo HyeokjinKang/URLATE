@@ -12,8 +12,7 @@ let Factory, Updater, Renderer;
       import("../modules/renderer.js"),
     ]);
 
-    ({ upperBound, lowerBound, numberWithCommas, easeOutSine, easeOutQuad } =
-      utils);
+    ({ upperBound, lowerBound, numberWithCommas, easeOutSine, easeOutQuad } = utils);
     Factory = factory.default;
     Updater = updater.default;
     Renderer = renderer.default;
@@ -27,18 +26,12 @@ let Factory, Updater, Renderer;
 const menuContainer = document.getElementById("menuContainer");
 const canvasContainer = document.getElementById("canvasContainer");
 const rankImg = document.getElementById("rankImg");
-const floatingArrowContainer = document.getElementById(
-  "floatingArrowContainer",
-);
-const floatingResultContainer = document.getElementById(
-  "floatingResultContainer",
-);
+const floatingArrowContainer = document.getElementById("floatingArrowContainer");
+const floatingResultContainer = document.getElementById("floatingResultContainer");
 const scoreContainer = document.getElementById("scoreContainer");
 const blackOverlayContainer = document.getElementById("blackOverlayContainer");
 const colorOverlayContainer = document.getElementById("colorOverlayContainer");
-const floatingResumeContainer = document.getElementById(
-  "floatingResumeContainer",
-);
+const floatingResumeContainer = document.getElementById("floatingResumeContainer");
 const volumeMasterValue = document.getElementById("volumeMasterValue");
 const volumeOverlay = document.getElementById("volumeOverlay");
 const canvas = document.getElementById("componentCanvas");
@@ -53,16 +46,7 @@ let patternBackup = {};
 let patternLength = 0;
 let userName = "";
 let difficultyNames = ["EZ", "MID", "HARD"];
-let settings,
-  sync,
-  visualSync,
-  song,
-  tracks,
-  pixelRatio,
-  offset,
-  bpm,
-  speed,
-  userid;
+let settings, sync, visualSync, song, tracks, pixelRatio, offset, bpm, speed, userid;
 let audioLatency = 0;
 let bpmsync = {
   ms: 0,
@@ -196,13 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 const calcBeats = (seek = song.seek() * 1000) =>
-  Number(
-    (
-      bpmsync.beat +
-      (seek - (offset + sync + audioLatency * 1000) - bpmsync.ms) /
-        (60000 / bpm)
-    ).toPrecision(10),
-  );
+  Number((bpmsync.beat + (seek - (offset + sync + audioLatency * 1000) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
 
 const calcBulletCreationSpeeds = () =>
   pattern.bullets.map((b) => {
@@ -216,8 +194,7 @@ const calcBulletCreationSpeeds = () =>
 
 const initialize = (isFirstCalled) => {
   canvasW = (window.innerWidth * pixelRatio * settings.display.canvasRes) / 100;
-  canvasH =
-    (window.innerHeight * pixelRatio * settings.display.canvasRes) / 100;
+  canvasH = (window.innerHeight * pixelRatio * settings.display.canvasRes) / 100;
   canvas.width = canvasW;
   canvas.height = canvasH;
   UIFontNormal = `500 ${canvasH / 30}px ${FONT_STACK}`;
@@ -256,22 +233,14 @@ const initialize = (isFirstCalled) => {
         // Cache the speed at spawn time so bulletPos does not have to look it up again
         bulletCreationSpeeds = calcBulletCreationSpeeds();
 
-        document.getElementById("scoreDifficultyNum").textContent =
-          localStorage.difficulty;
-        document.getElementById("scoreDifficultyName").textContent =
-          difficultyNames[localStorage.difficultySelection];
-        document.getElementById("albumDifficulty").textContent =
-          difficultyNames[localStorage.difficultySelection];
-        document.getElementById("albumDifficultyNum").textContent =
-          localStorage.difficulty;
-        document.getElementById("artist").textContent =
-          pattern.information.producer;
-        document.getElementById("scoreArtist").textContent =
-          pattern.information.producer;
-        document.getElementById("authorNamespace").textContent =
-          pattern.information.author;
-        document.getElementById("authorComment").textContent =
-          pattern.information.comment;
+        document.getElementById("scoreDifficultyNum").textContent = localStorage.difficulty;
+        document.getElementById("scoreDifficultyName").textContent = difficultyNames[localStorage.difficultySelection];
+        document.getElementById("albumDifficulty").textContent = difficultyNames[localStorage.difficultySelection];
+        document.getElementById("albumDifficultyNum").textContent = localStorage.difficulty;
+        document.getElementById("artist").textContent = pattern.information.producer;
+        document.getElementById("scoreArtist").textContent = pattern.information.producer;
+        document.getElementById("authorNamespace").textContent = pattern.information.author;
+        document.getElementById("authorComment").textContent = pattern.information.comment;
         fetch(`${api}/profilePic/${pattern.information.author}`)
           .then((res) => res.json())
           .then((data) => {
@@ -289,13 +258,9 @@ const initialize = (isFirstCalled) => {
         for (let i = 0; i < tracks.length; i++) {
           if (tracks[i].name == pattern.information.track) {
             document.getElementById("scoreTitle").textContent =
-              settings.general.detailLang == "original"
-                ? tracks[i].originalName
-                : tracks[i].name;
+              settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
             document.getElementById("title").textContent =
-              settings.general.detailLang == "original"
-                ? tracks[i].originalName
-                : tracks[i].name;
+              settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
             fileName = tracks[i].fileName;
             document.getElementById("albumContainer").style.backgroundImage =
               `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
@@ -313,11 +278,7 @@ const initialize = (isFirstCalled) => {
           .then((res) => res.json())
           .then((data) => {
             skin = data;
-            Draw = new Renderer(
-              ctx,
-              { canvasW, canvasH, cursorZoom: settings.game.size },
-              skin,
-            );
+            Draw = new Renderer(ctx, { canvasW, canvasH, cursorZoom: settings.game.size }, skin);
           })
           .catch((error) => {
             alert(`Error occured.\n${error}`);
@@ -369,8 +330,7 @@ const settingApply = () => {
   hide.miss = settings.game.applyJudge.Miss;
   frameCounter = settings.game.counter;
   volumeMasterInput.value = Math.round(settings.sound.volume.master * 100);
-  volumeMasterValue.textContent =
-    Math.round(settings.sound.volume.master * 100) + "%";
+  volumeMasterValue.textContent = Math.round(settings.sound.volume.master * 100) + "%";
 };
 
 const playSong = () => {
@@ -448,10 +408,7 @@ const cntRender = () => {
 
     const renderTexts = [];
 
-    while (
-      currentTriggerIndex < pattern.triggers.length &&
-      pattern.triggers[currentTriggerIndex].beat <= beats
-    ) {
+    while (currentTriggerIndex < pattern.triggers.length && pattern.triggers[currentTriggerIndex].beat <= beats) {
       const trigger = pattern.triggers[currentTriggerIndex];
       if (trigger.value == 0) {
         if (!destroyedBullets.has(trigger.num)) {
@@ -479,10 +436,7 @@ const cntRender = () => {
     let textStart = lowerBound(pattern.triggers, beats - 32);
     for (let i = textStart; i < textEnd; i++) {
       if (pattern.triggers[i].value == 5) {
-        if (
-          pattern.triggers[i].beat <= beats &&
-          beats <= pattern.triggers[i].beat + pattern.triggers[i].duration
-        ) {
+        if (pattern.triggers[i].beat <= beats && beats <= pattern.triggers[i].beat + pattern.triggers[i].duration) {
           renderTexts.push(pattern.triggers[i]);
         }
       }
@@ -527,19 +481,10 @@ const cntRender = () => {
       if (
         _noteState.progress >= 120 &&
         !destroyedNotes.has(i) &&
-        (pattern.patterns[i].value == 2
-          ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`))
-          : true)
+        (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)
       ) {
         calculateScore("miss", i, true);
-        judgeParticles.push(
-          Factory.createJudge(
-            pattern.patterns[i].x,
-            pattern.patterns[i].y,
-            judgeSkin,
-            "Miss",
-          ),
-        );
+        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Miss"));
         miss++;
         showOverlay();
         missPoint.push(seekMs);
@@ -562,14 +507,7 @@ const cntRender = () => {
       ) {
         grabbedNotes.add(`${i}!`);
         grabbedNotes.delete(i);
-        judgeParticles.push(
-          Factory.createJudge(
-            pattern.patterns[i].x,
-            pattern.patterns[i].y,
-            judgeSkin,
-            "Perfect",
-          ),
-        );
+        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Perfect"));
         calculateScore("Perfect", i, true);
         record.push([
           record.length,
@@ -642,17 +580,11 @@ const cntRender = () => {
     Draw.judges(judgeParticles);
 
     Draw.keyInputUI(keyInput, keyInputTime);
-    Draw.scorePanelUI(
-      { score, combo, difficulty: Number(localStorage.difficultySelection) },
-      albumImg,
-    );
+    Draw.scorePanelUI({ score, combo, difficulty: Number(localStorage.difficultySelection) }, albumImg);
     Draw.systemInfoUI({ speed: nowSpeed, bpm, fps: displayFPS });
     Draw.progressBarUI(percentage);
 
-    Draw.cursor(
-      { x: mouseX, y: mouseY },
-      { isClicked: mouseClicked != false, clickedMs: mouseClickedMs },
-    );
+    Draw.cursor({ x: mouseX, y: mouseY }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
 
     if (effectMs != 0 && effectNum != -1) {
       Draw.finalEffect(effectNum, effectMs);
@@ -663,9 +595,7 @@ const cntRender = () => {
     //new record
     if (newRecordTime != 0) {
       let p1 = easeOutQuad(Math.min(1, (now - newRecordTime) / 500));
-      let p2 = easeOutQuad(
-        Math.min(1, Math.max(0, (now - newRecordTime - 300) / 500)),
-      );
+      let p2 = easeOutQuad(Math.min(1, Math.max(0, (now - newRecordTime - 300) / 500)));
       if (newRecordTime + 5000 < now) {
         if (newRecordTime + 10000 < now) newRecordTime = 0;
         else ctx.globalAlpha = 1 - (now - newRecordTime - 5000) / 5000;
@@ -725,13 +655,10 @@ const calculateResult = () => {
   document.getElementById("badResult").textContent = bad;
   document.getElementById("missResult").textContent = miss;
   document.getElementById("bulletResult").textContent = bullet;
-  document.getElementById("scoreText").textContent = numberWithCommas(
-    `${score}`,
-  );
+  document.getElementById("scoreText").textContent = numberWithCommas(`${score}`);
   document.getElementById("comboText").textContent = `${maxCombo}x`;
   let accuracy = (
-    ((perfect + (great / 10) * 7 + good / 2 + (bad / 10) * 3) /
-      (perfect + great + good + bad + miss + bullet)) *
+    ((perfect + (great / 10) * 7 + good / 2 + (bad / 10) * 3) / (perfect + great + good + bad + miss + bullet)) *
     100
   ).toFixed(1);
   document.getElementById("accuracyText").textContent = `${accuracy}%`;
@@ -753,10 +680,7 @@ const calculateResult = () => {
   rankImg.src = `/images/ranks/${rank.toLowerCase()}.webp`;
   document
     .getElementById("scoreInfoRank")
-    .style.setProperty(
-      "--background",
-      `url('/images/ranks/${rank.toLowerCase()}-back.webp')`,
-    );
+    .style.setProperty("--background", `url('/images/ranks/${rank.toLowerCase()}-back.webp')`);
   setTimeout(
     () => {
       canvasContainer.style.opacity = "0";
@@ -812,11 +736,7 @@ const calculateResult = () => {
     missCtx.font = UIFontNormal;
     missCtx.textAlign = "right";
     missCtx.textBaseline = "bottom";
-    missCtx.fillText(
-      "Perfect!",
-      missCanvas.width - 10,
-      missCanvas.height * 0.8 - 10,
-    );
+    missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
   }
   fetch(`${api}/playRecord`, {
     method: "PUT",
@@ -856,23 +776,13 @@ const calculateResult = () => {
 
 const trackMouseSelection = (i, v1, v2, x, y, beats, seekMs) => {
   if (song.playing()) {
-    const powX =
-      ((((mouseX - x) * canvasOW) / 200) *
-        pixelRatio *
-        settings.display.canvasRes) /
-      100;
-    const powY =
-      ((((mouseY - y) * canvasOH) / 200) *
-        pixelRatio *
-        settings.display.canvasRes) /
-      100;
+    const powX = ((((mouseX - x) * canvasOW) / 200) * pixelRatio * settings.display.canvasRes) / 100;
+    const powY = ((((mouseY - y) * canvasOH) / 200) * pixelRatio * settings.display.canvasRes) / 100;
     const distSq = powX * powX + powY * powY;
     switch (v1) {
       case 0: {
         const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
-        const t =
-          ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) *
-          100;
+        const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
         if (
           distSq <= (canvasW / 40) * (canvasW / 40) &&
           (pattern.patterns[i].value == 2 ? t <= 100 : p <= 130) &&
@@ -911,11 +821,7 @@ const trackMouseSelection = (i, v1, v2, x, y, beats, seekMs) => {
         ctx.fillStyle = "#F55";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
-        ctx.fillText(
-          `trackMouseSelection:Undefined element.`,
-          canvasW / 100,
-          canvasH / 100,
-        );
+        ctx.fillText(`trackMouseSelection:Undefined element.`, canvasW / 100, canvasH / 100);
         console.error(`trackMouseSelection:Undefined element.`);
     }
   }
@@ -929,12 +835,7 @@ const showOverlay = () => {
 };
 
 const compClicked = (isTyped, key, isWheel) => {
-  if (
-    (!isTyped && !settings.input.mouse && !isWheel) ||
-    isMenuOpened ||
-    !menuAllowed ||
-    mouseClicked == key
-  ) {
+  if ((!isTyped && !settings.input.mouse && !isWheel) || isMenuOpened || !menuAllowed || mouseClicked == key) {
     return;
   }
   if (!song.playing() && isPaused) {
@@ -973,10 +874,7 @@ const compClicked = (isTyped, key, isWheel) => {
         } else if (beats >= beat - goodJudge && beats <= beat) {
           judge = "Good";
           good++;
-        } else if (
-          (beats >= beat - badJudge && beats <= beat) ||
-          beat <= beats
-        ) {
+        } else if ((beats >= beat - badJudge && beats <= beat) || beat <= beats) {
           judge = "Bad";
           bad++;
         } else {
@@ -1063,17 +961,9 @@ const calculateScore = (judge, i, ignoreMs) => {
     if (localStorage.record < score) {
       newRecordTime = Date.now();
     }
-    if (pattern.bullets.length)
-      destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
+    if (pattern.bullets.length) destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
     effectMs = Date.now();
-    if (
-      perfect != 0 &&
-      great == 0 &&
-      good == 0 &&
-      bad == 0 &&
-      miss == 0 &&
-      bullet == 0
-    ) {
+    if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
       effectNum = 0;
     } else if (bad == 0 && miss == 0 && bullet == 0) {
       effectNum = 1;
@@ -1100,8 +990,7 @@ const doneLoading = () => {
     });
     setTimeout(() => {
       document.getElementById("loadingContainer").style.display = "none";
-      document.getElementById("componentCanvas").style.transitionDuration =
-        "0s";
+      document.getElementById("componentCanvas").style.transitionDuration = "0s";
       menuAllowed = true;
     }, 1000);
     setTimeout(() => {
@@ -1246,16 +1135,14 @@ const globalScrollEvent = (e) => {
       if (delta == 1) {
         //UP
         if (settings.sound.volume.master <= 0.95) {
-          settings.sound.volume.master =
-            Math.round((settings.sound.volume.master + 0.05) * 100) / 100;
+          settings.sound.volume.master = Math.round((settings.sound.volume.master + 0.05) * 100) / 100;
         } else {
           settings.sound.volume.master = 1;
         }
       } else {
         //DOWN
         if (settings.sound.volume.master >= 0.05) {
-          settings.sound.volume.master =
-            Math.round((settings.sound.volume.master - 0.05) * 100) / 100;
+          settings.sound.volume.master = Math.round((settings.sound.volume.master - 0.05) * 100) / 100;
         } else {
           settings.sound.volume.master = 0;
         }
@@ -1315,8 +1202,7 @@ const checkHoldNote = (key) => {
   const beats = calcBeats();
   mouseClicked = false;
   mouseClickedMs = date;
-  if (pressingKeys.includes(key))
-    pressingKeys.splice(pressingKeys.indexOf(key), 1);
+  if (pressingKeys.includes(key)) pressingKeys.splice(pressingKeys.indexOf(key), 1);
   if (
     Object.hasOwn(keyPressing, key) &&
     grabbedNotes.has(keyPressing[key]) &&
@@ -1324,15 +1210,9 @@ const checkHoldNote = (key) => {
   ) {
     grabbedNotes.delete(keyPressing[key]);
     grabbedNotes.add(`${keyPressing[key]}!`);
-    if (
-      pattern.patterns[keyPressing[key]].beat +
-        pattern.patterns[keyPressing[key]].duration -
-        1 / 3 >
-      beats
-    ) {
+    if (pattern.patterns[keyPressing[key]].beat + pattern.patterns[keyPressing[key]].duration - 1 / 3 > beats) {
       medalCheck(medal);
-      pattern.patterns[keyPressing[key]].beat =
-        beats - pattern.patterns[keyPressing[key]].duration;
+      pattern.patterns[keyPressing[key]].beat = beats - pattern.patterns[keyPressing[key]].duration;
       calculateScore("Miss", keyPressing[key], true);
       judgeParticles.push(
         Factory.createJudge(
@@ -1345,16 +1225,7 @@ const checkHoldNote = (key) => {
       miss++;
       showOverlay();
       missPoint.push(song.seek() * 1000);
-      record.push([
-        record.length,
-        0,
-        2,
-        keyPressing[key],
-        mouseX,
-        mouseY,
-        "miss(hold)",
-        song.seek() * 1000,
-      ]);
+      record.push([record.length, 0, 2, keyPressing[key], mouseX, mouseY, "miss(hold)", song.seek() * 1000]);
       keyInput.push({ judge: "Miss", key: "-", time: date });
     } else {
       judgeParticles.push(
@@ -1367,16 +1238,7 @@ const checkHoldNote = (key) => {
       );
       calculateScore("Perfect", keyPressing[key], true);
       keyInput.push({ judge: "Perfect", key: "-", time: date });
-      record.push([
-        record.length,
-        0,
-        2,
-        keyPressing[key],
-        mouseX,
-        mouseY,
-        "perfect(hold)",
-        song.seek() * 1000,
-      ]);
+      record.push([record.length, 0, 2, keyPressing[key], mouseX, mouseY, "perfect(hold)", song.seek() * 1000]);
     }
     delete keyPressing[key];
   }
@@ -1445,19 +1307,13 @@ window.addEventListener("blur", () => {
 });
 
 window.addEventListener("wheel", globalScrollEvent);
-document
-  .getElementById("componentCanvas")
-  .addEventListener("pointermove", trackMousePos);
-document
-  .getElementById("componentCanvas")
-  .addEventListener("mousedown", (event) => {
-    compClicked(false, `${event.button}mouse`, false);
-  });
-document
-  .getElementById("componentCanvas")
-  .addEventListener("mouseup", (event) => {
-    checkHoldNote(`${event.button}mouse`);
-  });
+document.getElementById("componentCanvas").addEventListener("pointermove", trackMousePos);
+document.getElementById("componentCanvas").addEventListener("mousedown", (event) => {
+  compClicked(false, `${event.button}mouse`, false);
+});
+document.getElementById("componentCanvas").addEventListener("mouseup", (event) => {
+  checkHoldNote(`${event.button}mouse`);
+});
 
 document.addEventListener("contextmenu", (event) => event.preventDefault());
 document.addEventListener("dragstart", (event) => event.preventDefault());

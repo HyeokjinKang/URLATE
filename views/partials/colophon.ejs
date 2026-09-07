@@ -2,10 +2,10 @@
   <p>
     URLATE LITE,
     <%= __('idx_colophon_body') %>
-    <br>© Coupyworks, 2026.
-    <br>
-    <a href="/privacy"<% if(page == "privacy") { %> aria-current="page"<% } %>><%= __('idx_colophon_privacy') %></a>
-    <a href="/info"<% if(page == "info") { %> aria-current="page"<% } %>><%= __('idx_colophon_info') %></a>
+    <br />© Coupyworks, 2026.
+    <br />
+    <a href="/privacy" aria-current="<%= page == 'privacy' ? 'page' : 'false' %>"><%= __('idx_colophon_privacy') %></a>
+    <a href="/info" aria-current="<%= page == 'info' ? 'page' : 'false' %>"><%= __('idx_colophon_info') %></a>
     <a href="https://mirai.urlate.coupy.dev/" target="_blank" rel="noopener noreferrer">MIRAI</a>
     <a href="https://discord.gg/YMhYzPbEYV" target="_blank" rel="noopener noreferrer">Discord</a>
     <a href="https://x.com/URLATE_" target="_blank" rel="noopener noreferrer">X</a>

@@ -21,13 +21,21 @@
         <span class="medium">&nbsp;&nbsp;Enter or Click to <strong>Select</strong></span>
       </div>
       <div id="footerCenter">
-        <strong id="songName"><img src="/images/icons/note.webp" id="noteIcon" /><span id="songNameText">&nbsp;URLATE Theme</span></strong>
+        <strong id="songName"
+          ><img src="/images/icons/note.webp" id="noteIcon" /><span id="songNameText">&nbsp;URLATE Theme</span></strong
+        >
         <span id="urlateText"><strong>URLATE</strong> LITE</span>
       </div>
       <div id="footerRight">
         <span
           ><span class="medium"
-            ><%= __('more_info_before') %><a href="https://urlate.coupy.dev/info" target="_blank" rel="noopener noreferrer" class="link"><%= __('more_info_link') %></a><%= __('more_info_after') %></span
+            ><%= __('more_info_before') %><a
+              href="https://urlate.coupy.dev/info"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="link"
+              ><%= __('more_info_link') %></a
+            ><%= __('more_info_after') %></span
           ><br />&copy; 2025 <strong>URLATE</strong>, All contents cannot be copied without permission.</span
         >
       </div>
@@ -60,8 +68,8 @@
         <span id="name" class="metropolis" data-action="profileScreen">USERNAME</span>
       </div>
       <div id="headerRight">
-        <%# Filled by game.js. The wrapper is display: contents, so hiding it takes
-            the divider with the link and leaves no gap in the header row. %>
+        <%# Filled by game.js. The wrapper is display: contents, so hiding it takes the divider with the link and leaves
+        no gap in the header row. %>
         <span id="noticeSlot" class="hide">
           <a id="noticeText" target="_blank" rel="noopener noreferrer"></a>
           <div id="line"></div>
@@ -122,13 +130,16 @@
       <div id="selectBackground"></div>
       <div id="selectInnerContainer">
         <div id="visualizer"><canvas id="renderer"></canvas></div>
-        <img src="/images/icons/xmark-circle-ffffff.svg" class="icon clickable closeBtn" data-action="displayClose" loading="lazy" />
+        <img
+          src="/images/icons/xmark-circle-ffffff.svg"
+          class="icon clickable closeBtn"
+          data-action="displayClose"
+          loading="lazy"
+        />
         <div id="selectContainerTopLeft">
           <img src="/images/ui/tracks.webp" id="tracks" loading="lazy" />
           <div id="tracksLine"></div>
-          <span class="tracksSelection selected">
-            <strong>Official</strong> Pattern</span
-          >
+          <span class="tracksSelection selected"> <strong>Official</strong> Pattern</span>
           <span class="tracksSelection"> <strong>Community</strong> Pattern <span class="bottomArrow">▼</span> </span>
         </div>
         <div id="selectContainerLeft">
@@ -180,7 +191,13 @@
               </div>
               <div class="trackStatContainer">
                 <span class="trackModsTitle"><%= __('playback_rate') %></span>
-                <input type="number" id="trackModsRate" class="trackModsValue metropolis" value="1.0" data-change="rateChanged" />
+                <input
+                  type="number"
+                  id="trackModsRate"
+                  class="trackModsValue metropolis"
+                  value="1.0"
+                  data-change="rateChanged"
+                />
               </div>
               <div class="trackStatContainer">
                 <span class="trackModsTitle"><%= __('disable_text') %></span>
@@ -195,9 +212,15 @@
                 <span class="key">TAB</span>
               </div>
               <div class="selectInfoContentsContainer">
-                <div class="difficulty difficultySelected" data-action="difficultySelected" data-arg="0"><span class="difficultyNumber">1</span><span class="difficultyText">EZ</span></div>
-                <div class="difficulty" data-action="difficultySelected" data-arg="1"><span class="difficultyNumber">3</span><span class="difficultyText">MID</span></div>
-                <div class="difficulty right" data-action="difficultySelected" data-arg="2"><span class="difficultyNumber">5</span><span class="difficultyText">HARD</span></div>
+                <div class="difficulty difficultySelected" data-action="difficultySelected" data-arg="0">
+                  <span class="difficultyNumber">1</span><span class="difficultyText">EZ</span>
+                </div>
+                <div class="difficulty" data-action="difficultySelected" data-arg="1">
+                  <span class="difficultyNumber">3</span><span class="difficultyText">MID</span>
+                </div>
+                <div class="difficulty right" data-action="difficultySelected" data-arg="2">
+                  <span class="difficultyNumber">5</span><span class="difficultyText">HARD</span>
+                </div>
               </div>
             </div>
             <div class="selectInfo clickable" data-action="rankToggle">
@@ -227,7 +250,9 @@
             <span class="sortText selected" data-action="sortSelected" data-arg="0"><%= __('sort_as_name') %></span>
             <span class="sortText" data-action="sortSelected" data-arg="1"><%= __('sort_as_producer') %></span>
             <span class="sortText" data-action="sortSelected" data-arg="2"><%= __('sort_as_difficulty') %></span>
-            <span class="sortText" id="sortTextRight" data-action="sortSelected" data-arg="3"><%= __('sort_as_bpm') %></span>
+            <span class="sortText" id="sortTextRight" data-action="sortSelected" data-arg="3"
+              ><%= __('sort_as_bpm') %></span
+            >
             <div id="trackListLine"></div>
             <span id="trackList">TRACK <strong>LIST</strong></span>
           </div>
@@ -240,7 +265,12 @@
                 <span id="selectRankTitle"><strong>R</strong>ANKING</span>
               </div>
               <div id="selectRankTitleRightContainer">
-                <img src="/images/icons/xmark-circle-ffffff.svg" class="icon clickable rankCloseBtn" data-action="displayClose" loading="lazy" />
+                <img
+                  src="/images/icons/xmark-circle-ffffff.svg"
+                  class="icon clickable rankCloseBtn"
+                  data-action="displayClose"
+                  loading="lazy"
+                />
               </div>
             </div>
             <div class="selectRank">
@@ -264,7 +294,12 @@
                 </div>
               </div>
               <div id="CPLTopRightContainer">
-                <img src="/images/icons/xmark-circle-000000.svg" class="icon clickable rankCloseBtn" data-action="displayClose" loading="lazy" />
+                <img
+                  src="/images/icons/xmark-circle-000000.svg"
+                  class="icon clickable rankCloseBtn"
+                  data-action="displayClose"
+                  loading="lazy"
+                />
               </div>
             </div>
             <div id="CPLListIndex">
@@ -281,7 +316,12 @@
       </div>
     </div>
     <div id="advancedContainer" class="containers">
-      <img src="/images/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" data-action="displayClose" loading="lazy" />
+      <img
+        src="/images/icons/xmark-circle-000000.svg"
+        class="icon clickable closeBtn"
+        data-action="displayClose"
+        loading="lazy"
+      />
       <h1 id="rankTitle"><%= __('rank_title') %></h1>
       <table id="rankTable">
         <thead>
@@ -298,7 +338,12 @@
     </div>
     <div id="infoContainer" class="containers metropolis">
       <div id="infoProfileContainer" class="containers">
-        <img src="/images/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" data-action="displayClose" loading="lazy" />
+        <img
+          src="/images/icons/xmark-circle-000000.svg"
+          class="icon clickable closeBtn"
+          data-action="displayClose"
+          loading="lazy"
+        />
         <div id="infoProfileLeft">
           <img src="" id="infoProfileImg" loading="lazy" />
         </div>
@@ -310,13 +355,19 @@
           <div id="infoProfileBottom"></div>
         </div>
       </div>
-      <img src="/images/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" data-action="displayClose" loading="lazy" />
+      <img
+        src="/images/icons/xmark-circle-000000.svg"
+        class="icon clickable closeBtn"
+        data-action="displayClose"
+        loading="lazy"
+      />
       <img src="/images/brand/logo-lite.webp" id="infoLogo" loading="lazy" />
       <br />
       <span id="license">
         <span id="licenseMain">URLATE is under the AGPLv3 License.</span>
         <br /><br />
-        Copyright notices for resources included in the game are located at <a href="https://urlate.coupy.dev/info" target="_blank" class="link">urlate.coupy.dev/info</a>.
+        Copyright notices for resources included in the game are located at
+        <a href="https://urlate.coupy.dev/info" target="_blank" class="link">urlate.coupy.dev/info</a>.
         <br />
         Excluding some music and images, URLATE resources are copyrighted by Coupy.
       </span>
@@ -378,7 +429,12 @@
     </div>
     <div id="optionContainer" class="containers">
       <div id="offsetContiner" class="containers">
-        <img src="/images/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" data-action="displayClose" loading="lazy" />
+        <img
+          src="/images/icons/xmark-circle-000000.svg"
+          class="icon clickable closeBtn"
+          data-action="displayClose"
+          loading="lazy"
+        />
         <h1 id="offsetTitle"><%= __('offset_setting') %></h1>
         <div class="offsetPreviewContainer">
           <div class="offsetViewContainer">
@@ -404,20 +460,43 @@
             <span class="timingText">50ms</span>
           </div>
         </div>
-        <span id="offsetDescription"><%= __('offset_description_before') %><strong><%= __('offset_description_strong') %></strong><%= __('offset_description_after') %></span>
+        <span id="offsetDescription"
+          ><%= __('offset_description_before') %><strong><%= __('offset_description_strong') %></strong
+          ><%= __('offset_description_after') %></span
+        >
         <span id="offsetSubDescription"><%= __('offset_sub_description') %></span>
         <div id="offsetButtonContainer">
           <div class="offsetSideContainer">
-            <img src="/images/icons/nav-arrow-up.svg" class="icon offsetSideIcon clickable" data-action="offsetSpeedUp" loading="lazy" />
+            <img
+              src="/images/icons/nav-arrow-up.svg"
+              class="icon offsetSideIcon clickable"
+              data-action="offsetSpeedUp"
+              loading="lazy"
+            />
             <span id="offsetSpeedText" class="metropolis">1x</span>
-            <img src="/images/icons/nav-arrow-down.svg" class="icon offsetSideIcon clickable" data-action="offsetSpeedDown" loading="lazy" />
+            <img
+              src="/images/icons/nav-arrow-down.svg"
+              class="icon offsetSideIcon clickable"
+              data-action="offsetSpeedDown"
+              loading="lazy"
+            />
           </div>
           <div id="offsetTapButton">
             <span id="offsetButtonText" class="metropolis">TAP</span>
           </div>
           <div class="offsetSideContainer">
-            <img src="/images/icons/plus.svg" class="icon offsetSideIcon clickable" data-action="offsetUp" loading="lazy" />
-            <img src="/images/icons/minus.svg" class="icon offsetSideIcon clickable" data-action="offsetDown" loading="lazy" />
+            <img
+              src="/images/icons/plus.svg"
+              class="icon offsetSideIcon clickable"
+              data-action="offsetUp"
+              loading="lazy"
+            />
+            <img
+              src="/images/icons/minus.svg"
+              class="icon offsetSideIcon clickable"
+              data-action="offsetDown"
+              loading="lazy"
+            />
           </div>
         </div>
         <div id="offsetResetButton" data-action="offsetReset">
@@ -425,29 +504,53 @@
         </div>
       </div>
       <div id="visualSyncContainer" class="containers">
-        <img src="/images/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" data-action="displayClose" loading="lazy" />
+        <img
+          src="/images/icons/xmark-circle-000000.svg"
+          class="icon clickable closeBtn"
+          data-action="displayClose"
+          loading="lazy"
+        />
         <h1 id="visualSyncTitle"><%= __('visual_sync_setting') %></h1>
         <canvas id="visualSyncCanvas" width="400" height="200"></canvas>
-        <span id="visualSyncDescription"><strong><%= __('visual_sync_description_strong') %></strong><%= __('visual_sync_description_after') %></span>
+        <span id="visualSyncDescription"
+          ><strong><%= __('visual_sync_description_strong') %></strong><%= __('visual_sync_description_after') %></span
+        >
         <span id="visualSyncSubDescription"><%= __('visual_sync_sub_description') %></span>
         <div id="visualSyncButtonContainer">
           <div id="visualSyncValueDisplay">
             <span id="visualSyncValueText" class="metropolis">0ms</span>
           </div>
           <div class="offsetSideContainer">
-            <img src="/images/icons/plus.svg" class="icon offsetSideIcon clickable" data-action="visualSyncUp" loading="lazy" />
-            <img src="/images/icons/minus.svg" class="icon offsetSideIcon clickable" data-action="visualSyncDown" loading="lazy" />
+            <img
+              src="/images/icons/plus.svg"
+              class="icon offsetSideIcon clickable"
+              data-action="visualSyncUp"
+              loading="lazy"
+            />
+            <img
+              src="/images/icons/minus.svg"
+              class="icon offsetSideIcon clickable"
+              data-action="visualSyncDown"
+              loading="lazy"
+            />
           </div>
         </div>
         <div id="visualSyncResetButton" data-action="visualSyncReset">
           <span id="visualSyncResetButtonText" class="metropolis"><%= __('reset') %></span>
         </div>
       </div>
-      <img src="/images/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" data-action="displayClose" loading="lazy" />
+      <img
+        src="/images/icons/xmark-circle-000000.svg"
+        class="icon clickable closeBtn"
+        data-action="displayClose"
+        loading="lazy"
+      />
       <h1 class="containersTitle"><%= __('settings') %></h1>
       <div id="optionElementsContainer">
         <div id="optionSelectorContainer">
-          <span class="optionSelectors optionSelected" data-action="optionSelect" data-arg="0"><%= __('general') %></span>
+          <span class="optionSelectors optionSelected" data-action="optionSelect" data-arg="0"
+            ><%= __('general') %></span
+          >
           <span class="optionSelectors" data-action="optionSelect" data-arg="1"><%= __('screen') %></span>
           <span class="optionSelectors" data-action="optionSelect" data-arg="2"><%= __('sound') %></span>
           <span class="optionSelectors" data-action="optionSelect" data-arg="3"><%= __('input') %></span>
@@ -515,22 +618,53 @@
           <p class="optionValue"><%= __('sound_volume_tip') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('volume_all') %></p>
-            <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" data-setting="volumeMaster" />
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value="50"
+              class="optionSlider volumeMaster"
+              data-setting="volumeMaster"
+            />
             <p class="optionValue volumeMasterValue">50%</p>
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('volume_song') %></p>
-            <input type="range" min="0" max="100" value="100" id="volumeSong" class="optionSlider" data-setting="volumeSong" />
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value="100"
+              id="volumeSong"
+              class="optionSlider"
+              data-setting="volumeSong"
+            />
             <p class="optionValue" id="volumeSongValue">100%</p>
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('volume_hitsound') %></p>
-            <input type="range" min="0" max="100" value="100" id="volumeHit" class="optionSlider" data-setting="volumeHitsound" />
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value="100"
+              id="volumeHit"
+              class="optionSlider"
+              data-setting="volumeHitsound"
+            />
             <p class="optionValue" id="volumeHitValue">100%</p>
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('volume_effect') %></p>
-            <input type="range" min="0" max="100" value="100" id="volumeEft" class="optionSlider" data-setting="volumeEffect" />
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value="100"
+              id="volumeEft"
+              class="optionSlider"
+              data-setting="volumeEffect"
+            />
             <p class="optionValue" id="volumeEftValue">100%</p>
           </div>
           <p class="optionTitle"><%= __('details') %></p>
@@ -551,7 +685,15 @@
           <p class="optionTitle"><%= __('mouse') %></p>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('sensitivity') %></p>
-            <input type="range" min="100" max="250" value="100" id="inputSensitive" class="optionSlider" data-setting="sensitive" />
+            <input
+              type="range"
+              min="100"
+              max="250"
+              value="100"
+              id="inputSensitive"
+              class="optionSlider"
+              data-setting="sensitive"
+            />
             <p id="sensitiveValue" class="optionValue">1x</p>
           </div>
           <p class="optionValue"><%= __('sensitivity_warning') %></p>
@@ -584,7 +726,15 @@
           </div>
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('cursor_size') %></p>
-            <input type="range" min="5" max="20" value="10" id="inputSize" class="optionSlider" data-setting="inputSize" />
+            <input
+              type="range"
+              min="5"
+              max="20"
+              value="10"
+              id="inputSize"
+              class="optionSlider"
+              data-setting="inputSize"
+            />
             <p id="inputSizeValue" class="optionValue">1x</p>
           </div>
           <p class="optionValue"><%= __('cursor_size_warning') %></p>
@@ -641,7 +791,12 @@
       </div>
     </div>
     <div id="storeContainer" class="containers metropolis">
-      <img src="/images/icons/xmark-circle-000000.svg" class="icon clickable closeBtn" data-action="displayClose" loading="lazy" />
+      <img
+        src="/images/icons/xmark-circle-000000.svg"
+        class="icon clickable closeBtn"
+        data-action="displayClose"
+        loading="lazy"
+      />
       <div id="infoInnerContainer">
         <img src="/images/brand/logo-transparent.webp" id="infoImg" loading="lazy" />
         <p class="infoTitle"><%= __('info_game_title') %></p>
@@ -656,8 +811,12 @@
         <p class="infoText"><%= __('info_lite_p5') %></p>
         <p class="infoTitle"><%= __('info_source_title') %></p>
         <p class="infoText">
-          <a href="https://github.com/HyeokjinKang/URLATE-v3l-frontend" target="_blank" class="link"><%= __('info_source_front') %></a>,&nbsp;
-          <a href="https://github.com/HyeokjinKang/URLATE-v3l-backend" target="_blank" class="link"><%= __('info_source_back') %></a>
+          <a href="https://github.com/HyeokjinKang/URLATE-v3l-frontend" target="_blank" class="link"
+            ><%= __('info_source_front') %></a
+          >,&nbsp;
+          <a href="https://github.com/HyeokjinKang/URLATE-v3l-backend" target="_blank" class="link"
+            ><%= __('info_source_back') %></a
+          >
         </p>
         <p class="infoText"><%= __('info_source_p1') %></p>
         <p class="infoTitle"><%= __('info_news_title') %></p>
@@ -676,10 +835,22 @@
     </div>
     <div id="profileContainer" class="containers metropolis" data-action="showProfileBackground">
       <span id="profileDescription" data-action="noop"><%= __('profile_description') %></span>
-      <img src="/images/icons/xmark-circle-ffffff.svg" class="icon clickable closeBtn" data-action="displayClose" loading="lazy" />
+      <img
+        src="/images/icons/xmark-circle-ffffff.svg"
+        class="icon clickable closeBtn"
+        data-action="displayClose"
+        loading="lazy"
+      />
       <div id="profileImageContainer"></div>
       <div id="profileNameContainer">
-        <img src="" id="profileImage" class="editable opacity" data-action="changeProfile" data-arg="picture" loading="lazy" />
+        <img
+          src=""
+          id="profileImage"
+          class="editable opacity"
+          data-action="changeProfile"
+          data-arg="picture"
+          loading="lazy"
+        />
         <span id="profileName"></span>
         <span id="profileBio" class="editable opacity" data-action="changeProfile" data-arg="alias"></span>
       </div>
@@ -695,12 +866,26 @@
               <canvas id="rankChart"></canvas>
             </div>
             <div id="profileStat">
-              <div class="profileStatElements"><span class="profileStatTitle"><%= __('rating') %></span><span class="profileStatValue"></span></div>
-              <div class="profileStatElements"><span class="profileStatTitle"><%= __('score_sum') %></span><span class="profileStatValue"></span></div>
-              <div class="profileStatElements"><span class="profileStatTitle"><%= __('average_accuracy') %></span><span class="profileStatValue"></span></div>
-              <div class="profileStatElements"><span class="profileStatTitle"><%= __('play_count') %></span><span class="profileStatValue"></span></div>
-              <div class="profileStatElements"><span class="profileStatTitle"><%= __('first_place_count') %></span><span class="profileStatValue"></span></div>
-              <div class="profileStatElements"><span class="profileStatTitle"><%= __('last_played') %></span><span class="profileStatValue"></span></div>
+              <div class="profileStatElements">
+                <span class="profileStatTitle"><%= __('rating') %></span><span class="profileStatValue"></span>
+              </div>
+              <div class="profileStatElements">
+                <span class="profileStatTitle"><%= __('score_sum') %></span><span class="profileStatValue"></span>
+              </div>
+              <div class="profileStatElements">
+                <span class="profileStatTitle"><%= __('average_accuracy') %></span
+                ><span class="profileStatValue"></span>
+              </div>
+              <div class="profileStatElements">
+                <span class="profileStatTitle"><%= __('play_count') %></span><span class="profileStatValue"></span>
+              </div>
+              <div class="profileStatElements">
+                <span class="profileStatTitle"><%= __('first_place_count') %></span
+                ><span class="profileStatValue"></span>
+              </div>
+              <div class="profileStatElements">
+                <span class="profileStatTitle"><%= __('last_played') %></span><span class="profileStatValue"></span>
+              </div>
             </div>
           </div>
           <div id="medalContainer">

@@ -24,12 +24,18 @@
         <span id="gotoGame" class="backText clickable" data-action="goGame"
           ><img src="/images/icons/nav-arrow-left.svg" class="backIcon" /><%= __('goto_game') %></span
         >
-        <span class="initialButtons clickable" data-action="newEditor"><img src="/images/icons/design-pencil.svg" class="initialIcon clickable" />New</span>
-        <span class="initialButtons clickable" data-action="loadEditor"><img src="/images/icons/arrow-down-right-circle.svg" class="initialIcon clickable" />Load</span>
+        <span class="initialButtons clickable" data-action="newEditor"
+          ><img src="/images/icons/design-pencil.svg" class="initialIcon clickable" />New</span
+        >
+        <span class="initialButtons clickable" data-action="loadEditor"
+          ><img src="/images/icons/arrow-down-right-circle.svg" class="initialIcon clickable" />Load</span
+        >
       </div>
       <div id="songSelectionContainer">
         <div id="songSelection">
-          <span id="gotoMain" class="backText clickable" data-action="gotoMainConfirm"><img src="/images/icons/nav-arrow-left.svg" class="backIcon" /><%= __('cancel') %></span>
+          <span id="gotoMain" class="backText clickable" data-action="gotoMainConfirm"
+            ><img src="/images/icons/nav-arrow-left.svg" class="backIcon" /><%= __('cancel') %></span
+          >
           <h2>Select Song</h2>
           <select id="songSelectBox" class="clickable"></select>
           <input type="button" class="initlalButtons" value="Select" data-action="songSelected" />
@@ -98,11 +104,15 @@
           </div>
           <div class="helpBoxSpliter">
             <div class="helpKeyContainer">
-              <span class="helpKey"><kbd class="ctrl">Ctrl</kbd> ( + <kbd class="shift">Shift</kbd> ) + <kbd>C</kbd></span>
+              <span class="helpKey"
+                ><kbd class="ctrl">Ctrl</kbd> ( + <kbd class="shift">Shift</kbd> ) + <kbd>C</kbd></span
+              >
               <span class="helpDescription">(Range) Copy</span>
             </div>
             <div class="helpKeyContainer">
-              <span class="helpKey"><kbd class="ctrl">Ctrl</kbd> ( + <kbd class="shift">Shift</kbd> ) + <kbd>V</kbd></span>
+              <span class="helpKey"
+                ><kbd class="ctrl">Ctrl</kbd> ( + <kbd class="shift">Shift</kbd> ) + <kbd>V</kbd></span
+              >
               <span class="helpDescription">(Range) Paste</span>
             </div>
             <div class="helpKeyContainer">
@@ -118,11 +128,17 @@
               <span class="helpDescription">Seek by Beat</span>
             </div>
             <div class="helpKeyContainer">
-              <span class="helpKey"><kbd class="noItalic">←</kbd> <kbd class="noItalic">→</kbd> or <span class="helpMotion">Scroll</span></span>
+              <span class="helpKey"
+                ><kbd class="noItalic">←</kbd> <kbd class="noItalic">→</kbd> or
+                <span class="helpMotion">Scroll</span></span
+              >
               <span class="helpDescription">Seek Horizontally</span>
             </div>
             <div class="helpKeyContainer">
-              <span class="helpKey"><kbd class="noItalic">↑</kbd> <kbd class="noItalic">↓</kbd> or <kbd class="shift">Shift</kbd> + <span class="helpMotion">Scroll</span></span>
+              <span class="helpKey"
+                ><kbd class="noItalic">↑</kbd> <kbd class="noItalic">↓</kbd> or <kbd class="shift">Shift</kbd> +
+                <span class="helpMotion">Scroll</span></span
+              >
               <span class="helpDescription">Seek Vertically</span>
             </div>
             <div class="helpKeyContainer">
@@ -154,29 +170,59 @@
       </div>
       <div id="navbar">
         <div id="topLeftBar" class="navbarElements">
-          <span class="backText clickable" data-action="gotoMain"><img src="/images/icons/nav-arrow-left.svg" class="backIcon" /><%= __('editor_main') %></span>
+          <span class="backText clickable" data-action="gotoMain"
+            ><img src="/images/icons/nav-arrow-left.svg" class="backIcon" /><%= __('editor_main') %></span
+          >
         </div>
         <div id="topCenterBar" class="navbarElements">
           <span id="songName" class="metropolis">Song Name here</span>
         </div>
         <div id="topRightBar" class="navbarElements">
-          <img src="/images/icons/sidebar-expand.svg" id="sidebarBtn" class="icon clickable sidebar-expand" data-action="toggleSettings" />
+          <img
+            src="/images/icons/sidebar-expand.svg"
+            id="sidebarBtn"
+            class="icon clickable sidebar-expand"
+            data-action="toggleSettings"
+          />
         </div>
       </div>
       <div id="workingSpaceContainer">
         <div id="workingContainer">
           <div id="menuContainer">
             <img src="/images/icons/resize.svg" class="menuIcon menuSelected" data-action="changeMode" data-arg="0" />
-            <img src="/images/icons/edit-pencil-solid.svg" class="menuIcon clickable" data-action="changeMode" data-arg="1" />
-            <img src="/images/icons/plus-circle-solid.svg" class="menuIcon clickable" data-action="changeMode" data-arg="2" />
+            <img
+              src="/images/icons/edit-pencil-solid.svg"
+              class="menuIcon clickable"
+              data-action="changeMode"
+              data-arg="1"
+            />
+            <img
+              src="/images/icons/plus-circle-solid.svg"
+              class="menuIcon clickable"
+              data-action="changeMode"
+              data-arg="2"
+            />
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
             <img src="/images/icons/play-solid.svg" class="menuIcon clickable" data-action="test" />
             <img src="/images/icons/floppy-disk-solid.svg" class="menuIcon clickable" data-action="save" />
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
-            <img src="/images/icons/magnet-solid.svg" class="menuIcon clickable menuSelected" data-action="toggleMagnet" />
-            <img src="/images/icons/orthogonal-view.svg" class="menuIcon clickable menuSelected" data-action="toggleGrid" />
+            <img
+              src="/images/icons/magnet-solid.svg"
+              class="menuIcon clickable menuSelected"
+              data-action="toggleMagnet"
+            />
+            <img
+              src="/images/icons/orthogonal-view.svg"
+              class="menuIcon clickable menuSelected"
+              data-action="toggleGrid"
+            />
             <div id="metronomeContainer">
-              <img src="/images/icons/metronome.svg" id="metronome" class="menuIcon clickable" data-action="toggleMetronome" />
+              <img
+                src="/images/icons/metronome.svg"
+                id="metronome"
+                class="menuIcon clickable"
+                data-action="toggleMetronome"
+              />
             </div>
             <img src="/images/icons/one-point-circle.svg" class="menuIcon clickable" data-action="toggleCircle" />
           </div>
@@ -192,7 +238,12 @@
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
             <img src="/images/icons/dot-arrow-right.svg" class="toolIcon clickable" data-action="moveTo" />
             <span class="toolText">Move</span>
-            <img src="/images/icons/question-mark.svg" class="toolIcon clickable" data-mouseover="showHelp" data-mouseout="hideHelp" />
+            <img
+              src="/images/icons/question-mark.svg"
+              class="toolIcon clickable"
+              data-mouseover="showHelp"
+              data-mouseout="hideHelp"
+            />
             <span class="toolText">Shortcuts</span>
           </div>
           <div id="componentView" data-mousemove="trackMousePos" data-mousedown="compClicked">
@@ -214,37 +265,72 @@
                   <p class="settingsSemiTitle">POSITION</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">X</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="x" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="x"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">Y</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="y" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="y"
+                    />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="Timing"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">DIRECTION</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Direction" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="Direction"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">DURATION</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Duration" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="Duration"
+                    />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">ACTION</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">CHANGE</span>
-                    <input type="button" class="settingsButtons metropolis clickable" data-action="changeNote" value="▶" />
+                    <input
+                      type="button"
+                      class="settingsButtons metropolis clickable"
+                      data-action="changeNote"
+                      value="▶"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">DELETE</span>
-                    <input type="button" class="settingsButtons metropolis clickable" data-action="deleteElement" value="▶" />
+                    <input
+                      type="button"
+                      class="settingsButtons metropolis clickable"
+                      data-action="deleteElement"
+                      value="▶"
+                    />
                   </div>
                 </div>
               </div>
@@ -253,33 +339,63 @@
                   <p class="settingsSemiTitle">POSITION</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">SIDE</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Side" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="Side"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">LOCATION</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Location" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="Location"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">ANGLE</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Angle" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="Angle"
+                    />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="Timing"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">SPEED</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Speed" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="Speed"
+                    />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">ACTION</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">DELETE</span>
-                    <input type="button" class="settingsButtons metropolis clickable" data-action="deleteElement" value="▶" />
+                    <input
+                      type="button"
+                      class="settingsButtons metropolis clickable"
+                      data-action="deleteElement"
+                      value="▶"
+                    />
                   </div>
                 </div>
               </div>
@@ -306,7 +422,11 @@
                   <p class="settingsSemiTitle">GENERAL</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TYPE</span>
-                    <select class="settingsSelectBox metropolis clickable" id="triggerSelectBox" data-change="triggerSetTrue">
+                    <select
+                      class="settingsSelectBox metropolis clickable"
+                      id="triggerSelectBox"
+                      data-change="triggerSetTrue"
+                    >
                       <option>Destroy</option>
                       <option>Destroy All</option>
                       <option>BPM</option>
@@ -321,106 +441,206 @@
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="Timing"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TARGET NUM</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="triggersInput" data-keyup-arg="num" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="triggersInput"
+                      data-keyup-arg="num"
+                    />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="Timing"
+                    />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="Timing"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">BPM</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-blur="triggersInput" data-blur-arg="bpm" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-blur="triggersInput"
+                      data-blur-arg="bpm"
+                    />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="Timing"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">OPACITY</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="triggersInput" data-keyup-arg="opacity" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="triggersInput"
+                      data-keyup-arg="opacity"
+                    />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="Timing"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">SPEED</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-blur="triggersInput" data-blur-arg="speed" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-blur="triggersInput"
+                      data-blur-arg="speed"
+                    />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="Timing"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">V-ALIGN</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-blur="triggersInput" data-blur-arg="valign" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-blur="triggersInput"
+                      data-blur-arg="valign"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">ALIGN</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-blur="triggersInput" data-blur-arg="align" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-blur="triggersInput"
+                      data-blur-arg="align"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">WEIGHT</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="triggersInput" data-keyup-arg="weight" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="triggersInput"
+                      data-keyup-arg="weight"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">SIZE</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="triggersInput" data-keyup-arg="size" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="triggersInput"
+                      data-keyup-arg="size"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">DURATION</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-blur="triggersInput" data-blur-arg="duration" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-blur="triggersInput"
+                      data-blur-arg="duration"
+                    />
                   </div>
                   <p class="settingsSemiTitle">POSITION</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">X</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="triggersInput" data-keyup-arg="x" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="triggersInput"
+                      data-keyup-arg="x"
+                    />
                   </div>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">Y</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="triggersInput" data-keyup-arg="y" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="triggersInput"
+                      data-keyup-arg="y"
+                    />
                   </div>
                   <p class="settingsSemiTitle">VALUE</p>
                   <div class="settingsPropertiesIndividual column">
                     <span class="settingsPropertiesTitle">TEXT</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis left" data-keyup="triggersInput" data-keyup-arg="text" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis left"
+                      data-keyup="triggersInput"
+                      data-keyup-arg="text"
+                    />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">PROPERTY</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">TIMING</span>
-                    <input type="text" class="settingsPropertiesTextbox metropolis" data-keyup="settingsInput" data-keyup-arg="Timing" />
+                    <input
+                      type="text"
+                      class="settingsPropertiesTextbox metropolis"
+                      data-keyup="settingsInput"
+                      data-keyup-arg="Timing"
+                    />
                   </div>
                 </div>
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">ACTION</p>
                   <div class="settingsPropertiesIndividual">
                     <span class="settingsPropertiesTitle">DELETE</span>
-                    <input type="button" class="settingsButtons metropolis clickable" data-action="deleteElement" value="▶" />
+                    <input
+                      type="button"
+                      class="settingsButtons metropolis clickable"
+                      data-action="deleteElement"
+                      value="▶"
+                    />
                   </div>
                 </div>
               </div>
@@ -473,7 +693,12 @@
         <img src="/images/icons/zoom-out.svg" class="clickable timeline-icon" data-action="zoomOut" />
       </div>
       <div id="timelinePlayController" class="controllers">
-        <img src="/images/icons/play-solid.svg" id="controlBtn" class="clickable timeline-play" data-action="songPlayPause" />
+        <img
+          src="/images/icons/play-solid.svg"
+          id="controlBtn"
+          class="clickable timeline-play"
+          data-action="songPlayPause"
+        />
         <img src="/images/icons/stop-solid.svg" class="clickable timeline-icon" data-action="stopBtn" />
         <span class="clickable" id="percentage" data-action="changeRate">100%</span>
       </div>
@@ -483,7 +708,15 @@
     </div>
     <div class="overlay" id="volumeOverlay">
       <p class="optionSemiTitle"><%= __('volume') %></p>
-      <input type="range" min="0" max="100" value="50" id="volumeMaster" class="optionSlider" data-setting="volumeMaster" />
+      <input
+        type="range"
+        min="0"
+        max="100"
+        value="50"
+        id="volumeMaster"
+        class="optionSlider"
+        data-setting="volumeMaster"
+      />
       <p class="optionValue" id="volumeMasterValue">50%</p>
     </div>
     <script nonce="<%= cspNonce %>">
