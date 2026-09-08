@@ -48,9 +48,6 @@ importers:
       signale:
         specifier: ^1.4.0
         version: 1.4.0
-      tsc-watch:
-        specifier: ^7.2.1
-        version: 7.2.1(typescript@5.9.3)
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -85,6 +82,9 @@ importers:
       terser:
         specifier: ^5.51.2
         version: 5.51.2
+      tsc-watch:
+        specifier: ^7.2.1
+        version: 7.2.1(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
