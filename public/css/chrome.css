@@ -30,6 +30,7 @@ body {
   z-index: var(--z-content);
   width: min(100% - 2 * var(--page-gutter), var(--shell));
   margin-inline: auto;
+  will-change: transform;
 }
 .label {
   font-size: var(--text-xs);

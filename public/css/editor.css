@@ -698,3 +698,16 @@ kbd {
   color: #404040;
   font-size: 2vh;
 }
+
+/* ---- Grayscale text ---- */
+h2,
+.navbarElements,
+.toolText,
+#settingsName,
+#settingsProperties,
+#initialButtonsContainer,
+#songSelectionContainer,
+#helpContainer,
+.controllers {
+  will-change: transform;
+}
