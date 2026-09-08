@@ -28,7 +28,6 @@ jobs:
       - name: Install dependencies
         uses: pnpm/setup@v2
         with:
-          cache: true
           install: true
 
       - name: Build project
