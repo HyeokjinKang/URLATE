@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-24.04-arm
 
     steps:
       - name: Checkout
@@ -37,6 +37,22 @@ jobs:
         run: |
           cp ./src/i18n.js ./dist/
           pnpm --filter=urlate deploy --prod ./deploy
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/URLATE.key
+          chmod 600 ~/.ssh/URLATE.key
+          printf '%s\n' "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+          printf '%s\n' \
+            "Host URLATE-PRODUCTION" \
+            "  HostName ${{ secrets.DEPLOY_HOST }}" \
+            "  User ${{ secrets.DEPLOY_USER }}" \
+            "  IdentityFile ~/.ssh/URLATE.key" \
+            "  IdentitiesOnly yes" > ~/.ssh/config
+          chmod 600 ~/.ssh/config
 
       - name: Rsync to Production
         run: |
