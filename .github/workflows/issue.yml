@@ -11,7 +11,7 @@ permissions:
 jobs:
   comment:
     if: github.event.issue.user.login != 'HyeokjinKang'
-    runs-on: self-hosted
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Comment
         uses: actions/github-script@v6
