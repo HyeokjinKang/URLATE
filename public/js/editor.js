@@ -2711,6 +2711,7 @@ window.addEventListener("beforeunload", (event) => {
 window.addEventListener("blur", () => {
   shiftDown = false;
   ctrlDown = false;
+  mouseDown = false;
 });
 
 document.addEventListener("keyup", (e) => {
@@ -2839,7 +2840,7 @@ document.body.addEventListener("mousedown", () => {
   mouseDown = true;
 });
 
-document.body.addEventListener("mouseup", () => {
+window.addEventListener("mouseup", () => {
   mouseDown = false;
 });
 
