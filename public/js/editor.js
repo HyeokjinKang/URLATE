@@ -1370,46 +1370,13 @@ const settingsInput = (v, e) => {
         });
       } else {
         if (e.value[e.value.length - 1] == ".") return;
-        let targetElements, changedResult;
-        let value = Number(Number(e.value).toPrecision(10));
-        if (selectedCntElement.v1 == 0) {
-          pattern.patterns[selectedCntElement.i].beat = value;
-          changedResult = pattern.patterns[selectedCntElement.i];
-          pattern.patterns.sort(sortAsTiming);
-          patternChanged();
-          targetElements = pattern.patterns;
-        } else if (selectedCntElement.v1 == 1) {
-          pattern.bullets[selectedCntElement.i].beat = value;
-          changedResult = pattern.bullets[selectedCntElement.i];
-          pattern.bullets.sort(sortAsTiming);
-          patternChanged();
-          targetElements = pattern.bullets;
-        } else if (selectedCntElement.v1 == 2) {
-          pattern.triggers[selectedCntElement.i].beat = value;
-          changedResult = pattern.triggers[selectedCntElement.i];
-          pattern.triggers.sort(sortAsTiming);
-          patternChanged();
-          targetElements = pattern.triggers;
-        }
-        for (let i = 0; i < targetElements.length; i++) {
-          if (targetElements[i] === changedResult) {
-            selectedCntElement = {
-              i: i,
-              v1: selectedCntElement.v1,
-              v2: selectedCntElement.v2,
-            };
-            changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
-            return;
-          }
-        }
+        elementOf(selectedCntElement).beat = Number(Number(e.value).toPrecision(10));
+        sortElements();
+        patternChanged();
+        changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
+        return;
       }
-      if (selectedCntElement.v1 == 0) {
-        e.value = pattern.patterns[selectedCntElement.i].beat;
-      } else if (selectedCntElement.v1 == 1) {
-        e.value = pattern.bullets[selectedCntElement.i].beat;
-      } else {
-        e.value = pattern.triggers[selectedCntElement.i].beat;
-      }
+      e.value = elementOf(selectedCntElement).beat;
       break;
     case "Side":
       if (e.value.toUpperCase() == "L" || e.value.toUpperCase() == "LEFT") {
@@ -1790,16 +1757,17 @@ const startDrag = (v1, i) => {
   const group = selectedElements();
   const members = group.some((entry) => entry.element === element) ? group : [{ v1, element }];
   dragGroup = {
-    anchor: { v1, origin: { ...element } },
+    anchor: { v1, element, origin: { ...element } },
     members: members.map((member) => ({ ...member, origin: { ...member.element } })),
   };
 };
 
-const scheduleDragCommit = () => {
+const scheduleDragCommit = (isBeatChanged) => {
   lastMovedMs = Date.now();
   setTimeout(() => {
     if (Date.now() - lastMovedMs >= 100 && lastMovedMs != -1) {
       lastMovedMs = -1;
+      if (isBeatChanged) sortElements();
       patternChanged();
     }
   }, 100);
@@ -1868,8 +1836,9 @@ const timelineFollowMouse = (v1, v2, i) => {
         for (const { element, origin } of members) {
           element.beat = Number((origin.beat + delta).toPrecision(10));
         }
-        scheduleDragCommit();
+        scheduleDragCommit(true);
       }
+      i = pattern[elementKeys[v1]].indexOf(dragGroup.anchor.element);
       timelineFollowMouse(v1, v2, i);
       changeSettingsMode(v1, v2, i);
     } else {
@@ -2350,6 +2319,19 @@ const currentBeat = () => Number((bpmsync.beat + (song.seek() * 1000 - bpmsync.m
 
 const elementOf = ({ v1, i }) => pattern[elementKeys[v1]][i];
 
+const sortElements = () => {
+  const primary = selectedCntElement.v1 !== "" ? elementOf(selectedCntElement) : null;
+  const destroyTargets = new Map(
+    pattern.triggers.filter((trigger) => trigger.value == 0).map((trigger) => [trigger, pattern.bullets[trigger.num]]),
+  );
+  for (const key of elementKeys) pattern[key].sort(sortAsTiming);
+  for (const [trigger, bullet] of destroyTargets) {
+    if (bullet) trigger.num = pattern.bullets.indexOf(bullet);
+  }
+  if (primary)
+    selectedCntElement = { ...selectedCntElement, i: pattern[elementKeys[selectedCntElement.v1]].indexOf(primary) };
+};
+
 const setPrimary = (target) => {
   if (target) {
     selectedCntElement = target;
@@ -2443,15 +2425,10 @@ const elementPaste = () => {
     element.beat = Number((element.beat + offset).toPrecision(10));
     pattern[elementKeys[v1]].push(element);
   }
-  for (const key of elementKeys) pattern[key].sort(sortAsTiming);
-  pasted
-    .filter(({ v1 }) => v1 == 1)
-    .map(({ element }) => pattern.bullets.indexOf(element))
-    .sort((a, b) => a - b)
-    .forEach((i) => destroyTriggerValidate(i));
   for (const { element, target } of pasted) {
     if (target !== undefined) element.num = pattern.bullets.indexOf(pasted[target].element);
   }
+  sortElements();
   selection = new Set(pasted.map(({ element }) => element));
   if (pasted.length === 1) {
     const { v1, element } = pasted[0];
