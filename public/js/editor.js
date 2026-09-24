@@ -1330,6 +1330,7 @@ const save = () => {
 };
 
 const settingsInput = (v, e) => {
+  if (isMixedEmpty(e)) return;
   switch (v) {
     case "x":
     case "y":
@@ -1355,7 +1356,7 @@ const settingsInput = (v, e) => {
         return;
       }
       if (e.value != "-") {
-        e.value = pattern.patterns[selectedCntElement.i][v];
+        refreshField(e, v);
       }
       break;
     case "Direction":
@@ -1376,7 +1377,7 @@ const settingsInput = (v, e) => {
         return;
       }
       if (e.value != "-") {
-        e.value = pattern.patterns[selectedCntElement.i][v.toLowerCase()];
+        refreshField(e, v);
       }
       break;
     case "Timing":
@@ -1392,15 +1393,12 @@ const settingsInput = (v, e) => {
         });
       } else {
         if (e.value[e.value.length - 1] == ".") return;
-        if (!setTiming(Number(Number(e.value).toPrecision(10)))) {
-          iziToast.warning({
-            title: "Input Error",
-            message: "Selected elements would move before beat 0.",
-          });
-        }
+        const typed = e.value;
+        setTiming(Number(Number(typed).toPrecision(10)));
+        e.value = typed;
         return;
       }
-      e.value = elementOf(selectedCntElement).beat;
+      refreshField(e, v);
       break;
     case "Side": {
       const input = e.value.toUpperCase();
@@ -1414,7 +1412,7 @@ const settingsInput = (v, e) => {
         for (const element of batchTargets()) element.direction = side || (element.direction == "L" ? "R" : "L");
         patternChanged();
       }
-      e.value = pattern.bullets[selectedCntElement.i].direction;
+      refreshField(e, v);
       break;
     }
     case "Location":
@@ -1440,7 +1438,7 @@ const settingsInput = (v, e) => {
         return;
       }
       if (e.value != "-") {
-        e.value = pattern.bullets[selectedCntElement.i].location;
+        refreshField(e, v);
       }
       break;
     case "Angle":
@@ -1456,7 +1454,7 @@ const settingsInput = (v, e) => {
         return;
       }
       if (e.value != "-") {
-        e.value = pattern.bullets[selectedCntElement.i].angle;
+        refreshField(e, v);
       }
       break;
     case "Speed":
@@ -1500,6 +1498,7 @@ const settingsInput = (v, e) => {
 };
 
 const triggersInput = (v, e) => {
+  if (isMixedEmpty(e)) return;
   switch (v) {
     case "x":
     case "y":
@@ -1525,7 +1524,7 @@ const triggersInput = (v, e) => {
         return;
       }
       if (e.value != "-") {
-        e.value = pattern.triggers[selectedCntElement.i][v];
+        refreshField(e, v);
       }
       break;
     case "num":
@@ -1543,7 +1542,7 @@ const triggersInput = (v, e) => {
         setProperty(v, Number(e.value));
         return;
       }
-      e.value = pattern.triggers[selectedCntElement.i][v];
+      refreshField(e, v);
       break;
     case "bpm":
     case "duration":
@@ -1562,7 +1561,7 @@ const triggersInput = (v, e) => {
         setProperty(v, Number(e.value));
         return;
       }
-      e.value = pattern.triggers[selectedCntElement.i][v];
+      refreshField(e, v);
       break;
     case "opacity":
       if (isNaN(Number(e.value))) {
@@ -1585,7 +1584,7 @@ const triggersInput = (v, e) => {
         return;
       }
       if (e.value != "0.") {
-        e.value = pattern.triggers[selectedCntElement.i][v];
+        refreshField(e, v);
       }
       break;
     case "speed":
@@ -1599,7 +1598,7 @@ const triggersInput = (v, e) => {
         setProperty(v, Number(e.value));
         return;
       }
-      e.value = pattern.triggers[selectedCntElement.i][v];
+      refreshField(e, v);
       break;
     case "align":
       textBlurred();
@@ -1611,7 +1610,7 @@ const triggersInput = (v, e) => {
         title: "Input Error",
         message: "Input value should be 'left', 'center', or 'right'.",
       });
-      e.value = pattern.triggers[selectedCntElement.i][v];
+      refreshField(e, v);
       break;
     case "valign":
       textBlurred();
@@ -1629,7 +1628,7 @@ const triggersInput = (v, e) => {
         title: "Input Error",
         message: "Input value should be 'top', 'bottom', 'middle', 'alphabetic', 'hanging'.",
       });
-      e.value = pattern.triggers[selectedCntElement.i][v];
+      refreshField(e, v);
       break;
     case "size":
     case "weight":
@@ -2002,6 +2001,7 @@ const compClicked = () => {
 };
 
 const changeSettingsMode = (v1, v2, i) => {
+  document.getElementById("mixedSettingsContainer").style.display = "none";
   trackSettings.style.display = "none";
   elementsSettings.style.display = "block";
   switch (v1) {
@@ -2123,15 +2123,12 @@ const changeSettingsMode = (v1, v2, i) => {
     default:
       alert("changeSettingsMode:Error");
   }
-  if (v1 === selectedCntElement.v1 && i == selectedCntElement.i) {
-    const others = batchTargets().length - 1;
-    if (others > 0) document.getElementById("settingsNameSpace").innerText += ` +${others}`;
-  }
+  if (v1 === selectedCntElement.v1 && i == selectedCntElement.i) showSelectionSettings(v1);
 };
 
 const triggerSet = (isChanged) => {
   const value = (isChanged ? triggerSelectBox : triggerInitBox).selectedIndex - (isChanged ? 0 : 1);
-  for (const element of batchTargets()) element.value = value;
+  for (const { v1, element } of selectedElements()) if (v1 == 2) element.value = value;
   selectedCntElement = { i: selectedCntElement.i, v1: 2, v2: value };
   patternChanged();
   changeSettingsMode(2, value, selectedCntElement.i);
@@ -2339,13 +2336,94 @@ const setProperty = (key, value, isSameValue) => {
 
 const setTiming = (beat) => {
   const elements = selectedElements();
-  const delta = beat - elementOf(selectedCntElement).beat;
-  if (Math.min(...elements.map(({ element }) => element.beat)) + delta < 0) return false;
+  const earliest = Math.min(...elements.map(({ element }) => element.beat));
+  const delta = beat - earliest;
   for (const { element } of elements) element.beat = Number((element.beat + delta).toPrecision(10));
   sortElements();
   patternChanged();
   changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
+};
+
+const fieldKeys = {
+  Timing: "beat",
+  Direction: "direction",
+  Duration: "duration",
+  Side: "direction",
+  Location: "location",
+  Angle: "angle",
+  Speed: "speed",
+};
+
+const sharedValue = (arg) => {
+  const key = fieldKeys[arg] ?? arg;
+  const targets = key == "beat" ? selectedElements().map(({ element }) => element) : batchTargets();
+  const values = new Set(targets.map((element) => element[key]));
+  return values.size === 1 ? [...values][0] : null;
+};
+
+const refreshField = (input, arg) => {
+  const value = sharedValue(arg);
+  input.value = value ?? "";
+  input.placeholder = value === null ? "Mixed" : "";
+};
+
+const isMixedEmpty = (input) => input.placeholder == "Mixed" && input.value === "";
+
+const isShown = (element, root) => {
+  for (let node = element; node && node !== root; node = node.parentElement) {
+    if (node.style.display == "none") return false;
+  }
   return true;
+};
+
+const showSelectionSettings = (v1) => {
+  const elements = selectedElements();
+  const kinds = elementKeys.map((_, kind) => elements.filter((entry) => entry.v1 === kind).length);
+  if (kinds.filter(Boolean).length > 1) {
+    document.getElementById("settingsNameSpace").innerText = `Mixed (${elements.length})`;
+    document.getElementById("dot").style.color = "#999";
+    for (const id of [
+      "noteSettingsContainer",
+      "bulletSettingsContainer",
+      "triggerSettingsContainer",
+      "triggerInitializeContainer",
+    ]) {
+      document.getElementById(id).style.display = "none";
+    }
+    document.getElementById("mixedSettingsContainer").style.display = "block";
+    document.getElementById("mixedSettingsMessage").innerText = `Different kinds of elements are selected (${[
+      "Notes",
+      "Bullets",
+      "Triggers",
+    ]
+      .map((name, kind) => (kinds[kind] ? `${name} ${kinds[kind]}` : ""))
+      .filter(Boolean)
+      .join(", ")}). Select only one kind to edit properties together.`;
+    return;
+  }
+  if (elements.length > 1) document.getElementById("settingsNameSpace").innerText += ` +${elements.length - 1}`;
+  const types = new Set(elements.map(({ element }) => element.value));
+  if (types.size > 1 && v1 == 0) {
+    const rows = noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual");
+    rows[3].style.display = "none";
+    rows[4].style.display = "none";
+  } else if (types.size > 1 && v1 == 2) {
+    document.getElementById("triggerInitializeContainer").style.display = "none";
+    document.getElementById("triggerSettingsContainer").style.display = "block";
+    const properties = document
+      .getElementById("triggerSettingsContainer")
+      .getElementsByClassName("settingsPropertiesContainer");
+    for (let j = 1; j < properties.length - 1; j++) properties[j].style.display = "none";
+    triggerSelectBox.selectedIndex = triggerSelectBox.options.length - 1;
+  }
+  const root = document.getElementById(
+    ["noteSettingsContainer", "bulletSettingsContainer", "triggerSettingsContainer"][v1],
+  );
+  for (const input of root.getElementsByClassName("settingsPropertiesTextbox")) {
+    input.placeholder = "";
+    const arg = input.dataset.keyupArg ?? input.dataset.blurArg;
+    if (arg && isShown(input, root)) refreshField(input, arg);
+  }
 };
 
 const selectPointing = () => {

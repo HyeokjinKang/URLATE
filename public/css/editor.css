@@ -347,6 +347,17 @@ body {
   font-size: 1.8vh;
 }
 
+#mixedSettingsContainer {
+  display: none;
+}
+
+.settingsMixedMessage {
+  margin: 1vh 0 0;
+  font-size: 1.5vh;
+  line-height: 1.5;
+  color: #777;
+}
+
 .settingsPropertiesTitle {
   letter-spacing: 0px;
   font-size: 1.5vh;
