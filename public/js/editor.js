@@ -91,7 +91,7 @@ let mouseDown = false,
 let userName = "";
 let patternSeek = -1;
 let lastMovedMs = -1;
-let copiedElement = { v1: "", element: {} };
+let clipboard = null;
 let destroyParticles = [];
 let pixelRatio = window.devicePixelRatio;
 let bulletsOverlapNum = 1;
@@ -148,7 +148,7 @@ let explodingBullets = new Set();
 
 let stopRenderFlag = false;
 
-let copySelection = { element: -2, start: -1, end: -1, beat: 0 };
+let rangeSelection = null;
 
 let prevBeat = 1;
 const beep = new Howl({
@@ -475,7 +475,7 @@ const gotoMain = (isCalledByMain) => {
     changeSettingsMode(-1);
     if (isSettingsOpened) toggleSettings();
     selectedCntElement = { v1: "", v2: "", i: "" };
-    copySelection = { element: -2, start: -1, end: -1, ms: 0 };
+    rangeSelection = null;
     document.getElementById("initialScreenContainer").style.display = "block";
     document.getElementById("initialButtonsContainer").style.display = "flex";
     document.getElementById("songSelectionContainer").style.display = "none";
@@ -1369,9 +1369,7 @@ const settingsInput = (v, e) => {
         if (e.value[e.value.length - 1] == ".") return;
         let targetElements, changedResult;
         let value = Number(Number(e.value).toPrecision(10));
-        if (selectedCntElement.v1 === copySelection.element) {
-          rangeCopyCancel();
-        }
+        rangeCopyCancel(selectedCntElement.v1);
         if (selectedCntElement.v1 == 0) {
           pattern.patterns[selectedCntElement.i].beat = value;
           changedResult = pattern.patterns[selectedCntElement.i];
@@ -1996,9 +1994,7 @@ const timelineAddElement = () => {
       return;
     }
     changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
-    if (selectedCntElement.v1 === copySelection.element) {
-      rangeCopyCancel();
-    }
+    rangeCopyCancel(selectedCntElement.v1);
     if (!isSettingsOpened) toggleSettings();
   }
 };
@@ -2110,9 +2106,7 @@ const compClicked = () => {
       changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
       if (!isSettingsOpened) toggleSettings();
     }
-    if (selectedCntElement.v1 === copySelection.element) {
-      rangeCopyCancel();
-    }
+    rangeCopyCancel(selectedCntElement.v1);
   }
 };
 
@@ -2320,9 +2314,7 @@ const changeSplit = (isTriggeredByKey) => {
 };
 
 const deleteElement = () => {
-  if (selectedCntElement.v1 === copySelection.element) {
-    rangeCopyCancel();
-  }
+  rangeCopyCancel(selectedCntElement.v1);
   if (selectedCntElement.v1 !== "") {
     if (selectedCntElement.v1 == 0) {
       pattern.patterns.splice(selectedCntElement.i, 1);
@@ -2401,6 +2393,23 @@ const patternRedo = () => {
   isTmlUpdateNeeded = true;
 };
 
+const elementKeys = ["patterns", "bullets", "triggers"];
+const elementNames = ["pattern", "bullet", "trigger"];
+
+const currentBeat = () => Number((bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+
+const setClipboard = (v1, start, end) => {
+  if (start > end) [start, end] = [end, start];
+  const elements = structuredClone(pattern[elementKeys[v1]].slice(start, end + 1));
+  clipboard = { v1, elements, beat: elements[0].beat };
+  const range =
+    start === end ? `${elementNames[v1]}_${start}` : `${elementNames[v1]}_${start} ~ ${elementNames[v1]}_${end}`;
+  iziToast.success({
+    title: "Copy",
+    message: `Copied ${range}`,
+  });
+};
+
 const elementCopy = () => {
   if (selectedCntElement.i === "") {
     iziToast.warning({
@@ -2409,64 +2418,40 @@ const elementCopy = () => {
     });
     return;
   }
-  copiedElement.v1 = selectedCntElement.v1;
-  if (selectedCntElement.v1 == 0) {
-    copiedElement.element = structuredClone(pattern.patterns[selectedCntElement.i]);
-  } else if (selectedCntElement.v1 == 1) {
-    copiedElement.element = structuredClone(pattern.bullets[selectedCntElement.i]);
-  } else if (selectedCntElement.v1 == 2) {
-    copiedElement.element = structuredClone(pattern.triggers[selectedCntElement.i]);
-  }
-  iziToast.success({
-    title: "Copy",
-    message: `Copied ${["pattern", "bullet", "trigger"][selectedCntElement.v1]}_${selectedCntElement.i}`,
-  });
+  setClipboard(selectedCntElement.v1, selectedCntElement.i, selectedCntElement.i);
 };
 
 const elementPaste = () => {
-  if (copiedElement.v1 === "") {
+  if (!clipboard) {
     iziToast.warning({
       title: "Paste failed",
       message: "Nothing copied.",
     });
     return;
   }
-  const beats = Number((bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-  const pasteElement = structuredClone(copiedElement.element);
-  pasteElement.beat = beats;
-  let searchTarget = "";
-  if (copiedElement.v1 == 0) {
-    pattern.patterns.push(pasteElement);
-    pattern.patterns.sort(sortAsTiming);
-    searchTarget = pattern.patterns;
-  } else if (copiedElement.v1 == 1) {
-    pattern.bullets.push(pasteElement);
-    pattern.bullets.sort(sortAsTiming);
-    searchTarget = pattern.bullets;
-  } else if (copiedElement.v1 == 2) {
-    pattern.triggers.push(pasteElement);
-    pattern.triggers.sort(sortAsTiming);
-    searchTarget = pattern.triggers;
+  const { v1 } = clipboard;
+  const target = pattern[elementKeys[v1]];
+  const offset = Number((currentBeat() - clipboard.beat).toPrecision(10));
+  const pasted = structuredClone(clipboard.elements);
+  for (const element of pasted) {
+    element.beat = Number((element.beat + offset).toPrecision(10));
+    target.push(element);
   }
-  for (let i = 0; i < searchTarget.length; i++) {
-    if (searchTarget[i] === pasteElement) {
-      selectedCntElement = {
-        i: i,
-        v1: copiedElement.v1,
-        v2: searchTarget[i].value,
-      };
-      break;
-    }
+  target.sort(sortAsTiming);
+  const indices = pasted.map((element) => target.indexOf(element)).sort((a, b) => a - b);
+  if (v1 == 1) indices.forEach((i) => destroyTriggerValidate(i));
+  if (indices.length === 1) {
+    const i = indices[0];
+    selectedCntElement = { i, v1, v2: target[i].value };
+    if (!isSettingsOpened) toggleSettings();
+    changeSettingsMode(v1, selectedCntElement.v2, i);
   }
-  if (selectedCntElement.v1 == 1) {
-    destroyTriggerValidate(selectedCntElement.i);
-  }
-  if (!isSettingsOpened) toggleSettings();
-  changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
   patternChanged();
+  const first = `${elementNames[v1]}_${indices[0]}`;
+  const last = `${elementNames[v1]}_${indices[indices.length - 1]}`;
   iziToast.success({
     title: "Paste",
-    message: `Pasted ${["pattern", "bullet", "trigger"][selectedCntElement.v1]}_${selectedCntElement.i}`,
+    message: `Pasted ${indices.length === 1 ? first : `${first} ~ ${last}`}`,
   });
 };
 
@@ -2479,7 +2464,7 @@ const hideHelp = () => {
 };
 
 const rangeCopy = () => {
-  copySelection = { element: -1, start: -1, end: -1, ms: 0 };
+  rangeSelection = { v1: "", start: "" };
   iziToast.info({
     title: "Range Copy",
     message: `Select starting point to copy`,
@@ -2488,80 +2473,26 @@ const rangeCopy = () => {
   changeMode(1);
 };
 
-const rangePaste = () => {
-  const beats = Number((bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-  let start = copySelection.start;
-  let end = copySelection.end;
-  const beat = copySelection.beat;
-  const element = ["patterns", "bullets", "triggers"][copySelection.element];
-  let elementsCopy = [];
-  if (end == -1) {
-    iziToast.warning({
-      title: "Range Paste",
-      message: "Nothing copied.",
-    });
-    return;
-  }
-  if (start > end) {
-    const temp = start;
-    start = end;
-    end = temp;
-  }
-  for (let i = start; i <= end; i++) {
-    let copy = JSON.parse(JSON.stringify(pattern[element][i]));
-    copy.beat += Number((beats - beat).toPrecision(10));
-    pattern[element].push(copy);
-    elementsCopy.push(copy);
-  }
-  pattern[element].sort(sortAsTiming);
-  if (element == "bullets") {
-    for (let i = 0; i <= elementsCopy.length; i++) {
-      for (let j = 0; j < pattern[element].length; j++) {
-        if (JSON.stringify(pattern[element][j]) == JSON.stringify(elementsCopy[i])) {
-          destroyTriggerValidate(j);
-          break;
-        }
-      }
-    }
-  }
-  patternChanged();
-  iziToast.success({
-    title: "Range Paste",
-    message: `${["Patterns", "Bullets", "Triggers"][copySelection.element]} pasted from ${["pattern", "bullet", "trigger"][copySelection.element]}_${start} to ${
-      ["pattern", "bullet", "trigger"][copySelection.element]
-    }_${end}`,
-  });
-};
-
 const copySelect = () => {
-  if (selectedCntElement.v1 === "") return;
-  if (copySelection.element == -2) return;
-  if (copySelection.element >= 0 && selectedCntElement.v1 !== copySelection.element) return;
-  if (copySelection.end !== -1) return;
-  if (copySelection.start === -1) {
-    copySelection.element = selectedCntElement.v1;
-    copySelection.start = selectedCntElement.i;
-    copySelection.beat = pattern[["patterns", "bullets", "triggers"][selectedCntElement.v1]][selectedCntElement.i].beat;
+  if (!rangeSelection || selectedCntElement.v1 === "") return;
+  if (rangeSelection.start === "") {
+    rangeSelection = { v1: selectedCntElement.v1, start: selectedCntElement.i };
     iziToast.success({
       title: "Range Copy",
-      message: `Copy start from ${["pattern", "bullet", "trigger"][selectedCntElement.v1]}_${selectedCntElement.i}`,
+      message: `Copy start from ${elementNames[selectedCntElement.v1]}_${selectedCntElement.i}`,
     });
-  } else {
-    copySelection.end = selectedCntElement.i;
-    iziToast.success({
-      title: "Range Copy",
-      message: `${["Patterns", "Bullets", "Triggers"][selectedCntElement.v1]} copied from ${["pattern", "bullet", "trigger"][selectedCntElement.v1]}_${copySelection.start} to ${
-        ["pattern", "bullet", "trigger"][selectedCntElement.v1]
-      }_${copySelection.end}`,
-    });
-  }
+  } else if (selectedCntElement.v1 === rangeSelection.v1) {
+    setClipboard(rangeSelection.v1, rangeSelection.start, selectedCntElement.i);
+    rangeSelection = null;
+  } else return;
   selectedCntElement = { v1: "", v2: "", i: "" };
   if (isSettingsOpened) toggleSettings();
 };
 
-const rangeCopyCancel = () => {
-  if (copySelection.element < 0) return;
-  copySelection = { element: -2, start: -1, end: -1, ms: 0 };
+const rangeCopyCancel = (v1) => {
+  if (!rangeSelection || rangeSelection.start === "") return;
+  if (v1 !== undefined && v1 !== rangeSelection.v1) return;
+  rangeSelection = null;
   iziToast.warning({
     title: "Range Copy",
     message: "Range copy canceled.",
@@ -2898,11 +2829,7 @@ document.addEventListener("keydown", (e) => {
       } else toggleCircle();
     } else if (e.code == "KeyV") {
       if (ctrlDown) {
-        if (shiftDown) {
-          rangePaste();
-        } else {
-          elementPaste();
-        }
+        elementPaste();
       } else reflection(1);
     } else if (e.code == "KeyH") {
       reflection(0);
@@ -2987,7 +2914,6 @@ const clickActions = {
   moveTo,
   newEditor,
   rangeCopy,
-  rangePaste,
   save,
   songPlayPause,
   songSelected,
