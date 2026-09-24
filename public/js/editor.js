@@ -95,7 +95,6 @@ let destroyParticles = [];
 let pixelRatio = window.devicePixelRatio;
 let bulletsOverlapNum = 1;
 let triggersOverlapNum = 2;
-let isTextboxFocused = false;
 let skin, denyCursor;
 let dragMouseX, dragMouseY, dragGroup, marquee;
 let tmlPositions = [];
@@ -1546,7 +1545,6 @@ const triggersInput = (v, e) => {
       break;
     case "bpm":
     case "duration":
-      textBlurred();
       if (isNaN(Number(e.value))) {
         iziToast.error({
           title: "Input Error",
@@ -1588,7 +1586,6 @@ const triggersInput = (v, e) => {
       }
       break;
     case "speed":
-      textBlurred();
       if (isNaN(Number(e.value))) {
         iziToast.error({
           title: "Input Error",
@@ -1601,7 +1598,6 @@ const triggersInput = (v, e) => {
       refreshField(e, v);
       break;
     case "align":
-      textBlurred();
       if (e.value == "left" || e.value == "center" || e.value == "right") {
         setProperty(v, e.value);
         return;
@@ -1613,7 +1609,6 @@ const triggersInput = (v, e) => {
       refreshField(e, v);
       break;
     case "valign":
-      textBlurred();
       if (
         e.value == "top" ||
         e.value == "bottom" ||
@@ -2727,13 +2722,10 @@ const scrollEvent = (e) => {
   e.preventDefault();
 };
 
-const textFocused = () => {
-  isTextboxFocused = true;
-};
-
-const textBlurred = () => {
-  isTextboxFocused = false;
-};
+const isTypingTarget = (target) =>
+  !!target.closest?.(
+    'textarea, select, [contenteditable="true"], input:not([type="button"]):not([type="checkbox"]):not([type="range"])',
+  );
 
 const settingChanged = (e, v) => {
   if (v == "volumeMaster") {
@@ -2903,8 +2895,11 @@ document.addEventListener("keyup", (e) => {
 
 document.addEventListener("keydown", (e) => {
   e = e || window.event;
+  const isTyping = isTypingTarget(e.target);
   if (e.key == "Escape") {
-    if (selection.size || isSettingsOpened) {
+    if (isTyping) {
+      e.target.blur();
+    } else if (selection.size || isSettingsOpened) {
       selection.clear();
       setPrimary(null);
       isTmlUpdateNeeded = true;
@@ -2929,7 +2924,7 @@ document.addEventListener("keydown", (e) => {
       e.preventDefault();
       ctrlDown = false;
       save();
-    } else if (e.code == "KeyZ") {
+    } else if (e.code == "KeyZ" && !isTyping) {
       if (shiftDown) {
         patternRedo();
       } else {
@@ -2941,7 +2936,7 @@ document.addEventListener("keydown", (e) => {
       test();
     }
   }
-  if (!isTextboxFocused) {
+  if (!isTyping) {
     if (e.code == "Space" || e.code == "KeyK") {
       songPlayPause();
     } else if (e.key == "1") {
@@ -3012,7 +3007,7 @@ document.addEventListener("keydown", (e) => {
       changeRate(1);
     }
   }
-  if (mode == 2) {
+  if (mode == 2 && !isTyping) {
     if (e.key == "Alt") {
       e.preventDefault();
       selectedValue++;
@@ -3110,20 +3105,10 @@ document.addEventListener("keyup", (event) => {
   if (target) runInputAction(target);
 });
 
-// focus/blur don't bubble, so delegation can't catch them; use the bubbling
-// equivalents, focusin/focusout, instead.
-document.addEventListener("focusin", (event) => {
-  if (event.target.closest?.(".settingsPropertiesTextbox")) textFocused();
-});
+// blur doesn't bubble, so delegation can't catch it; use the bubbling equivalent, focusout, instead.
 document.addEventListener("focusout", (event) => {
   const target = event.target.closest?.(".settingsPropertiesTextbox");
-  if (!target) return;
-  // triggersInput already calls textBlurred for these keys, so it isn't called again here.
-  if (target.dataset.blur === "triggersInput") {
-    triggersInput(target.dataset.blurArg, target);
-    return;
-  }
-  textBlurred();
+  if (target?.dataset.blur === "triggersInput") triggersInput(target.dataset.blurArg, target);
 });
 
 document.addEventListener("input", (event) => {
