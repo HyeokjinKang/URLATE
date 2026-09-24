@@ -2417,13 +2417,37 @@ const warnNothingSelected = (title) => {
   });
 };
 
+const clipboardKey = "editorClipboard";
+
+const saveClipboard = () => {
+  try {
+    localStorage[clipboardKey] = JSON.stringify({
+      ...clipboard,
+      elements: clipboard.elements.map(({ v1, element, target }) => ({ v1, element, target })),
+    });
+  } catch (e) {
+    console.warn(e);
+  }
+};
+
+const loadClipboard = () => {
+  try {
+    const data = JSON.parse(localStorage[clipboardKey]);
+    return Array.isArray(data?.elements) && typeof data.beat === "number" ? data : null;
+  } catch {
+    return null;
+  }
+};
+
 const copyToClipboard = () => {
   const elements = selectedElements();
   if (!elements.length) return 0;
   clipboard = {
+    track: pattern.information.track,
     elements: toEntries(elements),
     beat: Math.min(...elements.map(({ element }) => element.beat)),
   };
+  saveClipboard();
   return elements.length;
 };
 
@@ -2447,6 +2471,7 @@ const elementCut = () => {
 };
 
 const elementPaste = () => {
+  clipboard ??= loadClipboard();
   if (!clipboard) {
     iziToast.warning({
       title: "Paste failed",
@@ -2459,6 +2484,15 @@ const elementPaste = () => {
     title: "Paste",
     message: `Pasted ${plural(count)}`,
   });
+  const unlinked = clipboard.elements.filter(
+    ({ v1, element, target }) => v1 == 2 && element.value == 0 && target === undefined,
+  ).length;
+  if (unlinked && clipboard.track !== pattern.information.track) {
+    iziToast.warning({
+      title: "Paste",
+      message: `${unlinked} destroy trigger${unlinked > 1 ? "s" : ""} from another track kept the original bullet number.`,
+    });
+  }
 };
 
 const elementDuplicate = () => {
@@ -2914,6 +2948,10 @@ document.body.addEventListener("mousedown", () => {
 
 window.addEventListener("mouseup", () => {
   mouseDown = false;
+});
+
+window.addEventListener("storage", (e) => {
+  if (e.key === clipboardKey) clipboard = null;
 });
 
 window.addEventListener("load", () => {
