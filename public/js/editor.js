@@ -106,6 +106,7 @@ let gridToggle = true,
   circleToggle = false;
 let errorCount = 0;
 let preventUnload = false;
+let fileHandle = null;
 let globalAlpha = 1;
 let wasSongPlaying = false;
 let isTmlUpdateNeeded = true;
@@ -229,12 +230,59 @@ const newEditor = () => {
   document.getElementById("songSelectionContainer").style.display = "flex";
 };
 
-const loadEditor = () => {
-  let input = document.createElement("input");
-  input.type = "file";
-  input.accept = ".json";
-  input.addEventListener("change", dataLoaded);
-  input.click();
+const patternFileTypes = [{ description: "URLATE Pattern", accept: { "application/json": [".json"] } }];
+
+const handleStore = (mode, request) =>
+  new Promise((resolve, reject) => {
+    const open = indexedDB.open("editor", 1);
+    open.onupgradeneeded = () => open.result.createObjectStore("handles");
+    open.onerror = () => reject(open.error);
+    open.onsuccess = () => {
+      const transaction = open.result.transaction("handles", mode);
+      const result = request(transaction.objectStore("handles"));
+      transaction.oncomplete = () => resolve(result.result);
+      transaction.onerror = () => reject(transaction.error);
+    };
+  });
+
+const setFileHandle = async (handle) => {
+  fileHandle = handle;
+  try {
+    await handleStore("readwrite", (store) => (handle ? store.put(handle, "pattern") : store.delete("pattern")));
+  } catch (e) {
+    console.warn(e);
+  }
+};
+
+const restoreFileHandle = async () => {
+  try {
+    fileHandle = (await handleStore("readonly", (store) => store.get("pattern"))) ?? null;
+  } catch (e) {
+    console.warn(e);
+  }
+};
+
+const loadEditor = async () => {
+  if (!("showOpenFilePicker" in window)) {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.addEventListener("change", dataLoaded);
+    input.click();
+    return;
+  }
+  try {
+    const [handle] = await window.showOpenFilePicker({ types: patternFileTypes });
+    const text = await (await handle.getFile()).text();
+    patternLoaded(text);
+    await setFileHandle(handle);
+  } catch (e) {
+    if (e.name == "AbortError") return;
+    iziToast.error({
+      title: "Open failed",
+      message: e.message,
+    });
+  }
 };
 
 const analyzePattern = (data) => {
@@ -284,24 +332,30 @@ const analyzePattern = (data) => {
   };
 };
 
+const patternLoaded = (text) => {
+  pattern = JSON.parse(text);
+  console.log(`Analyzing pattern...`);
+  const result = analyzePattern(pattern);
+  console.table(result);
+  for (let i = 0; songSelectBox.options.length > i; i++) {
+    if (songSelectBox.options[i].value == pattern.information.track) songSelectBox.selectedIndex = i;
+  }
+  songSelected(true);
+};
+
 const dataLoaded = (event) => {
   let file = event.target.files[0];
   let reader = new FileReader();
   reader.addEventListener("load", (e) => {
-    pattern = JSON.parse(e.target.result);
-    console.log(`Analyzing pattern...`);
-    const result = analyzePattern(pattern);
-    console.table(result);
-    for (let i = 0; songSelectBox.options.length > i; i++) {
-      if (songSelectBox.options[i].value == pattern.information.track) songSelectBox.selectedIndex = i;
-    }
-    songSelected(true);
+    patternLoaded(e.target.result);
+    setFileHandle(null);
   });
   reader.readAsText(file);
 };
 
 const songSelected = (isLoaded = false) => {
   if (!isLoaded) {
+    setFileHandle(null);
     pattern.information = {
       version: "1.0",
       track: tracks[songSelectBox.selectedIndex].name,
@@ -460,6 +514,7 @@ const initialize = (isFirstCalled) => {
         console.error(`Error occured.\n${error}`);
       });
     if (localStorage.pattern) {
+      restoreFileHandle();
       pattern = JSON.parse(localStorage.pattern);
       for (let i = 0; songSelectBox.options.length > i; i++) {
         if (songSelectBox.options[i].value == pattern.information.track) songSelectBox.selectedIndex = i;
@@ -476,6 +531,7 @@ const gotoMain = (isCalledByMain) => {
     song = null;
     localStorage.temp = JSON.stringify(pattern);
     localStorage.removeItem("pattern");
+    setFileHandle(null);
     changeSettingsMode(-1);
     if (isSettingsOpened) toggleSettings();
     selectedCntElement = { v1: "", v2: "", i: "" };
@@ -1306,9 +1362,31 @@ const songPlayPause = () => {
   }
 };
 
-const save = () => {
+const markSaved = (data) => {
+  if (JSON.stringify(pattern) !== data) return;
   preventUnload = false;
   songName.innerText = pattern.information.track;
+};
+
+const writePatternFile = async (data, isSaveAs) => {
+  if (isSaveAs || !fileHandle) {
+    await setFileHandle(
+      await window.showSaveFilePicker({ suggestedName: `${pattern.information.track}.json`, types: patternFileTypes }),
+    );
+  }
+  const permission = { mode: "readwrite" };
+  if (
+    (await fileHandle.queryPermission(permission)) !== "granted" &&
+    (await fileHandle.requestPermission(permission)) !== "granted"
+  ) {
+    throw new Error("Permission to edit the file was denied.");
+  }
+  const writable = await fileHandle.createWritable();
+  await writable.write(data);
+  await writable.close();
+};
+
+const save = async (isSaveAs = false) => {
   let trackSettingsForm = settingsPropertiesTextbox;
   pattern.information = {
     version: "1.0",
@@ -1320,12 +1398,30 @@ const save = () => {
     speed: pattern.information.speed,
     offset: offset,
   };
-  let a = document.createElement("a");
-  let file = new Blob([JSON.stringify(pattern)], { type: "application/json" });
-  a.href = URL.createObjectURL(file);
-  a.download = `${songName.innerText}.json`;
-  localStorage.pattern = JSON.stringify(pattern);
-  a.click();
+  const data = JSON.stringify(pattern);
+  localStorage.pattern = data;
+  if (!("showSaveFilePicker" in window)) {
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([data], { type: "application/json" }));
+    a.download = `${pattern.information.track}.json`;
+    a.click();
+    markSaved(data);
+    return;
+  }
+  try {
+    await writePatternFile(data, isSaveAs);
+    markSaved(data);
+    iziToast.success({
+      title: "Save",
+      message: `Saved to ${fileHandle.name}`,
+    });
+  } catch (e) {
+    if (e.name == "AbortError") return;
+    iziToast.error({
+      title: "Save failed",
+      message: e.message,
+    });
+  }
 };
 
 const settingsInput = (v, e) => {
@@ -2923,7 +3019,8 @@ document.addEventListener("keydown", (e) => {
     if (e.code == "KeyS") {
       e.preventDefault();
       ctrlDown = false;
-      save();
+      save(shiftDown);
+      shiftDown = false;
     } else if (e.code == "KeyZ" && !isTyping) {
       if (shiftDown) {
         patternRedo();
