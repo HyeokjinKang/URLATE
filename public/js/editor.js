@@ -90,7 +90,6 @@ let mouseDown = false,
   shiftDown = false;
 let userName = "";
 let patternSeek = -1;
-let lastMovedMs = -1;
 let clipboard = null;
 let destroyParticles = [];
 let pixelRatio = window.devicePixelRatio;
@@ -1762,15 +1761,17 @@ const startDrag = (v1, i) => {
   };
 };
 
-const scheduleDragCommit = (isBeatChanged) => {
-  lastMovedMs = Date.now();
-  setTimeout(() => {
-    if (Date.now() - lastMovedMs >= 100 && lastMovedMs != -1) {
-      lastMovedMs = -1;
-      if (isBeatChanged) sortElements();
-      patternChanged();
-    }
-  }, 100);
+const endDrag = () => {
+  if (!dragGroup) return;
+  const isChanged = (key) => dragGroup.members.some(({ element, origin }) => element[key] !== origin[key]);
+  const isBeatChanged = isChanged("beat");
+  if (isBeatChanged) {
+    sortElements();
+    if (selectedCntElement.v1 !== "")
+      changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
+  }
+  if (isBeatChanged || ["x", "y", "location"].some(isChanged)) patternChanged();
+  dragGroup = null;
 };
 
 const snap = (value) => (magnetToggle ? value - (value % 5) : value);
@@ -1802,13 +1803,12 @@ const elementFollowMouse = (v1, v2, i) => {
       if (mouseMode == 0 && moves.every(({ x, y, location }) => inRange(x) && inRange(y) && inRange(location))) {
         for (const { element, ...position } of moves) Object.assign(element, position);
       }
-      scheduleDragCommit();
       elementFollowMouse(v1, v2, i);
       changeSettingsMode(v1, v2, i);
     } else {
       dragMouseX = undefined;
       dragMouseY = undefined;
-      dragGroup = null;
+      endDrag();
     }
   });
 };
@@ -1836,13 +1836,11 @@ const timelineFollowMouse = (v1, v2, i) => {
         for (const { element, origin } of members) {
           element.beat = Number((origin.beat + delta).toPrecision(10));
         }
-        scheduleDragCommit(true);
       }
-      i = pattern[elementKeys[v1]].indexOf(dragGroup.anchor.element);
       timelineFollowMouse(v1, v2, i);
       changeSettingsMode(v1, v2, i);
     } else {
-      dragGroup = null;
+      endDrag();
     }
   });
 };
