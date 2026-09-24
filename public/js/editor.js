@@ -398,12 +398,15 @@ const changeMode = (n) => {
 };
 
 const changeNote = () => {
-  let n = Number(pattern.patterns[selectedCntElement.i].value);
-  pattern.patterns[selectedCntElement.i].value = n == 2 ? 0 : n + 1;
-  pattern.patterns[selectedCntElement.i].direction = 1;
-  pattern.patterns[selectedCntElement.i].time = parseInt((60 / bpm) * 4 * 1000);
+  const n = Number(pattern.patterns[selectedCntElement.i].value);
+  const value = n == 2 ? 0 : n + 1;
+  for (const element of batchTargets()) {
+    element.value = value;
+    element.direction = 1;
+    element.time = parseInt((60 / bpm) * 4 * 1000);
+  }
   patternChanged();
-  selectedCntElement.v2 = pattern.patterns[selectedCntElement.i].value;
+  selectedCntElement.v2 = value;
   changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
 };
 
@@ -1327,7 +1330,6 @@ const save = () => {
 };
 
 const settingsInput = (v, e) => {
-  let element;
   switch (v) {
     case "x":
     case "y":
@@ -1349,8 +1351,7 @@ const settingsInput = (v, e) => {
           message: "Input value is too low.",
         });
       } else {
-        pattern.patterns[selectedCntElement.i][v] = Number(e.value);
-        patternChanged();
+        setProperty(v, Number(e.value));
         return;
       }
       if (e.value != "-") {
@@ -1371,8 +1372,7 @@ const settingsInput = (v, e) => {
           message: "Input value should be 1 or -1.",
         });
       } else {
-        pattern.patterns[selectedCntElement.i][v.toLowerCase()] = Number(e.value);
-        patternChanged();
+        setProperty(v.toLowerCase(), Number(e.value), true);
         return;
       }
       if (e.value != "-") {
@@ -1392,40 +1392,31 @@ const settingsInput = (v, e) => {
         });
       } else {
         if (e.value[e.value.length - 1] == ".") return;
-        elementOf(selectedCntElement).beat = Number(Number(e.value).toPrecision(10));
-        sortElements();
-        patternChanged();
-        changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
+        if (!setTiming(Number(Number(e.value).toPrecision(10)))) {
+          iziToast.warning({
+            title: "Input Error",
+            message: "Selected elements would move before beat 0.",
+          });
+        }
         return;
       }
       e.value = elementOf(selectedCntElement).beat;
       break;
-    case "Side":
-      if (e.value.toUpperCase() == "L" || e.value.toUpperCase() == "LEFT") {
-        pattern.bullets[selectedCntElement.i].direction = "L";
-        patternChanged();
-      } else if (e.value.toUpperCase() == "R" || e.value.toUpperCase() == "RIGHT") {
-        pattern.bullets[selectedCntElement.i].direction = "R";
-        patternChanged();
-      } else if (e.value == "") {
-        if (pattern.bullets[selectedCntElement.i].direction == "L") {
-          pattern.bullets[selectedCntElement.i].direction = "R";
-        } else {
-          pattern.bullets[selectedCntElement.i].direction = "L";
-        }
-        patternChanged();
-      } else {
-        if (pattern.bullets[selectedCntElement.i].direction == "R") {
-          pattern.bullets[selectedCntElement.i].direction = "L";
-          patternChanged();
-        }
+    case "Side": {
+      const input = e.value.toUpperCase();
+      const side = { L: "L", LEFT: "L", R: "R", RIGHT: "R", "": "" }[input];
+      if (side === undefined) {
         iziToast.error({
           title: "Input Error",
           message: "Input value should be L or R.",
         });
+      } else {
+        for (const element of batchTargets()) element.direction = side || (element.direction == "L" ? "R" : "L");
+        patternChanged();
       }
       e.value = pattern.bullets[selectedCntElement.i].direction;
       break;
+    }
     case "Location":
       if (isNaN(Number(e.value))) {
         if (e.value != "-") {
@@ -1445,8 +1436,7 @@ const settingsInput = (v, e) => {
           message: "Input value is too low.",
         });
       } else {
-        pattern.bullets[selectedCntElement.i].location = Number(e.value);
-        patternChanged();
+        setProperty("location", Number(e.value));
         return;
       }
       if (e.value != "-") {
@@ -1462,8 +1452,7 @@ const settingsInput = (v, e) => {
           });
         }
       } else {
-        pattern.bullets[selectedCntElement.i].angle = Number(e.value);
-        patternChanged();
+        setProperty("angle", Number(e.value));
         return;
       }
       if (e.value != "-") {
@@ -1471,17 +1460,12 @@ const settingsInput = (v, e) => {
       }
       break;
     case "Speed":
-      if (selectedCntElement.v1 == 0) {
-        element = pattern.patterns[selectedCntElement.i];
-      } else if (selectedCntElement.v1 == 1) {
-        element = pattern.bullets[selectedCntElement.i];
-      } else {
+      if (selectedCntElement.v1 == 2) {
         iziToast.error({
           title: "Error",
           message: "Wrong Element.",
         });
-      }
-      if (isNaN(Number(e.value))) {
+      } else if (isNaN(Number(e.value))) {
         if (e.value != "-") {
           iziToast.error({
             title: "Input Error",
@@ -1489,8 +1473,7 @@ const settingsInput = (v, e) => {
           });
         }
       } else {
-        element.speed = Number(e.value);
-        patternChanged();
+        setProperty("speed", Number(e.value));
         return;
       }
       break;
@@ -1507,8 +1490,7 @@ const settingsInput = (v, e) => {
           message: "Input value must not be less than 0.",
         });
       } else {
-        pattern.patterns[selectedCntElement.i][v.toLowerCase()] = Number(e.value);
-        patternChanged();
+        setProperty(v.toLowerCase(), Number(e.value), true);
         return;
       }
       break;
@@ -1539,8 +1521,7 @@ const triggersInput = (v, e) => {
           message: "Input value is too low.",
         });
       } else {
-        pattern.triggers[selectedCntElement.i][v] = Number(e.value);
-        patternChanged();
+        setProperty(v, Number(e.value));
         return;
       }
       if (e.value != "-") {
@@ -1559,8 +1540,7 @@ const triggersInput = (v, e) => {
           message: `Input value must be between 0 and ${pattern.bullets.length}.`,
         });
       } else {
-        pattern.triggers[selectedCntElement.i][v] = Number(e.value);
-        patternChanged();
+        setProperty(v, Number(e.value));
         return;
       }
       e.value = pattern.triggers[selectedCntElement.i][v];
@@ -1579,8 +1559,7 @@ const triggersInput = (v, e) => {
           message: "Input value must not be less than 0.",
         });
       } else {
-        pattern.triggers[selectedCntElement.i][v] = Number(e.value);
-        patternChanged();
+        setProperty(v, Number(e.value));
         return;
       }
       e.value = pattern.triggers[selectedCntElement.i][v];
@@ -1602,8 +1581,7 @@ const triggersInput = (v, e) => {
           message: "Input value must not be more than 1.",
         });
       } else {
-        pattern.triggers[selectedCntElement.i][v] = Number(e.value);
-        patternChanged();
+        setProperty(v, Number(e.value));
         return;
       }
       if (e.value != "0.") {
@@ -1618,8 +1596,7 @@ const triggersInput = (v, e) => {
           message: "Input value is not number.",
         });
       } else {
-        pattern.triggers[selectedCntElement.i][v] = Number(e.value);
-        patternChanged();
+        setProperty(v, Number(e.value));
         return;
       }
       e.value = pattern.triggers[selectedCntElement.i][v];
@@ -1627,8 +1604,7 @@ const triggersInput = (v, e) => {
     case "align":
       textBlurred();
       if (e.value == "left" || e.value == "center" || e.value == "right") {
-        pattern.triggers[selectedCntElement.i][v] = e.value;
-        patternChanged();
+        setProperty(v, e.value);
         return;
       }
       iziToast.error({
@@ -1646,8 +1622,7 @@ const triggersInput = (v, e) => {
         e.value == "alphabetic" ||
         e.value == "hanging"
       ) {
-        pattern.triggers[selectedCntElement.i][v] = e.value;
-        patternChanged();
+        setProperty(v, e.value);
         return;
       }
       iziToast.error({
@@ -1660,8 +1635,7 @@ const triggersInput = (v, e) => {
     case "weight":
     case "text":
     case "seek":
-      pattern.triggers[selectedCntElement.i][v] = e.value;
-      patternChanged();
+      setProperty(v, e.value);
       break;
     default:
       alert("settingsInput:Error");
@@ -2149,17 +2123,18 @@ const changeSettingsMode = (v1, v2, i) => {
     default:
       alert("changeSettingsMode:Error");
   }
+  if (v1 === selectedCntElement.v1 && i == selectedCntElement.i) {
+    const others = batchTargets().length - 1;
+    if (others > 0) document.getElementById("settingsNameSpace").innerText += ` +${others}`;
+  }
 };
 
 const triggerSet = (isChanged) => {
-  pattern.triggers[selectedCntElement.i].value =
-    (isChanged ? triggerSelectBox : triggerInitBox).selectedIndex - (isChanged ? 0 : 1);
-  selectedCntElement = {
-    i: selectedCntElement.i,
-    v1: 2,
-    v2: (isChanged ? triggerSelectBox : triggerInitBox).selectedIndex - (isChanged ? 0 : 1),
-  };
-  changeSettingsMode(2, selectedCntElement.v2, selectedCntElement.i);
+  const value = (isChanged ? triggerSelectBox : triggerInitBox).selectedIndex - (isChanged ? 0 : 1);
+  for (const element of batchTargets()) element.value = value;
+  selectedCntElement = { i: selectedCntElement.i, v1: 2, v2: value };
+  patternChanged();
+  changeSettingsMode(2, value, selectedCntElement.i);
 };
 
 const zoomIn = () => {
@@ -2337,10 +2312,40 @@ const setPrimary = (target) => {
 const selectedElements = () => {
   const elements = new Set(selection);
   if (selectedCntElement.v1 !== "") elements.add(elementOf(selectedCntElement));
-  return [...elements].flatMap((element) => {
-    const v1 = elementKeys.findIndex((key) => pattern[key].includes(element));
-    return v1 === -1 ? [] : [{ v1, element }];
-  });
+  return elementKeys.flatMap((key, v1) =>
+    pattern[key].filter((element) => elements.has(element)).map((element) => ({ v1, element })),
+  );
+};
+
+const ensurePrimary = () => {
+  if (selectedCntElement.v1 !== "")
+    return changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
+  const [first] = selectedElements().sort((a, b) => a.element.beat - b.element.beat);
+  setPrimary(first ? refOf(first.v1, first.element) : null);
+};
+
+const batchTargets = (isSameValue) => {
+  const { v1 } = selectedCntElement;
+  const { value } = elementOf(selectedCntElement);
+  return selectedElements()
+    .filter((entry) => entry.v1 === v1 && (!(isSameValue || v1 == 2) || entry.element.value == value))
+    .map(({ element }) => element);
+};
+
+const setProperty = (key, value, isSameValue) => {
+  for (const element of batchTargets(isSameValue)) element[key] = value;
+  patternChanged();
+};
+
+const setTiming = (beat) => {
+  const elements = selectedElements();
+  const delta = beat - elementOf(selectedCntElement).beat;
+  if (Math.min(...elements.map(({ element }) => element.beat)) + delta < 0) return false;
+  for (const { element } of elements) element.beat = Number((element.beat + delta).toPrecision(10));
+  sortElements();
+  patternChanged();
+  changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
+  return true;
 };
 
 const selectPointing = () => {
@@ -2357,7 +2362,8 @@ const selectPointing = () => {
     if (selectedCntElement.v1 !== "") selection.add(elementOf(selectedCntElement));
     if (selection.has(element)) {
       selection.delete(element);
-      setPrimary(null);
+      selectedCntElement = { v1: "", v2: "", i: "" };
+      ensurePrimary();
     } else {
       selection.add(element);
       setPrimary(pointing);
@@ -2399,11 +2405,8 @@ const insertEntries = (entries, offset) => {
   }
   sortElements();
   selection = new Set(inserted.map(({ element }) => element));
-  if (inserted.length === 1) {
-    setPrimary(refOf(inserted[0].v1, inserted[0].element));
-  } else {
-    setPrimary(null);
-  }
+  selectedCntElement = { v1: "", v2: "", i: "" };
+  ensurePrimary();
   patternChanged();
   return inserted.length;
 };
@@ -2524,7 +2527,7 @@ const nudgeElements = (direction) => {
 
 const selectAll = () => {
   selection = new Set(elementKeys.flatMap((key) => pattern[key]));
-  setPrimary(null);
+  ensurePrimary();
   isTmlUpdateNeeded = true;
 };
 
@@ -2560,11 +2563,7 @@ const marqueeFollowMouse = () => {
     if (mouseDown) return marqueeFollowMouse();
     for (const element of marquee.hits) selection.add(element);
     marquee = null;
-    const elements = selectedElements();
-    if (selectedCntElement.v1 === "" && elements.length === 1) {
-      selection.clear();
-      setPrimary(refOf(elements[0].v1, elements[0].element));
-    }
+    ensurePrimary();
   });
 };
 
