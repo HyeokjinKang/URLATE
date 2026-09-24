@@ -97,7 +97,8 @@ let bulletsOverlapNum = 1;
 let triggersOverlapNum = 2;
 let isTextboxFocused = false;
 let skin, denyCursor;
-let dragMouseX, dragMouseY, dragGroup;
+let dragMouseX, dragMouseY, dragGroup, marquee;
+let tmlPositions = [];
 let copied = false,
   copiedTime = 0;
 let gridToggle = true,
@@ -547,7 +548,8 @@ const selectedCheck = (n, i) => {
   return (
     (pointingCntElement.v1 === n && pointingCntElement.i == i) ||
     (selectedCntElement.v1 === n && selectedCntElement.i == i) ||
-    selection.has(pattern[elementKeys[n]][i])
+    selection.has(pattern[elementKeys[n]][i]) ||
+    !!marquee?.hits.has(pattern[elementKeys[n]][i])
   );
 };
 
@@ -622,6 +624,10 @@ const tmlRender = () => {
       endX = tmlCanvasW / 1.01,
       endY = tmlCanvasH / 1.1,
       height = tmlCanvasH / 9;
+    tmlPositions = [];
+    const recordPosition = (element, x, y) => {
+      if (x >= tmlStartX && x <= endX && y >= startY && y <= endY) tmlPositions.push({ element, x, y });
+    };
     const renderStart = Number((beats - zoom).toPrecision(10)),
       renderEnd = Number((beats + 16 * zoom).toPrecision(10)),
       beatToPx = (endX - tmlStartX) / (renderEnd - renderStart);
@@ -640,6 +646,7 @@ const tmlRender = () => {
       let y = startY + timelineYLoc + height / 2;
 
       if (mouseMode == 1) trackMouseSelection(j, 0, pattern.patterns[j].value, x, y, beats);
+      recordPosition(pattern.patterns[j], x, y);
 
       if (selectedCheck(0, j)) {
         tmlCtx.fillStyle = "#ed5b45";
@@ -675,6 +682,7 @@ const tmlRender = () => {
       const w = height / 3;
 
       if (mouseMode == 1) trackMouseSelection(j, 1, 0, x, y, beats);
+      recordPosition(pattern.bullets[j], x, y);
 
       tmlCtx.fillStyle = selectedCheck(1, j) ? "#ed5b45" : "#4297d4";
       tmlCtx.moveTo(x - w, y);
@@ -707,6 +715,7 @@ const tmlRender = () => {
       const w = height / 3;
 
       if (mouseMode == 1) trackMouseSelection(j, 2, pattern.triggers[j].value, x, y, beats);
+      recordPosition(pattern.triggers[j], x, y);
 
       tmlCtx.fillStyle = selectedCheck(2, j) ? "#ed5b45" : "#2ec90e";
       tmlCtx.moveTo(x - w / 1.1, y - w);
@@ -875,6 +884,18 @@ const tmlRender = () => {
       }
     }
 
+    //Marquee
+    if (marquee) {
+      const x = Math.min(marquee.x0, marquee.x1),
+        y = Math.min(marquee.y0, marquee.y1);
+      const w = Math.abs(marquee.x1 - marquee.x0),
+        h = Math.abs(marquee.y1 - marquee.y0);
+      tmlCtx.fillStyle = "rgba(237, 91, 69, 0.1)";
+      tmlCtx.strokeStyle = "#ed5b45";
+      tmlCtx.fillRect(x, y, w, h);
+      tmlCtx.strokeRect(x, y, w, h);
+    }
+
     //Sync alert text
     tmlCtx.font = `400 ${tmlCanvasH / 15}px ${FONT_STACK}`;
     tmlCtx.fillStyle = "#555";
@@ -882,6 +903,8 @@ const tmlRender = () => {
     tmlCtx.textBaseline = "top";
     if (song.playing() && tmlCanvasW / tmlCanvasH >= 4.9) {
       tmlCtx.fillText(syncAlert, endX, endY + 5);
+    } else if (selectedCount()) {
+      tmlCtx.fillText(`${selectedCount()} selected`, endX, endY + 5);
     }
 
     //Key indicator(or copied text)
@@ -1856,6 +1879,7 @@ const tmlClicked = () => {
     timelineFollowMouse();
   } else if (mode == 1) {
     selectPointing();
+    if (pointingCntElement.v1 === "" && mouseX > tmlCanvasW / 10 && mouseY > tmlCanvasH / 6) startMarquee();
   } else if (mode == 2) {
     timelineAddElement();
   }
@@ -1892,15 +1916,7 @@ const timelineAddElement = () => {
         y: 0,
         duration: 4,
       };
-      pattern.patterns.push(newElement);
-      pattern.patterns.sort(sortAsTiming);
-      patternChanged();
-      for (let i = 0; i < pattern.patterns.length; i++) {
-        if (pattern.patterns[i] === newElement) {
-          selectedCntElement = { v1: 0, v2: selectedValue, i: i };
-          break;
-        }
-      }
+      addElement(0, newElement);
     } else if (mousePosY >= startY + height && mousePosY <= startY + height * (bulletsOverlapNum + 1)) {
       let newElement = {
         beat: calculatedBeat,
@@ -1909,16 +1925,7 @@ const timelineAddElement = () => {
         angle: 0,
         speed: 2,
       };
-      pattern.bullets.push(newElement);
-      pattern.bullets.sort(sortAsTiming);
-      for (let i = 0; i < pattern.bullets.length; i++) {
-        if (pattern.bullets[i] === newElement) {
-          selectedCntElement = { v1: 1, v2: 0, i: i };
-          break;
-        }
-      }
-      destroyTriggerValidate(selectedCntElement.i);
-      patternChanged();
+      addElement(1, newElement);
     } else if (
       mousePosY >= startY + height * (bulletsOverlapNum + 1) &&
       mousePosY <= startY + height * (bulletsOverlapNum + 1) + height * (triggersOverlapNum + 1)
@@ -1939,15 +1946,7 @@ const timelineAddElement = () => {
         y: 0,
         text: "",
       };
-      pattern.triggers.push(newElement);
-      pattern.triggers.sort(sortAsTiming);
-      patternChanged();
-      for (let i = 0; i < pattern.triggers.length; i++) {
-        if (pattern.triggers[i] === newElement) {
-          selectedCntElement = { i: i, v1: 2, v2: -1 };
-          break;
-        }
-      }
+      addElement(2, newElement);
     } else {
       return;
     }
@@ -1975,16 +1974,7 @@ const compClicked = () => {
           angle: 0,
           speed: 2,
         };
-        pattern.bullets.push(newElement);
-        pattern.bullets.sort(sortAsTiming);
-        for (let i = 0; i < pattern.bullets.length; i++) {
-          if (pattern.bullets[i] === newElement) {
-            selectedCntElement = { v1: 1, v2: 0, i: i };
-            break;
-          }
-        }
-        destroyTriggerValidate(selectedCntElement.i);
-        patternChanged();
+        addElement(1, newElement);
       } else {
         let newX = magnetToggle ? mouseX - (mouseX % 5) : mouseX;
         let newY = magnetToggle ? mouseY - (mouseY % 5) : mouseY;
@@ -2008,15 +1998,7 @@ const compClicked = () => {
           x: parseInt(newX),
           y: parseInt(newY),
         };
-        pattern.patterns.push(newElement);
-        pattern.patterns.sort(sortAsTiming);
-        patternChanged();
-        for (let i = 0; i < pattern.patterns.length; i++) {
-          if (pattern.patterns[i] === newElement) {
-            selectedCntElement = { v1: 0, v2: selectedValue, i: i };
-            break;
-          }
-        }
+        addElement(0, newElement);
       }
       changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
       if (!isSettingsOpened) toggleSettings();
@@ -2037,15 +2019,7 @@ const compClicked = () => {
         y: 0,
         text: "",
       };
-      pattern.triggers.push(newElement);
-      pattern.triggers.sort(sortAsTiming);
-      patternChanged();
-      for (let i = 0; i < pattern.triggers.length; i++) {
-        if (pattern.triggers[i] === newElement) {
-          selectedCntElement = { i: i, v1: 2, v2: -1 };
-          break;
-        }
-      }
+      addElement(2, newElement);
       changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
       if (!isSettingsOpened) toggleSettings();
     }
@@ -2256,28 +2230,6 @@ const changeSplit = (isTriggeredByKey) => {
   isTmlUpdateNeeded = true;
 };
 
-const destroyTriggerValidate = (index, isDelete) => {
-  for (let i = pattern.triggers.length - 1; i >= 0; i--) {
-    if (pattern.triggers[i].value == 0) {
-      if (isDelete) {
-        if (pattern.triggers[i].num == index) {
-          iziToast.warning({
-            title: "Destroy trigger deleted",
-            message: `Trigger_${i} is deleted.`,
-          });
-          pattern.triggers.splice(i, 1);
-        } else if (pattern.triggers[i].num > index) {
-          pattern.triggers[i].num--;
-        }
-      } else {
-        if (pattern.triggers[i].num >= index) {
-          pattern.triggers[i].num++;
-        }
-      }
-    }
-  }
-};
-
 const patternChanged = () => {
   preventUnload = true;
   songName.innerText = pattern.information.track + "*";
@@ -2322,18 +2274,53 @@ const currentBeat = () => Number((bpmsync.beat + (song.seek() * 1000 - bpmsync.m
 
 const elementOf = ({ v1, i }) => pattern[elementKeys[v1]][i];
 
-const sortElements = () => {
-  const primary = selectedCntElement.v1 !== "" ? elementOf(selectedCntElement) : null;
-  const destroyTargets = new Map(
+const refOf = (v1, element) => ({ v1, v2: v1 == 1 ? 0 : element.value, i: pattern[elementKeys[v1]].indexOf(element) });
+
+const destroyTargets = () =>
+  new Map(
     pattern.triggers.filter((trigger) => trigger.value == 0).map((trigger) => [trigger, pattern.bullets[trigger.num]]),
   );
-  for (const key of elementKeys) pattern[key].sort(sortAsTiming);
-  for (const [trigger, bullet] of destroyTargets) {
-    if (bullet) trigger.num = pattern.bullets.indexOf(bullet);
+
+const relinkDestroyTargets = (targets) => {
+  for (const [trigger, bullet] of targets) {
+    const num = pattern.bullets.indexOf(bullet);
+    if (num !== -1) trigger.num = num;
   }
+};
+
+const sortElements = () => {
+  const primary = selectedCntElement.v1 !== "" ? elementOf(selectedCntElement) : null;
+  const targets = destroyTargets();
+  for (const key of elementKeys) pattern[key].sort(sortAsTiming);
+  relinkDestroyTargets(targets);
   if (primary)
     selectedCntElement = { ...selectedCntElement, i: pattern[elementKeys[selectedCntElement.v1]].indexOf(primary) };
 };
+
+const addElement = (v1, element) => {
+  pattern[elementKeys[v1]].push(element);
+  sortElements();
+  patternChanged();
+  selectedCntElement = refOf(v1, element);
+};
+
+const removeElements = (elements) => {
+  const removed = new Set(elements.map(({ element }) => element));
+  const targets = destroyTargets();
+  pattern.triggers.forEach((trigger, i) => {
+    if (removed.has(trigger) || !removed.has(targets.get(trigger))) return;
+    removed.add(trigger);
+    iziToast.warning({
+      title: "Destroy trigger deleted",
+      message: `Trigger_${i} is deleted.`,
+    });
+  });
+  for (const key of elementKeys) pattern[key] = pattern[key].filter((element) => !removed.has(element));
+  relinkDestroyTargets(targets);
+};
+
+const selectedCount = () =>
+  selection.size + (selectedCntElement.v1 !== "" && !selection.has(elementOf(selectedCntElement)) ? 1 : 0);
 
 const setPrimary = (target) => {
   if (target) {
@@ -2360,6 +2347,7 @@ const selectPointing = () => {
   const pointing = pointingCntElement;
   isTmlUpdateNeeded = true;
   if (pointing.v1 === "") {
+    if (ctrlDown || shiftDown) return;
     selection.clear();
     setPrimary(null);
     return;
@@ -2390,28 +2378,71 @@ const selectPointing = () => {
   }
 };
 
-const elementCopy = () => {
-  const elements = selectedElements();
-  if (!elements.length) {
-    iziToast.warning({
-      title: "Copy failed",
-      message: "Nothing Selected.",
-    });
-    return;
+const toEntries = (elements) =>
+  elements.map(({ v1, element }) => {
+    const entry = { v1, element: structuredClone(element) };
+    if (v1 != 2 || element.value != 0) return entry;
+    const bullet = pattern.bullets[element.num];
+    const target = elements.findIndex((other) => other.element === bullet);
+    return target === -1 ? { ...entry, bullet } : { ...entry, target };
+  });
+
+const insertEntries = (entries, offset) => {
+  const inserted = entries.map((entry) => ({ ...entry, element: structuredClone(entry.element) }));
+  for (const { v1, element } of inserted) {
+    element.beat = Number((element.beat + offset).toPrecision(10));
+    pattern[elementKeys[v1]].push(element);
   }
+  for (const { element, target, bullet } of inserted) {
+    const num = pattern.bullets.indexOf(target === undefined ? bullet : inserted[target].element);
+    if (num !== -1) element.num = num;
+  }
+  sortElements();
+  selection = new Set(inserted.map(({ element }) => element));
+  if (inserted.length === 1) {
+    setPrimary(refOf(inserted[0].v1, inserted[0].element));
+  } else {
+    setPrimary(null);
+  }
+  patternChanged();
+  return inserted.length;
+};
+
+const plural = (count) => `${count} element${count > 1 ? "s" : ""}`;
+
+const warnNothingSelected = (title) => {
+  iziToast.warning({
+    title,
+    message: "Nothing Selected.",
+  });
+};
+
+const copyToClipboard = () => {
+  const elements = selectedElements();
+  if (!elements.length) return 0;
   clipboard = {
-    elements: elements.map(({ v1, element }) => {
-      const entry = { v1, element: structuredClone(element) };
-      if (v1 != 2 || element.value != 0) return entry;
-      const bullet = pattern.bullets[element.num];
-      const target = elements.findIndex((other) => other.element === bullet);
-      return target === -1 ? { ...entry, bullet } : { ...entry, target };
-    }),
+    elements: toEntries(elements),
     beat: Math.min(...elements.map(({ element }) => element.beat)),
   };
+  return elements.length;
+};
+
+const elementCopy = () => {
+  const count = copyToClipboard();
+  if (!count) return warnNothingSelected("Copy failed");
   iziToast.success({
     title: "Copy",
-    message: `Copied ${elements.length} element${elements.length > 1 ? "s" : ""}`,
+    message: `Copied ${plural(count)}`,
+  });
+};
+
+const elementCut = () => {
+  const count = copyToClipboard();
+  if (!count) return warnNothingSelected("Cut failed");
+  deleteElement();
+  iziToast.success({
+    title: "Cut",
+    message: `Cut ${plural(count)}`,
   });
 };
 
@@ -2423,51 +2454,69 @@ const elementPaste = () => {
     });
     return;
   }
-  const offset = Number((currentBeat() - clipboard.beat).toPrecision(10));
-  const pasted = clipboard.elements.map((entry) => ({ ...entry, element: structuredClone(entry.element) }));
-  for (const { v1, element } of pasted) {
-    element.beat = Number((element.beat + offset).toPrecision(10));
-    pattern[elementKeys[v1]].push(element);
-  }
-  for (const { element, target, bullet } of pasted) {
-    const num = pattern.bullets.indexOf(target === undefined ? bullet : pasted[target].element);
-    if (num !== -1) element.num = num;
-  }
-  sortElements();
-  selection = new Set(pasted.map(({ element }) => element));
-  if (pasted.length === 1) {
-    const { v1, element } = pasted[0];
-    setPrimary({ v1, v2: element.value, i: pattern[elementKeys[v1]].indexOf(element) });
-  } else {
-    setPrimary(null);
-  }
-  patternChanged();
+  const count = insertEntries(clipboard.elements, Number((currentBeat() - clipboard.beat).toPrecision(10)));
   iziToast.success({
     title: "Paste",
-    message: `Pasted ${pasted.length} element${pasted.length > 1 ? "s" : ""}`,
+    message: `Pasted ${plural(count)}`,
   });
+};
+
+const elementDuplicate = () => {
+  const elements = selectedElements();
+  if (!elements.length) return warnNothingSelected("Duplicate failed");
+  const beats = elements.map(({ element }) => element.beat);
+  const offset = Number((Math.max(...beats) - Math.min(...beats) + 1 / split).toPrecision(10));
+  const count = insertEntries(toEntries(elements), offset);
+  iziToast.success({
+    title: "Duplicate",
+    message: `Duplicated ${plural(count)}`,
+  });
+};
+
+const selectAll = () => {
+  selection = new Set(elementKeys.flatMap((key) => pattern[key]));
+  setPrimary(null);
+  isTmlUpdateNeeded = true;
 };
 
 const deleteElement = () => {
   const elements = selectedElements();
   if (!elements.length) return;
-  const bulletIndices = elements
-    .filter(({ v1 }) => v1 == 1)
-    .map(({ element }) => pattern.bullets.indexOf(element))
-    .sort((a, b) => b - a);
-  for (const i of bulletIndices) {
-    pattern.bullets.splice(i, 1);
-    destroyTriggerValidate(i, true);
-  }
-  for (const { v1, element } of elements) {
-    if (v1 == 1) continue;
-    const target = pattern[elementKeys[v1]];
-    const i = target.indexOf(element);
-    if (i !== -1) target.splice(i, 1);
-  }
+  removeElements(elements);
   selection.clear();
   setPrimary(null);
   patternChanged();
+};
+
+const startMarquee = () => {
+  marquee = { x0: mouseX, y0: mouseY, x1: mouseX, y1: mouseY, hits: new Set() };
+  marqueeFollowMouse();
+};
+
+const marqueeFollowMouse = () => {
+  requestAnimationFrame(() => {
+    if (!marquee) return;
+    if (mouseMode == 1) {
+      marquee.x1 = mouseX;
+      marquee.y1 = mouseY;
+    }
+    const [left, right] = [marquee.x0, marquee.x1].sort((a, b) => a - b);
+    const [top, bottom] = [marquee.y0, marquee.y1].sort((a, b) => a - b);
+    marquee.hits = new Set(
+      tmlPositions
+        .filter(({ x, y }) => x >= left && x <= right && y >= top && y <= bottom)
+        .map(({ element }) => element),
+    );
+    isTmlUpdateNeeded = true;
+    if (mouseDown) return marqueeFollowMouse();
+    for (const element of marquee.hits) selection.add(element);
+    marquee = null;
+    const elements = selectedElements();
+    if (selectedCntElement.v1 === "" && elements.length === 1) {
+      selection.clear();
+      setPrimary(refOf(elements[0].v1, elements[0].element));
+    }
+  });
 };
 
 const showHelp = () => {
@@ -2666,39 +2715,31 @@ const toggleMagnet = () => {
   magnetToggle = !magnetToggle;
 };
 
-const reflection = (dir) => {
-  // 0 : Horizontal, 1 : Vertical
-  if (selectedCntElement.v1 !== "") {
-    if (selectedCntElement.v1 < 2) {
-      if (selectedCntElement.v1 == 0) {
-        pattern.patterns[selectedCntElement.i][["x", "y"][dir]] *= -1;
-        if (dir == 1 && selectedCntElement.v2 == 1) {
-          pattern.patterns[selectedCntElement.i].direction *= -1;
-        }
-      } else if (selectedCntElement.v1 == 1) {
-        if (dir == 0)
-          pattern.bullets[selectedCntElement.i].direction =
-            pattern.bullets[selectedCntElement.i].direction == "L" ? "R" : "L";
-        else pattern.bullets[selectedCntElement.i].location *= -1;
-        pattern.bullets[selectedCntElement.i].angle *= -1;
-      }
-      changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
-      patternChanged();
-      return 1;
-    } else {
-      iziToast.warning({
-        title: "Reflection Failed",
-        message: "Reflection is not supported for triggers.",
-      });
-      return 0;
-    }
-  } else {
+const reflection = (...dirs) => {
+  const elements = selectedElements();
+  const targets = elements.filter(({ v1 }) => v1 < 2);
+  if (!targets.length) {
     iziToast.warning({
       title: "Reflection Failed",
-      message: "No element is selected for reflection.",
+      message: elements.length ? "Reflection is not supported for triggers." : "No element is selected for reflection.",
     });
-    return 0;
+    return;
   }
+  for (const { v1, element } of targets) {
+    for (const dir of dirs) {
+      if (v1 == 0) {
+        element[["x", "y"][dir]] *= -1;
+        if (dir == 1 && element.value == 1) element.direction *= -1;
+      } else {
+        if (dir == 0) element.direction = element.direction == "L" ? "R" : "L";
+        else element.location *= -1;
+        element.angle *= -1;
+      }
+    }
+  }
+  if (selectedCntElement.v1 !== "")
+    changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
+  patternChanged();
 };
 
 document.getElementById("timelineContainer").addEventListener("wheel", scrollEvent);
@@ -2806,12 +2847,18 @@ document.addEventListener("keydown", (e) => {
       if (ctrlDown) {
         elementPaste();
       } else reflection(1);
+    } else if (ctrlDown && e.code == "KeyX") {
+      elementCut();
+    } else if (ctrlDown && e.code == "KeyD") {
+      e.preventDefault();
+      elementDuplicate();
+    } else if (ctrlDown && e.code == "KeyA") {
+      e.preventDefault();
+      selectAll();
     } else if (e.code == "KeyH") {
       reflection(0);
     } else if (e.code == "KeyR") {
-      if (!ctrlDown) {
-        if (reflection(0)) reflection(1);
-      }
+      if (!ctrlDown) reflection(0, 1);
     } else if (e.code == "Slash") {
       changeSplit(true);
     } else if (e.code == "KeyG") {
