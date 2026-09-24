@@ -148,7 +148,9 @@ let explodingBullets = new Set();
 
 let stopRenderFlag = false;
 
-let rangeSelection = null;
+let selection = new Set();
+
+const elementKeys = ["patterns", "bullets", "triggers"];
 
 let prevBeat = 1;
 const beep = new Howl({
@@ -475,7 +477,7 @@ const gotoMain = (isCalledByMain) => {
     changeSettingsMode(-1);
     if (isSettingsOpened) toggleSettings();
     selectedCntElement = { v1: "", v2: "", i: "" };
-    rangeSelection = null;
+    selection.clear();
     document.getElementById("initialScreenContainer").style.display = "block";
     document.getElementById("initialButtonsContainer").style.display = "flex";
     document.getElementById("songSelectionContainer").style.display = "none";
@@ -545,7 +547,8 @@ const trackMouseSelection = (i, v1, v2, x, y, beats) => {
 const selectedCheck = (n, i) => {
   return (
     (pointingCntElement.v1 === n && pointingCntElement.i == i) ||
-    (selectedCntElement.v1 === n && selectedCntElement.i == i)
+    (selectedCntElement.v1 === n && selectedCntElement.i == i) ||
+    selection.has(pattern[elementKeys[n]][i])
   );
 };
 
@@ -1369,7 +1372,6 @@ const settingsInput = (v, e) => {
         if (e.value[e.value.length - 1] == ".") return;
         let targetElements, changedResult;
         let value = Number(Number(e.value).toPrecision(10));
-        rangeCopyCancel(selectedCntElement.v1);
         if (selectedCntElement.v1 == 0) {
           pattern.patterns[selectedCntElement.i].beat = value;
           changedResult = pattern.patterns[selectedCntElement.i];
@@ -1882,22 +1884,7 @@ const tmlClicked = () => {
   if (mode == 0) {
     timelineFollowMouse();
   } else if (mode == 1) {
-    if (pointingCntElement.v1 !== "") {
-      if (JSON.stringify(pointingCntElement) == JSON.stringify(selectedCntElement)) {
-        changeSettingsMode(-1);
-        if (isSettingsOpened) toggleSettings();
-        selectedCntElement = { v1: "", v2: "", i: "" };
-      } else {
-        changeSettingsMode(pointingCntElement.v1, pointingCntElement.v2, pointingCntElement.i);
-        if (!isSettingsOpened) toggleSettings();
-        selectedCntElement = pointingCntElement;
-        copySelect();
-      }
-    } else {
-      changeSettingsMode(-1);
-      if (isSettingsOpened) toggleSettings();
-      selectedCntElement = { v1: "", v2: "", i: "" };
-    }
+    selectPointing();
   } else if (mode == 2) {
     timelineAddElement();
   }
@@ -1994,7 +1981,7 @@ const timelineAddElement = () => {
       return;
     }
     changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
-    rangeCopyCancel(selectedCntElement.v1);
+    selection.clear();
     if (!isSettingsOpened) toggleSettings();
   }
 };
@@ -2004,22 +1991,7 @@ const compClicked = () => {
   if (mode == 0) {
     elementFollowMouse();
   } else if (mode == 1) {
-    if (pointingCntElement.v1 !== "") {
-      if (JSON.stringify(pointingCntElement) == JSON.stringify(selectedCntElement)) {
-        changeSettingsMode(-1);
-        if (isSettingsOpened) toggleSettings();
-        selectedCntElement = { v1: "", v2: "", i: "" };
-      } else {
-        changeSettingsMode(pointingCntElement.v1, pointingCntElement.v2, pointingCntElement.i);
-        if (!isSettingsOpened) toggleSettings();
-        selectedCntElement = pointingCntElement;
-        copySelect();
-      }
-    } else {
-      changeSettingsMode(-1);
-      if (isSettingsOpened) toggleSettings();
-      selectedCntElement = { v1: "", v2: "", i: "" };
-    }
+    selectPointing();
   } else if (mode == 2) {
     let beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
     beats = Number(beats.toPrecision(10));
@@ -2106,7 +2078,7 @@ const compClicked = () => {
       changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
       if (!isSettingsOpened) toggleSettings();
     }
-    rangeCopyCancel(selectedCntElement.v1);
+    selection.clear();
   }
 };
 
@@ -2313,24 +2285,6 @@ const changeSplit = (isTriggeredByKey) => {
   isTmlUpdateNeeded = true;
 };
 
-const deleteElement = () => {
-  rangeCopyCancel(selectedCntElement.v1);
-  if (selectedCntElement.v1 !== "") {
-    if (selectedCntElement.v1 == 0) {
-      pattern.patterns.splice(selectedCntElement.i, 1);
-    } else if (selectedCntElement.v1 == 1) {
-      pattern.bullets.splice(selectedCntElement.i, 1);
-      destroyTriggerValidate(selectedCntElement.i, true);
-    } else if (selectedCntElement.v1 == 2) {
-      pattern.triggers.splice(selectedCntElement.i, 1);
-    }
-    patternChanged();
-    changeSettingsMode(-1);
-    selectedCntElement = { v1: "", v2: "", i: "" };
-    if (isSettingsOpened) toggleSettings();
-  }
-};
-
 const destroyTriggerValidate = (index, isDelete) => {
   for (let i = pattern.triggers.length - 1; i >= 0; i--) {
     if (pattern.triggers[i].value == 0) {
@@ -2377,7 +2331,7 @@ const patternUndo = () => {
     pattern = structuredClone(patternHistory[patternSeek]);
   }
   selectedCntElement = { i: "", v1: "", v2: "" };
-  rangeCopyCancel();
+  selection.clear();
   if (isSettingsOpened) toggleSettings();
   isTmlUpdateNeeded = true;
 };
@@ -2388,37 +2342,92 @@ const patternRedo = () => {
     pattern = structuredClone(patternHistory[patternSeek]);
   }
   selectedCntElement = { i: "", v1: "", v2: "" };
-  rangeCopyCancel();
+  selection.clear();
   if (isSettingsOpened) toggleSettings();
   isTmlUpdateNeeded = true;
 };
 
-const elementKeys = ["patterns", "bullets", "triggers"];
-const elementNames = ["pattern", "bullet", "trigger"];
-
 const currentBeat = () => Number((bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
 
-const setClipboard = (v1, start, end) => {
-  if (start > end) [start, end] = [end, start];
-  const elements = structuredClone(pattern[elementKeys[v1]].slice(start, end + 1));
-  clipboard = { v1, elements, beat: elements[0].beat };
-  const range =
-    start === end ? `${elementNames[v1]}_${start}` : `${elementNames[v1]}_${start} ~ ${elementNames[v1]}_${end}`;
-  iziToast.success({
-    title: "Copy",
-    message: `Copied ${range}`,
+const elementOf = ({ v1, i }) => pattern[elementKeys[v1]][i];
+
+const setPrimary = (target) => {
+  if (target) {
+    selectedCntElement = target;
+    changeSettingsMode(target.v1, target.v2, target.i);
+    if (!isSettingsOpened) toggleSettings();
+  } else {
+    selectedCntElement = { v1: "", v2: "", i: "" };
+    changeSettingsMode(-1);
+    if (isSettingsOpened) toggleSettings();
+  }
+};
+
+const selectedElements = () => {
+  const elements = new Set(selection);
+  if (selectedCntElement.v1 !== "") elements.add(elementOf(selectedCntElement));
+  return [...elements].flatMap((element) => {
+    const v1 = elementKeys.findIndex((key) => pattern[key].includes(element));
+    return v1 === -1 ? [] : [{ v1, element }];
   });
 };
 
+const selectPointing = () => {
+  const pointing = pointingCntElement;
+  if (pointing.v1 === "") {
+    selection.clear();
+    setPrimary(null);
+    return;
+  }
+  const element = elementOf(pointing);
+  if (ctrlDown) {
+    if (selectedCntElement.v1 !== "") selection.add(elementOf(selectedCntElement));
+    if (selection.has(element)) {
+      selection.delete(element);
+      setPrimary(null);
+    } else {
+      selection.add(element);
+      setPrimary(pointing);
+    }
+  } else if (shiftDown && selectedCntElement.v1 !== "") {
+    const anchor = selectedCntElement;
+    const [from, to] = [elementOf(anchor).beat, element.beat].sort((a, b) => a - b);
+    for (const v1 of new Set([anchor.v1, pointing.v1])) {
+      for (const target of pattern[elementKeys[v1]]) {
+        if (target.beat >= from && target.beat <= to) selection.add(target);
+      }
+    }
+    setPrimary(pointing);
+  } else {
+    const isToggleOff = !selection.size && JSON.stringify(pointing) == JSON.stringify(selectedCntElement);
+    selection.clear();
+    setPrimary(isToggleOff ? null : pointing);
+  }
+};
+
 const elementCopy = () => {
-  if (selectedCntElement.i === "") {
+  const elements = selectedElements();
+  if (!elements.length) {
     iziToast.warning({
       title: "Copy failed",
       message: "Nothing Selected.",
     });
     return;
   }
-  setClipboard(selectedCntElement.v1, selectedCntElement.i, selectedCntElement.i);
+  const entries = elements.map(({ v1, element }) => {
+    if (v1 != 2 || element.value != 0) return { v1, element };
+    const bullet = pattern.bullets[element.num];
+    const target = elements.findIndex((entry) => entry.element === bullet);
+    return target === -1 ? { v1, element } : { v1, element, target };
+  });
+  clipboard = {
+    elements: structuredClone(entries),
+    beat: Math.min(...elements.map(({ element }) => element.beat)),
+  };
+  iziToast.success({
+    title: "Copy",
+    message: `Copied ${elements.length} element${elements.length > 1 ? "s" : ""}`,
+  });
 };
 
 const elementPaste = () => {
@@ -2429,30 +2438,55 @@ const elementPaste = () => {
     });
     return;
   }
-  const { v1 } = clipboard;
-  const target = pattern[elementKeys[v1]];
   const offset = Number((currentBeat() - clipboard.beat).toPrecision(10));
   const pasted = structuredClone(clipboard.elements);
-  for (const element of pasted) {
+  for (const { v1, element } of pasted) {
     element.beat = Number((element.beat + offset).toPrecision(10));
-    target.push(element);
+    pattern[elementKeys[v1]].push(element);
   }
-  target.sort(sortAsTiming);
-  const indices = pasted.map((element) => target.indexOf(element)).sort((a, b) => a - b);
-  if (v1 == 1) indices.forEach((i) => destroyTriggerValidate(i));
-  if (indices.length === 1) {
-    const i = indices[0];
-    selectedCntElement = { i, v1, v2: target[i].value };
-    if (!isSettingsOpened) toggleSettings();
-    changeSettingsMode(v1, selectedCntElement.v2, i);
+  for (const key of elementKeys) pattern[key].sort(sortAsTiming);
+  pasted
+    .filter(({ v1 }) => v1 == 1)
+    .map(({ element }) => pattern.bullets.indexOf(element))
+    .sort((a, b) => a - b)
+    .forEach((i) => destroyTriggerValidate(i));
+  for (const { element, target } of pasted) {
+    if (target !== undefined) element.num = pattern.bullets.indexOf(pasted[target].element);
+  }
+  selection = new Set(pasted.map(({ element }) => element));
+  if (pasted.length === 1) {
+    const { v1, element } = pasted[0];
+    setPrimary({ v1, v2: element.value, i: pattern[elementKeys[v1]].indexOf(element) });
+  } else {
+    setPrimary(null);
   }
   patternChanged();
-  const first = `${elementNames[v1]}_${indices[0]}`;
-  const last = `${elementNames[v1]}_${indices[indices.length - 1]}`;
   iziToast.success({
     title: "Paste",
-    message: `Pasted ${indices.length === 1 ? first : `${first} ~ ${last}`}`,
+    message: `Pasted ${pasted.length} element${pasted.length > 1 ? "s" : ""}`,
   });
+};
+
+const deleteElement = () => {
+  const elements = selectedElements();
+  if (!elements.length) return;
+  const bulletIndices = elements
+    .filter(({ v1 }) => v1 == 1)
+    .map(({ element }) => pattern.bullets.indexOf(element))
+    .sort((a, b) => b - a);
+  for (const i of bulletIndices) {
+    pattern.bullets.splice(i, 1);
+    destroyTriggerValidate(i, true);
+  }
+  for (const { v1, element } of elements) {
+    if (v1 == 1) continue;
+    const target = pattern[elementKeys[v1]];
+    const i = target.indexOf(element);
+    if (i !== -1) target.splice(i, 1);
+  }
+  selection.clear();
+  setPrimary(null);
+  patternChanged();
 };
 
 const showHelp = () => {
@@ -2461,42 +2495,6 @@ const showHelp = () => {
 
 const hideHelp = () => {
   document.getElementById("helpContainer").style.display = "none";
-};
-
-const rangeCopy = () => {
-  rangeSelection = { v1: "", start: "" };
-  iziToast.info({
-    title: "Range Copy",
-    message: `Select starting point to copy`,
-  });
-  copySelect();
-  changeMode(1);
-};
-
-const copySelect = () => {
-  if (!rangeSelection || selectedCntElement.v1 === "") return;
-  if (rangeSelection.start === "") {
-    rangeSelection = { v1: selectedCntElement.v1, start: selectedCntElement.i };
-    iziToast.success({
-      title: "Range Copy",
-      message: `Copy start from ${elementNames[selectedCntElement.v1]}_${selectedCntElement.i}`,
-    });
-  } else if (selectedCntElement.v1 === rangeSelection.v1) {
-    setClipboard(rangeSelection.v1, rangeSelection.start, selectedCntElement.i);
-    rangeSelection = null;
-  } else return;
-  selectedCntElement = { v1: "", v2: "", i: "" };
-  if (isSettingsOpened) toggleSettings();
-};
-
-const rangeCopyCancel = (v1) => {
-  if (!rangeSelection || rangeSelection.start === "") return;
-  if (v1 !== undefined && v1 !== rangeSelection.v1) return;
-  rangeSelection = null;
-  iziToast.warning({
-    title: "Range Copy",
-    message: "Range copy canceled.",
-  });
 };
 
 const tmlScrollHorizontal = (direction, splitBy = split) => {
@@ -2755,10 +2753,10 @@ document.addEventListener("keyup", (e) => {
 document.addEventListener("keydown", (e) => {
   e = e || window.event;
   if (e.key == "Escape") {
-    if (isSettingsOpened) {
-      selectedCntElement = { v1: "", v2: "", i: "" };
-      changeSettingsMode(-1);
-      toggleSettings();
+    if (selection.size || isSettingsOpened) {
+      selection.clear();
+      setPrimary(null);
+      isTmlUpdateNeeded = true;
     } else {
       if (song.playing()) {
         songPlayPause();
@@ -2820,12 +2818,7 @@ document.addEventListener("keydown", (e) => {
       deleteElement();
     } else if (e.code == "KeyC") {
       if (ctrlDown) {
-        if (shiftDown) {
-          e.preventDefault();
-          rangeCopy();
-        } else {
-          elementCopy();
-        }
+        elementCopy();
       } else toggleCircle();
     } else if (e.code == "KeyV") {
       if (ctrlDown) {
@@ -2913,7 +2906,6 @@ const clickActions = {
   loadEditor,
   moveTo,
   newEditor,
-  rangeCopy,
   save,
   songPlayPause,
   songSelected,
