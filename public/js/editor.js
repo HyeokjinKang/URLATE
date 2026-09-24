@@ -2473,6 +2473,21 @@ const elementDuplicate = () => {
   });
 };
 
+const nudgeElements = (direction) => {
+  const elements = selectedElements();
+  if (!elements.length) return;
+  const earliest = Math.min(...elements.map(({ element }) => element.beat));
+  const step = earliest * split;
+  const target = (direction > 0 ? Math.floor(step + 1e-6) + 1 : Math.ceil(step - 1e-6) - 1) / split;
+  if (target < 0) return;
+  const delta = target - earliest;
+  for (const { element } of elements) element.beat = Number((element.beat + delta).toPrecision(10));
+  sortElements();
+  if (selectedCntElement.v1 !== "")
+    changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
+  patternChanged();
+};
+
 const selectAll = () => {
   selection = new Set(elementKeys.flatMap((key) => pattern[key]));
   setPrimary(null);
@@ -2829,6 +2844,9 @@ document.addEventListener("keydown", (e) => {
       if (document.getElementsByClassName("iziToast-overlay").length == 0) {
         changeMode(2);
       }
+    } else if (e.altKey && (e.key == "ArrowLeft" || e.key == "ArrowRight")) {
+      e.preventDefault();
+      nudgeElements(e.key == "ArrowLeft" ? -1 : 1);
     } else if (e.key == "ArrowLeft") {
       tmlScrollHorizontal(-1);
     } else if (e.key == "ArrowRight") {
