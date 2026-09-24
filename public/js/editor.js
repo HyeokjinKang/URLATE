@@ -1763,6 +1763,11 @@ const startDrag = (v1, i) => {
 
 const endDrag = () => {
   if (!dragGroup) return;
+  const { v1, element } = dragGroup.anchor;
+  if (!pattern[elementKeys[v1]].includes(element)) {
+    dragGroup = null;
+    return;
+  }
   const isChanged = (key) => dragGroup.members.some(({ element, origin }) => element[key] !== origin[key]);
   const isBeatChanged = isChanged("beat");
   if (isBeatChanged) {
@@ -2353,6 +2358,7 @@ const selectedElements = () => {
 
 const selectPointing = () => {
   const pointing = pointingCntElement;
+  isTmlUpdateNeeded = true;
   if (pointing.v1 === "") {
     selection.clear();
     setPrimary(null);
@@ -2368,8 +2374,8 @@ const selectPointing = () => {
       selection.add(element);
       setPrimary(pointing);
     }
-  } else if (shiftDown && selectedCntElement.v1 !== "") {
-    const anchor = selectedCntElement;
+  } else if (shiftDown) {
+    const anchor = selectedCntElement.v1 !== "" ? selectedCntElement : pointing;
     const [from, to] = [elementOf(anchor).beat, element.beat].sort((a, b) => a - b);
     for (const v1 of new Set([anchor.v1, pointing.v1])) {
       for (const target of pattern[elementKeys[v1]]) {
@@ -2378,7 +2384,7 @@ const selectPointing = () => {
     }
     setPrimary(pointing);
   } else {
-    const isToggleOff = !selection.size && JSON.stringify(pointing) == JSON.stringify(selectedCntElement);
+    const isToggleOff = !selection.size && pointing.v1 === selectedCntElement.v1 && pointing.i == selectedCntElement.i;
     selection.clear();
     setPrimary(isToggleOff ? null : pointing);
   }
@@ -2393,14 +2399,14 @@ const elementCopy = () => {
     });
     return;
   }
-  const entries = elements.map(({ v1, element }) => {
-    if (v1 != 2 || element.value != 0) return { v1, element };
-    const bullet = pattern.bullets[element.num];
-    const target = elements.findIndex((entry) => entry.element === bullet);
-    return target === -1 ? { v1, element } : { v1, element, target };
-  });
   clipboard = {
-    elements: structuredClone(entries),
+    elements: elements.map(({ v1, element }) => {
+      const entry = { v1, element: structuredClone(element) };
+      if (v1 != 2 || element.value != 0) return entry;
+      const bullet = pattern.bullets[element.num];
+      const target = elements.findIndex((other) => other.element === bullet);
+      return target === -1 ? { ...entry, bullet } : { ...entry, target };
+    }),
     beat: Math.min(...elements.map(({ element }) => element.beat)),
   };
   iziToast.success({
@@ -2418,13 +2424,14 @@ const elementPaste = () => {
     return;
   }
   const offset = Number((currentBeat() - clipboard.beat).toPrecision(10));
-  const pasted = structuredClone(clipboard.elements);
+  const pasted = clipboard.elements.map((entry) => ({ ...entry, element: structuredClone(entry.element) }));
   for (const { v1, element } of pasted) {
     element.beat = Number((element.beat + offset).toPrecision(10));
     pattern[elementKeys[v1]].push(element);
   }
-  for (const { element, target } of pasted) {
-    if (target !== undefined) element.num = pattern.bullets.indexOf(pasted[target].element);
+  for (const { element, target, bullet } of pasted) {
+    const num = pattern.bullets.indexOf(target === undefined ? bullet : pasted[target].element);
+    if (num !== -1) element.num = num;
   }
   sortElements();
   selection = new Set(pasted.map(({ element }) => element));
