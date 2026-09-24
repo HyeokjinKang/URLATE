@@ -98,7 +98,7 @@ let bulletsOverlapNum = 1;
 let triggersOverlapNum = 2;
 let isTextboxFocused = false;
 let skin, denyCursor;
-let dragMouseX, dragMouseY, originX, originY;
+let dragMouseX, dragMouseY, dragGroup;
 let copied = false,
   copiedTime = 0;
 let gridToggle = true,
@@ -1785,6 +1785,28 @@ const trackTimelineMousePos = (event) => {
   isTmlUpdateNeeded = true;
 };
 
+const startDrag = (v1, i) => {
+  const element = elementOf({ v1, i });
+  const group = selectedElements();
+  const members = group.some((entry) => entry.element === element) ? group : [{ v1, element }];
+  dragGroup = {
+    anchor: { v1, origin: { ...element } },
+    members: members.map((member) => ({ ...member, origin: { ...member.element } })),
+  };
+};
+
+const scheduleDragCommit = () => {
+  lastMovedMs = Date.now();
+  setTimeout(() => {
+    if (Date.now() - lastMovedMs >= 100 && lastMovedMs != -1) {
+      lastMovedMs = -1;
+      patternChanged();
+    }
+  }, 100);
+};
+
+const snap = (value) => (magnetToggle ? value - (value % 5) : value);
+
 const elementFollowMouse = (v1, v2, i) => {
   requestAnimationFrame(() => {
     if (mouseDown && (pointingCntElement.v1 !== "" || v1 != undefined)) {
@@ -1796,45 +1818,29 @@ const elementFollowMouse = (v1, v2, i) => {
       if (dragMouseX == undefined) {
         dragMouseX = mouseX;
         dragMouseY = mouseY;
-        originX = v1 == 0 ? pattern.patterns[i].x : 0;
-        originY = v1 == 0 ? pattern.patterns[i].y : pattern.bullets[i].location;
+        startDrag(v1, i);
       }
-      let newX, newY;
-      switch (v1) {
-        case 0:
-          newX = originX + mouseX - dragMouseX;
-          newY = originY + mouseY - dragMouseY;
-          if (newX <= 100 && newX >= -100 && newY <= 100 && newY >= -100 && mouseMode == 0) {
-            pattern.patterns[i].x = magnetToggle ? newX - (newX % 5) : newX;
-            pattern.patterns[i].y = magnetToggle ? newY - (newY % 5) : newY;
-          }
-          break;
-        case 1:
-          newY = originY + mouseY - dragMouseY;
-          if (newY <= 100 && newY >= -100 && mouseMode == 0) {
-            pattern.bullets[i].location = magnetToggle ? newY - (newY % 5) : newY;
-          }
-          break;
+      const { anchor, members } = dragGroup;
+      const anchorX = anchor.v1 == 0 ? anchor.origin.x : 0;
+      const anchorY = anchor.v1 == 0 ? anchor.origin.y : anchor.origin.location;
+      const dx = snap(anchorX + mouseX - dragMouseX) - anchorX;
+      const dy = snap(anchorY + mouseY - dragMouseY) - anchorY;
+      const moves = members.flatMap(({ v1, element, origin }) => {
+        if (v1 == 0) return [{ element, x: origin.x + dx, y: origin.y + dy }];
+        if (v1 == 1) return [{ element, location: origin.location + dy }];
+        return [];
+      });
+      const inRange = (value) => value === undefined || (value <= 100 && value >= -100);
+      if (mouseMode == 0 && moves.every(({ x, y, location }) => inRange(x) && inRange(y) && inRange(location))) {
+        for (const { element, ...position } of moves) Object.assign(element, position);
       }
-      lastMovedMs = Date.now();
-      setTimeout(() => {
-        if (Date.now() - lastMovedMs >= 100 && lastMovedMs != -1) {
-          lastMovedMs = -1;
-          patternChanged();
-        }
-      }, 100);
+      scheduleDragCommit();
       elementFollowMouse(v1, v2, i);
       changeSettingsMode(v1, v2, i);
     } else {
-      if (v1 == undefined) {
-        v1 = pointingCntElement.v1;
-        v2 = pointingCntElement.v2;
-        i = pointingCntElement.i;
-      }
       dragMouseX = undefined;
       dragMouseY = undefined;
-      originX = undefined;
-      originY = undefined;
+      dragGroup = null;
     }
   });
 };
@@ -1847,6 +1853,7 @@ const timelineFollowMouse = (v1, v2, i) => {
         v2 = pointingCntElement.v2;
         i = pointingCntElement.i;
       }
+      if (!dragGroup) startDrag(v1, i);
       if (mouseMode == 1 && mouseX > tmlCanvasW / 10 && mouseX < tmlCanvasW / 1.01) {
         const beats = bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm);
         const tmlStartX = tmlCanvasW / 10;
@@ -1854,27 +1861,19 @@ const timelineFollowMouse = (v1, v2, i) => {
         let calculatedBeat = beats + (mouseX - tmlStartX) / beatToPx - zoom;
         if (calculatedBeat <= 0) calculatedBeat = 0;
         calculatedBeat = Number(calculatedBeat.toPrecision(10));
-        switch (v1) {
-          case 0:
-            pattern.patterns[i].beat = magnetToggle ? Math.round(calculatedBeat * split) / split : calculatedBeat;
-            break;
-          case 1:
-            pattern.bullets[i].beat = magnetToggle ? Math.round(calculatedBeat * split) / split : calculatedBeat;
-            break;
-          case 2:
-            pattern.triggers[i].beat = magnetToggle ? Math.round(calculatedBeat * split) / split : calculatedBeat;
-            break;
+        if (magnetToggle) calculatedBeat = Math.round(calculatedBeat * split) / split;
+        const { anchor, members } = dragGroup;
+        const earliest = Math.min(...members.map(({ origin }) => origin.beat));
+        const delta = Math.max(calculatedBeat - anchor.origin.beat, -earliest);
+        for (const { element, origin } of members) {
+          element.beat = Number((origin.beat + delta).toPrecision(10));
         }
-        lastMovedMs = Date.now();
-        setTimeout(() => {
-          if (Date.now() - lastMovedMs >= 100 && lastMovedMs != -1) {
-            lastMovedMs = -1;
-            patternChanged();
-          }
-        }, 100);
+        scheduleDragCommit();
       }
       timelineFollowMouse(v1, v2, i);
       changeSettingsMode(v1, v2, i);
+    } else {
+      dragGroup = null;
     }
   });
 };
