@@ -2401,7 +2401,9 @@ const showSelectionSettings = (v1) => {
       .join(", ")}). Select only one kind to edit properties together.`;
     return;
   }
-  if (elements.length > 1) document.getElementById("settingsNameSpace").innerText += ` +${elements.length - 1}`;
+  if (elements.length > 1)
+    document.getElementById("settingsNameSpace").innerText =
+      `${["Notes", "Bullets", "Triggers"][v1]} (${elements.length})`;
   const types = new Set(elements.map(({ element }) => element.value));
   if (types.size > 1 && v1 == 0) {
     const rows = noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual");
