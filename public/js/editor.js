@@ -809,8 +809,9 @@ const tmlRender = () => {
     //Timeline time line + text
     timelineElementNum = i;
     tmlCtx.fillStyle = "#FFF";
-    tmlCtx.fillRect(0, endY, endX, tmlCanvasH - endY);
+    tmlCtx.fillRect(0, endY, tmlCanvasW, tmlCanvasH - endY);
     tmlCtx.fillRect(0, 0, endX, startY);
+    tmlCtx.fillRect(endX, startY, tmlCanvasW, tmlCanvasH);
     tmlCtx.font = `${tmlCanvasH / 16}px ${FONT_STACK}`;
     tmlCtx.textAlign = "center";
     tmlCtx.textBaseline = "bottom";
