@@ -2848,7 +2848,7 @@ const scrollbarFollowMouse = () => {
     const start = isHorizontal ? bar.x : bar.y;
     const length = (isHorizontal ? bar.w : bar.h) - bar.size;
     const ratio = Math.min(Math.max(((isHorizontal ? mouseX : mouseY) - scrollbarDrag.grab - start) / length, 0), 1);
-    if (isHorizontal) seekToBeat(ratio * bar.max);
+    if (isHorizontal) seekToBeat(Math.min(Math.round(ratio * bar.max * split) / split, bar.max));
     else setScrollRow(ratio * bar.max);
   }
   if (!mouseDown) {
