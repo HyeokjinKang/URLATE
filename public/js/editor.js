@@ -2276,7 +2276,7 @@ const changeSettingsMode = (v1, v2, i) => {
       break;
     case 1:
       document.getElementById("settingsNameSpace").innerText = `Bullet_${i}`;
-      setDotColor("#6fdef7");
+      setDotColor("#4297d4");
       document.getElementById("noteSettingsContainer").style.display = "none";
       document.getElementById("triggerSettingsContainer").style.display = "none";
       document.getElementById("bulletSettingsContainer").style.display = "block";
@@ -2291,7 +2291,7 @@ const changeSettingsMode = (v1, v2, i) => {
       break;
     case 2:
       document.getElementById("settingsNameSpace").innerText = `Trigger_${i}`;
-      setDotColor("#36bf24");
+      setDotColor((triggerStyles[v2] ?? triggerStyles[-1])[1]);
       document.getElementById("trackSettings").style.display = "none";
       document.getElementById("elementsSettings").style.display = "block";
       document.getElementById("noteSettingsContainer").style.display = "none";
@@ -2619,6 +2619,7 @@ const showSelectionSettings = (v1) => {
     rows[3].style.display = "none";
     rows[4].style.display = "none";
   } else if (types.size > 1 && v1 == 2) {
+    setDotColor(triggerStyles[4][1]);
     document.getElementById("triggerInitializeContainer").style.display = "none";
     document.getElementById("triggerSettingsContainer").style.display = "block";
     const properties = document
