@@ -50,24 +50,18 @@
           </div>
           <div class="helpBoxSpliter">
             <div class="helpKeyContainer">
-              <span class="helpKey"><kbd>1</kbd></span>
-              <span class="helpDescription">Move Tool</span>
-            </div>
-            <div class="helpKeyContainer">
-              <span class="helpKey"><kbd>2</kbd></span>
-              <span class="helpDescription">Edit Tool</span>
-            </div>
-            <div class="helpKeyContainer">
-              <span class="helpKey"><kbd>3</kbd></span>
-              <span class="helpDescription">Add Tool</span>
+              <span class="helpKey"><kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd></span>
+              <span class="helpDescription">Tool Selection</span>
             </div>
             <div class="helpKeyContainer">
               <span class="helpKey"><kbd class="ctrl">Ctrl</kbd> + <kbd>P</kbd></span>
               <span class="helpDescription">Test Play</span>
             </div>
             <div class="helpKeyContainer">
-              <span class="helpKey"><kbd class="ctrl">Ctrl</kbd> + <kbd>S</kbd></span>
-              <span class="helpDescription">Save</span>
+              <span class="helpKey"
+                ><kbd class="ctrl">Ctrl</kbd> ( + <kbd class="shift">Shift</kbd> ) + <kbd>S</kbd></span
+              >
+              <span class="helpDescription">Save (As)</span>
             </div>
             <div class="helpKeyContainer">
               <span class="helpKey"><kbd>T</kbd></span>
@@ -98,22 +92,35 @@
               <span class="helpDescription">Playback Speed</span>
             </div>
             <div class="helpKeyContainer">
-              <span class="helpKey"><kbd class="noItalic">/</kbd></span>
-              <span class="helpDescription">Beat Division</span>
+              <span class="helpKey"
+                ><kbd class="alt">Alt</kbd> + <kbd class="noItalic">←</kbd> <kbd class="noItalic">→</kbd></span
+              >
+              <span class="helpDescription">Move Selected by Division</span>
+            </div>
+            <div class="helpKeyContainer">
+              <span class="helpKey">( <kbd class="shift">Shift</kbd> + ) <kbd class="noItalic">/</kbd></span>
+              <span class="helpDescription">Cycle Beat Division</span>
+            </div>
+            <div class="helpKeyContainer">
+              <span class="helpKey">( <kbd class="shift">Shift</kbd> + ) <kbd>Tab</kbd></span>
+              <span class="helpDescription">Cycle Timeline Filter</span>
             </div>
           </div>
           <div class="helpBoxSpliter">
             <div class="helpKeyContainer">
               <span class="helpKey"
-                ><kbd class="ctrl">Ctrl</kbd> ( + <kbd class="shift">Shift</kbd> ) + <kbd>C</kbd></span
+                ><kbd class="ctrl">Ctrl</kbd> / <kbd class="shift">Shift</kbd> + <span class="helpMotion">Click</span> /
+                <span class="helpMotion">Drag</span></span
               >
-              <span class="helpDescription">(Range) Copy</span>
+              <span class="helpDescription">Multi Select</span>
             </div>
             <div class="helpKeyContainer">
-              <span class="helpKey"
-                ><kbd class="ctrl">Ctrl</kbd> ( + <kbd class="shift">Shift</kbd> ) + <kbd>V</kbd></span
-              >
-              <span class="helpDescription">(Range) Paste</span>
+              <span class="helpKey"><kbd class="ctrl">Ctrl</kbd> + <kbd>C</kbd> <kbd>X</kbd> <kbd>V</kbd></span>
+              <span class="helpDescription">Copy / Cut / Paste</span>
+            </div>
+            <div class="helpKeyContainer">
+              <span class="helpKey"><kbd class="ctrl">Ctrl</kbd> + <kbd>A</kbd> <kbd>D</kbd></span>
+              <span class="helpDescription">Select All / Duplicate</span>
             </div>
             <div class="helpKeyContainer">
               <span class="helpKey"><kbd class="del">Del</kbd></span>
@@ -158,12 +165,10 @@
               <span class="helpDescription">Timeline Zoom</span>
             </div>
             <div class="helpKeyContainer">
-              <span class="helpKey"><kbd class="ctrl">Ctrl</kbd> + <kbd>Z</kbd></span>
-              <span class="helpDescription">Undo</span>
-            </div>
-            <div class="helpKeyContainer">
-              <span class="helpKey"><kbd class="ctrl">Ctrl</kbd> + <kbd class="shift">Shift</kbd> + <kbd>Z</kbd></span>
-              <span class="helpDescription">Redo</span>
+              <span class="helpKey"
+                ><kbd class="ctrl">Ctrl</kbd> ( + <kbd class="shift">Shift</kbd> ) + <kbd>Z</kbd></span
+              >
+              <span class="helpDescription">Undo (Redo)</span>
             </div>
           </div>
         </div>
@@ -231,13 +236,7 @@
             <span class="toolText">Copy</span>
             <img src="/images/icons/paste-clipboard.svg" class="toolIcon clickable" data-action="elementPaste" />
             <span class="toolText">Paste</span>
-            <img src="/images/icons/keyframes.svg" class="toolIcon clickable" data-action="rangeCopy" />
-            <span class="toolText">Range<br />Copy</span>
-            <img src="/images/icons/transition-right.svg" class="toolIcon clickable" data-action="rangePaste" />
-            <span class="toolText">Range<br />Paste</span>
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
-            <img src="/images/icons/dot-arrow-right.svg" class="toolIcon clickable" data-action="moveTo" />
-            <span class="toolText">Move</span>
             <img
               src="/images/icons/question-mark.svg"
               class="toolIcon clickable"
@@ -260,6 +259,12 @@
           </div>
           <div id="settingsProperties" class="metropolis">
             <div id="elementsSettings">
+              <div id="mixedSettingsContainer">
+                <div class="settingsPropertiesContainer">
+                  <p class="settingsSemiTitle">MIXED SELECTION</p>
+                  <p id="mixedSettingsMessage" class="settingsMixedMessage"></p>
+                </div>
+              </div>
               <div id="noteSettingsContainer">
                 <div class="settingsPropertiesContainer">
                   <p class="settingsSemiTitle">POSITION</p>
@@ -434,6 +439,7 @@
                       <option>Speed</option>
                       <option>Text</option>
                       <option>End</option>
+                      <option hidden disabled>Mixed</option>
                     </select>
                   </div>
                 </div>
@@ -705,6 +711,20 @@
       <div id="timelineSplitController" class="controllers">
         <span class="clickable" id="split" data-action="changeSplit">1/2</span>
       </div>
+      <div id="timelineFilterController" class="controllers">
+        <span class="timelineFilter clickable selected" data-action="setTimelineFilter" data-arg="all" title="All"
+          >All</span
+        >
+        <span class="timelineFilter clickable" data-action="setTimelineFilter" data-arg="0" title="Notes only"
+          ><span class="timelineFilterShape note"></span
+        ></span>
+        <span class="timelineFilter clickable" data-action="setTimelineFilter" data-arg="1" title="Bullets only"
+          ><span class="timelineFilterShape bullet"></span
+        ></span>
+        <span class="timelineFilter clickable" data-action="setTimelineFilter" data-arg="2" title="Triggers only"
+          ><span class="timelineFilterShape trigger"></span
+        ></span>
+      </div>
     </div>
     <div class="overlay" id="volumeOverlay">
       <p class="optionSemiTitle"><%= __('volume') %></p>
@@ -720,7 +740,6 @@
       <p class="optionValue" id="volumeMasterValue">50%</p>
     </div>
     <script nonce="<%= cspNonce %>">
-      const moveToAlert = "<%= __('move_to_alert') %>";
       const timeAlert = "<%= __('time_alert') %>";
       const copiedText = "<%= __('copied') %>";
       const syncAlert = "<%= __('sync_alert') %>";

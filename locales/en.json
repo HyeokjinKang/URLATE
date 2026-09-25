@@ -196,7 +196,6 @@
   "menu_volume": "You can adjust the volume with Shift + Mouse Scroll.",
   "goto_game": "Exit",
   "editor_main": "Editor Main",
-  "move_to_alert": "Enter the time to jump to (in seconds).",
   "time_alert": "Click the clock on the timeline to copy the current value.",
   "sync_alert": "During preview, user offset, sync value, and latency correction are applied. The actual previewed timing is shown by the blue line.",
   "socket_status_connected": "Reconnected to the game server.",
