@@ -97,7 +97,8 @@ let bulletsOverlapNum = 1;
 let triggersOverlapNum = 2;
 let skin, denyCursor;
 let dragMouseX, dragMouseY, dragGroup, marquee;
-let tmlPositions = [];
+let tmlPositions = [],
+  cntPositions = [];
 let copied = false,
   copiedTime = 0;
 let gridToggle = true,
@@ -560,6 +561,12 @@ const gotoMain = (isCalledByMain) => {
   }
 };
 
+const isNotePointable = (note, beats) => {
+  const p = (1 - (note.beat - beats) / (5 / speed)) * 100;
+  const t = ((beats - note.beat) / note.duration) * 100;
+  return (note.value == 2 ? t <= 100 : p <= 100) && p >= 0;
+};
+
 const trackMouseSelection = (i, v1, v2, x, y, beats) => {
   if (mode != 2 && mouseMode == 0) {
     if (pointingCntElement.i == "") {
@@ -568,10 +575,8 @@ const trackMouseSelection = (i, v1, v2, x, y, beats) => {
       const distSq = powX * powX + powY * powY;
       switch (v1) {
         case 0: {
-          const p = (1 - (pattern.patterns[i].beat - beats) / (5 / speed)) * 100;
-          const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
           const r = canvasW / 40;
-          if (distSq <= r * r && (pattern.patterns[i].value == 2 ? t <= 100 : p <= 100) && p >= 0) {
+          if (distSq <= r * r && isNotePointable(pattern.patterns[i], beats)) {
             pointingCntElement = { v1, v2, i };
           }
           break;
@@ -943,7 +948,7 @@ const tmlRender = () => {
     }
 
     //Marquee
-    if (marquee) {
+    if (marquee?.area == 1) {
       const x = Math.min(marquee.x0, marquee.x1),
         y = Math.min(marquee.y0, marquee.y1);
       const w = Math.abs(marquee.x1 - marquee.x0),
@@ -1153,6 +1158,7 @@ const cntRender = () => {
     end = upperBound(pattern.patterns, beats + renderDuration);
 
     // Mouse tracking loop
+    cntPositions = [];
     let prevNoteBeat = -1;
     for (let i = start; i < end; i++) {
       if (pattern.patterns[i].beat >= prevNoteBeat - 0.01 && pattern.patterns[i].beat <= prevNoteBeat + 0.01) {
@@ -1164,6 +1170,9 @@ const cntRender = () => {
       prevNoteBeat = pattern.patterns[i].beat;
       if (mouseMode == 0)
         trackMouseSelection(i, 0, pattern.patterns[i].value, pattern.patterns[i].x, pattern.patterns[i].y, beats);
+      if (isNotePointable(pattern.patterns[i], beats)) {
+        cntPositions.push({ element: pattern.patterns[i], x: pattern.patterns[i].x, y: pattern.patterns[i].y });
+      }
     }
 
     // Note drawing loop
@@ -1219,6 +1228,7 @@ const cntRender = () => {
         createdBullets.add(i);
 
         trackMouseSelection(i, 1, 0, pos.x, pos.y, beats);
+        cntPositions.push({ element: bullet, x: pos.x, y: pos.y });
 
         Draw.bullet(
           {
@@ -1310,6 +1320,20 @@ const cntRender = () => {
           },
         );
       }
+    }
+
+    if (marquee?.area == 0) {
+      const x = tw * (Math.min(marquee.x0, marquee.x1) + 100),
+        y = th * (Math.min(marquee.y0, marquee.y1) + 100);
+      const w = tw * Math.abs(marquee.x1 - marquee.x0),
+        h = th * Math.abs(marquee.y1 - marquee.y0);
+      cntCtx.save();
+      cntCtx.fillStyle = "rgba(237, 91, 69, 0.15)";
+      cntCtx.strokeStyle = "#ed5b45";
+      cntCtx.lineWidth = 1;
+      cntCtx.fillRect(x, y, w, h);
+      cntCtx.strokeRect(x, y, w, h);
+      cntCtx.restore();
     }
 
     Updater.particles(destroyParticles);
@@ -2026,6 +2050,7 @@ const compClicked = () => {
     elementFollowMouse();
   } else if (mode == 1) {
     selectPointing();
+    if (pointingCntElement.v1 === "" && mouseMode == 0) startMarquee();
   } else if (mode == 2) {
     let beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
     beats = Number(beats.toPrecision(10));
@@ -2712,21 +2737,21 @@ const deleteElement = () => {
 };
 
 const startMarquee = () => {
-  marquee = { x0: mouseX, y0: mouseY, x1: mouseX, y1: mouseY, hits: new Set() };
+  marquee = { area: mouseMode, x0: mouseX, y0: mouseY, x1: mouseX, y1: mouseY, hits: new Set() };
   marqueeFollowMouse();
 };
 
 const marqueeFollowMouse = () => {
   requestAnimationFrame(() => {
     if (!marquee) return;
-    if (mouseMode == 1) {
+    if (mouseMode == marquee.area) {
       marquee.x1 = mouseX;
       marquee.y1 = mouseY;
     }
     const [left, right] = [marquee.x0, marquee.x1].sort((a, b) => a - b);
     const [top, bottom] = [marquee.y0, marquee.y1].sort((a, b) => a - b);
     marquee.hits = new Set(
-      tmlPositions
+      (marquee.area == 1 ? tmlPositions : cntPositions)
         .filter(({ x, y }) => x >= left && x <= right && y >= top && y <= bottom)
         .map(({ element }) => element),
     );
