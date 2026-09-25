@@ -2295,28 +2295,10 @@ const test = () => {
 };
 
 const changeSplit = (isTriggeredByKey) => {
-  split++;
-  if (split == 5) {
-    split = 6;
-  } else if (split == 7) {
-    split = 8;
-  } else if (split > 8) {
-    if (isTriggeredByKey) {
-      if (split == 9) {
-        split = 12;
-      } else if (split == 13) {
-        split = 16;
-      } else if (split == 17) {
-        split = 24;
-      } else if (split == 25) {
-        split = 32;
-      } else {
-        split = 1;
-      }
-    } else {
-      split = 1;
-    }
-  }
+  const steps = isTriggeredByKey ? [1, 2, 3, 4, 6, 8, 12, 16, 24, 32] : [1, 2, 3, 4, 6, 8];
+  split = shiftDown
+    ? (steps.findLast((step) => step < split) ?? steps.at(-1))
+    : (steps.find((step) => step > split) ?? steps[0]);
   document.getElementById("split").innerText = `1/${split}`;
 
   isTmlUpdateNeeded = true;
