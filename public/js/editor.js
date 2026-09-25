@@ -180,45 +180,31 @@ const settingApply = () => {
 
 document.addEventListener("DOMContentLoaded", () => {
   // Signed-out visitors were already turned away by the server gate.
-  fetch(`${api}/user`, {
-    method: "GET",
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.result == "success") {
-        data = data.user;
-        userName = data.nickname;
-        settings = JSON.parse(data.settings);
-        initialize(true);
-        settingApply();
-      } else {
+  const request = (path) =>
+    fetch(`${api}/${path}`, { method: "GET", credentials: "include" }).then((res) => res.json());
+  Promise.all([request("user"), request("tracks")])
+    .then(([user, trackList]) => {
+      if (user.result != "success") {
         // The session is gone; sign out instead of leaving a dead page.
         window.location.href = "/logout";
+        return;
       }
-    })
-    .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
-    });
-  fetch(`${api}/tracks`, {
-    method: "GET",
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.result == "success") {
-        tracks = data.tracks;
-        for (let i = 0; tracks.length > i; i++) {
-          let option = document.createElement("option");
-          option.textContent = tracks[i].name;
-          if (tracks[i].type == 3) option.disabled = true;
-          songSelectBox.options.add(option);
-        }
-      } else {
+      if (trackList.result != "success") {
         alert("Failed to load song list.");
         console.error("Failed to load song list.");
+        return;
       }
+      tracks = trackList.tracks;
+      for (let i = 0; tracks.length > i; i++) {
+        let option = document.createElement("option");
+        option.textContent = tracks[i].name;
+        if (tracks[i].type == 3) option.disabled = true;
+        songSelectBox.options.add(option);
+      }
+      userName = user.user.nickname;
+      settings = JSON.parse(user.user.settings);
+      initialize(true);
+      settingApply();
     })
     .catch((error) => {
       alert(`Error occured.\n${error}`);
