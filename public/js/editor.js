@@ -602,14 +602,14 @@ const trackMouseSelection = (i, v1, v2, x, y, beats) => {
   }
 };
 
-const selectedCheck = (n, i) => {
-  return (
-    (pointingCntElement.v1 === n && pointingCntElement.i == i) ||
-    (selectedCntElement.v1 === n && selectedCntElement.i == i) ||
-    selection.has(pattern[elementKeys[n]][i]) ||
-    !!marquee?.hits.has(pattern[elementKeys[n]][i])
-  );
-};
+const isPointedElement = (n, i) => pointingCntElement.v1 === n && pointingCntElement.i == i;
+
+const isSelectedElement = (n, i) =>
+  (selectedCntElement.v1 === n && selectedCntElement.i == i) ||
+  selection.has(pattern[elementKeys[n]][i]) ||
+  !!marquee?.hits.has(pattern[elementKeys[n]][i]);
+
+const selectedCheck = (n, i) => isPointedElement(n, i) || isSelectedElement(n, i);
 
 // --- Min-heap helpers ---
 const _heapPush = (heap, item, cmp) => {
@@ -678,7 +678,7 @@ const timelineRowAt = (y) => {
   return v1 === -1 ? null : { v1, row };
 };
 
-const drawTimelineShape = (v1, x, y, w) => {
+const drawTimelineShape = (v1, x, y, w, outline) => {
   tmlCtx.beginPath();
   if (v1 == 0) {
     tmlCtx.arc(x, y, w, 0, 2 * Math.PI);
@@ -695,6 +695,13 @@ const drawTimelineShape = (v1, x, y, w) => {
     tmlCtx.closePath();
   }
   tmlCtx.fill();
+  if (!outline) return;
+  tmlCtx.save();
+  tmlCtx.strokeStyle = outline;
+  tmlCtx.lineWidth = Math.max(w / 5, pixelRatio * 1.5);
+  tmlCtx.lineJoin = "round";
+  tmlCtx.stroke();
+  tmlCtx.restore();
 };
 
 const setTimelineFilter = (filter) => {
@@ -741,32 +748,74 @@ const tmlRender = () => {
     tmlCtx.fillStyle = "#F3F3F3";
     tmlCtx.fillRect(tmlStartX, startY, endX - tmlStartX, endY - startY);
     tmlRows = { start: [0, 0, 0], count: [0, 0, 0], total: 0 };
-    const addRows = (v1, count) => {
-      tmlRows.start[v1] = tmlRows.total;
-      tmlRows.count[v1] = isKindShown(v1) ? count : 0;
-      tmlRows.total += tmlRows.count[v1];
-    };
     const rowY = (v1, lane) => startY + timelineYLoc + height * (tmlRows.start[v1] + lane) + height / 2;
     // Two elements (w = height/3) overlap when pixel distance < 2*w.
     // Converted to beats: overlapThreshold = (2 * height/3) / beatToPx.
     const overlapThreshold = beatToPx > 0 ? (2 * height) / (3 * beatToPx) : Infinity;
-    const elementColors = ["#fbaf34", "#4297d4", "#2ec90e"];
-
-    for (let v1 = 0; v1 < 3; v1++) {
+    const visible = [0, 1, 2].map((v1) => {
       const elements = pattern[elementKeys[v1]];
       const start = lowerBound(elements, renderStart);
       const end = upperBound(elements, renderEnd);
       const { laneOf, laneCount } =
         v1 == 0 ? { laneOf: [], laneCount: 1 } : assignLanes(elements, start, end, overlapThreshold);
-      addRows(v1, laneCount);
+      tmlRows.start[v1] = tmlRows.total;
+      tmlRows.count[v1] = isKindShown(v1) ? laneCount : 0;
+      tmlRows.total += tmlRows.count[v1];
+      return { elements, start, end, laneOf };
+    });
+
+    //Timeline row bands
+    for (let row = 0; row < tmlRows.total; row++) {
+      const top = startY + timelineYLoc + height * row;
+      if (row % 2) {
+        tmlCtx.fillStyle = "rgba(0, 0, 0, 0.025)";
+        tmlCtx.fillRect(tmlStartX, top, endX - tmlStartX, height);
+      }
+      if (row && tmlRows.start.includes(row)) {
+        tmlCtx.fillStyle = "#d4d4d4";
+        tmlCtx.fillRect(tmlStartX, top, endX - tmlStartX, pixelRatio);
+      }
+    }
+
+    //Timeline beat grid
+    for (let t = Math.floor(renderStart); t <= renderEnd; t++) {
+      for (let i = 0; i < split; i++) {
+        if (t + i / split < 0) continue;
+        const isBeat = i == 0;
+        if (isBeat ? beatToPx < 6 * pixelRatio && t % 4 : beatToPx / split < 8 * pixelRatio) continue;
+        const x = tmlStartX + parseInt((t - renderStart) * beatToPx) + (beatToPx / split) * i;
+        if (x < tmlStartX || x > endX) continue;
+        tmlCtx.fillStyle = !isBeat ? "rgba(0, 0, 0, 0.05)" : t % 4 == 0 ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.1)";
+        tmlCtx.fillRect(x, startY, pixelRatio, endY - startY);
+      }
+    }
+
+    //Timeline outside of the song
+    const songBeats = song.duration() ? beatAtMs(song.duration() * 1000) : 0;
+    tmlCtx.fillStyle = "rgba(0, 0, 0, 0.06)";
+    if (renderStart < 0) {
+      tmlCtx.fillRect(tmlStartX, startY, Math.min(-renderStart * beatToPx, endX - tmlStartX), endY - startY);
+    }
+    if (songBeats && songBeats < renderEnd) {
+      const songEndX = Math.max(tmlStartX + (songBeats - renderStart) * beatToPx, tmlStartX);
+      tmlCtx.fillRect(songEndX, startY, endX - songEndX, endY - startY);
+      tmlCtx.fillStyle = "#aaa";
+      tmlCtx.fillRect(songEndX, startY, pixelRatio, endY - startY);
+    }
+
+    //Timeline elements
+    const elementColors = ["#fbaf34", "#4297d4", "#2ec90e"];
+    for (let v1 = 0; v1 < 3; v1++) {
       if (!isKindShown(v1)) continue;
+      const { elements, start, end, laneOf } = visible[v1];
       for (let j = start; j < end; j++) {
         const x = tmlStartX + (elements[j].beat - renderStart) * beatToPx;
         const y = rowY(v1, laneOf[j - start] ?? 0);
         if (mouseMode == 1) trackMouseSelection(j, v1, v1 == 1 ? 0 : elements[j].value, x, y, beats);
         recordPosition(elements[j], x, y);
-        tmlCtx.fillStyle = selectedCheck(v1, j) ? "#ed5b45" : elementColors[v1];
-        drawTimelineShape(v1, x, y, height / 3);
+        tmlCtx.fillStyle = elementColors[v1];
+        const outline = isSelectedElement(v1, j) ? "#222" : isPointedElement(v1, j) ? "rgba(0, 0, 0, 0.35)" : null;
+        drawTimelineShape(v1, x, y, height / 3, outline);
       }
     }
 
@@ -780,15 +829,18 @@ const tmlRender = () => {
     tmlCtx.font = `${tmlCanvasH / 14}px ${FONT_STACK}`;
     const labelColors = ["#fbaf34", "#2f91ed", "#2ec90e"];
     for (let v1 = 0; v1 < 3; v1++) {
-      for (let lane = 0; lane < tmlRows.count[v1]; lane++) {
-        const y = rowY(v1, lane);
-        tmlCtx.beginPath();
-        tmlCtx.fillStyle = labelColors[v1];
-        tmlCtx.arc(startX, y, height / 6, 0, 2 * Math.PI);
-        tmlCtx.fill();
-        tmlCtx.fillStyle = "#111";
-        tmlCtx.fillText(["Note", "Bullet", "Trigger"][v1], startX * 1.2 + height / 6, y + height / 18);
+      if (!tmlRows.count[v1]) continue;
+      const y = rowY(v1, 0);
+      if (tmlRows.start[v1]) {
+        tmlCtx.fillStyle = "#d4d4d4";
+        tmlCtx.fillRect(startX / 2, y - height / 2, tmlStartX - startX / 2, pixelRatio);
       }
+      tmlCtx.beginPath();
+      tmlCtx.fillStyle = labelColors[v1];
+      tmlCtx.arc(startX, y, height / 6, 0, 2 * Math.PI);
+      tmlCtx.fill();
+      tmlCtx.fillStyle = "#111";
+      tmlCtx.fillText(["Note", "Bullet", "Trigger"][v1], startX * 1.2 + height / 6, y + height / 18);
     }
 
     //Timeline time line + text
@@ -899,7 +951,7 @@ const tmlRender = () => {
 
     //Scrollbars
     const barSize = tmlCanvasH / 45;
-    const totalBeats = song.duration() ? beatAtMs(song.duration() * 1000) : 0;
+    const totalBeats = songBeats;
     const horizontal = { x: tmlStartX, y: endY - barSize * 1.5, w: endX - tmlStartX, h: barSize, max: totalBeats };
     horizontal.size = Math.max(horizontal.w * Math.min((17 * zoom) / (totalBeats + 17 * zoom), 1), barSize * 2);
     horizontal.thumb =
