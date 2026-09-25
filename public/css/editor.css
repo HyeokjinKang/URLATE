@@ -561,7 +561,7 @@ body {
 
 .timelineFilterShape.note {
   border-radius: 50%;
-  background-color: #fbaf34;
+  background: var(--timeline-note-color, #f59b42);
 }
 
 .timelineFilterShape.bullet {
@@ -570,11 +570,10 @@ body {
 }
 
 .timelineFilterShape.trigger {
-  width: 0;
-  height: 0;
-  border-top: 0.5vh solid transparent;
-  border-bottom: 0.5vh solid transparent;
-  border-left: 0.9vh solid #2ec90e;
+  width: 1.1vh;
+  height: 0.9vh;
+  border-radius: 0.2vh;
+  background-color: #16a085;
 }
 
 .timeline-icon {

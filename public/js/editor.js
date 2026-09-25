@@ -496,6 +496,7 @@ const initialize = (isFirstCalled) => {
       .then((res) => res.json())
       .then((data) => {
         skin = data;
+        applySkinColors();
         Draw = new Renderer(cntCtx, { canvasW, canvasH }, skin);
       })
       .catch((error) => {
@@ -678,17 +679,46 @@ const timelineRowAt = (y) => {
   return v1 === -1 ? null : { v1, row };
 };
 
-const noteColors = { 0: "#f59b42", 1: "#f54e42", 2: "#573fa6" };
+const fallbackNoteColors = { 0: "#f59b42", 1: "#f54e42", 2: "#573fa6" };
 
-const triggerStyles = {
-  "-1": ["?", "#b0b0b0"],
-  0: ["D", "#e8604c"],
-  1: ["DA", "#b8433a"],
-  2: ["B", "#8e5cd9"],
-  3: ["O", "#7f8c8d"],
-  4: ["S", "#16a085"],
-  5: ["T", "#d4a017"],
-  6: ["E", "#34495e"],
+const triggerColor = "#16a085";
+
+const triggerLabels = { "-1": "?", 0: "D", 1: "DA", 2: "B", 3: "O", 4: "S", 5: "T", 6: "E" };
+
+const noteSkin = (value) => skin?.note?.[value] ?? skin?.note?.[0];
+
+const noteColor = (value) => {
+  const part = noteSkin(value);
+  const color = part?.type == "gradient" ? part.stops[0]?.color : part?.color;
+  return color ?? fallbackNoteColors[value] ?? fallbackNoteColors[0];
+};
+
+const noteGradientCss = (value) => {
+  const part = noteSkin(value);
+  if (part?.type != "gradient") return null;
+  return `linear-gradient(135deg, ${part.stops.map(({ color, percentage }) => `${color} ${percentage}%`).join(", ")})`;
+};
+
+const noteFill = (value, x, y, size) => {
+  const part = noteSkin(value);
+  if (part?.type != "gradient") return noteColor(value);
+  const gradient = tmlCtx.createLinearGradient(x - size, y - size, x + size, y + size);
+  for (const { color, percentage } of part.stops) gradient.addColorStop(percentage / 100, color);
+  return gradient;
+};
+
+const setDotColor = (color, gradient = null) => {
+  const dot = document.getElementById("dot");
+  dot.style.color = gradient ? "transparent" : color;
+  dot.style.backgroundImage = gradient ?? "";
+  dot.style.backgroundClip = gradient ? "text" : "";
+  dot.style.webkitBackgroundClip = gradient ? "text" : "";
+};
+
+const applySkinColors = () => {
+  document.documentElement.style.setProperty("--timeline-note-color", noteGradientCss(0) ?? noteColor(0));
+  if (selectedCntElement.v1 === 0) changeSettingsMode(0, selectedCntElement.v2, selectedCntElement.i);
+  isTmlUpdateNeeded = true;
 };
 
 const drawTimelineShape = (v1, x, y, w, outline, label) => {
@@ -844,7 +874,7 @@ const tmlRender = () => {
         recordPosition(element, x, y);
         const outline = isSelectedElement(v1, j) ? "#222" : isPointedElement(v1, j) ? "rgba(0, 0, 0, 0.35)" : null;
         if (v1 == 0) {
-          tmlCtx.fillStyle = noteColors[element.value] ?? noteColors[0];
+          tmlCtx.fillStyle = noteColor(element.value);
           if (element.value == 2 && element.duration > 0) {
             tmlCtx.save();
             tmlCtx.globalAlpha = 0.35;
@@ -853,14 +883,14 @@ const tmlRender = () => {
             tmlCtx.fill();
             tmlCtx.restore();
           }
+          tmlCtx.fillStyle = noteFill(element.value, x, y, w);
           drawTimelineShape(0, x, y, w, outline);
         } else if (v1 == 1) {
           tmlCtx.fillStyle = "#4297d4";
           drawTimelineShape(1, x, y, w, outline);
         } else {
-          const [label, color] = triggerStyles[element.value] ?? triggerStyles[-1];
-          tmlCtx.fillStyle = color;
-          drawTimelineShape(2, x, y, w, outline, label);
+          tmlCtx.fillStyle = triggerColor;
+          drawTimelineShape(2, x, y, w, outline, triggerLabels[element.value] ?? triggerLabels[-1]);
         }
       }
     }
@@ -901,7 +931,7 @@ const tmlRender = () => {
     tmlCtx.textAlign = "left";
     tmlCtx.textBaseline = "middle";
     tmlCtx.font = `${tmlCanvasH / 14}px ${FONT_STACK}`;
-    const labelColors = ["#fbaf34", "#2f91ed", "#2ec90e"];
+    const labelColors = [null, "#2f91ed", triggerColor];
     for (let v1 = 0; v1 < 3; v1++) {
       if (!tmlRows.count[v1]) continue;
       const y = rowY(v1, 0);
@@ -910,7 +940,7 @@ const tmlRender = () => {
         tmlCtx.fillRect(startX / 2, y - height / 2, tmlStartX - startX / 2, pixelRatio);
       }
       tmlCtx.beginPath();
-      tmlCtx.fillStyle = labelColors[v1];
+      tmlCtx.fillStyle = labelColors[v1] ?? noteFill(0, startX, y, height / 6);
       tmlCtx.arc(startX, y, height / 6, 0, 2 * Math.PI);
       tmlCtx.fill();
       tmlCtx.fillStyle = "#111";
@@ -2197,7 +2227,7 @@ const changeSettingsMode = (v1, v2, i) => {
     case -1:
       trackSettings.style.display = "block";
       elementsSettings.style.display = "none";
-      document.getElementById("dot").style.color = "#9d4ec2";
+      setDotColor("#9d4ec2");
       document.getElementById("settingsNameSpace").innerText = "Settings";
       document.getElementById("trackSettings").style.display = "block";
       document.getElementById("elementsSettings").style.display = "none";
@@ -2218,17 +2248,17 @@ const changeSettingsMode = (v1, v2, i) => {
       noteSettingsContainer.getElementsByClassName("settingsPropertiesTextbox")[4].value = pattern.patterns[i].duration;
       switch (v2) {
         case 0:
-          document.getElementById("dot").style.color = "#f59b42";
+          setDotColor(noteColor(0), noteGradientCss(0));
           noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[3].style.display = "none";
           noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[4].style.display = "none";
           break;
         case 1:
-          document.getElementById("dot").style.color = "#f54e42";
+          setDotColor(noteColor(1), noteGradientCss(1));
           noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[3].style.display = "flex";
           noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[4].style.display = "none";
           break;
         case 2:
-          document.getElementById("dot").style.color = "#573fa6";
+          setDotColor(noteColor(2), noteGradientCss(2));
           noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[3].style.display = "none";
           noteSettingsContainer.getElementsByClassName("settingsPropertiesIndividual")[4].style.display = "flex";
           break;
@@ -2238,7 +2268,7 @@ const changeSettingsMode = (v1, v2, i) => {
       break;
     case 1:
       document.getElementById("settingsNameSpace").innerText = `Bullet_${i}`;
-      document.getElementById("dot").style.color = "#6fdef7";
+      setDotColor("#6fdef7");
       document.getElementById("noteSettingsContainer").style.display = "none";
       document.getElementById("triggerSettingsContainer").style.display = "none";
       document.getElementById("bulletSettingsContainer").style.display = "block";
@@ -2253,7 +2283,7 @@ const changeSettingsMode = (v1, v2, i) => {
       break;
     case 2:
       document.getElementById("settingsNameSpace").innerText = `Trigger_${i}`;
-      document.getElementById("dot").style.color = "#36bf24";
+      setDotColor(triggerColor);
       document.getElementById("trackSettings").style.display = "none";
       document.getElementById("elementsSettings").style.display = "block";
       document.getElementById("noteSettingsContainer").style.display = "none";
@@ -2552,7 +2582,7 @@ const showSelectionSettings = (v1) => {
   const kinds = elementKeys.map((_, kind) => elements.filter((entry) => entry.v1 === kind).length);
   if (kinds.filter(Boolean).length > 1) {
     document.getElementById("settingsNameSpace").innerText = `Mixed (${elements.length})`;
-    document.getElementById("dot").style.color = "#999";
+    setDotColor("#999");
     for (const id of [
       "noteSettingsContainer",
       "bulletSettingsContainer",
