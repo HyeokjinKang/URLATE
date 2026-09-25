@@ -811,9 +811,7 @@ const tmlRender = () => {
     //Timeline time line + text
     timelineElementNum = i;
     tmlCtx.fillStyle = "#FFF";
-    tmlCtx.fillRect(0, endY, tmlCanvasW, tmlCanvasH - endY);
-    tmlCtx.fillRect(0, 0, endX, startY);
-    tmlCtx.fillRect(endX, startY, tmlCanvasW, tmlCanvasH);
+    tmlCtx.fillRect(0, 0, tmlCanvasW, startY);
     tmlCtx.font = `${tmlCanvasH / 16}px ${FONT_STACK}`;
     tmlCtx.textAlign = "center";
     tmlCtx.textBaseline = "bottom";
@@ -842,6 +840,8 @@ const tmlRender = () => {
     //Cover the overflowed
     tmlCtx.fillStyle = "#FFF";
     tmlCtx.fillRect(0, 0, tmlStartX, startY);
+    tmlCtx.fillRect(0, endY, tmlCanvasW, tmlCanvasH - endY);
+    tmlCtx.fillRect(endX, startY, tmlCanvasW, tmlCanvasH);
 
     //Timeline time text
     tmlCtx.fillStyle = "#2f91ed";
