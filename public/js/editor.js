@@ -941,7 +941,8 @@ const tmlRender = () => {
     tmlCtx.textAlign = "left";
     tmlCtx.textBaseline = "middle";
     tmlCtx.font = `${tmlCanvasH / 14}px ${FONT_STACK}`;
-    const labelColors = [null, "#2f91ed", triggerStyles[4][1]];
+    const labelColors = [null, "#4297d4", triggerStyles[4][1]];
+    const iconSize = height / 3;
     for (let v1 = 0; v1 < 3; v1++) {
       if (!tmlRows.count[v1]) continue;
       const y = rowY(v1, 0);
@@ -950,8 +951,18 @@ const tmlRender = () => {
         tmlCtx.fillRect(startX / 2, y - height / 2, tmlStartX - startX / 2, pixelRatio);
       }
       tmlCtx.beginPath();
-      tmlCtx.fillStyle = labelColors[v1] ?? noteFill(0, startX, y, height / 6);
-      tmlCtx.arc(startX, y, height / 6, 0, 2 * Math.PI);
+      tmlCtx.fillStyle = labelColors[v1] ?? noteFill(0, startX, y, iconSize / 2);
+      if (v1 == 0) {
+        tmlCtx.arc(startX, y, iconSize / 2, 0, 2 * Math.PI);
+      } else if (v1 == 1) {
+        tmlCtx.moveTo(startX - iconSize * 0.6, y);
+        tmlCtx.lineTo(startX, y + iconSize * 0.6);
+        tmlCtx.lineTo(startX + iconSize * 0.6, y);
+        tmlCtx.lineTo(startX, y - iconSize * 0.6);
+        tmlCtx.closePath();
+      } else {
+        tmlCtx.roundRect(startX - iconSize / 2, y - iconSize / 2, iconSize, iconSize, iconSize * 0.22);
+      }
       tmlCtx.fill();
       tmlCtx.fillStyle = "#111";
       tmlCtx.fillText(["Note", "Bullet", "Trigger"][v1], startX * 1.2 + height / 6, y + height / 18);

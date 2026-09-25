@@ -570,7 +570,7 @@ body {
 }
 
 .timelineFilterShape.trigger {
-  width: 1.1vh;
+  width: 0.9vh;
   height: 0.9vh;
   border-radius: 0.2vh;
   background-color: #16a085;
