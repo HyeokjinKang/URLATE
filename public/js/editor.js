@@ -93,8 +93,8 @@ let patternSeek = -1;
 let clipboard = null;
 let destroyParticles = [];
 let pixelRatio = window.devicePixelRatio;
-let bulletsOverlapNum = 1;
-let triggersOverlapNum = 2;
+let tmlRows = { start: [0, 1, 2], count: [1, 1, 1], total: 3 };
+let timelineFilter = "all";
 let skin, denyCursor;
 let dragMouseX, dragMouseY, dragGroup, marquee;
 let tmlPositions = [],
@@ -502,6 +502,13 @@ const initialize = (isFirstCalled) => {
         alert(`Error occured.\n${error}`);
         console.error(`Error occured.\n${error}`);
       });
+    let storedFilter;
+    try {
+      storedFilter = localStorage.timelineFilter;
+    } catch (e) {
+      console.warn(e);
+    }
+    setTimelineFilter(storedFilter);
     if (localStorage.pattern) {
       restoreFileHandle();
       pattern = JSON.parse(localStorage.pattern);
@@ -663,6 +670,52 @@ const assignLanes = (elements, start, end, overlapThreshold) => {
   return { laneOf, laneCount: nextLane || 1 };
 };
 
+const isKindShown = (v1) => timelineFilter == "all" || timelineFilter == v1;
+
+const timelineRowAt = (y) => {
+  const row = Math.floor((y - tmlCanvasH / 6) / (tmlCanvasH / 9));
+  const v1 = tmlRows.start.findIndex((start, kind) => row >= start && row < start + tmlRows.count[kind]);
+  return v1 === -1 ? null : { v1, row };
+};
+
+const drawTimelineShape = (v1, x, y, w) => {
+  tmlCtx.beginPath();
+  if (v1 == 0) {
+    tmlCtx.arc(x, y, w, 0, 2 * Math.PI);
+  } else if (v1 == 1) {
+    tmlCtx.moveTo(x - w, y);
+    tmlCtx.lineTo(x, y + w);
+    tmlCtx.lineTo(x + w, y);
+    tmlCtx.lineTo(x, y - w);
+    tmlCtx.closePath();
+  } else {
+    tmlCtx.moveTo(x - w / 1.1, y - w);
+    tmlCtx.lineTo(x + w / 1.1, y);
+    tmlCtx.lineTo(x - w / 1.1, y + w);
+    tmlCtx.closePath();
+  }
+  tmlCtx.fill();
+};
+
+const setTimelineFilter = (filter) => {
+  timelineFilter = ["0", "1", "2"].includes(String(filter)) ? Number(filter) : "all";
+  for (const chip of document.getElementsByClassName("timelineFilter")) {
+    chip.classList.toggle("selected", chip.dataset.arg == String(timelineFilter));
+  }
+  try {
+    localStorage.timelineFilter = timelineFilter;
+  } catch (e) {
+    console.warn(e);
+  }
+  const hidden = selectedElements().filter(({ v1 }) => !isKindShown(v1));
+  if (hidden.length) {
+    for (const { element } of hidden) selection.delete(element);
+    if (!isKindShown(selectedCntElement.v1)) selectedCntElement = { v1: "", v2: "", i: "" };
+    ensurePrimary();
+  }
+  setScrollRow(0);
+};
+
 const tmlRender = () => {
   try {
     //Initialize
@@ -687,93 +740,34 @@ const tmlRender = () => {
     tmlCtx.beginPath();
     tmlCtx.fillStyle = "#F3F3F3";
     tmlCtx.fillRect(tmlStartX, startY, endX - tmlStartX, endY - startY);
-    let start = lowerBound(pattern.patterns, renderStart);
-    let end = upperBound(pattern.patterns, renderEnd);
-
-    //Timeline notes
-    for (let j = start; j < end; j++) {
-      tmlCtx.beginPath();
-      let x = tmlStartX + (pattern.patterns[j].beat - renderStart) * beatToPx;
-      let y = startY + timelineYLoc + height / 2;
-
-      if (mouseMode == 1) trackMouseSelection(j, 0, pattern.patterns[j].value, x, y, beats);
-      recordPosition(pattern.patterns[j], x, y);
-
-      if (selectedCheck(0, j)) {
-        tmlCtx.fillStyle = "#ed5b45";
-      } else {
-        tmlCtx.fillStyle = "#fbaf34";
-      }
-      tmlCtx.arc(x, y, height / 3, 0, 2 * Math.PI);
-      tmlCtx.fill();
-    }
-
-    //Timeline bullets
-    start = lowerBound(pattern.bullets, renderStart);
-    end = upperBound(pattern.bullets, renderEnd);
-
+    tmlRows = { start: [0, 0, 0], count: [0, 0, 0], total: 0 };
+    const addRows = (v1, count) => {
+      tmlRows.start[v1] = tmlRows.total;
+      tmlRows.count[v1] = isKindShown(v1) ? count : 0;
+      tmlRows.total += tmlRows.count[v1];
+    };
+    const rowY = (v1, lane) => startY + timelineYLoc + height * (tmlRows.start[v1] + lane) + height / 2;
     // Two elements (w = height/3) overlap when pixel distance < 2*w.
     // Converted to beats: overlapThreshold = (2 * height/3) / beatToPx.
     const overlapThreshold = beatToPx > 0 ? (2 * height) / (3 * beatToPx) : Infinity;
+    const elementColors = ["#fbaf34", "#4297d4", "#2ec90e"];
 
-    const { laneOf: bulletLane, laneCount: bulletLaneCount } = assignLanes(
-      pattern.bullets,
-      start,
-      end,
-      overlapThreshold,
-    );
-    bulletsOverlapNum = bulletLaneCount;
-
-    //Draw bullets
-    for (let j = start; j < end; j++) {
-      tmlCtx.beginPath();
-      const x = tmlStartX + parseInt((pattern.bullets[j].beat - renderStart) * beatToPx);
-      const lane = bulletLane[j - start];
-      const y = startY + timelineYLoc + height * (lane + 1) + height / 2;
-      const w = height / 3;
-
-      if (mouseMode == 1) trackMouseSelection(j, 1, 0, x, y, beats);
-      recordPosition(pattern.bullets[j], x, y);
-
-      tmlCtx.fillStyle = selectedCheck(1, j) ? "#ed5b45" : "#4297d4";
-      tmlCtx.moveTo(x - w, y);
-      tmlCtx.lineTo(x, y + w);
-      tmlCtx.lineTo(x + w, y);
-      tmlCtx.lineTo(x, y - w);
-      tmlCtx.lineTo(x - w, y);
-      tmlCtx.fill();
-    }
-
-    //Timeline triggers
-    start = lowerBound(pattern.triggers, renderStart);
-    end = upperBound(pattern.triggers, renderEnd);
-
-    const { laneOf: triggerLane, laneCount: triggerLaneCount } = assignLanes(
-      pattern.triggers,
-      start,
-      end,
-      overlapThreshold,
-    );
-    // triggersOverlapNum - 1 = number of trigger rows (preserved for mouse hit detection and labels)
-    triggersOverlapNum = triggerLaneCount + 1;
-
-    //Draw triggers
-    for (let j = start; j < end; j++) {
-      tmlCtx.beginPath();
-      const x = tmlStartX + parseInt((pattern.triggers[j].beat - renderStart) * beatToPx);
-      const lane = triggerLane[j - start];
-      const y = startY + timelineYLoc + height * (bulletsOverlapNum + 1 + lane) + height / 2;
-      const w = height / 3;
-
-      if (mouseMode == 1) trackMouseSelection(j, 2, pattern.triggers[j].value, x, y, beats);
-      recordPosition(pattern.triggers[j], x, y);
-
-      tmlCtx.fillStyle = selectedCheck(2, j) ? "#ed5b45" : "#2ec90e";
-      tmlCtx.moveTo(x - w / 1.1, y - w);
-      tmlCtx.lineTo(x + w / 1.1, y);
-      tmlCtx.lineTo(x - w / 1.1, y + w);
-      tmlCtx.lineTo(x - w / 1.1, y - w);
-      tmlCtx.fill();
+    for (let v1 = 0; v1 < 3; v1++) {
+      const elements = pattern[elementKeys[v1]];
+      const start = lowerBound(elements, renderStart);
+      const end = upperBound(elements, renderEnd);
+      const { laneOf, laneCount } =
+        v1 == 0 ? { laneOf: [], laneCount: 1 } : assignLanes(elements, start, end, overlapThreshold);
+      addRows(v1, laneCount);
+      if (!isKindShown(v1)) continue;
+      for (let j = start; j < end; j++) {
+        const x = tmlStartX + (elements[j].beat - renderStart) * beatToPx;
+        const y = rowY(v1, laneOf[j - start] ?? 0);
+        if (mouseMode == 1) trackMouseSelection(j, v1, v1 == 1 ? 0 : elements[j].value, x, y, beats);
+        recordPosition(elements[j], x, y);
+        tmlCtx.fillStyle = selectedCheck(v1, j) ? "#ed5b45" : elementColors[v1];
+        drawTimelineShape(v1, x, y, height / 3);
+      }
     }
 
     //Cover the overflowed
@@ -781,35 +775,24 @@ const tmlRender = () => {
     tmlCtx.fillRect(0, 0, tmlStartX, endY);
 
     //Timeline elements text(Notes, Bullets, Triggers)
-    tmlCtx.beginPath();
-    tmlCtx.fillStyle = "#fbaf34";
-    tmlCtx.arc(startX, startY + height / 2 + timelineYLoc, height / 6, 0, 2 * Math.PI);
-    tmlCtx.fill();
-    tmlCtx.fillStyle = "#111";
     tmlCtx.textAlign = "left";
     tmlCtx.textBaseline = "middle";
     tmlCtx.font = `${tmlCanvasH / 14}px ${FONT_STACK}`;
-    tmlCtx.fillText("Note", startX * 1.2 + height / 6, startY + timelineYLoc + height / 1.8);
-    let i = 1;
-    for (i; i <= bulletsOverlapNum; i++) {
-      tmlCtx.beginPath();
-      tmlCtx.fillStyle = "#2f91ed";
-      tmlCtx.arc(startX, startY + timelineYLoc + height * i + height / 2, height / 6, 0, 2 * Math.PI);
-      tmlCtx.fill();
-      tmlCtx.fillStyle = "#111";
-      tmlCtx.fillText("Bullet", startX * 1.2 + height / 6, startY + timelineYLoc + height * i + height / 1.8);
-    }
-    for (i; i < bulletsOverlapNum + triggersOverlapNum; i++) {
-      tmlCtx.beginPath();
-      tmlCtx.fillStyle = "#2ec90e";
-      tmlCtx.arc(startX, startY + height * i + height / 2 + timelineYLoc, height / 6, 0, 2 * Math.PI);
-      tmlCtx.fill();
-      tmlCtx.fillStyle = "#111";
-      tmlCtx.fillText("Trigger", startX * 1.2 + height / 6, startY + timelineYLoc + height * i + height / 1.8);
+    const labelColors = ["#fbaf34", "#2f91ed", "#2ec90e"];
+    for (let v1 = 0; v1 < 3; v1++) {
+      for (let lane = 0; lane < tmlRows.count[v1]; lane++) {
+        const y = rowY(v1, lane);
+        tmlCtx.beginPath();
+        tmlCtx.fillStyle = labelColors[v1];
+        tmlCtx.arc(startX, y, height / 6, 0, 2 * Math.PI);
+        tmlCtx.fill();
+        tmlCtx.fillStyle = "#111";
+        tmlCtx.fillText(["Note", "Bullet", "Trigger"][v1], startX * 1.2 + height / 6, y + height / 18);
+      }
     }
 
     //Timeline time line + text
-    timelineElementNum = i;
+    timelineElementNum = tmlRows.total;
     tmlCtx.fillStyle = "#FFF";
     tmlCtx.fillRect(0, 0, tmlCanvasW, startY);
     tmlCtx.font = `${tmlCanvasH / 16}px ${FONT_STACK}`;
@@ -897,42 +880,20 @@ const tmlRender = () => {
     //Add mode yellow preview
     if (mode == 2 && mouseMode == 1) {
       if (mouseX > tmlStartX && mouseX < endX && mouseY > startY && mouseY < endY) {
-        let height = tmlCanvasH / 9;
-        let w = height / 3;
-        let mousePosY = mouseY - timelineYLoc;
-        // Calculate snapped beat position for preview
+        const target = timelineRowAt(mouseY - timelineYLoc);
         let previewBeat = beats + (mouseX - tmlStartX) / beatToPx - zoom;
         if (previewBeat <= 0) previewBeat = 0;
         previewBeat = Number(previewBeat.toPrecision(10));
         previewBeat = magnetToggle ? Math.round(previewBeat * split) / split : previewBeat;
-        let previewX = tmlStartX + (previewBeat - renderStart) * beatToPx;
-        tmlCtx.beginPath();
-        tmlCtx.fillStyle = "#ebd534";
-        if (mousePosY >= startY && mousePosY <= startY + height) {
-          tmlCtx.arc(previewX, startY + height / 2, w, 0, 2 * Math.PI);
-        } else if (mousePosY >= startY + height && mousePosY <= startY + height * (bulletsOverlapNum + 1)) {
-          let mouseYLocCount =
-            1 +
-            bulletsOverlapNum -
-            Math.round(Math.round(2 * startY + height * bulletsOverlapNum - mousePosY) / height);
-          let y = startY + height * mouseYLocCount + height / 2 + timelineYLoc;
-          tmlCtx.moveTo(previewX - w, y);
-          tmlCtx.lineTo(previewX, y + w);
-          tmlCtx.lineTo(previewX + w, y);
-          tmlCtx.lineTo(previewX, y - w);
-          tmlCtx.lineTo(previewX - w, y);
-        } else if (
-          mousePosY >= startY + height * (bulletsOverlapNum + 1) &&
-          mousePosY <= startY + height * (bulletsOverlapNum + 1) + height * (triggersOverlapNum - 1)
-        ) {
-          let mouseYLocCount = -(1 - Math.round((mousePosY - height - height * (bulletsOverlapNum + 1)) / height));
-          let y = startY + height * (bulletsOverlapNum + 1) + height * mouseYLocCount + height / 2 + timelineYLoc;
-          tmlCtx.moveTo(previewX - w / 1.1, y - w);
-          tmlCtx.lineTo(previewX + w / 1.1, y);
-          tmlCtx.lineTo(previewX - w / 1.1, y + w);
-          tmlCtx.lineTo(previewX - w / 1.1, y - w);
+        if (target) {
+          tmlCtx.fillStyle = "#ebd534";
+          drawTimelineShape(
+            target.v1,
+            tmlStartX + (previewBeat - renderStart) * beatToPx,
+            startY + timelineYLoc + height * target.row + height / 2,
+            height / 3,
+          );
         }
-        tmlCtx.fill();
       }
     }
 
@@ -1975,7 +1936,6 @@ const copySeek = () => {
 
 const timelineAddElement = () => {
   let startY = tmlCanvasH / 6;
-  let height = tmlCanvasH / 9;
   const beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
   const tmlStartX = tmlCanvasW / 10;
   const beatToPx = (tmlCanvasW / 1.01 - tmlStartX) / (17 * zoom);
@@ -1983,9 +1943,11 @@ const timelineAddElement = () => {
   if (calculatedBeat <= 0) calculatedBeat = 0;
   calculatedBeat = Number(calculatedBeat.toPrecision(10));
   calculatedBeat = magnetToggle ? Math.round(calculatedBeat * split) / split : calculatedBeat;
-  let mousePosY = mouseY - timelineYLoc;
+  const target = timelineRowAt(mouseY - timelineYLoc);
   if (mouseX > tmlCanvasW / 10 && mouseX < tmlCanvasW / 1.01 && mouseY > startY && mouseY < tmlCanvasH / 1.1) {
-    if (mousePosY >= startY && mousePosY <= startY + height) {
+    if (!target) {
+      return;
+    } else if (target.v1 == 0) {
       let newElement = {
         beat: calculatedBeat,
         value: selectedValue,
@@ -1995,7 +1957,7 @@ const timelineAddElement = () => {
         duration: 4,
       };
       addElement(0, newElement);
-    } else if (mousePosY >= startY + height && mousePosY <= startY + height * (bulletsOverlapNum + 1)) {
+    } else if (target.v1 == 1) {
       let newElement = {
         beat: calculatedBeat,
         direction: "L",
@@ -2004,10 +1966,7 @@ const timelineAddElement = () => {
         speed: 2,
       };
       addElement(1, newElement);
-    } else if (
-      mousePosY >= startY + height * (bulletsOverlapNum + 1) &&
-      mousePosY <= startY + height * (bulletsOverlapNum + 1) + height * (triggersOverlapNum + 1)
-    ) {
+    } else {
       let newElement = {
         beat: calculatedBeat,
         value: -1,
@@ -2025,8 +1984,6 @@ const timelineAddElement = () => {
         text: "",
       };
       addElement(2, newElement);
-    } else {
-      return;
     }
     changeSettingsMode(selectedCntElement.v1, selectedCntElement.v2, selectedCntElement.i);
     selection.clear();
@@ -2712,7 +2669,7 @@ const nudgeElements = (direction) => {
 };
 
 const selectAll = () => {
-  selection = new Set(elementKeys.flatMap((key) => pattern[key]));
+  selection = new Set(elementKeys.flatMap((key, v1) => (isKindShown(v1) ? pattern[key] : [])));
   ensurePrimary();
   isTmlUpdateNeeded = true;
 };
@@ -3242,6 +3199,7 @@ const clickActions = {
   loadEditor,
   newEditor,
   save,
+  setTimelineFilter,
   songPlayPause,
   songSelected,
   stopBtn,

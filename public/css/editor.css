@@ -523,6 +523,60 @@ body {
   left: 11vw;
 }
 
+#timelineFilterController {
+  align-items: center;
+  gap: 0.3vh;
+  bottom: 1.2vh;
+  left: 1vw;
+}
+
+.timelineFilter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.2vh;
+  height: 1.9vh;
+  padding: 0 0.4vh;
+  box-sizing: border-box;
+  border-radius: 0.4vh;
+  font-size: 1.1vh;
+  font-weight: 600;
+  color: #888;
+}
+
+.timelineFilter:hover {
+  background-color: #f0f0f0;
+}
+
+.timelineFilter.selected {
+  background-color: #e4e4e4;
+  color: #333;
+}
+
+.timelineFilterShape {
+  display: block;
+  width: 0.9vh;
+  height: 0.9vh;
+}
+
+.timelineFilterShape.note {
+  border-radius: 50%;
+  background-color: #fbaf34;
+}
+
+.timelineFilterShape.bullet {
+  transform: rotate(45deg) scale(0.85);
+  background-color: #4297d4;
+}
+
+.timelineFilterShape.trigger {
+  width: 0;
+  height: 0;
+  border-top: 0.5vh solid transparent;
+  border-bottom: 0.5vh solid transparent;
+  border-left: 0.9vh solid #2ec90e;
+}
+
 .timeline-icon {
   height: 2vh;
 }

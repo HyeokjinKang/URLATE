@@ -717,6 +717,20 @@
       <div id="timelineSplitController" class="controllers">
         <span class="clickable" id="split" data-action="changeSplit">1/2</span>
       </div>
+      <div id="timelineFilterController" class="controllers">
+        <span class="timelineFilter clickable selected" data-action="setTimelineFilter" data-arg="all" title="All"
+          >All</span
+        >
+        <span class="timelineFilter clickable" data-action="setTimelineFilter" data-arg="0" title="Notes only"
+          ><span class="timelineFilterShape note"></span
+        ></span>
+        <span class="timelineFilter clickable" data-action="setTimelineFilter" data-arg="1" title="Bullets only"
+          ><span class="timelineFilterShape bullet"></span
+        ></span>
+        <span class="timelineFilter clickable" data-action="setTimelineFilter" data-arg="2" title="Triggers only"
+          ><span class="timelineFilterShape trigger"></span
+        ></span>
+      </div>
     </div>
     <div class="overlay" id="volumeOverlay">
       <p class="optionSemiTitle"><%= __('volume') %></p>
