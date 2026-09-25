@@ -723,6 +723,11 @@ const setTimelineFilter = (filter) => {
   setScrollRow(0);
 };
 
+const cycleTimelineFilter = (direction) => {
+  const filters = ["all", 0, 1, 2];
+  setTimelineFilter(filters[(filters.indexOf(timelineFilter) + direction + filters.length) % filters.length]);
+};
+
 const tmlRender = () => {
   try {
     //Initialize
@@ -3138,6 +3143,9 @@ document.addEventListener("keydown", (e) => {
       if (document.getElementsByClassName("iziToast-overlay").length == 0) {
         changeMode(2);
       }
+    } else if (e.key == "Tab") {
+      e.preventDefault();
+      cycleTimelineFilter(shiftDown ? -1 : 1);
     } else if (e.altKey && (e.key == "ArrowLeft" || e.key == "ArrowRight")) {
       e.preventDefault();
       nudgeElements(e.key == "ArrowLeft" ? -1 : 1);
