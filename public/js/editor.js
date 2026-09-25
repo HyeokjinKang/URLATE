@@ -681,9 +681,16 @@ const timelineRowAt = (y) => {
 
 const fallbackNoteColors = { 0: "#f59b42", 1: "#f54e42", 2: "#573fa6" };
 
-const triggerColor = "#16a085";
-
-const triggerLabels = { "-1": "?", 0: "D", 1: "DA", 2: "B", 3: "O", 4: "S", 5: "T", 6: "E" };
+const triggerStyles = {
+  "-1": ["?", "#b0b0b0"],
+  0: ["D", "#e8604c"],
+  1: ["DA", "#b8433a"],
+  2: ["B", "#8e5cd9"],
+  3: ["O", "#7f8c8d"],
+  4: ["S", "#16a085"],
+  5: ["T", "#d4a017"],
+  6: ["E", "#34495e"],
+};
 
 const noteSkin = (value) => skin?.note?.[value] ?? skin?.note?.[0];
 
@@ -889,8 +896,9 @@ const tmlRender = () => {
           tmlCtx.fillStyle = "#4297d4";
           drawTimelineShape(1, x, y, w, outline);
         } else {
-          tmlCtx.fillStyle = triggerColor;
-          drawTimelineShape(2, x, y, w, outline, triggerLabels[element.value] ?? triggerLabels[-1]);
+          const [label, color] = triggerStyles[element.value] ?? triggerStyles[-1];
+          tmlCtx.fillStyle = color;
+          drawTimelineShape(2, x, y, w, outline, label);
         }
       }
     }
@@ -931,7 +939,7 @@ const tmlRender = () => {
     tmlCtx.textAlign = "left";
     tmlCtx.textBaseline = "middle";
     tmlCtx.font = `${tmlCanvasH / 14}px ${FONT_STACK}`;
-    const labelColors = [null, "#2f91ed", triggerColor];
+    const labelColors = [null, "#2f91ed", triggerStyles[4][1]];
     for (let v1 = 0; v1 < 3; v1++) {
       if (!tmlRows.count[v1]) continue;
       const y = rowY(v1, 0);
@@ -2283,7 +2291,7 @@ const changeSettingsMode = (v1, v2, i) => {
       break;
     case 2:
       document.getElementById("settingsNameSpace").innerText = `Trigger_${i}`;
-      setDotColor(triggerColor);
+      setDotColor("#36bf24");
       document.getElementById("trackSettings").style.display = "none";
       document.getElementById("elementsSettings").style.display = "block";
       document.getElementById("noteSettingsContainer").style.display = "none";
