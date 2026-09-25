@@ -80,8 +80,7 @@ let mouseX = 0,
 let mode = 0; //0: move tool, 1: edit tool, 2: add tool
 let zoom = 1;
 let timelineYLoc = 0,
-  timelineElementNum = 0,
-  timelineScrollCount = 6;
+  timelineElementNum = 0;
 let selectedValue = 0; //same with spec value
 let isSettingsOpened = false;
 let overlayTime = 0;
@@ -595,7 +594,7 @@ const trackMouseSelection = (i, v1, v2, x, y, beats) => {
     if (pointingTmlElement.i == "") {
       const dx = mouseX - x;
       const dy = mouseY - y;
-      const r = tmlCanvasH / 27;
+      const r = tmlRowHeight() / 3;
       if (dx * dx + dy * dy <= r * r) {
         pointingTmlElement = { v1, v2, i };
       }
@@ -676,7 +675,7 @@ const assignLanes = (elements, start, end, overlapThreshold, endOf = (element) =
 const isKindShown = (v1) => timelineFilter == "all" || timelineFilter == v1;
 
 const timelineRowAt = (y) => {
-  const row = Math.floor((y - tmlCanvasH / 6) / (tmlCanvasH / 9));
+  const row = Math.floor((y - tmlCanvasH / 6) / tmlRowHeight());
   const v1 = tmlRows.start.findIndex((start, kind) => row >= start && row < start + tmlRows.count[kind]);
   return v1 === -1 ? null : { v1, row };
 };
@@ -797,7 +796,7 @@ const tmlRender = () => {
       startY = tmlCanvasH / 6,
       endX = tmlCanvasW / 1.01,
       endY = tmlCanvasH / 1.1,
-      height = tmlCanvasH / 9;
+      height = tmlRowHeight();
     tmlPositions = [];
     const recordPosition = (element, x, y) => {
       if (x >= tmlStartX && x <= endX && y >= startY && y <= endY) tmlPositions.push({ element, x, y });
@@ -940,7 +939,7 @@ const tmlRender = () => {
     //Timeline elements text(Notes, Bullets, Triggers)
     tmlCtx.textAlign = "left";
     tmlCtx.textBaseline = "middle";
-    tmlCtx.font = `${tmlCanvasH / 14}px ${FONT_STACK}`;
+    tmlCtx.font = `${height * 0.64}px ${FONT_STACK}`;
     const labelColors = [null, "#4297d4", triggerStyles[4][1]];
     const iconSize = height / 3;
     for (let v1 = 0; v1 < 3; v1++) {
@@ -1090,7 +1089,7 @@ const tmlRender = () => {
       h: endY - startY,
       max: rows,
     };
-    vertical.size = Math.max(vertical.h * (6 / (6 + rows)), barSize * 2);
+    vertical.size = Math.max(vertical.h * (tmlVisibleRows() / (tmlVisibleRows() + rows)), barSize * 2);
     vertical.thumb = vertical.y + (vertical.h - vertical.size) * (rows ? -timelineYLoc / height / rows : 0);
     tmlScrollbars = { h: totalBeats > 0 ? horizontal : null, v: rows > 0 ? vertical : null };
     for (const [axis, bar] of Object.entries(tmlScrollbars)) {
@@ -2924,12 +2923,17 @@ const beatAtMs = (ms) => {
   return beat + (ms - at) / (60000 / tempo);
 };
 
-const scrollRows = () => Math.max(0, timelineElementNum - 6);
+const tmlRowHeight = () => tmlCanvasH / 11;
+
+const tmlVisibleRows = () => Math.floor((tmlCanvasH / 1.1 - tmlCanvasH / 6) / tmlRowHeight());
+
+const scrollRows = () => Math.max(0, timelineElementNum - tmlVisibleRows());
+
+const scrollRow = () => Math.round(-timelineYLoc / tmlRowHeight());
 
 const setScrollRow = (row) => {
   const offset = Math.min(Math.max(Math.round(row), 0), scrollRows());
-  timelineYLoc = -offset * (tmlCanvasH / 9);
-  timelineScrollCount = 6 + offset;
+  timelineYLoc = -offset * tmlRowHeight();
   isTmlUpdateNeeded = true;
 };
 
@@ -2976,25 +2980,9 @@ const scrollbarFollowMouse = () => {
   requestAnimationFrame(scrollbarFollowMouse);
 };
 
-const tmlScrollUp = () => {
-  timelineYLoc = Number(timelineYLoc.toFixed(2)) + tmlCanvasH / 9;
-  timelineScrollCount--;
-  if (timelineYLoc > 1) {
-    timelineYLoc = Number(timelineYLoc.toFixed(2)) - tmlCanvasH / 9;
-    timelineScrollCount++;
-  }
+const tmlScrollUp = () => setScrollRow(scrollRow() - 1);
 
-  isTmlUpdateNeeded = true;
-};
-
-const tmlScrollDown = () => {
-  if (timelineElementNum > 6 && timelineScrollCount < timelineElementNum) {
-    timelineYLoc = Number(timelineYLoc.toFixed(2)) - tmlCanvasH / 9;
-    timelineScrollCount++;
-  }
-
-  isTmlUpdateNeeded = true;
-};
+const tmlScrollDown = () => setScrollRow(scrollRow() + 1);
 
 const scrollEvent = (e) => {
   let delta;
@@ -3200,8 +3188,7 @@ document.addEventListener("keydown", (e) => {
       if (song.playing()) {
         songPlayPause();
       } else {
-        timelineScrollCount = 0;
-        timelineYLoc = 0;
+        setScrollRow(0);
         song.stop();
         isTmlUpdateNeeded = true;
       }
