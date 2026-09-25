@@ -649,7 +649,9 @@ const _heapPop = (heap, cmp) => {
 // Returns laneOf[i - start] = 0-based lane index, and laneCount = total lanes used.
 // O(n log laneCount) via two min-heaps: one tracking active lanes by lastBeat
 // (to detect newly freed lanes), one tracking free lane indices (to pick the lowest).
-const assignLanes = (elements, start, end, overlapThreshold) => {
+const holdEnd = (note) => note.beat + (note.value == 2 ? Math.max(Number(note.duration) || 0, 0) : 0);
+
+const assignLanes = (elements, start, end, overlapThreshold, endOf = (element) => element.beat) => {
   const active = []; // min-heap of {lastBeat, lane}, ordered by lastBeat
   const free = []; // min-heap of free lane indices, ordered ascending
   const laneOf = [];
@@ -665,7 +667,7 @@ const assignLanes = (elements, start, end, overlapThreshold) => {
     }
     // Pick the lowest available lane, or open a new one.
     const lane = free.length > 0 ? _heapPop(free, cmpIdx) : nextLane++;
-    _heapPush(active, { lastBeat: beat, lane }, cmpBeat);
+    _heapPush(active, { lastBeat: endOf(elements[i]), lane }, cmpBeat);
     laneOf.push(lane);
   }
   return { laneOf, laneCount: nextLane || 1 };
@@ -821,7 +823,7 @@ const tmlRender = () => {
       const end = upperBound(elements, renderEnd);
       const { laneOf, laneCount } =
         v1 == 0
-          ? { laneOf: [], laneCount: 1 }
+          ? assignLanes(elements, start, end, overlapThreshold, holdEnd)
           : assignLanes(elements, start, end, v1 == 2 ? overlapThreshold * 1.5 : overlapThreshold);
       tmlRows.start[v1] = tmlRows.total;
       tmlRows.count[v1] = isKindShown(v1) ? laneCount : 0;
