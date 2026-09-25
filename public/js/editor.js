@@ -99,6 +99,8 @@ let skin, denyCursor;
 let dragMouseX, dragMouseY, dragGroup, marquee;
 let tmlPositions = [],
   cntPositions = [];
+let tmlScrollbars = null,
+  scrollbarDrag = null;
 let copied = false,
   copiedTime = 0;
 let gridToggle = true,
@@ -932,6 +934,42 @@ const tmlRender = () => {
         }
         tmlCtx.fill();
       }
+    }
+
+    //Scrollbars
+    const barSize = tmlCanvasH / 45;
+    const totalBeats = song.duration() ? beatAtMs(song.duration() * 1000) : 0;
+    const horizontal = { x: tmlStartX, y: endY - barSize * 1.5, w: endX - tmlStartX, h: barSize, max: totalBeats };
+    horizontal.size = Math.max(horizontal.w * Math.min((17 * zoom) / (totalBeats + 17 * zoom), 1), barSize * 2);
+    horizontal.thumb =
+      horizontal.x + (horizontal.w - horizontal.size) * Math.min(Math.max(beats / totalBeats || 0, 0), 1);
+    const rows = scrollRows();
+    if (-timelineYLoc / height > rows) setScrollRow(rows);
+    const vertical = {
+      x: endX + (tmlCanvasW - endX - barSize) / 2,
+      y: startY,
+      w: barSize,
+      h: endY - startY,
+      max: rows,
+    };
+    vertical.size = Math.max(vertical.h * (6 / (6 + rows)), barSize * 2);
+    vertical.thumb = vertical.y + (vertical.h - vertical.size) * (rows ? -timelineYLoc / height / rows : 0);
+    tmlScrollbars = { h: totalBeats > 0 ? horizontal : null, v: rows > 0 ? vertical : null };
+    for (const [axis, bar] of Object.entries(tmlScrollbars)) {
+      if (!bar) continue;
+      const isHorizontal = axis == "h";
+      const isHovered =
+        scrollbarDrag?.axis == axis ||
+        (mouseMode == 1 && mouseX >= bar.x && mouseX <= bar.x + bar.w && mouseY >= bar.y && mouseY <= bar.y + bar.h);
+      tmlCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      tmlCtx.beginPath();
+      tmlCtx.roundRect(bar.x, bar.y, bar.w, bar.h, barSize / 2);
+      tmlCtx.fill();
+      tmlCtx.fillStyle = isHovered ? "#999" : "#ccc";
+      tmlCtx.beginPath();
+      if (isHorizontal) tmlCtx.roundRect(bar.thumb, bar.y, bar.size, bar.h, barSize / 2);
+      else tmlCtx.roundRect(bar.x, bar.thumb, bar.w, bar.size, barSize / 2);
+      tmlCtx.fill();
     }
 
     //Marquee
@@ -1915,6 +1953,7 @@ const timelineFollowMouse = (v1, v2, i) => {
 
 const tmlClicked = () => {
   if (isNaN(Number(song.seek()))) return iziToast.error({ title: "Wait..", message: "Song is not loaded." });
+  if (startScrollbarDrag()) return;
   if (mode == 0) {
     timelineFollowMouse();
   } else if (mode == 1) {
@@ -2733,10 +2772,10 @@ const tmlScrollHorizontal = (direction, splitBy = split) => {
     targetSubdivision = Math.ceil(beats * splitBy - epsilon) + direction;
   }
 
-  const newBeats = targetSubdivision / splitBy;
-  beats = Number(newBeats.toPrecision(15));
+  seekToBeat(Number((targetSubdivision / splitBy).toPrecision(15)));
+};
 
-  // Calculate BPM change
+const seekToBeat = (beats) => {
   const triggerEnd = upperBound(pattern.triggers, beats);
   bpm = pattern.information.bpm;
   bpmsync = {
@@ -2754,6 +2793,60 @@ const tmlScrollHorizontal = (direction, splitBy = split) => {
   song.seek(seek / 1000);
 
   isTmlUpdateNeeded = true;
+};
+
+const beatAtMs = (ms) => {
+  let beat = 0,
+    at = 0,
+    tempo = pattern.information.bpm;
+  for (const trigger of pattern.triggers) {
+    if (trigger.value != 2) continue;
+    const next = at + (trigger.beat - beat) * (60000 / tempo);
+    if (next > ms) break;
+    [beat, at, tempo] = [trigger.beat, next, trigger.bpm];
+  }
+  return beat + (ms - at) / (60000 / tempo);
+};
+
+const scrollRows = () => Math.max(0, timelineElementNum - 6);
+
+const setScrollRow = (row) => {
+  const offset = Math.min(Math.max(Math.round(row), 0), scrollRows());
+  timelineYLoc = -offset * (tmlCanvasH / 9);
+  timelineScrollCount = 6 + offset;
+  isTmlUpdateNeeded = true;
+};
+
+const startScrollbarDrag = () => {
+  if (!tmlScrollbars) return false;
+  for (const [axis, bar] of Object.entries(tmlScrollbars)) {
+    if (!bar || mouseX < bar.x || mouseX > bar.x + bar.w || mouseY < bar.y || mouseY > bar.y + bar.h) continue;
+    const pos = axis == "h" ? mouseX : mouseY;
+    const onThumb = pos >= bar.thumb && pos <= bar.thumb + bar.size;
+    scrollbarDrag = { axis, grab: onThumb ? pos - bar.thumb : bar.size / 2 };
+    scrollbarFollowMouse();
+    return true;
+  }
+  return false;
+};
+
+const scrollbarFollowMouse = () => {
+  if (!scrollbarDrag) return;
+  const bar = tmlScrollbars?.[scrollbarDrag.axis];
+  if (bar && mouseMode == 1) {
+    const isHorizontal = scrollbarDrag.axis == "h";
+    const start = isHorizontal ? bar.x : bar.y;
+    const length = (isHorizontal ? bar.w : bar.h) - bar.size;
+    const ratio = Math.min(Math.max(((isHorizontal ? mouseX : mouseY) - scrollbarDrag.grab - start) / length, 0), 1);
+    if (isHorizontal) seekToBeat(ratio * bar.max);
+    else setScrollRow(ratio * bar.max);
+  }
+  if (!mouseDown) {
+    scrollbarDrag = null;
+    isTmlUpdateNeeded = true;
+    return;
+  }
+  requestAnimationFrame(scrollbarFollowMouse);
 };
 
 const tmlScrollUp = () => {
