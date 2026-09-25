@@ -958,9 +958,7 @@ const tmlRender = () => {
     for (const [axis, bar] of Object.entries(tmlScrollbars)) {
       if (!bar) continue;
       const isHorizontal = axis == "h";
-      const isHovered =
-        scrollbarDrag?.axis == axis ||
-        (mouseMode == 1 && mouseX >= bar.x && mouseX <= bar.x + bar.w && mouseY >= bar.y && mouseY <= bar.y + bar.h);
+      const isHovered = scrollbarDrag?.axis == axis || isOverScrollbar(axis, bar);
       tmlCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
       tmlCtx.beginPath();
       tmlCtx.roundRect(bar.x, bar.y, bar.w, bar.h, barSize / 2);
@@ -1846,9 +1844,10 @@ const trackMousePos = (event) => {
 };
 
 const trackTimelineMousePos = (event) => {
+  const rect = tmlCanvas.getBoundingClientRect();
   mouseMode = 1;
-  mouseX = event.clientX * pixelRatio;
-  mouseY = (event.clientY - Math.floor((window.innerHeight / 100) * 73)) * pixelRatio;
+  mouseX = (event.clientX - rect.left) * (tmlCanvas.width / rect.width);
+  mouseY = (event.clientY - rect.top) * (tmlCanvas.height / rect.height);
   isTmlUpdateNeeded = true;
 };
 
@@ -2817,10 +2816,21 @@ const setScrollRow = (row) => {
   isTmlUpdateNeeded = true;
 };
 
+const isOverScrollbar = (axis, bar) => {
+  const [padX, padY] = axis == "h" ? [0, bar.h] : [bar.w, 0];
+  return (
+    mouseMode == 1 &&
+    mouseX >= bar.x - padX &&
+    mouseX <= bar.x + bar.w + padX &&
+    mouseY >= bar.y - padY &&
+    mouseY <= bar.y + bar.h + padY
+  );
+};
+
 const startScrollbarDrag = () => {
   if (!tmlScrollbars) return false;
   for (const [axis, bar] of Object.entries(tmlScrollbars)) {
-    if (!bar || mouseX < bar.x || mouseX > bar.x + bar.w || mouseY < bar.y || mouseY > bar.y + bar.h) continue;
+    if (!bar || !isOverScrollbar(axis, bar)) continue;
     const pos = axis == "h" ? mouseX : mouseY;
     const onThumb = pos >= bar.thumb && pos <= bar.thumb + bar.size;
     scrollbarDrag = { axis, grab: onThumb ? pos - bar.thumb : bar.size / 2 };
