@@ -678,9 +678,25 @@ const timelineRowAt = (y) => {
   return v1 === -1 ? null : { v1, row };
 };
 
-const drawTimelineShape = (v1, x, y, w, outline) => {
+const noteColors = { 0: "#f59b42", 1: "#f54e42", 2: "#573fa6" };
+
+const triggerStyles = {
+  "-1": ["?", "#b0b0b0"],
+  0: ["D", "#e8604c"],
+  1: ["DA", "#b8433a"],
+  2: ["B", "#8e5cd9"],
+  3: ["O", "#7f8c8d"],
+  4: ["S", "#16a085"],
+  5: ["T", "#d4a017"],
+  6: ["E", "#34495e"],
+};
+
+const drawTimelineShape = (v1, x, y, w, outline, label) => {
   tmlCtx.beginPath();
-  if (v1 == 0) {
+  if (v1 == 2) {
+    const width = label?.length > 1 ? w * 3 : w * 2.2;
+    tmlCtx.roundRect(x - width / 2, y - w * 1.1, width, w * 2.2, w * 0.5);
+  } else if (v1 == 0) {
     tmlCtx.arc(x, y, w, 0, 2 * Math.PI);
   } else if (v1 == 1) {
     tmlCtx.moveTo(x - w, y);
@@ -688,19 +704,22 @@ const drawTimelineShape = (v1, x, y, w, outline) => {
     tmlCtx.lineTo(x + w, y);
     tmlCtx.lineTo(x, y - w);
     tmlCtx.closePath();
-  } else {
-    tmlCtx.moveTo(x - w / 1.1, y - w);
-    tmlCtx.lineTo(x + w / 1.1, y);
-    tmlCtx.lineTo(x - w / 1.1, y + w);
-    tmlCtx.closePath();
   }
   tmlCtx.fill();
-  if (!outline) return;
   tmlCtx.save();
-  tmlCtx.strokeStyle = outline;
-  tmlCtx.lineWidth = Math.max(w / 5, pixelRatio * 1.5);
-  tmlCtx.lineJoin = "round";
-  tmlCtx.stroke();
+  if (outline) {
+    tmlCtx.strokeStyle = outline;
+    tmlCtx.lineWidth = Math.max(w / 5, pixelRatio * 1.5);
+    tmlCtx.lineJoin = "round";
+    tmlCtx.stroke();
+  }
+  if (label) {
+    tmlCtx.fillStyle = "#fff";
+    tmlCtx.font = `700 ${w * 1.35}px ${FONT_STACK}`;
+    tmlCtx.textAlign = "center";
+    tmlCtx.textBaseline = "middle";
+    tmlCtx.fillText(label, x, y + w * 0.05);
+  }
   tmlCtx.restore();
 };
 
@@ -757,12 +776,16 @@ const tmlRender = () => {
     // Two elements (w = height/3) overlap when pixel distance < 2*w.
     // Converted to beats: overlapThreshold = (2 * height/3) / beatToPx.
     const overlapThreshold = beatToPx > 0 ? (2 * height) / (3 * beatToPx) : Infinity;
+    let holdReach = 0;
+    for (const note of pattern.patterns) if (note.value == 2 && note.duration > holdReach) holdReach = note.duration;
     const visible = [0, 1, 2].map((v1) => {
       const elements = pattern[elementKeys[v1]];
-      const start = lowerBound(elements, renderStart);
+      const start = lowerBound(elements, renderStart - (v1 == 0 ? holdReach : 0));
       const end = upperBound(elements, renderEnd);
       const { laneOf, laneCount } =
-        v1 == 0 ? { laneOf: [], laneCount: 1 } : assignLanes(elements, start, end, overlapThreshold);
+        v1 == 0
+          ? { laneOf: [], laneCount: 1 }
+          : assignLanes(elements, start, end, v1 == 2 ? overlapThreshold * 1.5 : overlapThreshold);
       tmlRows.start[v1] = tmlRows.total;
       tmlRows.count[v1] = isKindShown(v1) ? laneCount : 0;
       tmlRows.total += tmlRows.count[v1];
@@ -809,19 +832,65 @@ const tmlRender = () => {
     }
 
     //Timeline elements
-    const elementColors = ["#fbaf34", "#4297d4", "#2ec90e"];
+    const w = height / 3;
     for (let v1 = 0; v1 < 3; v1++) {
       if (!isKindShown(v1)) continue;
       const { elements, start, end, laneOf } = visible[v1];
       for (let j = start; j < end; j++) {
-        const x = tmlStartX + (elements[j].beat - renderStart) * beatToPx;
+        const element = elements[j];
+        const x = tmlStartX + (element.beat - renderStart) * beatToPx;
         const y = rowY(v1, laneOf[j - start] ?? 0);
-        if (mouseMode == 1) trackMouseSelection(j, v1, v1 == 1 ? 0 : elements[j].value, x, y, beats);
-        recordPosition(elements[j], x, y);
-        tmlCtx.fillStyle = elementColors[v1];
+        if (mouseMode == 1 && x >= tmlStartX) trackMouseSelection(j, v1, v1 == 1 ? 0 : element.value, x, y, beats);
+        recordPosition(element, x, y);
         const outline = isSelectedElement(v1, j) ? "#222" : isPointedElement(v1, j) ? "rgba(0, 0, 0, 0.35)" : null;
-        drawTimelineShape(v1, x, y, height / 3, outline);
+        if (v1 == 0) {
+          tmlCtx.fillStyle = noteColors[element.value] ?? noteColors[0];
+          if (element.value == 2 && element.duration > 0) {
+            tmlCtx.save();
+            tmlCtx.globalAlpha = 0.35;
+            tmlCtx.beginPath();
+            tmlCtx.roundRect(x, y - w * 0.45, element.duration * beatToPx, w * 0.9, w * 0.45);
+            tmlCtx.fill();
+            tmlCtx.restore();
+          }
+          drawTimelineShape(0, x, y, w, outline);
+        } else if (v1 == 1) {
+          tmlCtx.fillStyle = "#4297d4";
+          drawTimelineShape(1, x, y, w, outline);
+        } else {
+          const [label, color] = triggerStyles[element.value] ?? triggerStyles[-1];
+          tmlCtx.fillStyle = color;
+          drawTimelineShape(2, x, y, w, outline, label);
+        }
       }
+    }
+
+    //Destroy trigger links
+    if (isKindShown(1) && isKindShown(2)) {
+      const positions = new Map(tmlPositions.map((position) => [position.element, position]));
+      const { elements, start, end } = visible[2];
+      tmlCtx.save();
+      tmlCtx.strokeStyle = "rgba(232, 96, 76, 0.85)";
+      tmlCtx.lineWidth = pixelRatio * 1.5;
+      for (let j = start; j < end; j++) {
+        const trigger = elements[j];
+        if (trigger.value != 0) continue;
+        const from = positions.get(trigger);
+        const to = positions.get(pattern.bullets[trigger.num]);
+        if (!from || !to) continue;
+        const isActive = selectedCheck(2, j) || isSelectedElement(1, trigger.num) || isPointedElement(1, trigger.num);
+        if (!isActive) continue;
+        tmlCtx.setLineDash([pixelRatio * 4, pixelRatio * 3]);
+        tmlCtx.beginPath();
+        tmlCtx.moveTo(from.x, from.y);
+        tmlCtx.lineTo(to.x, to.y);
+        tmlCtx.stroke();
+        tmlCtx.setLineDash([]);
+        tmlCtx.beginPath();
+        tmlCtx.arc(to.x, to.y, w * 1.45, 0, 2 * Math.PI);
+        tmlCtx.stroke();
+      }
+      tmlCtx.restore();
     }
 
     //Cover the overflowed
