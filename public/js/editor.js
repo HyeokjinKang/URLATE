@@ -1,4 +1,4 @@
-/* global Howler, Howl, iziToast, url, api, cdn, syncAlert, timeAlert, copiedText, moveToAlert */
+/* global Howler, Howl, iziToast, url, api, cdn, syncAlert, timeAlert, copiedText */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
 let upperBound, lowerBound;
@@ -1743,41 +1743,6 @@ const triggersInput = (v, e) => {
   }
 };
 
-const moveTo = () => {
-  let s = 0;
-  iziToast.info({
-    timeout: 20000,
-    overlay: true,
-    displayMode: "once",
-    id: "inputs",
-    zindex: 999,
-    title: "Move",
-    message: moveToAlert,
-    position: "center",
-    drag: false,
-    inputs: [
-      [
-        '<input type="number">',
-        "keyup",
-        (instance, toast, input) => {
-          s = Number(input.value);
-        },
-      ],
-    ],
-    buttons: [
-      [
-        "<button><b>GO</b></button>",
-        (instance, toast) => {
-          song.seek(s);
-          instance.hide({ transitionOut: "fadeOut" }, toast, "confirm");
-          isTmlUpdateNeeded = true;
-        },
-        true,
-      ],
-    ],
-  });
-};
-
 const changeBPM = (e) => {
   if (isNaN(Number(e.value))) {
     iziToast.error({
@@ -3172,7 +3137,6 @@ const clickActions = {
   // Confirms before leaving unsaved work.
   gotoMainConfirm: () => gotoMain(true),
   loadEditor,
-  moveTo,
   newEditor,
   save,
   songPlayPause,
