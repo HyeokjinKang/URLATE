@@ -782,10 +782,10 @@ const tmlRender = () => {
       for (let i = 0; i < split; i++) {
         if (t + i / split < 0) continue;
         const isBeat = i == 0;
-        if (isBeat ? beatToPx < 6 * pixelRatio && t % 4 : beatToPx / split < 8 * pixelRatio) continue;
+        if (isBeat ? beatToPx < 6 * pixelRatio : beatToPx / split < 8 * pixelRatio) continue;
         const x = tmlStartX + parseInt((t - renderStart) * beatToPx) + (beatToPx / split) * i;
         if (x < tmlStartX || x > endX) continue;
-        tmlCtx.fillStyle = !isBeat ? "rgba(0, 0, 0, 0.05)" : t % 4 == 0 ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.1)";
+        tmlCtx.fillStyle = isBeat ? "rgba(0, 0, 0, 0.12)" : "rgba(0, 0, 0, 0.05)";
         tmlCtx.fillRect(x, startY, pixelRatio, endY - startY);
       }
     }
