@@ -1336,7 +1336,6 @@ const cntRender = () => {
     }
 
     // Note drawing loop
-    let validNote = end;
     const _noteState = {
       progress: 0,
       tailProgress: 0,
@@ -1345,17 +1344,35 @@ const cntRender = () => {
       isGrabbed: false,
       isSelected: false,
     };
+    const isNotePassed = (note) => {
+      Updater.noteProgress(note, beats, speed, _noteState);
+      return note.value == 2 ? _noteState.endProgress >= 100 : _noteState.progress >= 101;
+    };
+    const recentPassed = [];
+    for (let i = start; i < end; i++) {
+      const note = pattern.patterns[i];
+      if (!isNotePassed(note)) continue;
+      const passBeat = note.value == 2 ? note.beat + note.duration : note.beat;
+      let r = recentPassed.length;
+      while (r > 0 && recentPassed[r - 1].passBeat <= passBeat) r--;
+      if (r < 3) {
+        recentPassed.splice(r, 0, { i, passBeat });
+        if (recentPassed.length > 3) recentPassed.pop();
+      }
+    }
+    const ghostAlpha = (i) => {
+      const rank = recentPassed.findIndex((p) => p.i == i);
+      return rank == -1 ? 0 : 0.3 - 0.1 * rank;
+    };
+    const noteAlpha = (i) => (isNotePassed(pattern.patterns[i]) ? ghostAlpha(i) : 0.4);
+
     for (let i = end - 1; i >= start; i--) {
-      Updater.noteProgress(pattern.patterns[i], beats, speed, _noteState);
+      if (i > 0) {
+        const connectorAlpha = Math.max(noteAlpha(i - 1), noteAlpha(i));
+        if (connectorAlpha > 0) Draw.noteConnector(pattern.patterns[i - 1], pattern.patterns[i], connectorAlpha);
+      }
 
-      if (pattern.patterns[i].value != 2 && _noteState.progress < 101) validNote = i;
-      else if (pattern.patterns[i].value == 2 && _noteState.endProgress < 100) validNote = i;
-
-      const alpha = 0.4 - 0.1 * (validNote - i);
-
-      if (i > 0) Draw.noteConnector(pattern.patterns[i - 1], pattern.patterns[i], alpha);
-
-      if (i == validNote) {
+      if (!isNotePassed(pattern.patterns[i])) {
         _noteState.globalAlpha = globalAlpha;
         _noteState.isGrabbed = _noteState.progress >= 100;
         _noteState.isSelected = selectedCheck(0, i);
@@ -1366,8 +1383,9 @@ const cntRender = () => {
           },
           _noteState,
         );
-      } else if (i + 3 >= validNote) {
-        Draw.noteShadow(pattern.patterns[i], alpha);
+      } else {
+        const alpha = ghostAlpha(i);
+        if (alpha > 0) Draw.noteShadow(pattern.patterns[i], alpha);
       }
     }
 
