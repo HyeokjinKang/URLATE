@@ -3,7 +3,16 @@
  * Canvas drawing for the game.
  */
 import { Config, JudgeSkin, KeyInputColors, DiffColors } from "./constants.js";
-import { getSin, getCos, hexadecimal, easeInQuad, easeOutQuad, easeOutQuart, numberWithCommas } from "./utils.js";
+import {
+  getSin,
+  getCos,
+  hexadecimal,
+  easeInQuad,
+  easeOutQuad,
+  easeOutQuart,
+  easeOutSine,
+  numberWithCommas,
+} from "./utils.js";
 
 /** Takes the data and renders it into the canvas context. */
 export default class Renderer {
@@ -24,6 +33,9 @@ export default class Renderer {
       bulletPath: null,
       lastCacheW: 0,
       gradient: new Map(), // skinPart -> Map(size -> gradient)
+      finalEffect: new Map(),
+      comboAlert: null,
+      cursor: new Map(),
     };
 
     // Animation state
@@ -46,8 +58,8 @@ export default class Renderer {
   /** Helper: read the skin data (gradient or colour) and set fillStyle or strokeStyle.
    * Gradients are cached fully opaque, and opacity is applied through ctx.globalAlpha.
    */
-  #applyStyle(skinPart, x, y, size, opacity, isStroke = false) {
-    const { ctx, canvasW } = this;
+  #applyStyle(skinPart, x, y, size, opacity, isStroke = false, ctx = this.ctx) {
+    const { canvasW } = this;
     let style;
     if (skinPart.type === "gradient") {
       let sizeMap = this.cache.gradient.get(skinPart);
@@ -88,6 +100,9 @@ export default class Renderer {
       this.cache.bulletPath = null;
       this.cache.gradient.clear();
     }
+    this.cache.finalEffect.clear();
+    this.cache.comboAlert = null;
+    this.cache.cursor.clear();
 
     this.cacheConfig();
   }
@@ -155,6 +170,7 @@ export default class Renderer {
       judge: `600 ${judgeSize}px ${_F}`,
       keyInput: `600 ${defaultSize}px ${_F}`,
       scorePanel: `700 ${scorePanelSize}px ${_F}`,
+      combo: [400, 500, 600].map((weight) => `${weight} ${defaultSize}px ${_F}`),
       systemInfo: `600 ${systemInfoSize}px ${_F}`,
     };
   }
@@ -487,26 +503,41 @@ export default class Renderer {
       }
     }
 
-    ctx.save();
-    ctx.translate(cx, cy);
+    const sprite = this.#getCursorSprite(Math.round(w));
+    ctx.drawImage(sprite.canvas, cx - sprite.half, cy - sprite.half);
+  }
 
-    this.#applyStyle(skin.cursor, 0, 0, w, 100, false);
+  #getCursorSprite(w) {
+    const cached = this.cache.cursor.get(w);
+    if (cached) return cached;
+
+    const { canvasW, skin } = this;
+    const outline = skin.cursor.outline;
+    const blur = canvasW / 100;
+    const outlineWidth = outline ? ~~((canvasW / 1000) * outline.width) : 0;
+    const half = Math.ceil(w + outlineWidth + blur * 2);
+    const { canvas, ctx } = this.#createLayer(half * 2, half * 2);
+
+    ctx.translate(half, half);
+    this.#applyStyle(skin.cursor, 0, 0, w, 100, false, ctx);
     if (skin.cursor.type === "gradient") ctx.shadowColor = skin.cursor.stops[0].color;
     else ctx.shadowColor = skin.cursor.color;
 
-    if (skin.cursor.outline) {
-      this.#applyStyle(skin.cursor.outline, 0, 0, w, 100, true);
-      if (skin.cursor.outline.type === "gradient") ctx.shadowColor = skin.cursor.outline.stops[0].color;
-      else ctx.shadowColor = skin.cursor.outline.color;
+    if (outline) {
+      this.#applyStyle(outline, 0, 0, w, 100, true, ctx);
+      if (outline.type === "gradient") ctx.shadowColor = outline.stops[0].color;
+      else ctx.shadowColor = outline.color;
     }
 
     ctx.beginPath();
     ctx.arc(0, 0, w, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.shadowBlur = canvasW / 100;
-    if (skin.cursor.outline) ctx.stroke();
+    ctx.shadowBlur = blur;
+    if (outline) ctx.stroke();
 
-    ctx.restore();
+    const sprite = { canvas, half };
+    this.cache.cursor.set(w, sprite);
+    return sprite;
   }
 
   /**
@@ -595,12 +626,13 @@ export default class Renderer {
 
       ctx.save();
       ctx.beginPath();
+      ctx.translate(cx, cy);
       ctx.globalAlpha = opacity / 100;
 
       this.#applyStyle(styleTarget, 0, 0, width, 100, true);
       ctx.lineWidth = lineWidth;
 
-      ctx.arc(cx, cy, width, 0, 2 * Math.PI);
+      ctx.arc(0, 0, width, 0, 2 * Math.PI);
       ctx.stroke();
 
       ctx.restore();
@@ -643,6 +675,150 @@ export default class Renderer {
     }
   }
 
+  #createLayer(w, h) {
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.ceil(w));
+    canvas.height = Math.max(1, Math.ceil(h));
+    return { canvas, ctx: canvas.getContext("2d") };
+  }
+
+  #outlinedTextLayer(text, size, lineWidth, strokeStyle, withFill) {
+    const font = `800 ${size}px Montserrat`;
+    this.ctx.save();
+    this.ctx.font = font;
+    const textW = this.ctx.measureText(text).width;
+    this.ctx.restore();
+
+    const pad = lineWidth + size * 0.2;
+    const { canvas, ctx } = this.#createLayer(textW + pad * 2, size + pad * 2);
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    ctx.font = font;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = strokeStyle(ctx, cx, cy);
+    ctx.strokeText(text, cx, cy);
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fillStyle = "#FFF";
+    ctx.fillText(text, cx, cy);
+    ctx.globalCompositeOperation = "source-over";
+    if (withFill) ctx.fillText(text, cx, cy);
+
+    return { canvas, size };
+  }
+
+  #getFinalEffectCache(effectNum) {
+    const cached = this.cache.finalEffect.get(effectNum);
+    if (cached) return cached;
+
+    const text = effectNum == 0 ? "ALL PERFECT" : "FULL COMBO";
+    const { BACKGROUND, MAIN, OUTLINE } = this.CONFIG.FINAL_EFFECT;
+
+    const backgroundSize = BACKGROUND.FONT_SIZE;
+    const backgroundFont = `800 ${backgroundSize}px Montserrat`;
+    this.ctx.save();
+    this.ctx.font = backgroundFont;
+    const backgroundTextW = this.ctx.measureText(text).width;
+    this.ctx.restore();
+
+    const backgroundPad = ~~(backgroundSize * 0.2);
+    const background = this.#createLayer(backgroundTextW + backgroundPad * 2, backgroundSize + backgroundPad * 2);
+    const bgCtx = background.ctx;
+    const grd = bgCtx.createLinearGradient(0, backgroundPad, 0, backgroundPad + backgroundSize);
+    grd.addColorStop(0, "rgba(255, 255, 255, 0.2)");
+    grd.addColorStop(1, "rgba(255, 255, 255, 0)");
+    bgCtx.font = backgroundFont;
+    bgCtx.fillStyle = grd;
+    bgCtx.textAlign = "left";
+    bgCtx.textBaseline = "top";
+    bgCtx.fillText(text, backgroundPad, backgroundPad);
+
+    const outlineToMainRatio = OUTLINE.FONT_SIZE_END / MAIN.FONT_SIZE_END;
+    const strokeStyle = (gradientSpan) => (ctx, cx, cy) => {
+      if (effectNum != 0) return "#F0C21D";
+      const g = ctx.createLinearGradient(cx, cy - gradientSpan / 2, cx, cy + gradientSpan / 2);
+      g.addColorStop(0, "#f581ff");
+      g.addColorStop(0.5, "#77B6F4");
+      g.addColorStop(1, "#43DDA6");
+      return g;
+    };
+
+    const outlineSize = OUTLINE.FONT_SIZE_START;
+    const mainSize = MAIN.FONT_SIZE_START;
+    const outline = this.#outlinedTextLayer(
+      text,
+      outlineSize,
+      (OUTLINE.LINE_WIDTH * outlineSize) / OUTLINE.FONT_SIZE_END,
+      strokeStyle(outlineSize),
+      false,
+    );
+    const main = this.#outlinedTextLayer(
+      text,
+      mainSize,
+      (MAIN.LINE_WIDTH * mainSize) / MAIN.FONT_SIZE_END,
+      strokeStyle(mainSize * outlineToMainRatio),
+      true,
+    );
+
+    const entry = { background: background.canvas, backgroundPad, backgroundSize, outline, main };
+    this.cache.finalEffect.set(effectNum, entry);
+    return entry;
+  }
+
+  #getComboAlertCache(count) {
+    const cached = this.cache.comboAlert;
+    if (cached && cached.count === count) return cached;
+
+    const size = ~~(this.canvasH / 5);
+    const font = `700 ${size}px Montserrat, Pretendard Variable, Pretendard`;
+    this.ctx.save();
+    this.ctx.font = font;
+    const textW = this.ctx.measureText(count).width;
+    this.ctx.restore();
+
+    const pad = size * 0.2;
+    const { canvas, ctx } = this.#createLayer(textW + pad * 2, size + pad * 2);
+    ctx.font = font;
+    ctx.fillStyle = "rgb(200, 200, 200)";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(count, canvas.width / 2, canvas.height / 2);
+
+    this.cache.comboAlert = { count, canvas };
+    return this.cache.comboAlert;
+  }
+
+  /**
+   * Draw the combo alert.
+   * @param {number} count - the combo to show
+   * @param {number} startMs - when the alert started
+   */
+  comboAlert(count, startMs) {
+    const elapsed = Date.now() - startMs;
+    if (elapsed < 0 || elapsed >= 1000) return;
+
+    let opacity;
+    if (elapsed < 400) opacity = elapsed / 1200;
+    else if (elapsed < 600) opacity = 0.33;
+    else opacity = (1000 - elapsed) / 1200;
+
+    const scale = easeOutSine(elapsed / 1000);
+    if (opacity <= 0 || scale <= 0) return;
+
+    const { ctx, canvasW, canvasH } = this;
+    const { canvas } = this.#getComboAlertCache(count);
+    const w = canvas.width * scale;
+    const h = canvas.height * scale;
+
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.drawImage(canvas, (canvasW - w) / 2, (canvasH - h) / 2, w, h);
+    ctx.restore();
+  }
+
   /**
    * Draw the FC / AP effect.
    * @param {number} effectNum - 0: AP / 1 : FC
@@ -653,118 +829,40 @@ export default class Renderer {
     const now = Date.now();
 
     const duration = Config.FINAL_EFFECT.LIFETIME;
-
-    const text = effectNum == 0 ? "ALL PERFECT" : "FULL COMBO";
     const p = easeOutQuart(Math.min(1, (now - effectMs) / duration));
 
     const baseAlpha = Math.max(
       0,
       Math.min((now - effectMs) / 200, Math.min(1, (effectMs + duration - 500 - now) / 500)),
     );
+    if (baseAlpha <= 0) return;
+
+    const { BACKGROUND, MAIN, OUTLINE } = this.CONFIG.FINAL_EFFECT;
+    const { background, backgroundPad, backgroundSize, outline, main } = this.#getFinalEffectCache(effectNum);
 
     ctx.save();
-
-    // 1. Background text sliding in from both corners
-    const backgroundSize = this.CONFIG.FINAL_EFFECT.BACKGROUND.FONT_SIZE;
-    const backgroundStartX = this.CONFIG.FINAL_EFFECT.BACKGROUND.START_X;
-    const backgroundFinalX = this.CONFIG.FINAL_EFFECT.BACKGROUND.FINAL_X;
-    const backgroundY = this.CONFIG.FINAL_EFFECT.BACKGROUND.Y;
-
     ctx.globalAlpha = baseAlpha;
-    ctx.font = `800 ${backgroundSize}px Montserrat`;
 
-    // Top Left
-    let effectStartX = -backgroundStartX;
-    let effectFinalX = -backgroundFinalX;
-    let effectX = ~~(effectStartX + (effectFinalX - effectStartX) * p);
-    let effectY = -backgroundY;
+    const backgroundX = ~~(BACKGROUND.START_X + (BACKGROUND.FINAL_X - BACKGROUND.START_X) * p);
+    ctx.drawImage(background, -backgroundX - backgroundPad, -BACKGROUND.Y - backgroundPad);
+    ctx.drawImage(
+      background,
+      canvasW + backgroundX - background.width + backgroundPad,
+      canvasH + BACKGROUND.Y - backgroundSize - backgroundPad,
+    );
 
-    let grd = ctx.createLinearGradient(effectX, effectY, effectX, effectY + backgroundSize);
-    grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
-    grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
-    ctx.fillStyle = grd;
-    ctx.textAlign = "left";
-    ctx.textBaseline = "top";
-    ctx.fillText(text, effectX, effectY);
+    const outlineTextSize = OUTLINE.FONT_SIZE_START + (OUTLINE.FONT_SIZE_END - OUTLINE.FONT_SIZE_START) * p;
+    const mainTextSize = MAIN.FONT_SIZE_START + (MAIN.FONT_SIZE_END - MAIN.FONT_SIZE_START) * p;
 
-    // Bottom Right
-    effectStartX = canvasW + backgroundStartX;
-    effectFinalX = canvasW + backgroundFinalX;
-    effectX = ~~(effectStartX + (effectFinalX - effectStartX) * p);
-    effectY = canvasH + backgroundY;
-
-    grd = ctx.createLinearGradient(effectX, effectY - backgroundSize, effectX, effectY);
-    grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
-    grd.addColorStop(1, `rgba(255, 255, 255, 0)`);
-    ctx.fillStyle = grd;
-    ctx.textAlign = "right";
-    ctx.textBaseline = "bottom";
-    ctx.fillText(text, effectX, effectY);
-
-    // 2. Main text in the centre
-    let mainTextX = ~~(canvasW / 2);
-    let mainTextY = ~~(canvasH / 2);
-
-    const mainTextSizeStart = this.CONFIG.FINAL_EFFECT.MAIN.FONT_SIZE_START;
-    const mainTextSizeFinal = this.CONFIG.FINAL_EFFECT.MAIN.FONT_SIZE_END;
-    const outlineTextSizeStart = this.CONFIG.FINAL_EFFECT.OUTLINE.FONT_SIZE_START;
-    const outlineTextSizeFinal = this.CONFIG.FINAL_EFFECT.OUTLINE.FONT_SIZE_END;
-    const mainTextSize = mainTextSizeStart + (mainTextSizeFinal - mainTextSizeStart) * p;
-    const outlineTextSize = outlineTextSizeStart + (outlineTextSizeFinal - outlineTextSizeStart) * p;
-
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.lineJoin = "round";
-
-    let strokeStyle;
-    if (effectNum == 0) {
-      // All Perfect: Gradient
-      let g = ctx.createLinearGradient(
-        mainTextX,
-        ~~(mainTextY - outlineTextSize / 2),
-        mainTextX,
-        ~~(mainTextY + outlineTextSize / 2),
-      );
-      g.addColorStop(0, "#f581ff");
-      g.addColorStop(0.5, "#77B6F4");
-      g.addColorStop(1, "#43DDA6");
-      strokeStyle = g;
-    } else {
-      // Full Combo: Gold
-      strokeStyle = "#F0C21D";
-    }
-
-    // Outline Stroke
-    ctx.globalAlpha = baseAlpha / 3;
-    ctx.strokeStyle = strokeStyle;
-    ctx.font = `800 ${~~outlineTextSize}px Montserrat`;
-    ctx.lineWidth = this.CONFIG.FINAL_EFFECT.OUTLINE.LINE_WIDTH;
-    ctx.strokeText(text, mainTextX, mainTextY);
-
-    // Clearing Inside
-    ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.fillStyle = "#FFF";
-    ctx.fillText(text, mainTextX, mainTextY);
-    ctx.globalCompositeOperation = "source-over";
-
-    // Main Stroke
-    ctx.globalAlpha = baseAlpha;
-    ctx.strokeStyle = strokeStyle;
-    ctx.font = `800 ${~~mainTextSize}px Montserrat`;
-    ctx.lineWidth = this.CONFIG.FINAL_EFFECT.MAIN.LINE_WIDTH;
-    ctx.strokeText(text, mainTextX, mainTextY);
-
-    // Clearing Inside
-    ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.fillText(text, mainTextX, mainTextY);
-    ctx.globalCompositeOperation = "source-over";
-
-    // Main Fill
-    ctx.globalAlpha = baseAlpha;
-    ctx.fillStyle = "#FFF";
-    ctx.fillText(text, mainTextX, mainTextY);
+    const drawScaled = (layer, textSize, alpha) => {
+      const scale = textSize / layer.size;
+      const w = layer.canvas.width * scale;
+      const h = layer.canvas.height * scale;
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(layer.canvas, (canvasW - w) / 2, (canvasH - h) / 2, w, h);
+    };
+    drawScaled(outline, outlineTextSize, baseAlpha / 3);
+    drawScaled(main, mainTextSize, baseAlpha);
 
     ctx.restore();
   }
@@ -945,10 +1043,11 @@ export default class Renderer {
 
     ctx.fillText(numberWithCommas(s.current), xBase - margin, yBase);
 
-    const roundedSize = ~~(this.CONFIG.UI.DEFAULT_FONT_SIZE * (1 + comboScale));
-    const roundedWeight = ~~(400 * (1 + comboScale * 0.5));
-    ctx.font = `${roundedWeight} ${roundedSize}px Montserrat, Pretendard Variable`;
-    ctx.fillText(`${combo}x`, xBase - margin, yBase + fontSize);
+    const comboSize = 1 + comboScale;
+    ctx.font = this.FONT.combo[Math.round(comboScale * 2)];
+    ctx.translate(xBase - margin, yBase + fontSize);
+    ctx.scale(comboSize, comboSize);
+    ctx.fillText(`${combo}x`, 0, 0);
 
     ctx.restore();
   }
