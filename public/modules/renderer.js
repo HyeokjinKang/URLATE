@@ -626,12 +626,13 @@ export default class Renderer {
 
       ctx.save();
       ctx.beginPath();
+      ctx.translate(cx, cy);
       ctx.globalAlpha = opacity / 100;
 
       this.#applyStyle(styleTarget, 0, 0, width, 100, true);
       ctx.lineWidth = lineWidth;
 
-      ctx.arc(cx, cy, width, 0, 2 * Math.PI);
+      ctx.arc(0, 0, width, 0, 2 * Math.PI);
       ctx.stroke();
 
       ctx.restore();
