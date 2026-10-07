@@ -3,7 +3,16 @@
  * Canvas drawing for the game.
  */
 import { Config, JudgeSkin, KeyInputColors, DiffColors } from "./constants.js";
-import { getSin, getCos, hexadecimal, easeInQuad, easeOutQuad, easeOutQuart, numberWithCommas } from "./utils.js";
+import {
+  getSin,
+  getCos,
+  hexadecimal,
+  easeInQuad,
+  easeOutQuad,
+  easeOutQuart,
+  easeOutSine,
+  numberWithCommas,
+} from "./utils.js";
 
 /** Takes the data and renders it into the canvas context. */
 export default class Renderer {
@@ -25,6 +34,8 @@ export default class Renderer {
       lastCacheW: 0,
       gradient: new Map(), // skinPart -> Map(size -> gradient)
       finalEffect: new Map(),
+      comboAlert: null,
+      cursor: new Map(),
     };
 
     // Animation state
@@ -47,8 +58,8 @@ export default class Renderer {
   /** Helper: read the skin data (gradient or colour) and set fillStyle or strokeStyle.
    * Gradients are cached fully opaque, and opacity is applied through ctx.globalAlpha.
    */
-  #applyStyle(skinPart, x, y, size, opacity, isStroke = false) {
-    const { ctx, canvasW } = this;
+  #applyStyle(skinPart, x, y, size, opacity, isStroke = false, ctx = this.ctx) {
+    const { canvasW } = this;
     let style;
     if (skinPart.type === "gradient") {
       let sizeMap = this.cache.gradient.get(skinPart);
@@ -90,6 +101,8 @@ export default class Renderer {
       this.cache.gradient.clear();
     }
     this.cache.finalEffect.clear();
+    this.cache.comboAlert = null;
+    this.cache.cursor.clear();
 
     this.cacheConfig();
   }
@@ -157,6 +170,7 @@ export default class Renderer {
       judge: `600 ${judgeSize}px ${_F}`,
       keyInput: `600 ${defaultSize}px ${_F}`,
       scorePanel: `700 ${scorePanelSize}px ${_F}`,
+      combo: [400, 500, 600].map((weight) => `${weight} ${defaultSize}px ${_F}`),
       systemInfo: `600 ${systemInfoSize}px ${_F}`,
     };
   }
@@ -489,26 +503,41 @@ export default class Renderer {
       }
     }
 
-    ctx.save();
-    ctx.translate(cx, cy);
+    const sprite = this.#getCursorSprite(Math.round(w));
+    ctx.drawImage(sprite.canvas, cx - sprite.half, cy - sprite.half);
+  }
 
-    this.#applyStyle(skin.cursor, 0, 0, w, 100, false);
+  #getCursorSprite(w) {
+    const cached = this.cache.cursor.get(w);
+    if (cached) return cached;
+
+    const { canvasW, skin } = this;
+    const outline = skin.cursor.outline;
+    const blur = canvasW / 100;
+    const outlineWidth = outline ? ~~((canvasW / 1000) * outline.width) : 0;
+    const half = Math.ceil(w + outlineWidth + blur * 2);
+    const { canvas, ctx } = this.#createLayer(half * 2, half * 2);
+
+    ctx.translate(half, half);
+    this.#applyStyle(skin.cursor, 0, 0, w, 100, false, ctx);
     if (skin.cursor.type === "gradient") ctx.shadowColor = skin.cursor.stops[0].color;
     else ctx.shadowColor = skin.cursor.color;
 
-    if (skin.cursor.outline) {
-      this.#applyStyle(skin.cursor.outline, 0, 0, w, 100, true);
-      if (skin.cursor.outline.type === "gradient") ctx.shadowColor = skin.cursor.outline.stops[0].color;
-      else ctx.shadowColor = skin.cursor.outline.color;
+    if (outline) {
+      this.#applyStyle(outline, 0, 0, w, 100, true, ctx);
+      if (outline.type === "gradient") ctx.shadowColor = outline.stops[0].color;
+      else ctx.shadowColor = outline.color;
     }
 
     ctx.beginPath();
     ctx.arc(0, 0, w, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.shadowBlur = canvasW / 100;
-    if (skin.cursor.outline) ctx.stroke();
+    ctx.shadowBlur = blur;
+    if (outline) ctx.stroke();
 
-    ctx.restore();
+    const sprite = { canvas, half };
+    this.cache.cursor.set(w, sprite);
+    return sprite;
   }
 
   /**
@@ -738,6 +767,57 @@ export default class Renderer {
     return entry;
   }
 
+  #getComboAlertCache(count) {
+    const cached = this.cache.comboAlert;
+    if (cached && cached.count === count) return cached;
+
+    const size = ~~(this.canvasH / 5);
+    const font = `700 ${size}px Montserrat, Pretendard Variable, Pretendard`;
+    this.ctx.save();
+    this.ctx.font = font;
+    const textW = this.ctx.measureText(count).width;
+    this.ctx.restore();
+
+    const pad = size * 0.2;
+    const { canvas, ctx } = this.#createLayer(textW + pad * 2, size + pad * 2);
+    ctx.font = font;
+    ctx.fillStyle = "rgb(200, 200, 200)";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(count, canvas.width / 2, canvas.height / 2);
+
+    this.cache.comboAlert = { count, canvas };
+    return this.cache.comboAlert;
+  }
+
+  /**
+   * Draw the combo alert.
+   * @param {number} count - the combo to show
+   * @param {number} startMs - when the alert started
+   */
+  comboAlert(count, startMs) {
+    const elapsed = Date.now() - startMs;
+    if (elapsed < 0 || elapsed >= 1000) return;
+
+    let opacity;
+    if (elapsed < 400) opacity = elapsed / 1200;
+    else if (elapsed < 600) opacity = 0.33;
+    else opacity = (1000 - elapsed) / 1200;
+
+    const scale = easeOutSine(elapsed / 1000);
+    if (opacity <= 0 || scale <= 0) return;
+
+    const { ctx, canvasW, canvasH } = this;
+    const { canvas } = this.#getComboAlertCache(count);
+    const w = canvas.width * scale;
+    const h = canvas.height * scale;
+
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.drawImage(canvas, (canvasW - w) / 2, (canvasH - h) / 2, w, h);
+    ctx.restore();
+  }
+
   /**
    * Draw the FC / AP effect.
    * @param {number} effectNum - 0: AP / 1 : FC
@@ -962,10 +1042,11 @@ export default class Renderer {
 
     ctx.fillText(numberWithCommas(s.current), xBase - margin, yBase);
 
-    const roundedSize = ~~(this.CONFIG.UI.DEFAULT_FONT_SIZE * (1 + comboScale));
-    const roundedWeight = ~~(400 * (1 + comboScale * 0.5));
-    ctx.font = `${roundedWeight} ${roundedSize}px Montserrat, Pretendard Variable`;
-    ctx.fillText(`${combo}x`, xBase - margin, yBase + fontSize);
+    const comboSize = 1 + comboScale;
+    ctx.font = this.FONT.combo[Math.round(comboScale * 2)];
+    ctx.translate(xBase - margin, yBase + fontSize);
+    ctx.scale(comboSize, comboSize);
+    ctx.fillText(`${combo}x`, 0, 0);
 
     ctx.restore();
   }

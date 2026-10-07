@@ -1,7 +1,7 @@
 /* global Pace, Howler, Howl, url, cdn, api */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
-let upperBound, lowerBound, numberWithCommas, easeOutSine, easeOutQuad;
+let upperBound, lowerBound, numberWithCommas, easeOutQuad;
 let Factory, Updater, Renderer;
 (async () => {
   try {
@@ -12,7 +12,7 @@ let Factory, Updater, Renderer;
       import("../modules/renderer.js"),
     ]);
 
-    ({ upperBound, lowerBound, numberWithCommas, easeOutSine, easeOutQuad } = utils);
+    ({ upperBound, lowerBound, numberWithCommas, easeOutQuad } = utils);
     Factory = factory.default;
     Updater = updater.default;
     Renderer = renderer.default;
@@ -384,24 +384,7 @@ const cntRender = () => {
 
     if (resultMs != 0 && resultMs + 500 <= now) return;
 
-    if (comboAlert) {
-      let comboOpacity = 0;
-      let fontSize = 20;
-      if (comboAlertMs + 400 > now) {
-        comboOpacity = (now - comboAlertMs) / 1200;
-      } else if (comboAlertMs + 400 <= now && comboAlertMs + 600 > now) {
-        comboOpacity = 0.33;
-      } else if (comboAlertMs + 600 <= now && comboAlertMs + 1000 > now) {
-        comboOpacity = (comboAlertMs + 1000 - now) / 1200;
-      }
-      fontSize = (canvasH / 5) * easeOutSine((now - comboAlertMs) / 1000);
-      ctx.beginPath();
-      ctx.font = `700 ${fontSize}px ${FONT_STACK}`;
-      ctx.fillStyle = `rgba(200,200,200,${comboOpacity})`;
-      ctx.textBaseline = "middle";
-      ctx.textAlign = "center";
-      ctx.fillText(comboAlertCount, canvasW / 2, canvasH / 2);
-    }
+    if (comboAlert) Draw.comboAlert(comboAlertCount, comboAlertMs);
 
     ctx.lineWidth = 5;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
