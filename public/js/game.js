@@ -38,7 +38,6 @@ const offsetInputCircle = document.getElementById("offsetInputCircle");
 const offsetOffsetCircle = document.getElementById("offsetOffsetCircle");
 const offsetSpeedText = document.getElementById("offsetSpeedText");
 const volumeOverlay = document.getElementById("volumeOverlay");
-const CPLTrack = document.getElementById("CPLTrack");
 const profileContentsContainer = document.getElementsByClassName("profileContentsContainer")[0];
 const profileImageContainer = document.getElementById("profileImageContainer");
 const profileDescription = document.getElementById("profileDescription");
@@ -57,6 +56,9 @@ let profileid;
 let username = "";
 let picture;
 let analyser, dataArray;
+let visualizerFrame = null;
+let visualizerLevels = new Float32Array(0);
+let visualizerLastTime = 0;
 let canvas = document.getElementById("renderer");
 let ctx = canvas.getContext("2d");
 let loaded = 0;
@@ -247,40 +249,75 @@ const settingApply = () => {
   });
 };
 
-const drawBar = (x1, y1, x2, y2) => {
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.stroke();
+const VISUALIZER_MIN_HZ = 20;
+const VISUALIZER_MAX_HZ = 4186;
+const VISUALIZER_FLOOR_DB = -75;
+const VISUALIZER_CEIL_DB = -30;
+const VISUALIZER_GAMMA = 2;
+const VISUALIZER_RELEASE_MS = 120;
+const VISUALIZER_HEIGHT_RATIO = 1 / 4;
+
+// The analyser taps Howler.masterGain, so its input is already scaled by the volume.
+const syncVisualizerRange = (volume) => {
+  const offset = 20 * Math.log10(volume);
+  const min = VISUALIZER_FLOOR_DB + offset;
+  const max = VISUALIZER_CEIL_DB + offset;
+  if (min == analyser.minDecibels) return;
+  if (min < analyser.minDecibels) {
+    analyser.minDecibels = min;
+    analyser.maxDecibels = max;
+  } else {
+    analyser.maxDecibels = max;
+    analyser.minDecibels = min;
+  }
 };
 
-const scale = (value, valueMax, targetMax) => (value / valueMax) * targetMax;
-
-const animationLooper = () => {
-  if (display == 1 || display == 6) {
-    let wWidth = canvas.width;
-    let wHeight = canvas.height;
+const animationLooper = (time) => {
+  if (display != 1 && display != 6) {
+    visualizerFrame = null;
+    return;
+  }
+  const wWidth = canvas.width;
+  const wHeight = canvas.height;
+  ctx.clearRect(0, 0, wWidth, wHeight);
+  const decay = Math.exp(-(time - visualizerLastTime) / VISUALIZER_RELEASE_MS);
+  visualizerLastTime = time;
+  const volume = Howler.volume();
+  if (volume > 0) {
+    syncVisualizerRange(volume);
     analyser.getByteFrequencyData(dataArray);
 
-    const bufferLength = 205;
+    const binHz = Howler.ctx.sampleRate / analyser.fftSize;
+    const firstBin = Math.ceil(VISUALIZER_MIN_HZ / binHz);
+    const lastBin = Math.min(Math.floor(VISUALIZER_MAX_HZ / binHz), dataArray.length - 1);
+    const barCount = lastBin - firstBin + 1;
+    if (visualizerLevels.length != barCount) visualizerLevels = new Float32Array(barCount);
 
-    const barMaxHeight = wHeight / 4;
-    const barWidth = wWidth / bufferLength;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const barMaxHeight = wHeight * VISUALIZER_HEIGHT_RATIO;
+    const barWidth = wWidth / barCount;
     ctx.strokeStyle = "rgb(180, 180, 180)";
     ctx.lineWidth = barWidth / 2;
     ctx.lineCap = "round";
 
-    for (let i = 0; i < bufferLength; i++) {
-      const value = Math.max(0, dataArray[i] - 55) ** 2;
-      const barHeight = scale(value, 40000, barMaxHeight);
-      let x = barWidth * i;
-      drawBar(x, 0, x, barHeight);
+    ctx.beginPath();
+    for (let i = 0; i < barCount; i++) {
+      const level = Math.max((dataArray[firstBin + i] / 255) ** VISUALIZER_GAMMA, visualizerLevels[i] * decay);
+      visualizerLevels[i] = level;
+      const barHeight = level * barMaxHeight;
+      let x = barWidth * (i + 0.5);
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, barHeight);
       x = wWidth - x;
-      drawBar(x, wHeight, x, wHeight - barHeight);
+      ctx.moveTo(x, wHeight);
+      ctx.lineTo(x, wHeight - barHeight);
     }
+    ctx.stroke();
   }
-  requestAnimationFrame(animationLooper);
+  visualizerFrame = requestAnimationFrame(animationLooper);
+};
+
+const startVisualizer = () => {
+  if (analyser && visualizerFrame == null) visualizerFrame = requestAnimationFrame(animationLooper);
 };
 
 const sortAsName = (a, b) => {
@@ -768,7 +805,6 @@ const songSelected = (n, refreshed, seek) => {
   }
   document.getElementsByClassName("songSelectionContainer")[n].classList.add("songSelected");
   selectTitle.textContent = settings.general.detailLang == "original" ? tracks[n].originalName : tracks[n].name;
-  CPLTrack.textContent = settings.general.detailLang == "original" ? tracks[n].originalName : tracks[n].name;
   let fontSize = 5;
   selectTitle.style.fontSize = `5vh`;
   while (selectTitle.offsetWidth > window.innerWidth / 4) {
@@ -777,7 +813,6 @@ const songSelected = (n, refreshed, seek) => {
   }
   document.getElementById("selectArtist").textContent = tracks[n].producer;
   document.getElementById("selectAlbum").src = `${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.webp`;
-  document.getElementById("CPLAlbum").src = `${cdn}/albums/${settings.display.albumRes}/${tracks[n].fileName}.webp`;
   for (let i = 0; i <= 2; i++) {
     document.getElementsByClassName("difficultyNumber")[i].textContent = JSON.parse(tracks[n].difficulty)[i];
   }
@@ -920,9 +955,12 @@ const gameLoaded = () => {
   }, 500);
   analyser = Howler.ctx.createAnalyser();
   analyser.fftSize = 2048;
+  analyser.smoothingTimeConstant = 0;
+  analyser.minDecibels = VISUALIZER_FLOOR_DB;
+  analyser.maxDecibels = VISUALIZER_CEIL_DB;
   Howler.masterGain.connect(analyser);
   dataArray = new Uint8Array(analyser.frequencyBinCount);
-  animationLooper();
+  startVisualizer();
   // Warm the album-art cache during idle time so it doesn't block initial render.
   const preloadAlbums = () => {
     tracks.forEach((e) => {
@@ -1142,10 +1180,6 @@ const displayClose = () => {
       }, 500);
       display = 2;
       return;
-    } else if (display == 14) {
-      display = 1;
-      fadeOutContainer("CPLContainer");
-      return;
     } else if (display == 15 || display == 16) {
       //PROFILE
       stopProfileSong();
@@ -1186,6 +1220,7 @@ const menuSelected = (n) => {
   if (n == 0) {
     //play
     display = 1;
+    startVisualizer();
     if (songSelection == -1) {
       // Restore the last played song; pick a random one only when there is nothing to restore.
       const savedIndex = localStorage.songName ? tracks.findIndex((e) => e.fileName == localStorage.songName) : -1;
