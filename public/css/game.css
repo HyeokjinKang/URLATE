@@ -445,10 +445,29 @@ p {
 #infoContainer {
   color: #333;
   background-color: #fff;
+}
+
+#infoContainer::before,
+#storeContainer::before,
+#optionContainer::before,
+#offsetContiner::before,
+#visualSyncContainer::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background-image: url(/images/backgrounds/decorations-option.webp);
-  background-position: center bottom;
+  background-position: center;
   background-size: cover;
-  background-attachment: fixed;
+}
+
+#infoContainer::before {
+  background-position: center bottom;
+}
+
+#storeContainer::before {
+  background-image: url(/images/backgrounds/decorations-advanced.webp);
 }
 
 #infoLogo {
@@ -697,18 +716,10 @@ p {
   align-items: flex-start;
   justify-content: center;
   background-color: #fff;
-  background-image: url(/images/backgrounds/decorations-advanced.webp);
-  background-position: center;
-  background-size: cover;
-  background-attachment: fixed;
 }
 
 #optionContainer {
   background-color: #fff;
-  background-image: url(/images/backgrounds/decorations-option.webp);
-  background-position: center;
-  background-size: cover;
-  background-attachment: fixed;
 }
 
 .containersTitle {
@@ -1521,10 +1532,6 @@ input[type="number"] {
   opacity: 0;
   z-index: 101;
   background-color: #fff;
-  background-image: url(/images/backgrounds/decorations-option.webp);
-  background-position: center;
-  background-size: cover;
-  background-attachment: fixed;
 }
 
 .offsetPreviewContainer {

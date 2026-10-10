@@ -56,6 +56,7 @@ let profileid;
 let username = "";
 let picture;
 let analyser, dataArray;
+let visualizerFrame = null;
 let canvas = document.getElementById("renderer");
 let ctx = canvas.getContext("2d");
 let loaded = 0;
@@ -253,13 +254,6 @@ const VISUALIZER_CEIL_DB = -30;
 const VISUALIZER_GAMMA = 2;
 const VISUALIZER_HEIGHT_RATIO = 1 / 4;
 
-const drawBar = (x1, y1, x2, y2) => {
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.stroke();
-};
-
 // The analyser taps Howler.masterGain, so its input is already scaled by the volume.
 const syncVisualizerRange = (volume) => {
   const offset = 20 * Math.log10(volume);
@@ -276,36 +270,46 @@ const syncVisualizerRange = (volume) => {
 };
 
 const animationLooper = () => {
-  if (display == 1 || display == 6) {
-    const wWidth = canvas.width;
-    const wHeight = canvas.height;
-    ctx.clearRect(0, 0, wWidth, wHeight);
-    const volume = Howler.volume();
-    if (volume > 0) {
-      syncVisualizerRange(volume);
-      analyser.getByteFrequencyData(dataArray);
-
-      const binHz = Howler.ctx.sampleRate / analyser.fftSize;
-      const firstBin = Math.ceil(VISUALIZER_MIN_HZ / binHz);
-      const lastBin = Math.min(Math.floor(VISUALIZER_MAX_HZ / binHz), dataArray.length - 1);
-      const barCount = lastBin - firstBin + 1;
-
-      const barMaxHeight = wHeight * VISUALIZER_HEIGHT_RATIO;
-      const barWidth = wWidth / barCount;
-      ctx.strokeStyle = "rgb(180, 180, 180)";
-      ctx.lineWidth = barWidth / 2;
-      ctx.lineCap = "round";
-
-      for (let i = 0; i < barCount; i++) {
-        const barHeight = (dataArray[firstBin + i] / 255) ** VISUALIZER_GAMMA * barMaxHeight;
-        let x = barWidth * (i + 0.5);
-        drawBar(x, 0, x, barHeight);
-        x = wWidth - x;
-        drawBar(x, wHeight, x, wHeight - barHeight);
-      }
-    }
+  if (display != 1 && display != 6) {
+    visualizerFrame = null;
+    return;
   }
-  requestAnimationFrame(animationLooper);
+  const wWidth = canvas.width;
+  const wHeight = canvas.height;
+  ctx.clearRect(0, 0, wWidth, wHeight);
+  const volume = Howler.volume();
+  if (volume > 0) {
+    syncVisualizerRange(volume);
+    analyser.getByteFrequencyData(dataArray);
+
+    const binHz = Howler.ctx.sampleRate / analyser.fftSize;
+    const firstBin = Math.ceil(VISUALIZER_MIN_HZ / binHz);
+    const lastBin = Math.min(Math.floor(VISUALIZER_MAX_HZ / binHz), dataArray.length - 1);
+    const barCount = lastBin - firstBin + 1;
+
+    const barMaxHeight = wHeight * VISUALIZER_HEIGHT_RATIO;
+    const barWidth = wWidth / barCount;
+    ctx.strokeStyle = "rgb(180, 180, 180)";
+    ctx.lineWidth = barWidth / 2;
+    ctx.lineCap = "round";
+
+    ctx.beginPath();
+    for (let i = 0; i < barCount; i++) {
+      const barHeight = (dataArray[firstBin + i] / 255) ** VISUALIZER_GAMMA * barMaxHeight;
+      let x = barWidth * (i + 0.5);
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, barHeight);
+      x = wWidth - x;
+      ctx.moveTo(x, wHeight);
+      ctx.lineTo(x, wHeight - barHeight);
+    }
+    ctx.stroke();
+  }
+  visualizerFrame = requestAnimationFrame(animationLooper);
+};
+
+const startVisualizer = () => {
+  if (analyser && visualizerFrame == null) visualizerFrame = requestAnimationFrame(animationLooper);
 };
 
 const sortAsName = (a, b) => {
@@ -947,7 +951,7 @@ const gameLoaded = () => {
   analyser.maxDecibels = VISUALIZER_CEIL_DB;
   Howler.masterGain.connect(analyser);
   dataArray = new Uint8Array(analyser.frequencyBinCount);
-  animationLooper();
+  startVisualizer();
   // Warm the album-art cache during idle time so it doesn't block initial render.
   const preloadAlbums = () => {
     tracks.forEach((e) => {
@@ -1207,6 +1211,7 @@ const menuSelected = (n) => {
   if (n == 0) {
     //play
     display = 1;
+    startVisualizer();
     if (songSelection == -1) {
       // Restore the last played song; pick a random one only when there is nothing to restore.
       const savedIndex = localStorage.songName ? tracks.findIndex((e) => e.fileName == localStorage.songName) : -1;
