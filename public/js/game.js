@@ -57,6 +57,8 @@ let username = "";
 let picture;
 let analyser, dataArray;
 let visualizerFrame = null;
+let visualizerLevels = new Float32Array(0);
+let visualizerLastTime = 0;
 let canvas = document.getElementById("renderer");
 let ctx = canvas.getContext("2d");
 let loaded = 0;
@@ -249,9 +251,10 @@ const settingApply = () => {
 
 const VISUALIZER_MIN_HZ = 20;
 const VISUALIZER_MAX_HZ = 4186;
-const VISUALIZER_FLOOR_DB = -85;
+const VISUALIZER_FLOOR_DB = -75;
 const VISUALIZER_CEIL_DB = -30;
 const VISUALIZER_GAMMA = 2;
+const VISUALIZER_RELEASE_MS = 120;
 const VISUALIZER_HEIGHT_RATIO = 1 / 4;
 
 // The analyser taps Howler.masterGain, so its input is already scaled by the volume.
@@ -269,7 +272,7 @@ const syncVisualizerRange = (volume) => {
   }
 };
 
-const animationLooper = () => {
+const animationLooper = (time) => {
   if (display != 1 && display != 6) {
     visualizerFrame = null;
     return;
@@ -277,6 +280,8 @@ const animationLooper = () => {
   const wWidth = canvas.width;
   const wHeight = canvas.height;
   ctx.clearRect(0, 0, wWidth, wHeight);
+  const decay = Math.exp(-(time - visualizerLastTime) / VISUALIZER_RELEASE_MS);
+  visualizerLastTime = time;
   const volume = Howler.volume();
   if (volume > 0) {
     syncVisualizerRange(volume);
@@ -286,6 +291,7 @@ const animationLooper = () => {
     const firstBin = Math.ceil(VISUALIZER_MIN_HZ / binHz);
     const lastBin = Math.min(Math.floor(VISUALIZER_MAX_HZ / binHz), dataArray.length - 1);
     const barCount = lastBin - firstBin + 1;
+    if (visualizerLevels.length != barCount) visualizerLevels = new Float32Array(barCount);
 
     const barMaxHeight = wHeight * VISUALIZER_HEIGHT_RATIO;
     const barWidth = wWidth / barCount;
@@ -295,7 +301,9 @@ const animationLooper = () => {
 
     ctx.beginPath();
     for (let i = 0; i < barCount; i++) {
-      const barHeight = (dataArray[firstBin + i] / 255) ** VISUALIZER_GAMMA * barMaxHeight;
+      const level = Math.max((dataArray[firstBin + i] / 255) ** VISUALIZER_GAMMA, visualizerLevels[i] * decay);
+      visualizerLevels[i] = level;
+      const barHeight = level * barMaxHeight;
       let x = barWidth * (i + 0.5);
       ctx.moveTo(x, 0);
       ctx.lineTo(x, barHeight);
@@ -947,6 +955,7 @@ const gameLoaded = () => {
   }, 500);
   analyser = Howler.ctx.createAnalyser();
   analyser.fftSize = 2048;
+  analyser.smoothingTimeConstant = 0;
   analyser.minDecibels = VISUALIZER_FLOOR_DB;
   analyser.maxDecibels = VISUALIZER_CEIL_DB;
   Howler.masterGain.connect(analyser);
