@@ -672,7 +672,6 @@ p {
 }
 
 #visualizer {
-  mix-blend-mode: hard-light;
   opacity: 0.3;
   pointer-events: none;
   position: fixed;
