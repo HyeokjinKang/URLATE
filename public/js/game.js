@@ -295,7 +295,7 @@ const animationLooper = (time) => {
 
     const barMaxHeight = wHeight * VISUALIZER_HEIGHT_RATIO;
     const barWidth = wWidth / barCount;
-    ctx.strokeStyle = "rgb(180, 180, 180)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.412)";
     ctx.lineWidth = barWidth / 2;
     ctx.lineCap = "round";
 
@@ -1306,12 +1306,8 @@ const profileUpdate = async (nickname, isMe) => {
       }
       document.getElementById("profileDescription").style.opacity = "0";
     }
-    if (profile.explicit >= 2) {
-      document.getElementById("profileImageContainer").classList.add("blur");
-    }
-    if (profile.explicit % 2 == 1) {
-      document.getElementById("profileImage").classList.add("blur");
-    }
+    profileImageContainer.classList.toggle("blur", profile.explicit >= 2);
+    document.getElementById("profileImage").classList.toggle("blur", profile.explicit % 2 == 1);
     document.getElementById("profileImageContainer").style.backgroundImage = `url("${safeUrl(profile.background)}")`;
     document.getElementById("profileImage").src = safeUrl(profile.picture);
     document.getElementById("profileName").textContent = profile.nickname;
