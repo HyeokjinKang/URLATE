@@ -678,7 +678,7 @@ p {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vw;
+  height: 100vh;
   overflow-x: hidden;
   overflow-y: hidden;
   transition-duration: 0.3s;
