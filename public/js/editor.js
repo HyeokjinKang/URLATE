@@ -1,4 +1,4 @@
-/* global Howler, Howl, iziToast, url, api, cdn, syncAlert, syncIgnoredAlert, latencyIgnoredAlert, allIgnoredAlert, timeAlert, copiedText */
+/* global Howler, Howl, iziToast, url, api, cdn, syncAlert, timeAlert, copiedText */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
 let upperBound, lowerBound;
@@ -1127,14 +1127,7 @@ const tmlRender = () => {
     tmlCtx.textAlign = "right";
     tmlCtx.textBaseline = "top";
     if (song.playing() && tmlCanvasW / tmlCanvasH >= 4.9) {
-      const alertText = denySync
-        ? denyLatency
-          ? allIgnoredAlert
-          : syncIgnoredAlert
-        : denyLatency
-          ? latencyIgnoredAlert
-          : syncAlert;
-      tmlCtx.fillText(alertText, endX, endY + 5);
+      tmlCtx.fillText(syncAlert, endX, endY + 5);
     } else if (selectedCount()) {
       tmlCtx.fillText(`${selectedCount()} selected`, endX, endY + 5);
     }
