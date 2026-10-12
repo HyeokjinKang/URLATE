@@ -37,6 +37,7 @@ const offsetTimingCircle = document.getElementById("offsetTimingCircle");
 const offsetInputCircle = document.getElementById("offsetInputCircle");
 const offsetOffsetCircle = document.getElementById("offsetOffsetCircle");
 const offsetSpeedText = document.getElementById("offsetSpeedText");
+const visualSyncSpeedText = document.getElementById("visualSyncSpeedText");
 const volumeOverlay = document.getElementById("volumeOverlay");
 const profileContentsContainer = document.getElementsByClassName("profileContentsContainer")[0];
 const profileImageContainer = document.getElementById("profileImageContainer");
@@ -1844,18 +1845,22 @@ const offsetUpdate = () => {
   }
 };
 
+const offsetRateApply = () => {
+  offsetSong.rate(offsetRate);
+  offsetSpeedText.textContent = offsetRate + "x";
+  visualSyncSpeedText.textContent = offsetRate + "x";
+};
+
 const offsetSpeedUp = () => {
   offsetRate = Number((offsetRate + 0.1).toFixed(1));
   if (offsetRate > 2) offsetRate = 2;
-  offsetSong.rate(offsetRate);
-  offsetSpeedText.textContent = offsetRate + "x";
+  offsetRateApply();
 };
 
 const offsetSpeedDown = () => {
   offsetRate = Number((offsetRate - 0.1).toFixed(1));
   if (offsetRate <= 0) offsetRate = 0.1;
-  offsetSong.rate(offsetRate);
-  offsetSpeedText.textContent = offsetRate + "x";
+  offsetRateApply();
 };
 
 const offsetUp = () => {
@@ -1920,7 +1925,7 @@ const visualSyncSetting = () => {
     const cycle = beat * 2; // one note every two beats
 
     // Compute the note progress from a visual seek pulled ahead by visualSyncOffset.
-    const visualSeek = seek + visualSyncOffset / 1000;
+    const visualSeek = seek + (visualSyncOffset / 1000) * offsetRate;
     const visualCyclePos = ((visualSeek % cycle) + cycle) % cycle;
     const visualCycleOffset = visualCyclePos - cycle; // -cycle ~ 0
 
