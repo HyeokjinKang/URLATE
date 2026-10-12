@@ -586,7 +586,7 @@
           </div>
           <div class="optionCard">
             <div class="optionCardHead">
-              <p class="optionTitle"><%= __('ingame') %></p>
+              <p class="optionTitle"><%= __('tutorial') %></p>
             </div>
             <div class="optionRow">
               <p class="optionSemiTitle"><%= __('tutorial_restart') %></p>
@@ -708,12 +708,13 @@
               <p class="optionTitle"><%= __('details') %></p>
             </div>
             <div class="optionRow">
-              <p class="optionSemiTitle"><%= __('ignore_latency') %></p>
+              <p class="optionSemiTitle"><%= __('resolution') %></p>
               <div class="optionControl">
-                <label class="optionToggle">
-                  <input type="checkbox" class="optionCheckbox" id="ignoreLatencyCheck" data-setting="ignoreLatency" />
-                  <span class="optionToggleTrack"></span>
-                </label>
+                <select class="optionSelect" id="soundResSelector" data-setting="soundRes">
+                  <option>96kbps</option>
+                  <option>128kbps</option>
+                  <option>192kbps</option>
+                </select>
               </div>
             </div>
             <div class="optionRow">
@@ -723,13 +724,12 @@
               </div>
             </div>
             <div class="optionRow">
-              <p class="optionSemiTitle"><%= __('resolution') %></p>
+              <p class="optionSemiTitle"><%= __('ignore_latency') %></p>
               <div class="optionControl">
-                <select class="optionSelect" id="soundResSelector" data-setting="soundRes">
-                  <option>96kbps</option>
-                  <option>128kbps</option>
-                  <option>192kbps</option>
-                </select>
+                <label class="optionToggle">
+                  <input type="checkbox" class="optionCheckbox" id="ignoreLatencyCheck" data-setting="ignoreLatency" />
+                  <span class="optionToggleTrack"></span>
+                </label>
               </div>
             </div>
           </div>

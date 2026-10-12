@@ -831,7 +831,7 @@ p {
   left: 22vw;
   right: 0;
   box-sizing: border-box;
-  padding: 0 6vw 6vh 2vw;
+  padding: 0 5vw 6vh 2vw;
   text-align: left;
   overflow-y: auto;
   scrollbar-color: #5a5a5a transparent;
@@ -850,7 +850,7 @@ p {
 }
 
 .optionCard {
-  max-width: 62vw;
+  max-width: 60em;
   margin-bottom: 2.4vh;
   padding: 2.6vh 2.2vw 1vh;
   box-sizing: border-box;
