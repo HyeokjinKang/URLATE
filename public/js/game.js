@@ -194,6 +194,7 @@ const settingApply = () => {
   document.getElementById("frameCheck").checked = settings.game.counter;
   document.getElementById("ignoreCursorCheck").checked = settings.editor.denyCursor;
   document.getElementById("ignoreEditorCheck").checked = settings.editor.denySkin;
+  document.getElementById("ignoreSyncCheck").checked = settings.editor.denySync ?? false;
   document.getElementById("comboAlertCheck").checked = settings.game.comboAlert;
   volumeSongValue.textContent = Math.round(settings.sound.volume.music * 100) + "%";
   volumeHitValue.textContent = Math.round(settings.sound.volume.hitSound * 100) + "%";
@@ -1604,6 +1605,8 @@ const settingChanged = (e, v) => {
     settings.editor.denyCursor = e.checked;
   } else if (v == "ignoreEditor") {
     settings.editor.denySkin = e.checked;
+  } else if (v == "ignoreSync") {
+    settings.editor.denySync = e.checked;
   }
 };
 

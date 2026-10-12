@@ -1,4 +1,4 @@
-/* global Howler, Howl, iziToast, url, api, cdn, syncAlert, timeAlert, copiedText */
+/* global Howler, Howl, iziToast, url, api, cdn, syncAlert, syncIgnoredAlert, timeAlert, copiedText */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
 let upperBound, lowerBound;
@@ -94,7 +94,7 @@ let destroyParticles = [];
 let pixelRatio = window.devicePixelRatio;
 let tmlRows = { start: [0, 1, 2], count: [1, 1, 1], total: 3 };
 let timelineFilter = "all";
-let skin, denyCursor;
+let skin, denyCursor, denySync;
 let dragMouseX, dragMouseY, dragGroup, marquee;
 let tmlPositions = [],
   cntPositions = [];
@@ -173,8 +173,9 @@ const settingApply = () => {
   Howler.autoSuspend = false;
   volumeMaster.value = settings.sound.volume.master * 100;
   volumeMasterValue.textContent = settings.sound.volume.master * 100 + "%";
-  sync = settings.sound.offset;
-  visualSync = settings.display.offset ?? 0;
+  denySync = settings.editor.denySync ?? false;
+  sync = denySync ? 0 : settings.sound.offset;
+  visualSync = denySync ? 0 : (settings.display.offset ?? 0);
   denyCursor = settings.editor.denyCursor;
   canvasContainer.style.cursor = denyCursor ? "" : "none";
 };
@@ -1125,7 +1126,7 @@ const tmlRender = () => {
     tmlCtx.textAlign = "right";
     tmlCtx.textBaseline = "top";
     if (song.playing() && tmlCanvasW / tmlCanvasH >= 4.9) {
-      tmlCtx.fillText(syncAlert, endX, endY + 5);
+      tmlCtx.fillText(denySync ? syncIgnoredAlert : syncAlert, endX, endY + 5);
     } else if (selectedCount()) {
       tmlCtx.fillText(`${selectedCount()} selected`, endX, endY + 5);
     }
