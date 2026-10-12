@@ -2559,8 +2559,8 @@ input[type="number"] {
 
 #rankTable {
   border-collapse: collapse;
-  margin: 16vh 5vw 6vh;
-  width: 90vw;
+  margin: 16vh 10vw 6vh;
+  width: 80vw;
   font-size: 2vh;
 }
 
