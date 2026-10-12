@@ -936,6 +936,7 @@ p {
   min-width: 4vw;
   padding: 0.6vh 0.6vw;
   font-size: 1.8vh;
+  font-weight: 600;
   text-align: center;
   font-variant-numeric: tabular-nums;
   border-radius: 6px;
@@ -954,7 +955,7 @@ p {
   box-sizing: border-box;
   font-family: var(--font-montserrat);
   font-feature-settings: "ss05";
-  font-size: 1.9vh;
+  font-size: 1.8vh;
   font-weight: 600;
   letter-spacing: -0.3px;
   text-decoration: none;
