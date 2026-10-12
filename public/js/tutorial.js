@@ -282,6 +282,7 @@ const settingApply = () => {
   frameCounter = settings.game.counter;
   volumeMasterInput.value = Math.round(settings.sound.volume.master * 100);
   volumeMasterValue.textContent = Math.round(settings.sound.volume.master * 100) + "%";
+  volumeMasterInput.style.setProperty("--fill", `${volumeMasterInput.value}%`);
 };
 
 const playSong = () => {
@@ -945,6 +946,7 @@ const settingChanged = (e, v) => {
   if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
     volumeMasterValue.textContent = e.value + "%";
+    volumeMasterInput.style.setProperty("--fill", `${volumeMasterInput.value}%`);
     volumeMasterInput.value = Math.round(settings.sound.volume.master * 100);
     overlayTime = Date.now();
     setTimeout(() => {
@@ -954,13 +956,34 @@ const settingChanged = (e, v) => {
   }
 };
 
+let volumeOverlayHeld = false;
+
 const overlayClose = (s) => {
   if (s == "volume") {
+    if (volumeOverlayHeld || volumeOverlay.matches(":hover")) return;
     if (overlayTime + 1400 <= Date.now()) {
       volumeOverlay.classList.remove("overlayOpen");
     }
   }
 };
+
+const volumeOverlayRelease = () => {
+  if (!volumeOverlay.classList.contains("overlayOpen")) return;
+  overlayTime = Date.now();
+  setTimeout(() => {
+    overlayClose("volume");
+  }, 1500);
+};
+
+volumeOverlay.addEventListener("pointerdown", () => {
+  volumeOverlayHeld = true;
+});
+volumeOverlay.addEventListener("mouseleave", volumeOverlayRelease);
+window.addEventListener("pointerup", () => {
+  if (!volumeOverlayHeld) return;
+  volumeOverlayHeld = false;
+  volumeOverlayRelease();
+});
 
 const finish = () => {
   window.location.href = `${url}/game?initialize=0`;
@@ -997,6 +1020,7 @@ const globalScrollEvent = (e) => {
       }
       volumeMasterInput.value = Math.round(settings.sound.volume.master * 100);
       volumeMasterValue.textContent = `${Math.round(settings.sound.volume.master * 100)}%`;
+      volumeMasterInput.style.setProperty("--fill", `${volumeMasterInput.value}%`);
       Howler.volume(settings.sound.volume.master);
       volumeOverlay.classList.add("overlayOpen");
       overlayTime = Date.now();

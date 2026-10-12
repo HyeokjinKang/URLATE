@@ -173,6 +173,7 @@ const settingApply = () => {
   Howler.autoSuspend = false;
   volumeMaster.value = settings.sound.volume.master * 100;
   volumeMasterValue.textContent = settings.sound.volume.master * 100 + "%";
+  volumeMaster.style.setProperty("--fill", `${volumeMaster.value}%`);
   denySync = settings.editor.denySync ?? false;
   denyLatency = (settings.sound.denyLatency ?? false) || (settings.editor.denyLatency ?? false);
   sync = denySync ? 0 : settings.sound.offset;
@@ -3032,6 +3033,7 @@ const settingChanged = (e, v) => {
   if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
     volumeMasterValue.textContent = e.value + "%";
+    volumeMaster.style.setProperty("--fill", `${volumeMaster.value}%`);
     overlayTime = new Date().getTime();
     setTimeout(() => {
       overlayClose("volume");
@@ -3040,13 +3042,34 @@ const settingChanged = (e, v) => {
   }
 };
 
+let volumeOverlayHeld = false;
+
 const overlayClose = (s) => {
   if (s == "volume") {
+    if (volumeOverlayHeld || volumeOverlay.matches(":hover")) return;
     if (overlayTime + 1400 <= new Date().getTime()) {
       volumeOverlay.classList.remove("overlayOpen");
     }
   }
 };
+
+const volumeOverlayRelease = () => {
+  if (!volumeOverlay.classList.contains("overlayOpen")) return;
+  overlayTime = new Date().getTime();
+  setTimeout(() => {
+    overlayClose("volume");
+  }, 1500);
+};
+
+volumeOverlay.addEventListener("pointerdown", () => {
+  volumeOverlayHeld = true;
+});
+volumeOverlay.addEventListener("mouseleave", volumeOverlayRelease);
+window.addEventListener("pointerup", () => {
+  if (!volumeOverlayHeld) return;
+  volumeOverlayHeld = false;
+  volumeOverlayRelease();
+});
 
 let scrollTimer = 0;
 let volumeSaveTimeout;
@@ -3079,6 +3102,7 @@ const globalScrollEvent = (e) => {
       }
       volumeMaster.value = Math.round(settings.sound.volume.master * 100);
       volumeMasterValue.textContent = `${Math.round(settings.sound.volume.master * 100)}%`;
+      volumeMaster.style.setProperty("--fill", `${volumeMaster.value}%`);
       Howler.volume(settings.sound.volume.master);
       volumeOverlay.classList.add("overlayOpen");
       overlayTime = new Date().getTime();

@@ -700,67 +700,101 @@ kbd {
 }
 
 .overlay {
-  transition-duration: 0.5s;
-  transform: translateY(10vh);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
   z-index: 300;
   position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 8vh;
-  background-color: white;
-  box-shadow: 0 0 20px rgba(50, 50, 50, 0.3);
+  left: 50%;
+  bottom: 3vh;
+  display: flex;
+  align-items: center;
+  gap: 1.2vw;
+  height: 7.2vh;
+  padding: 0 2vw;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: 0 0 2vh rgba(50, 50, 50, 0.25);
+  transform: translate(-50%, calc(100% + 4vh));
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .overlayOpen {
-  transform: translateY(0vh);
+  transform: translate(-50%, 0);
 }
 
-.optionSlider {
-  margin-right: 0.5vw;
-  appearance: none;
+.overlay .optionSemiTitle {
+  margin: 0;
+  font-size: 2vh;
+  font-weight: 500;
+  color: #606060;
+}
+
+.overlay .optionSlider {
+  --fill: 0%;
   -webkit-appearance: none;
-  width: 10vw;
-  height: 3px;
-  background: #616161;
+  appearance: none;
+  margin: 0;
+  width: 14vw;
+  height: 6px;
+  border-radius: 6px;
   outline: none;
+  cursor: pointer;
+  background:
+    linear-gradient(#373737, #373737) 0 / var(--fill) 100% no-repeat,
+    #e2e2e2;
 }
 
-.optionSlider::-webkit-slider-thumb {
+.overlay .optionSlider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 10px;
-  height: 10px;
-  border-radius: 1000px;
-  background: #363636;
+  width: 2.2vh;
+  height: 2.2vh;
+  border-radius: 50%;
+  border: 3px solid #373737;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
+  transform: scale(0);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.optionSlider::-moz-range-thumb {
-  width: 10px;
-  height: 10px;
-  border-radius: 1000px;
-  background: #363636;
+.overlay .optionSlider:hover::-webkit-slider-thumb,
+.overlay .optionSlider:focus-visible::-webkit-slider-thumb,
+.overlay .optionSlider:active::-webkit-slider-thumb {
+  transform: scale(1);
+}
+
+.overlay .optionSlider::-moz-range-thumb {
+  box-sizing: border-box;
+  width: 2.2vh;
+  height: 2.2vh;
+  border-radius: 50%;
+  border: 3px solid #373737;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
+  transform: scale(0);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.optionSemiTitle {
-  font-weight: 600;
-  color: #404040;
-  font-size: 2.5vh;
-  margin-right: 1vw;
+.overlay .optionSlider:hover::-moz-range-thumb,
+.overlay .optionSlider:focus-visible::-moz-range-thumb,
+.overlay .optionSlider:active::-moz-range-thumb {
+  transform: scale(1);
 }
 
-.optionValue {
+.overlay .optionValue {
+  margin: 0;
+  min-width: 4vw;
+  padding: 0.6vh 0.6vw;
   font-family: var(--font-montserrat);
   font-feature-settings: "ss05";
-  font-weight: 400;
+  font-size: 1.8vh;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
   color: #404040;
-  font-size: 2vh;
+  border-radius: 6px;
+  background-color: #f2f2f2;
 }
 
 /* ---- Grayscale text ---- */

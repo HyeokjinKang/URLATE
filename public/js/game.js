@@ -31,12 +31,10 @@ const loadingOverlayCircle = document.getElementById("loadingOverlayCircle");
 const goldMedal = document.getElementById("goldMedal");
 const silverMedal = document.getElementById("silverMedal");
 const checkMedal = document.getElementById("checkMedal");
-const offsetNextCircle = document.getElementById("offsetNextCircle");
-const offsetPrevCircle = document.getElementById("offsetPrevCircle");
-const offsetTimingCircle = document.getElementById("offsetTimingCircle");
-const offsetInputCircle = document.getElementById("offsetInputCircle");
-const offsetOffsetCircle = document.getElementById("offsetOffsetCircle");
+const offsetCanvas = document.getElementById("offsetCanvas");
+const offsetCtx = offsetCanvas.getContext("2d");
 const offsetSpeedText = document.getElementById("offsetSpeedText");
+const visualSyncSpeedText = document.getElementById("visualSyncSpeedText");
 const volumeOverlay = document.getElementById("volumeOverlay");
 const profileContentsContainer = document.getElementsByClassName("profileContentsContainer")[0];
 const profileImageContainer = document.getElementById("profileImageContainer");
@@ -178,6 +176,15 @@ const getAudioLatency = () => {
   return (ctx?.outputLatency ?? 0) + (ctx?.baseLatency ?? 0);
 };
 
+const sliderFill = (slider) => {
+  const ratio = (slider.value - slider.min) / (slider.max - slider.min);
+  slider.style.setProperty("--fill", `${ratio * 100}%`);
+};
+
+const sliderFillAll = () => {
+  document.querySelectorAll(".optionSlider").forEach(sliderFill);
+};
+
 const settingApply = () => {
   langDetailSelector.value = settings.general.detailLang;
   canvasResSelector.value = settings.display.canvasRes;
@@ -223,6 +230,7 @@ const settingApply = () => {
   }
   visualSyncOffset = settings.display.offset || 0;
   document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
+  sliderFillAll();
   initialize();
   profileSong = new Howl({
     src: [`${cdn}/tracks/128kbps/store.ogg`],
@@ -1753,6 +1761,7 @@ const showRank = () => {
 };
 
 const offsetSetting = () => {
+  offsetDrawnState = "";
   display = 7;
   document.getElementById("offsetContiner").style.display = "flex";
   document.getElementById("offsetContiner").classList.add("fadeInAnim");
@@ -1767,6 +1776,73 @@ const offsetSetting = () => {
   offsetUpdate();
 };
 
+const syncCanvasFit = (canvas) => {
+  const frame = canvas.parentElement;
+  const frameStyle = getComputedStyle(frame);
+  const cssW = Math.floor(
+    frame.getBoundingClientRect().width - parseFloat(frameStyle.paddingLeft) - parseFloat(frameStyle.paddingRight),
+  );
+  const cssH = Math.floor(cssW / 3);
+  const W = Math.round(cssW * window.devicePixelRatio);
+  const H = Math.round(cssH * window.devicePixelRatio);
+  if (canvas.width !== W || canvas.height !== H) {
+    canvas.style.width = `${cssW}px`;
+    canvas.style.height = `${cssH}px`;
+    canvas.width = W;
+    canvas.height = H;
+  }
+};
+
+const offsetCircle = (x, y, r, filled, label) => {
+  const H = offsetCanvas.height;
+  offsetCtx.beginPath();
+  offsetCtx.arc(x, y, r, 0, 2 * Math.PI);
+  offsetCtx.fillStyle = filled ? "#373737" : "#fff";
+  offsetCtx.fill();
+  offsetCtx.lineWidth = Math.max(2, H * 0.01);
+  offsetCtx.strokeStyle = "#373737";
+  offsetCtx.stroke();
+  offsetCtx.fillStyle = "#606060";
+  offsetCtx.fillText(label, x, y + r + H * 0.1);
+};
+
+let offsetDrawnState = "";
+
+const offsetDraw = (remain) => {
+  const offsetFilled = offset - 25 <= remain && remain <= offset + 25;
+  const timing = [
+    [-50, -75 <= remain && remain < -25],
+    [0, -25 <= remain && remain <= 25],
+    [50, 25 < remain && remain <= 75],
+  ];
+  const state = [offsetInput, offsetFilled, ...timing.map(([, filled]) => filled)].join();
+  if (state === offsetDrawnState) return;
+  offsetDrawnState = state;
+
+  syncCanvasFit(offsetCanvas);
+  const W = offsetCanvas.width;
+  const H = offsetCanvas.height;
+  offsetCtx.fillStyle = "#f5f5f5";
+  offsetCtx.fillRect(0, 0, W, H);
+  offsetCtx.font = `600 ${Math.round(H * 0.06)}px Montserrat, "Pretendard Variable", sans-serif`;
+  offsetCtx.textAlign = "center";
+  offsetCtx.textBaseline = "middle";
+
+  const bigR = H * 0.26;
+  const bigY = H * 0.42;
+  offsetCircle(W * 0.28 - bigR * 1.2, bigY, bigR, offsetInput, offsetCanvas.dataset.input);
+  offsetCircle(W * 0.28 + bigR * 1.2, bigY, bigR, offsetFilled, offsetCanvas.dataset.offset);
+
+  const smallR = H * 0.09;
+  timing.forEach(([ms, filled], i) => {
+    offsetCircle(W * 0.72 + (i - 1) * smallR * 3.6, bigY, smallR, filled, `${ms}ms`);
+  });
+};
+
+window.addEventListener("resize", () => {
+  offsetDrawnState = "";
+});
+
 const offsetUpdate = () => {
   const beat = 60 / 110;
   const seek = Math.max(0, offsetSong.seek() - getAudioLatency());
@@ -1774,26 +1850,7 @@ const offsetUpdate = () => {
   const beatOffset = beatPosition <= beat / 1.5 ? beatPosition : beatPosition - beat;
   const remain = (beatOffset * 1000) / offsetRate;
 
-  const eraseColor = "#ffffff";
-  const fillColor = "#373737";
-
-  if (-75 <= remain && remain <= -25) {
-    offsetNextCircle.style.backgroundColor = eraseColor;
-    offsetPrevCircle.style.backgroundColor = fillColor;
-  } else if (-25 <= remain && remain <= 25) {
-    offsetPrevCircle.style.backgroundColor = eraseColor;
-    offsetTimingCircle.style.backgroundColor = fillColor;
-  } else if (25 <= remain && remain <= 75) {
-    offsetTimingCircle.style.backgroundColor = eraseColor;
-    offsetNextCircle.style.backgroundColor = fillColor;
-  } else {
-    offsetTimingCircle.style.backgroundColor = eraseColor;
-    offsetPrevCircle.style.backgroundColor = eraseColor;
-    offsetNextCircle.style.backgroundColor = eraseColor;
-  }
-
   if (offsetInput) {
-    offsetInputCircle.style.backgroundColor = fillColor;
     if (!offsetPrevInput) {
       if (
         offsetAverage[offsetAverage.length - 1] - remain >= 50 ||
@@ -1814,14 +1871,8 @@ const offsetUpdate = () => {
       offset = parseInt(avr);
       offsetButtonText.textContent = offset + "ms";
     }
-  } else {
-    offsetInputCircle.style.backgroundColor = eraseColor;
   }
-  if (offset - 25 <= remain && remain <= offset + 25) {
-    offsetOffsetCircle.style.backgroundColor = fillColor;
-  } else {
-    offsetOffsetCircle.style.backgroundColor = eraseColor;
-  }
+  offsetDraw(remain);
 
   offsetPrevInput = offsetInput;
 
@@ -1834,18 +1885,22 @@ const offsetUpdate = () => {
   }
 };
 
+const offsetRateApply = () => {
+  offsetSong.rate(offsetRate);
+  offsetSpeedText.textContent = offsetRate + "x";
+  visualSyncSpeedText.textContent = offsetRate + "x";
+};
+
 const offsetSpeedUp = () => {
   offsetRate = Number((offsetRate + 0.1).toFixed(1));
   if (offsetRate > 2) offsetRate = 2;
-  offsetSong.rate(offsetRate);
-  offsetSpeedText.textContent = offsetRate + "x";
+  offsetRateApply();
 };
 
 const offsetSpeedDown = () => {
   offsetRate = Number((offsetRate - 0.1).toFixed(1));
   if (offsetRate <= 0) offsetRate = 0.1;
-  offsetSong.rate(offsetRate);
-  offsetSpeedText.textContent = offsetRate + "x";
+  offsetRateApply();
 };
 
 const offsetUp = () => {
@@ -1898,8 +1953,6 @@ const visualSyncSetting = () => {
 
   const vsCanvas = document.getElementById("visualSyncCanvas");
   const vsCtx = vsCanvas.getContext("2d");
-  const W = vsCanvas.width;
-  const H = vsCanvas.height;
   const beat = 60 / 110; // offsetSong BPM
 
   const drawFrame = () => {
@@ -1911,12 +1964,16 @@ const visualSyncSetting = () => {
     const cycle = beat * 2; // one note every two beats
 
     // Compute the note progress from a visual seek pulled ahead by visualSyncOffset.
-    const visualSeek = seek + visualSyncOffset / 1000;
+    const visualSeek = seek + (visualSyncOffset / 1000) * offsetRate;
     const visualCyclePos = ((visualSeek % cycle) + cycle) % cycle;
     const visualCycleOffset = visualCyclePos - cycle; // -cycle ~ 0
 
     const progress = (1 + visualCycleOffset / beat / 2) * 100;
     const safeP = Math.max(Math.min(progress, 100), 0);
+
+    syncCanvasFit(vsCanvas);
+    const W = vsCanvas.width;
+    const H = vsCanvas.height;
 
     vsCtx.clearRect(0, 0, W, H);
     vsCtx.fillStyle = "#f5f5f5";
@@ -1924,7 +1981,7 @@ const visualSyncSetting = () => {
 
     const cx = W / 2;
     const cy = H / 2;
-    const noteR = W * 0.1;
+    const noteR = H * 0.2;
     const lineW = Math.max(2, noteR * 0.12);
 
     vsCtx.save();
@@ -1972,13 +2029,34 @@ const visualSyncReset = () => {
   document.getElementById("syncButton").textContent = "0ms";
 };
 
+let volumeOverlayHeld = false;
+
 const overlayClose = (s) => {
   if (s == "volume") {
+    if (volumeOverlayHeld || volumeOverlay.matches(":hover")) return;
     if (overlayTime + 1400 <= Date.now()) {
       volumeOverlay.classList.remove("overlayOpen");
     }
   }
 };
+
+const volumeOverlayRelease = () => {
+  if (!volumeOverlay.classList.contains("overlayOpen")) return;
+  overlayTime = Date.now();
+  setTimeout(() => {
+    overlayClose("volume");
+  }, 1500);
+};
+
+volumeOverlay.addEventListener("pointerdown", () => {
+  volumeOverlayHeld = true;
+});
+volumeOverlay.addEventListener("mouseleave", volumeOverlayRelease);
+window.addEventListener("pointerup", () => {
+  if (!volumeOverlayHeld) return;
+  volumeOverlayHeld = false;
+  volumeOverlayRelease();
+});
 
 const rankToggle = () => {
   if (isRankOpened) {
@@ -2192,6 +2270,7 @@ const scrollEvent = (e) => {
       Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
       intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
       intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
+      sliderFillAll();
       volumeOverlay.classList.add("overlayOpen");
       overlayTime = Date.now();
       setTimeout(() => {
@@ -2364,7 +2443,9 @@ document.addEventListener("click", (event) => {
 // range inputs fire "input", selects and checkboxes fire "change" -- listen for both.
 const handleSettingChange = (event) => {
   const target = event.target.closest("[data-setting]");
-  if (target) settingChanged(target, target.dataset.setting);
+  if (!target) return;
+  settingChanged(target, target.dataset.setting);
+  if (target.type == "range") sliderFill(target);
 };
 document.addEventListener("input", handleSettingChange);
 document.addEventListener("change", handleSettingChange);
