@@ -329,6 +329,7 @@ const settingApply = () => {
   frameCounter = settings.game.counter;
   volumeMasterInput.value = Math.round(settings.sound.volume.master * 100);
   volumeMasterValue.textContent = Math.round(settings.sound.volume.master * 100) + "%";
+  volumeMasterInput.style.setProperty("--fill", `${volumeMasterInput.value}%`);
 };
 
 const playSong = () => {
@@ -1082,6 +1083,7 @@ const settingChanged = (e, v) => {
   if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
     volumeMasterValue.textContent = e.value + "%";
+    volumeMasterInput.style.setProperty("--fill", `${volumeMasterInput.value}%`);
     volumeMasterInput.value = Math.round(settings.sound.volume.master * 100);
     overlayTime = Date.now();
     setTimeout(() => {
@@ -1130,6 +1132,7 @@ const globalScrollEvent = (e) => {
       }
       volumeMasterInput.value = Math.round(settings.sound.volume.master * 100);
       volumeMasterValue.textContent = `${Math.round(settings.sound.volume.master * 100)}%`;
+      volumeMasterInput.style.setProperty("--fill", `${volumeMasterInput.value}%`);
       Howler.volume(settings.sound.volume.master);
       volumeOverlay.classList.add("overlayOpen");
       overlayTime = Date.now();

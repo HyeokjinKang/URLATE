@@ -1029,6 +1029,14 @@ p {
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
+  transform: scale(0);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.optionSlider:hover::-webkit-slider-thumb,
+.optionSlider:focus-visible::-webkit-slider-thumb,
+.optionSlider:active::-webkit-slider-thumb {
+  transform: scale(1);
 }
 
 .optionSlider::-moz-range-thumb {
@@ -1040,6 +1048,14 @@ p {
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
+  transform: scale(0);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.optionSlider:hover::-moz-range-thumb,
+.optionSlider:focus-visible::-moz-range-thumb,
+.optionSlider:active::-moz-range-thumb {
+  transform: scale(1);
 }
 
 .optionToggle,
@@ -1153,10 +1169,6 @@ p {
 
 #judgeMiss + .optionChipFace {
   --judge: #f96c5a;
-}
-
-#volumeOverlay {
-  gap: 1vw;
 }
 
 #selectContainer {
@@ -1955,24 +1967,29 @@ input[type="number"] {
 }
 
 .overlay {
-  transition-duration: 0.5s;
-  transform: translateY(10vh);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
   z-index: 300;
   position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 8vh;
-  background-color: white;
-  box-shadow: 0 0 20px rgba(50, 50, 50, 0.3);
+  left: 50%;
+  bottom: 3vh;
+  display: flex;
+  align-items: center;
+  gap: 1.2vw;
+  height: 7.2vh;
+  padding: 0 2vw;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: 0 0 2vh rgba(50, 50, 50, 0.25);
+  transform: translate(-50%, calc(100% + 4vh));
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .overlayOpen {
-  transform: translateY(0vh);
+  transform: translate(-50%, 0);
+}
+
+.overlay .optionSlider {
+  width: 14vw;
 }
 
 #nothingHere {
