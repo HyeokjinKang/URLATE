@@ -1488,11 +1488,20 @@ input[type="number"] {
 }
 
 .key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 5.6vh;
+  height: 3vh;
   margin-left: 0.5vw;
-  font-size: 1.5vh;
-  font-weight: 400;
-  padding: 0.3vh 0.7vw;
-  border: 2px solid white;
+  padding: 0 0.6vw;
+  font-family: var(--font-montserrat);
+  font-size: 1.4vh;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.6);
   border-radius: 10px;
 }
 
