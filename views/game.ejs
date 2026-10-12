@@ -641,6 +641,10 @@
             <a class="optionButton" data-action="offsetSetting" id="offsetButton">0ms</a>
           </div>
           <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('ignore_latency') %></p>
+            <input type="checkbox" class="optionCheckbox" id="ignoreLatencyCheck" data-setting="ignoreLatency" />
+          </div>
+          <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('resolution') %></p>
             <select class="optionSelect" id="soundResSelector" data-setting="soundRes">
               <option>96kbps</option>
@@ -754,6 +758,19 @@
           <div class="optionValueContainer">
             <p class="optionSemiTitle"><%= __('ignore_at_editor') %></p>
             <input type="checkbox" class="optionCheckbox" id="ignoreEditorCheck" data-setting="ignoreEditor" />
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('ignore_sync_at_editor') %></p>
+            <input type="checkbox" class="optionCheckbox" id="ignoreSyncCheck" data-setting="ignoreSync" />
+          </div>
+          <div class="optionValueContainer">
+            <p class="optionSemiTitle"><%= __('ignore_latency_at_editor') %></p>
+            <input
+              type="checkbox"
+              class="optionCheckbox"
+              id="ignoreEditorLatencyCheck"
+              data-setting="ignoreEditorLatency"
+            />
           </div>
         </div>
       </div>
