@@ -1,4 +1,4 @@
-/* global Howler, Howl, iziToast, url, api, cdn, syncAlert, syncIgnoredAlert, timeAlert, copiedText */
+/* global Howler, Howl, iziToast, url, api, cdn, syncAlert, syncIgnoredAlert, latencyIgnoredAlert, allIgnoredAlert, timeAlert, copiedText */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
 let upperBound, lowerBound;
@@ -94,7 +94,7 @@ let destroyParticles = [];
 let pixelRatio = window.devicePixelRatio;
 let tmlRows = { start: [0, 1, 2], count: [1, 1, 1], total: 3 };
 let timelineFilter = "all";
-let skin, denyCursor, denySync;
+let skin, denyCursor, denySync, denyLatency;
 let dragMouseX, dragMouseY, dragGroup, marquee;
 let tmlPositions = [],
   cntPositions = [];
@@ -174,6 +174,7 @@ const settingApply = () => {
   volumeMaster.value = settings.sound.volume.master * 100;
   volumeMasterValue.textContent = settings.sound.volume.master * 100 + "%";
   denySync = settings.editor.denySync ?? false;
+  denyLatency = (settings.sound.denyLatency ?? false) || (settings.editor.denyLatency ?? false);
   sync = denySync ? 0 : settings.sound.offset;
   visualSync = denySync ? 0 : (settings.display.offset ?? 0);
   denyCursor = settings.editor.denyCursor;
@@ -1126,7 +1127,14 @@ const tmlRender = () => {
     tmlCtx.textAlign = "right";
     tmlCtx.textBaseline = "top";
     if (song.playing() && tmlCanvasW / tmlCanvasH >= 4.9) {
-      tmlCtx.fillText(denySync ? syncIgnoredAlert : syncAlert, endX, endY + 5);
+      const alertText = denySync
+        ? denyLatency
+          ? allIgnoredAlert
+          : syncIgnoredAlert
+        : denyLatency
+          ? latencyIgnoredAlert
+          : syncAlert;
+      tmlCtx.fillText(alertText, endX, endY + 5);
     } else if (selectedCount()) {
       tmlCtx.fillText(`${selectedCount()} selected`, endX, endY + 5);
     }
@@ -1560,7 +1568,7 @@ const songPlayPause = () => {
       song.play();
 
       const ctx = Howler.ctx;
-      audioLatency = (ctx?.outputLatency ?? 0) + (ctx?.baseLatency ?? 0);
+      audioLatency = denyLatency ? 0 : (ctx?.outputLatency ?? 0) + (ctx?.baseLatency ?? 0);
     }
   }
 };
