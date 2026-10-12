@@ -957,13 +957,34 @@ const settingChanged = (e, v) => {
   }
 };
 
+let volumeOverlayHeld = false;
+
 const overlayClose = (s) => {
   if (s == "volume") {
+    if (volumeOverlayHeld || volumeOverlay.matches(":hover")) return;
     if (overlayTime + 1400 <= Date.now()) {
       volumeOverlay.classList.remove("overlayOpen");
     }
   }
 };
+
+const volumeOverlayRelease = () => {
+  if (!volumeOverlay.classList.contains("overlayOpen")) return;
+  overlayTime = Date.now();
+  setTimeout(() => {
+    overlayClose("volume");
+  }, 1500);
+};
+
+volumeOverlay.addEventListener("pointerdown", () => {
+  volumeOverlayHeld = true;
+});
+volumeOverlay.addEventListener("mouseleave", volumeOverlayRelease);
+window.addEventListener("pointerup", () => {
+  if (!volumeOverlayHeld) return;
+  volumeOverlayHeld = false;
+  volumeOverlayRelease();
+});
 
 let scrollTimer = 0;
 let volumeSaveTimeout;
