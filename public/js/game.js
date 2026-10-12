@@ -31,11 +31,8 @@ const loadingOverlayCircle = document.getElementById("loadingOverlayCircle");
 const goldMedal = document.getElementById("goldMedal");
 const silverMedal = document.getElementById("silverMedal");
 const checkMedal = document.getElementById("checkMedal");
-const offsetNextCircle = document.getElementById("offsetNextCircle");
-const offsetPrevCircle = document.getElementById("offsetPrevCircle");
-const offsetTimingCircle = document.getElementById("offsetTimingCircle");
-const offsetInputCircle = document.getElementById("offsetInputCircle");
-const offsetOffsetCircle = document.getElementById("offsetOffsetCircle");
+const offsetCanvas = document.getElementById("offsetCanvas");
+const offsetCtx = offsetCanvas.getContext("2d");
 const offsetSpeedText = document.getElementById("offsetSpeedText");
 const visualSyncSpeedText = document.getElementById("visualSyncSpeedText");
 const volumeOverlay = document.getElementById("volumeOverlay");
@@ -1764,6 +1761,7 @@ const showRank = () => {
 };
 
 const offsetSetting = () => {
+  offsetDrawnState = "";
   display = 7;
   document.getElementById("offsetContiner").style.display = "flex";
   document.getElementById("offsetContiner").classList.add("fadeInAnim");
@@ -1778,6 +1776,73 @@ const offsetSetting = () => {
   offsetUpdate();
 };
 
+const syncCanvasFit = (canvas) => {
+  const frame = canvas.parentElement;
+  const frameStyle = getComputedStyle(frame);
+  const cssW = Math.floor(
+    frame.getBoundingClientRect().width - parseFloat(frameStyle.paddingLeft) - parseFloat(frameStyle.paddingRight),
+  );
+  const cssH = Math.floor(cssW / 3);
+  const W = Math.round(cssW * window.devicePixelRatio);
+  const H = Math.round(cssH * window.devicePixelRatio);
+  if (canvas.width !== W || canvas.height !== H) {
+    canvas.style.width = `${cssW}px`;
+    canvas.style.height = `${cssH}px`;
+    canvas.width = W;
+    canvas.height = H;
+  }
+};
+
+const offsetCircle = (x, y, r, filled, label) => {
+  const H = offsetCanvas.height;
+  offsetCtx.beginPath();
+  offsetCtx.arc(x, y, r, 0, 2 * Math.PI);
+  offsetCtx.fillStyle = filled ? "#373737" : "#fff";
+  offsetCtx.fill();
+  offsetCtx.lineWidth = Math.max(2, H * 0.01);
+  offsetCtx.strokeStyle = "#373737";
+  offsetCtx.stroke();
+  offsetCtx.fillStyle = "#606060";
+  offsetCtx.fillText(label, x, y + r + H * 0.1);
+};
+
+let offsetDrawnState = "";
+
+const offsetDraw = (remain) => {
+  const offsetFilled = offset - 25 <= remain && remain <= offset + 25;
+  const timing = [
+    [-50, -75 <= remain && remain < -25],
+    [0, -25 <= remain && remain <= 25],
+    [50, 25 < remain && remain <= 75],
+  ];
+  const state = [offsetInput, offsetFilled, ...timing.map(([, filled]) => filled)].join();
+  if (state === offsetDrawnState) return;
+  offsetDrawnState = state;
+
+  syncCanvasFit(offsetCanvas);
+  const W = offsetCanvas.width;
+  const H = offsetCanvas.height;
+  offsetCtx.fillStyle = "#f5f5f5";
+  offsetCtx.fillRect(0, 0, W, H);
+  offsetCtx.font = `600 ${Math.round(H * 0.06)}px Montserrat, "Pretendard Variable", sans-serif`;
+  offsetCtx.textAlign = "center";
+  offsetCtx.textBaseline = "middle";
+
+  const bigR = H * 0.26;
+  const bigY = H * 0.42;
+  offsetCircle(W * 0.28 - bigR * 1.2, bigY, bigR, offsetInput, offsetCanvas.dataset.input);
+  offsetCircle(W * 0.28 + bigR * 1.2, bigY, bigR, offsetFilled, offsetCanvas.dataset.offset);
+
+  const smallR = H * 0.09;
+  timing.forEach(([ms, filled], i) => {
+    offsetCircle(W * 0.72 + (i - 1) * smallR * 3.6, bigY, smallR, filled, `${ms}ms`);
+  });
+};
+
+window.addEventListener("resize", () => {
+  offsetDrawnState = "";
+});
+
 const offsetUpdate = () => {
   const beat = 60 / 110;
   const seek = Math.max(0, offsetSong.seek() - getAudioLatency());
@@ -1785,26 +1850,7 @@ const offsetUpdate = () => {
   const beatOffset = beatPosition <= beat / 1.5 ? beatPosition : beatPosition - beat;
   const remain = (beatOffset * 1000) / offsetRate;
 
-  const eraseColor = "#ffffff";
-  const fillColor = "#373737";
-
-  if (-75 <= remain && remain <= -25) {
-    offsetNextCircle.style.backgroundColor = eraseColor;
-    offsetPrevCircle.style.backgroundColor = fillColor;
-  } else if (-25 <= remain && remain <= 25) {
-    offsetPrevCircle.style.backgroundColor = eraseColor;
-    offsetTimingCircle.style.backgroundColor = fillColor;
-  } else if (25 <= remain && remain <= 75) {
-    offsetTimingCircle.style.backgroundColor = eraseColor;
-    offsetNextCircle.style.backgroundColor = fillColor;
-  } else {
-    offsetTimingCircle.style.backgroundColor = eraseColor;
-    offsetPrevCircle.style.backgroundColor = eraseColor;
-    offsetNextCircle.style.backgroundColor = eraseColor;
-  }
-
   if (offsetInput) {
-    offsetInputCircle.style.backgroundColor = fillColor;
     if (!offsetPrevInput) {
       if (
         offsetAverage[offsetAverage.length - 1] - remain >= 50 ||
@@ -1825,14 +1871,8 @@ const offsetUpdate = () => {
       offset = parseInt(avr);
       offsetButtonText.textContent = offset + "ms";
     }
-  } else {
-    offsetInputCircle.style.backgroundColor = eraseColor;
   }
-  if (offset - 25 <= remain && remain <= offset + 25) {
-    offsetOffsetCircle.style.backgroundColor = fillColor;
-  } else {
-    offsetOffsetCircle.style.backgroundColor = eraseColor;
-  }
+  offsetDraw(remain);
 
   offsetPrevInput = offsetInput;
 
@@ -1913,7 +1953,6 @@ const visualSyncSetting = () => {
 
   const vsCanvas = document.getElementById("visualSyncCanvas");
   const vsCtx = vsCanvas.getContext("2d");
-  const vsFrame = vsCanvas.parentElement;
   const beat = 60 / 110; // offsetSong BPM
 
   const drawFrame = () => {
@@ -1932,19 +1971,9 @@ const visualSyncSetting = () => {
     const progress = (1 + visualCycleOffset / beat / 2) * 100;
     const safeP = Math.max(Math.min(progress, 100), 0);
 
-    const frameStyle = getComputedStyle(vsFrame);
-    const cssW = Math.floor(
-      vsFrame.getBoundingClientRect().width - parseFloat(frameStyle.paddingLeft) - parseFloat(frameStyle.paddingRight),
-    );
-    const cssH = Math.floor(cssW / 3);
-    const W = Math.round(cssW * window.devicePixelRatio);
-    const H = Math.round(cssH * window.devicePixelRatio);
-    if (vsCanvas.width !== W || vsCanvas.height !== H) {
-      vsCanvas.style.width = `${cssW}px`;
-      vsCanvas.style.height = `${cssH}px`;
-      vsCanvas.width = W;
-      vsCanvas.height = H;
-    }
+    syncCanvasFit(vsCanvas);
+    const W = vsCanvas.width;
+    const H = vsCanvas.height;
 
     vsCtx.clearRect(0, 0, W, H);
     vsCtx.fillStyle = "#f5f5f5";

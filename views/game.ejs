@@ -418,30 +418,12 @@
               </p>
               <p class="optionNote" id="offsetSubDescription"><%= __('offset_sub_description') %></p>
             </div>
-            <div class="offsetPreviewContainer">
-              <div class="offsetViewContainer">
-                <div id="offsetInputCircle" class="offsetCircle"></div>
-                <span class="offsetText"><%= __('input') %></span>
-              </div>
-              <div class="offsetViewContainer">
-                <div id="offsetOffsetCircle" class="offsetCircle"></div>
-                <span class="offsetText"><%= __('offset') %></span>
-              </div>
-            </div>
-            <div class="offsetPreviewContainer offsetTimingContainer">
-              <div class="offsetViewContainer">
-                <div id="offsetPrevCircle" class="timingCircle"></div>
-                <span class="timingText">-50ms</span>
-              </div>
-              <div class="offsetViewContainer">
-                <div id="offsetTimingCircle" class="timingCircle"></div>
-                <span class="timingText">0ms</span>
-              </div>
-              <div class="offsetViewContainer">
-                <div id="offsetNextCircle" class="timingCircle"></div>
-                <span class="timingText">50ms</span>
-              </div>
-            </div>
+            <canvas
+              id="offsetCanvas"
+              class="syncCanvas"
+              data-input="<%= __('input') %>"
+              data-offset="<%= __('offset') %>"
+            ></canvas>
           </div>
           <div class="optionCard syncControls">
             <div id="offsetTapButton" class="syncValue">
@@ -505,7 +487,7 @@
               </p>
               <p class="optionNote" id="visualSyncSubDescription"><%= __('visual_sync_sub_description') %></p>
             </div>
-            <canvas id="visualSyncCanvas" width="400" height="200"></canvas>
+            <canvas id="visualSyncCanvas" class="syncCanvas"></canvas>
           </div>
           <div class="optionCard syncControls">
             <div id="visualSyncValueDisplay" class="syncValue">

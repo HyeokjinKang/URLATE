@@ -1847,55 +1847,7 @@ input[type="number"] {
   font-weight: 700;
 }
 
-.offsetPreviewContainer {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 3vw;
-  padding: 4vh 0 2vh;
-}
-
-.offsetTimingContainer {
-  gap: 2vw;
-  padding: 1vh 0 3vh;
-}
-
-.offsetViewContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.2vh;
-}
-
-.offsetText,
-.timingText {
-  font-family: var(--font-montserrat);
-  font-feature-settings: "ss05";
-  font-size: 1.8vh;
-  font-weight: 600;
-  color: #606060;
-}
-
-.offsetCircle,
-.timingCircle {
-  box-sizing: border-box;
-  border-radius: 50%;
-  border: 3px solid #373737;
-  background-color: #fff;
-}
-
-.offsetCircle {
-  width: 18vh;
-  height: 18vh;
-}
-
-.timingCircle {
-  width: 5vh;
-  height: 5vh;
-  border-width: 2px;
-}
-
-#visualSyncCanvas {
+.syncCanvas {
   display: block;
   width: 100%;
   height: auto;
