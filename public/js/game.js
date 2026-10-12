@@ -178,6 +178,15 @@ const getAudioLatency = () => {
   return (ctx?.outputLatency ?? 0) + (ctx?.baseLatency ?? 0);
 };
 
+const sliderFill = (slider) => {
+  const ratio = (slider.value - slider.min) / (slider.max - slider.min);
+  slider.style.setProperty("--fill", `${ratio * 100}%`);
+};
+
+const sliderFillAll = () => {
+  document.querySelectorAll(".optionSlider").forEach(sliderFill);
+};
+
 const settingApply = () => {
   langDetailSelector.value = settings.general.detailLang;
   canvasResSelector.value = settings.display.canvasRes;
@@ -223,6 +232,7 @@ const settingApply = () => {
   }
   visualSyncOffset = settings.display.offset || 0;
   document.getElementById("syncButton").textContent = visualSyncOffset + "ms";
+  sliderFillAll();
   initialize();
   profileSong = new Howl({
     src: [`${cdn}/tracks/128kbps/store.ogg`],
@@ -2192,6 +2202,7 @@ const scrollEvent = (e) => {
       Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
       intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
       intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
+      sliderFillAll();
       volumeOverlay.classList.add("overlayOpen");
       overlayTime = Date.now();
       setTimeout(() => {
@@ -2364,7 +2375,9 @@ document.addEventListener("click", (event) => {
 // range inputs fire "input", selects and checkboxes fire "change" -- listen for both.
 const handleSettingChange = (event) => {
   const target = event.target.closest("[data-setting]");
-  if (target) settingChanged(target, target.dataset.setting);
+  if (!target) return;
+  settingChanged(target, target.dataset.setting);
+  if (target.type == "range") sliderFill(target);
 };
 document.addEventListener("input", handleSettingChange);
 document.addEventListener("change", handleSettingChange);

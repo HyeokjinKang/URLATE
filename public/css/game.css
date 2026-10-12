@@ -424,6 +424,31 @@ p {
   right: 5vw;
 }
 
+.escKey {
+  z-index: 200;
+  position: fixed;
+  top: 6vh;
+  right: calc(5vw + 3vh + 0.8vw);
+  height: 3vh;
+  box-sizing: border-box;
+  width: 5.6vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-montserrat);
+  font-size: 1.4vh;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: #9b9b9b;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+}
+
+.escKeyLight {
+  color: rgba(255, 255, 255, 0.8);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
 .rankCloseBtn {
   z-index: 200;
 }
@@ -732,149 +757,408 @@ p {
   font-weight: 700;
 }
 
+/* ---- Settings ---- */
+#optionHeader {
+  position: fixed;
+  top: 5vh;
+  left: 5vw;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#optionHeading {
+  margin: 0;
+  font-size: 5vh;
+  font-weight: 800;
+  color: #333;
+}
+
 #optionElementsContainer {
   position: fixed;
-  height: 72vh;
-  width: 100vw;
-  top: 16vh;
+  inset: 0;
 }
 
 #optionSelectorContainer {
-  text-align: right;
+  position: absolute;
+  top: 16vh;
+  left: 5vw;
+  width: 14vw;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  height: 72vh;
-  width: 12vw;
-  float: left;
-  border-right: solid #bbb 3px;
-  padding-right: 3vw;
+  gap: 0.8vh;
+  text-align: left;
 }
 
 .optionSelectors {
   cursor: pointer;
-  margin: 2vh;
+  display: flex;
+  align-items: baseline;
+  gap: 1vw;
+  padding: 1.7vh 1.2vw;
+  border-radius: 10px;
   color: #9b9b9b;
-  font-weight: 500;
-  font-size: 4vh;
+  font-size: 2.6vh;
+  font-weight: 600;
+  transition-duration: 0.2s;
 }
 
-.optionSelected {
+.optionSelectors:hover {
+  color: #555;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.optionSelectorIndex {
+  font-family: var(--font-montserrat);
+  font-size: 1.5vh;
+  font-weight: 700;
+}
+
+.optionSelected,
+.optionSelected:hover {
   cursor: default;
-  color: #404040;
+  color: #fff;
   font-weight: 800;
+  background-color: #373737;
+  box-shadow: 0 0 1vh rgba(50, 50, 50, 0.3);
 }
 
 .optionContentsContainer {
   display: none;
+  position: absolute;
+  top: 16vh;
+  bottom: 0;
+  left: 22vw;
+  right: 0;
+  box-sizing: border-box;
+  padding: 0 6vw 6vh 2vw;
   text-align: left;
-  padding-left: 3vw;
-  height: 72vh;
-  width: 80vw;
-  float: left;
   overflow-y: auto;
-  scrollbar-color: #5a5a5a #cecece;
+  scrollbar-color: #5a5a5a transparent;
   scrollbar-width: thin;
 }
 
+.optionShow {
+  display: block;
+}
+
+.optionPanelTitle {
+  margin: 1.2vh 0 2.4vh;
+  font-size: 3.6vh;
+  font-weight: 800;
+  color: #333;
+}
+
+.optionCard {
+  max-width: 62vw;
+  margin-bottom: 2.4vh;
+  padding: 2.6vh 2.2vw 1vh;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 2vh rgba(70, 70, 70, 0.1);
+  backdrop-filter: blur(6px);
+}
+
+.optionCardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 1vw;
+  padding-bottom: 1.4vh;
+}
+
 .optionTitle {
-  margin-top: 4vh;
-  font-weight: 750;
+  margin: 0;
+  font-size: 2.4vh;
+  font-weight: 700;
   color: #404040;
-  font-size: 3.3vh;
+}
+
+.optionNote {
+  margin: 0;
+  font-size: 1.6vh;
+  font-weight: 500;
+  color: #9b9b9b;
+}
+
+.optionRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2vw;
+  min-height: 7.2vh;
+  border-top: 1px solid #efefef;
+}
+
+.optionRowWide {
+  grid-template-columns: minmax(0, 1fr);
+  padding: 1.6vh 0;
+}
+
+.optionLabel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .optionSemiTitle {
-  font-weight: 600;
-  color: #404040;
-  font-size: 2.5vh;
-  margin-right: 1vw;
+  margin: 0;
+  font-size: 2vh;
+  font-weight: 500;
+  color: #606060;
 }
 
-.optionValueContainer {
-  margin-top: 2vh;
+.optionHint {
+  margin: 0.4vh 0 0;
+  font-size: 1.5vh;
+  font-weight: 500;
+  color: #aaa;
+}
+
+.optionControl {
   display: flex;
-  flex-direction: row;
   align-items: center;
+  justify-content: flex-end;
+  gap: 1.2vw;
 }
 
 .optionValue {
-  margin-top: 0.5vh;
+  margin: 0;
   font-family: var(--font-montserrat);
   font-feature-settings: "ss05";
-  font-weight: 400;
-  color: #404040;
   font-size: 2vh;
+  font-weight: 700;
+  color: #404040;
+}
+
+.optionSlider ~ .optionValue {
+  min-width: 4vw;
+  padding: 0.6vh 0.6vw;
+  font-size: 1.8vh;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  border-radius: 6px;
+  background-color: #f2f2f2;
+}
+
+.optionSelect,
+.optionButton {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 12vw;
+  height: 4.8vh;
+  padding: 0 1.1vw;
+  box-sizing: border-box;
+  font-family: var(--font-montserrat);
+  font-feature-settings: "ss05";
+  font-size: 1.9vh;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  text-decoration: none;
+  border-radius: 10px;
+  transition-duration: 0.2s;
 }
 
 .optionSelect {
-  cursor: pointer;
-  font-weight: 500;
-  padding-left: 1vw;
-  width: 10vw;
-  height: 5vh;
-  font-size: 2vh;
-  font-family: var(--font-montserrat);
-  font-feature-settings: "ss05";
-  letter-spacing: -0.5px;
-  color: #fff;
-  background-color: #666;
-  border-radius: 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  padding-right: 3vw;
+  color: #404040;
+  border: 1px solid #e4e4e4;
+  background: #f2f2f2 url(/images/icons/nav-arrow-down.svg) no-repeat right 0.8vw center / 2.2vh;
 }
 
-.optionShow {
-  display: initial;
+.optionSelect:hover {
+  background-color: #ebebeb;
+}
+
+.optionButton {
+  color: #fff;
+  background-color: #373737;
+  box-shadow: 0 0 1vh rgba(50, 50, 50, 0.25);
+}
+
+.optionButton:hover {
+  background-color: #222;
+}
+
+.optionButtonArrow::after {
+  content: "";
+  width: 0.7vh;
+  height: 0.7vh;
+  margin-left: 1vw;
+  border-style: solid;
+  border-width: 2px 2px 0 0;
+  transform: rotate(45deg);
+}
+
+.optionButtonDanger {
+  min-width: 0;
+  justify-content: center;
+  background-color: #e56464;
+}
+
+.optionButtonDanger:hover {
+  background-color: #d65151;
 }
 
 .optionSlider {
-  margin-right: 0.5vw;
+  --fill: 0%;
   -webkit-appearance: none;
   appearance: none;
-  width: 10vw;
-  height: 3px;
-  background: #616161;
+  margin: 0;
+  width: 18vw;
+  height: 6px;
+  border-radius: 6px;
   outline: none;
+  cursor: pointer;
+  background:
+    linear-gradient(#373737, #373737) 0 / var(--fill) 100% no-repeat,
+    #e2e2e2;
 }
 
 .optionSlider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 10px;
-  height: 10px;
-  border-radius: 1000px;
-  background: #363636;
+  width: 2.2vh;
+  height: 2.2vh;
+  border-radius: 50%;
+  border: 3px solid #373737;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
 }
 
 .optionSlider::-moz-range-thumb {
-  width: 10px;
-  height: 10px;
-  border-radius: 1000px;
-  background: #363636;
+  box-sizing: border-box;
+  width: 2.2vh;
+  height: 2.2vh;
+  border-radius: 50%;
+  border: 3px solid #373737;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
 }
 
-.optionButton {
+.optionToggle,
+.optionChip {
+  position: relative;
   cursor: pointer;
-  font-weight: 500;
-  text-align: center;
-  padding: 1.2vh 3vw 1.2vh 3vw;
-  font-size: 2vh;
-  font-family: var(--font-montserrat);
-  font-feature-settings: "ss05";
-  letter-spacing: -0.5px;
-  color: #fff;
-  text-decoration: none;
-  background-color: #666;
+}
+
+.optionToggle input,
+.optionChip input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  pointer-events: none;
+}
+
+.optionToggleTrack {
+  display: block;
+  position: relative;
+  width: 5.4vh;
+  height: 3vh;
+  border-radius: 100px;
+  background-color: #dcdcdc;
+  transition-duration: 0.25s;
+}
+
+.optionToggleTrack::after {
+  content: "";
+  position: absolute;
+  top: 0.35vh;
+  left: 0.35vh;
+  width: 2.3vh;
+  height: 2.3vh;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: left 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.optionToggle input:checked + .optionToggleTrack {
+  background-color: #373737;
+}
+
+.optionToggle input:checked + .optionToggleTrack::after {
+  left: calc(100% - 2.65vh);
+}
+
+.optionToggle input:disabled + .optionToggleTrack {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.optionToggle input:focus-visible + .optionToggleTrack,
+.optionChip input:focus-visible + .optionChipFace {
+  outline: 2px solid #373737;
+  outline-offset: 2px;
+}
+
+.optionChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6vw;
+}
+
+.optionChipFace {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5vw;
+  height: 4.2vh;
+  padding: 0 1vw;
+  font-size: 1.7vh;
+  font-weight: 700;
+  color: #404040;
+  border: 1px solid #e4e4e4;
   border-radius: 10px;
+  background-color: #f2f2f2;
+  transition-duration: 0.2s;
 }
 
-.optionCheckbox {
-  margin-right: 2vw;
-  border: solid #666 5px;
-  width: 1vw;
-  height: 1vw;
+.optionChip input:checked + .optionChipFace {
+  color: #fff;
+  text-decoration: line-through;
+  border-color: #373737;
+  background-color: #373737;
+}
+
+.optionChipDot {
+  width: 1vh;
+  height: 1vh;
+  border-radius: 50%;
+  background-color: var(--judge);
+}
+
+#judgePerfect + .optionChipFace {
+  --judge: #57beeb;
+}
+
+#judgeGreat + .optionChipFace {
+  --judge: #73dfd2;
+}
+
+#judgeGood + .optionChipFace {
+  --judge: #cce97c;
+}
+
+#judgeBad + .optionChipFace {
+  --judge: #edc77d;
+}
+
+#judgeMiss + .optionChipFace {
+  --judge: #f96c5a;
+}
+
+#volumeOverlay {
+  gap: 1vw;
 }
 
 #selectContainer {
@@ -2297,7 +2581,7 @@ input[type="number"] {
   z-index: 200;
   position: fixed;
   top: 6.7vh;
-  right: calc(5vw + 3.5vh);
+  right: calc(5vw + 3vh + 0.8vw + 5.6vh + 1vw);
   font-size: 1.6vh;
   line-height: 100%;
   color: #ffffffaa;
@@ -2538,6 +2822,7 @@ input[type="number"] {
 .infoSubtitle,
 .profileContainer,
 #infoInnerContainer,
+#optionHeader,
 #optionElementsContainer,
 #offsetTitle,
 .offsetPreviewContainer,

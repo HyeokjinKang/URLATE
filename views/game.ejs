@@ -136,6 +136,7 @@
           data-action="displayClose"
           loading="lazy"
         />
+        <span class="escKey escKeyLight">ESC</span>
         <div id="selectContainerTopLeft">
           <img src="/images/ui/tracks.webp" id="tracks" loading="lazy" />
           <div id="tracksLine"></div>
@@ -290,6 +291,7 @@
         data-action="displayClose"
         loading="lazy"
       />
+      <span class="escKey">ESC</span>
       <h1 id="rankTitle"><%= __('rank_title') %></h1>
       <table id="rankTable">
         <thead>
@@ -312,6 +314,7 @@
           data-action="displayClose"
           loading="lazy"
         />
+        <span class="escKey">ESC</span>
         <div id="infoProfileLeft">
           <img src="" id="infoProfileImg" loading="lazy" />
         </div>
@@ -329,6 +332,7 @@
         data-action="displayClose"
         loading="lazy"
       />
+      <span class="escKey">ESC</span>
       <img src="/images/brand/logo-lite.webp" id="infoLogo" loading="lazy" />
       <br />
       <span id="license">
@@ -403,6 +407,7 @@
           data-action="displayClose"
           loading="lazy"
         />
+        <span class="escKey">ESC</span>
         <h1 id="offsetTitle"><%= __('offset_setting') %></h1>
         <div class="offsetPreviewContainer">
           <div class="offsetViewContainer">
@@ -478,6 +483,7 @@
           data-action="displayClose"
           loading="lazy"
         />
+        <span class="escKey">ESC</span>
         <h1 id="visualSyncTitle"><%= __('visual_sync_setting') %></h1>
         <canvas id="visualSyncCanvas" width="400" height="200"></canvas>
         <span id="visualSyncDescription"
@@ -513,264 +519,432 @@
         data-action="displayClose"
         loading="lazy"
       />
-      <h1 class="containersTitle"><%= __('settings') %></h1>
+      <span class="escKey">ESC</span>
+      <div id="optionHeader">
+        <h1 id="optionHeading"><%= __('settings') %></h1>
+      </div>
       <div id="optionElementsContainer">
         <div id="optionSelectorContainer">
           <span class="optionSelectors optionSelected" data-action="optionSelect" data-arg="0"
-            ><%= __('general') %></span
+            ><span class="optionSelectorIndex">01</span><%= __('general') %></span
           >
-          <span class="optionSelectors" data-action="optionSelect" data-arg="1"><%= __('screen') %></span>
-          <span class="optionSelectors" data-action="optionSelect" data-arg="2"><%= __('sound') %></span>
-          <span class="optionSelectors" data-action="optionSelect" data-arg="3"><%= __('input') %></span>
-          <span class="optionSelectors" data-action="optionSelect" data-arg="4"><%= __('ingame') %></span>
-          <span class="optionSelectors" data-action="optionSelect" data-arg="5"><%= __('editor_title') %></span>
+          <span class="optionSelectors" data-action="optionSelect" data-arg="1"
+            ><span class="optionSelectorIndex">02</span><%= __('screen') %></span
+          >
+          <span class="optionSelectors" data-action="optionSelect" data-arg="2"
+            ><span class="optionSelectorIndex">03</span><%= __('sound') %></span
+          >
+          <span class="optionSelectors" data-action="optionSelect" data-arg="3"
+            ><span class="optionSelectorIndex">04</span><%= __('input') %></span
+          >
+          <span class="optionSelectors" data-action="optionSelect" data-arg="4"
+            ><span class="optionSelectorIndex">05</span><%= __('ingame') %></span
+          >
+          <span class="optionSelectors" data-action="optionSelect" data-arg="5"
+            ><span class="optionSelectorIndex">06</span><%= __('editor_title') %></span
+          >
         </div>
         <div class="optionContentsContainer optionShow" id="optionGeneral">
-          <p class="optionTitle"><%= __('my_info') %></p>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('name_placeholder') %></p>
-            <p class="optionValue" id="optionName">USERNAME</p>
+          <h2 class="optionPanelTitle"><%= __('general') %></h2>
+          <div class="optionCard">
+            <div class="optionCardHead">
+              <p class="optionTitle"><%= __('my_info') %></p>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('name_placeholder') %></p>
+              <div class="optionControl">
+                <p class="optionValue" id="optionName">USERNAME</p>
+                <a class="optionButton optionButtonDanger" data-action="logout" id="logoutButton"
+                  ><%= __('logout') %></a
+                >
+              </div>
+            </div>
           </div>
-          <div class="optionValueContainer">
-            <a class="optionButton" data-action="logout" id="logoutButton"><%= __('logout') %></a>
+          <div class="optionCard">
+            <div class="optionCardHead">
+              <p class="optionTitle"><%= __('language') %></p>
+              <p class="optionNote"><%= __('language_warning') %></p>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('language_general') %></p>
+              <div class="optionControl">
+                <select class="optionSelect" id="langSelector" data-change="langChanged">
+                  <option value="ko">한국어</option>
+                  <option value="en">English</option>
+                </select>
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('music_artist') %></p>
+              <div class="optionControl">
+                <select class="optionSelect" id="langDetailSelector" data-setting="detailLang">
+                  <option value="original"><%= __('show_original') %></option>
+                  <option value="english"><%= __('show_english') %></option>
+                </select>
+              </div>
+            </div>
           </div>
-          <p class="optionTitle"><%= __('language') %></p>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('language_general') %></p>
-            <select class="optionSelect" id="langSelector" data-change="langChanged">
-              <option value="ko">한국어</option>
-              <option value="en">English</option>
-            </select>
-          </div>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('music_artist') %></p>
-            <select class="optionSelect" id="langDetailSelector" data-setting="detailLang">
-              <option value="original"><%= __('show_original') %></option>
-              <option value="english"><%= __('show_english') %></option>
-            </select>
-          </div>
-          <p class="optionValue"><%= __('language_warning') %></p>
-          <p class="optionTitle"><%= __('ingame') %></p>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('tutorial_restart') %></p>
-            <a class="optionButton" data-action="goTutorial"><%= __('tutorial_move') %></a>
+          <div class="optionCard">
+            <div class="optionCardHead">
+              <p class="optionTitle"><%= __('ingame') %></p>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('tutorial_restart') %></p>
+              <div class="optionControl">
+                <a class="optionButton optionButtonArrow" data-action="goTutorial"><%= __('tutorial_move') %></a>
+              </div>
+            </div>
           </div>
         </div>
         <div class="optionContentsContainer" id="optionDisplay">
-          <p class="optionTitle"><%= __('resolution') %></p>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('canvas') %></p>
-            <select class="optionSelect" id="canvasResSelector" data-setting="canvasRes">
-              <option value="100">100%</option>
-              <option value="75">75%</option>
-              <option value="50">50%</option>
-              <option value="25">25%</option>
-            </select>
+          <h2 class="optionPanelTitle"><%= __('screen') %></h2>
+          <div class="optionCard">
+            <div class="optionCardHead">
+              <p class="optionTitle"><%= __('resolution') %></p>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('canvas') %></p>
+              <div class="optionControl">
+                <select class="optionSelect" id="canvasResSelector" data-setting="canvasRes">
+                  <option value="100">100%</option>
+                  <option value="75">75%</option>
+                  <option value="50">50%</option>
+                  <option value="25">25%</option>
+                </select>
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('album_art') %></p>
+              <div class="optionControl">
+                <select class="optionSelect" id="albumResSelector" data-setting="albumRes">
+                  <option value="100">100%</option>
+                  <option value="75">75%</option>
+                  <option value="50">50%</option>
+                </select>
+              </div>
+            </div>
           </div>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('album_art') %></p>
-            <select class="optionSelect" id="albumResSelector" data-setting="albumRes">
-              <option value="100">100%</option>
-              <option value="75">75%</option>
-              <option value="50">50%</option>
-            </select>
-          </div>
-          <p class="optionTitle"><%= __('details') %></p>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('sync') %></p>
-            <a class="optionButton" data-action="visualSyncSetting" id="syncButton">0ms</a>
+          <div class="optionCard">
+            <div class="optionCardHead">
+              <p class="optionTitle"><%= __('details') %></p>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('sync') %></p>
+              <div class="optionControl">
+                <a class="optionButton optionButtonArrow" data-action="visualSyncSetting" id="syncButton">0ms</a>
+              </div>
+            </div>
           </div>
         </div>
         <div class="optionContentsContainer" id="optionSound">
-          <p class="optionTitle"><%= __('volume') %></p>
-          <p class="optionValue"><%= __('sound_volume_tip') %></p>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('volume_all') %></p>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value="50"
-              class="optionSlider volumeMaster"
-              data-setting="volumeMaster"
-            />
-            <p class="optionValue volumeMasterValue">50%</p>
+          <h2 class="optionPanelTitle"><%= __('sound') %></h2>
+          <div class="optionCard">
+            <div class="optionCardHead">
+              <p class="optionTitle"><%= __('volume') %></p>
+              <p class="optionNote"><%= __('sound_volume_tip') %></p>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('volume_all') %></p>
+              <div class="optionControl">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="50"
+                  class="optionSlider volumeMaster"
+                  data-setting="volumeMaster"
+                />
+                <p class="optionValue volumeMasterValue">50%</p>
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('volume_song') %></p>
+              <div class="optionControl">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="100"
+                  id="volumeSong"
+                  class="optionSlider"
+                  data-setting="volumeSong"
+                />
+                <p class="optionValue" id="volumeSongValue">100%</p>
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('volume_hitsound') %></p>
+              <div class="optionControl">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="100"
+                  id="volumeHit"
+                  class="optionSlider"
+                  data-setting="volumeHitsound"
+                />
+                <p class="optionValue" id="volumeHitValue">100%</p>
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('volume_effect') %></p>
+              <div class="optionControl">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="100"
+                  id="volumeEft"
+                  class="optionSlider"
+                  data-setting="volumeEffect"
+                />
+                <p class="optionValue" id="volumeEftValue">100%</p>
+              </div>
+            </div>
           </div>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('volume_song') %></p>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value="100"
-              id="volumeSong"
-              class="optionSlider"
-              data-setting="volumeSong"
-            />
-            <p class="optionValue" id="volumeSongValue">100%</p>
-          </div>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('volume_hitsound') %></p>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value="100"
-              id="volumeHit"
-              class="optionSlider"
-              data-setting="volumeHitsound"
-            />
-            <p class="optionValue" id="volumeHitValue">100%</p>
-          </div>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('volume_effect') %></p>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value="100"
-              id="volumeEft"
-              class="optionSlider"
-              data-setting="volumeEffect"
-            />
-            <p class="optionValue" id="volumeEftValue">100%</p>
-          </div>
-          <p class="optionTitle"><%= __('details') %></p>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('offset') %></p>
-            <a class="optionButton" data-action="offsetSetting" id="offsetButton">0ms</a>
-          </div>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('ignore_latency') %></p>
-            <input type="checkbox" class="optionCheckbox" id="ignoreLatencyCheck" data-setting="ignoreLatency" />
-          </div>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('resolution') %></p>
-            <select class="optionSelect" id="soundResSelector" data-setting="soundRes">
-              <option>96kbps</option>
-              <option>128kbps</option>
-              <option>192kbps</option>
-            </select>
+          <div class="optionCard">
+            <div class="optionCardHead">
+              <p class="optionTitle"><%= __('details') %></p>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('ignore_latency') %></p>
+              <div class="optionControl">
+                <label class="optionToggle">
+                  <input type="checkbox" class="optionCheckbox" id="ignoreLatencyCheck" data-setting="ignoreLatency" />
+                  <span class="optionToggleTrack"></span>
+                </label>
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('offset') %></p>
+              <div class="optionControl">
+                <a class="optionButton optionButtonArrow" data-action="offsetSetting" id="offsetButton">0ms</a>
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('resolution') %></p>
+              <div class="optionControl">
+                <select class="optionSelect" id="soundResSelector" data-setting="soundRes">
+                  <option>96kbps</option>
+                  <option>128kbps</option>
+                  <option>192kbps</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
         <div class="optionContentsContainer" id="optionInput">
-          <p class="optionTitle"><%= __('mouse') %></p>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('sensitivity') %></p>
-            <input
-              type="range"
-              min="100"
-              max="250"
-              value="100"
-              id="inputSensitive"
-              class="optionSlider"
-              data-setting="sensitive"
-            />
-            <p id="sensitiveValue" class="optionValue">1x</p>
+          <h2 class="optionPanelTitle"><%= __('input') %></h2>
+          <div class="optionCard">
+            <div class="optionCardHead">
+              <p class="optionTitle"><%= __('mouse') %></p>
+            </div>
+            <div class="optionRow">
+              <div class="optionLabel">
+                <p class="optionSemiTitle"><%= __('sensitivity') %></p>
+                <p class="optionHint"><%= __('sensitivity_warning') %></p>
+              </div>
+              <div class="optionControl">
+                <input
+                  type="range"
+                  min="100"
+                  max="250"
+                  value="100"
+                  id="inputSensitive"
+                  class="optionSlider"
+                  data-setting="sensitive"
+                />
+                <p id="sensitiveValue" class="optionValue">1x</p>
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('wheel') %></p>
+              <div class="optionControl">
+                <select class="optionSelect" id="wheelSelector" data-setting="wheel">
+                  <option value="0"><%= __('wheel_forward') %></option>
+                  <option value="1"><%= __('wheel_reverse') %></option>
+                </select>
+              </div>
+            </div>
           </div>
-          <p class="optionValue"><%= __('sensitivity_warning') %></p>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('wheel') %></p>
-            <select class="optionSelect" id="wheelSelector" data-setting="wheel">
-              <option value="0"><%= __('wheel_forward') %></option>
-              <option value="1"><%= __('wheel_reverse') %></option>
-            </select>
-          </div>
-          <p class="optionTitle"><%= __('keyboard') %></p>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('input_key') %></p>
-            <select class="optionSelect" id="inputSelector" data-setting="inputKey">
-              <option value="0"><%= __('all_key') %></option>
-              <option value="1"><%= __('alphabet_key') %></option>
-              <option value="2"><%= __('zx_key') %></option>
-            </select>
-          </div>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('click_with_mouse') %></p>
-            <input type="checkbox" class="optionCheckbox" id="mouseCheck" data-setting="inputMouse" />
+          <div class="optionCard">
+            <div class="optionCardHead">
+              <p class="optionTitle"><%= __('keyboard') %></p>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('input_key') %></p>
+              <div class="optionControl">
+                <select class="optionSelect" id="inputSelector" data-setting="inputKey">
+                  <option value="0"><%= __('all_key') %></option>
+                  <option value="1"><%= __('alphabet_key') %></option>
+                  <option value="2"><%= __('zx_key') %></option>
+                </select>
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('click_with_mouse') %></p>
+              <div class="optionControl">
+                <label class="optionToggle">
+                  <input type="checkbox" class="optionCheckbox" id="mouseCheck" data-setting="inputMouse" />
+                  <span class="optionToggleTrack"></span>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
         <div class="optionContentsContainer" id="optionGame">
-          <p class="optionTitle"><%= __('visual') %></p>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('skin') %></p>
-            <select class="optionSelect" id="skinSelector" data-setting="skin"></select>
+          <h2 class="optionPanelTitle"><%= __('ingame') %></h2>
+          <div class="optionCard">
+            <div class="optionCardHead">
+              <p class="optionTitle"><%= __('visual') %></p>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('skin') %></p>
+              <div class="optionControl">
+                <select class="optionSelect" id="skinSelector" data-setting="skin"></select>
+              </div>
+            </div>
+            <div class="optionRow">
+              <div class="optionLabel">
+                <p class="optionSemiTitle"><%= __('cursor_size') %></p>
+                <p class="optionHint"><%= __('cursor_size_warning') %></p>
+              </div>
+              <div class="optionControl">
+                <input
+                  type="range"
+                  min="5"
+                  max="20"
+                  value="10"
+                  id="inputSize"
+                  class="optionSlider"
+                  data-setting="inputSize"
+                />
+                <p id="inputSizeValue" class="optionValue">1x</p>
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('apply_to_judge') %></p>
+              <div class="optionControl">
+                <label class="optionToggle">
+                  <input type="checkbox" class="optionCheckbox" id="judgeSkin" data-setting="judgeSkin" />
+                  <span class="optionToggleTrack"></span>
+                </label>
+              </div>
+            </div>
           </div>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('cursor_size') %></p>
-            <input
-              type="range"
-              min="5"
-              max="20"
-              value="10"
-              id="inputSize"
-              class="optionSlider"
-              data-setting="inputSize"
-            />
-            <p id="inputSizeValue" class="optionValue">1x</p>
+          <div class="optionCard">
+            <div class="optionCardHead">
+              <p class="optionTitle"><%= __('hide_judge') %></p>
+            </div>
+            <div class="optionRow optionRowWide">
+              <div class="optionChips">
+                <label class="optionChip">
+                  <input type="checkbox" id="judgePerfect" data-setting="Perfect" />
+                  <span class="optionChipFace"><span class="optionChipDot"></span>Perfect</span>
+                </label>
+                <label class="optionChip">
+                  <input type="checkbox" id="judgeGreat" data-setting="Great" />
+                  <span class="optionChipFace"><span class="optionChipDot"></span>Great</span>
+                </label>
+                <label class="optionChip">
+                  <input type="checkbox" id="judgeGood" data-setting="Good" />
+                  <span class="optionChipFace"><span class="optionChipDot"></span>Good</span>
+                </label>
+                <label class="optionChip">
+                  <input type="checkbox" id="judgeBad" data-setting="Bad" />
+                  <span class="optionChipFace"><span class="optionChipDot"></span>Bad</span>
+                </label>
+                <label class="optionChip">
+                  <input type="checkbox" id="judgeMiss" data-setting="Miss" />
+                  <span class="optionChipFace"><span class="optionChipDot"></span>Miss</span>
+                </label>
+              </div>
+            </div>
           </div>
-          <p class="optionValue"><%= __('cursor_size_warning') %></p>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('apply_to_judge') %></p>
-            <input type="checkbox" class="optionCheckbox" id="judgeSkin" data-setting="judgeSkin" />
-          </div>
-          <p class="optionTitle"><%= __('hide_judge') %></p>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle">Perfect</p>
-            <input type="checkbox" class="optionCheckbox" id="judgePerfect" data-setting="Perfect" />
-            <p class="optionSemiTitle">Great</p>
-            <input type="checkbox" class="optionCheckbox" id="judgeGreat" data-setting="Great" />
-            <p class="optionSemiTitle">Good</p>
-            <input type="checkbox" class="optionCheckbox" id="judgeGood" data-setting="Good" />
-          </div>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle">Bad</p>
-            <input type="checkbox" class="optionCheckbox" id="judgeBad" data-setting="Bad" />
-            <p class="optionSemiTitle">Miss</p>
-            <input type="checkbox" class="optionCheckbox" id="judgeMiss" data-setting="Miss" />
-          </div>
-          <p class="optionTitle"><%= __('ingame_info') %></p>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('frame_counter') %></p>
-            <input type="checkbox" class="optionCheckbox" id="frameCheck" data-setting="frameCounter" />
-          </div>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('combo_alert') %></p>
-            <input type="checkbox" class="optionCheckbox" id="comboAlertCheck" data-setting="comboAlert" />
-          </div>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('alert_interval') %></p>
-            <select class="optionSelect" id="comboSelector" data-setting="comboCount">
-              <option>10x</option>
-              <option>25x</option>
-              <option>50x</option>
-              <option>100x</option>
-              <option>200x</option>
-            </select>
+          <div class="optionCard">
+            <div class="optionCardHead">
+              <p class="optionTitle"><%= __('ingame_info') %></p>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('frame_counter') %></p>
+              <div class="optionControl">
+                <label class="optionToggle">
+                  <input type="checkbox" class="optionCheckbox" id="frameCheck" data-setting="frameCounter" />
+                  <span class="optionToggleTrack"></span>
+                </label>
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('combo_alert') %></p>
+              <div class="optionControl">
+                <label class="optionToggle">
+                  <input type="checkbox" class="optionCheckbox" id="comboAlertCheck" data-setting="comboAlert" />
+                  <span class="optionToggleTrack"></span>
+                </label>
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('alert_interval') %></p>
+              <div class="optionControl">
+                <select class="optionSelect" id="comboSelector" data-setting="comboCount">
+                  <option>10x</option>
+                  <option>25x</option>
+                  <option>50x</option>
+                  <option>100x</option>
+                  <option>200x</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
         <div class="optionContentsContainer" id="optionEditor">
-          <p class="optionTitle"><%= __('personalize') %></p>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('ignore_cursor_at_editor') %></p>
-            <input type="checkbox" class="optionCheckbox" id="ignoreCursorCheck" data-setting="ignoreCursor" />
-          </div>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('ignore_at_editor') %></p>
-            <input type="checkbox" class="optionCheckbox" id="ignoreEditorCheck" data-setting="ignoreEditor" />
-          </div>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('ignore_sync_at_editor') %></p>
-            <input type="checkbox" class="optionCheckbox" id="ignoreSyncCheck" data-setting="ignoreSync" />
-          </div>
-          <div class="optionValueContainer">
-            <p class="optionSemiTitle"><%= __('ignore_latency_at_editor') %></p>
-            <input
-              type="checkbox"
-              class="optionCheckbox"
-              id="ignoreEditorLatencyCheck"
-              data-setting="ignoreEditorLatency"
-            />
+          <h2 class="optionPanelTitle"><%= __('editor_title') %></h2>
+          <div class="optionCard">
+            <div class="optionCardHead">
+              <p class="optionTitle"><%= __('personalize') %></p>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('ignore_cursor_at_editor') %></p>
+              <div class="optionControl">
+                <label class="optionToggle">
+                  <input type="checkbox" class="optionCheckbox" id="ignoreCursorCheck" data-setting="ignoreCursor" />
+                  <span class="optionToggleTrack"></span>
+                </label>
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('ignore_at_editor') %></p>
+              <div class="optionControl">
+                <label class="optionToggle">
+                  <input type="checkbox" class="optionCheckbox" id="ignoreEditorCheck" data-setting="ignoreEditor" />
+                  <span class="optionToggleTrack"></span>
+                </label>
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('ignore_sync_at_editor') %></p>
+              <div class="optionControl">
+                <label class="optionToggle">
+                  <input type="checkbox" class="optionCheckbox" id="ignoreSyncCheck" data-setting="ignoreSync" />
+                  <span class="optionToggleTrack"></span>
+                </label>
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('ignore_latency_at_editor') %></p>
+              <div class="optionControl">
+                <label class="optionToggle">
+                  <input
+                    type="checkbox"
+                    class="optionCheckbox"
+                    id="ignoreEditorLatencyCheck"
+                    data-setting="ignoreEditorLatency"
+                  />
+                  <span class="optionToggleTrack"></span>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -782,6 +956,7 @@
         data-action="displayClose"
         loading="lazy"
       />
+      <span class="escKey">ESC</span>
       <div id="infoInnerContainer">
         <img src="/images/brand/logo-transparent.webp" id="infoImg" loading="lazy" />
         <p class="infoTitle"><%= __('info_game_title') %></p>
@@ -826,6 +1001,7 @@
         data-action="displayClose"
         loading="lazy"
       />
+      <span class="escKey escKeyLight">ESC</span>
       <div id="profileImageContainer"></div>
       <div id="profileNameContainer">
         <img
