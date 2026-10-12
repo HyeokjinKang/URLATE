@@ -292,7 +292,7 @@
         loading="lazy"
       />
       <span class="escKey">ESC</span>
-      <h1 id="rankTitle"><%= __('rank_title') %></h1>
+      <h1 id="rankTitle" class="overlayTitle"><%= __('rank_title') %></h1>
       <table id="rankTable">
         <thead>
           <tr>
@@ -408,72 +408,84 @@
           loading="lazy"
         />
         <span class="escKey">ESC</span>
-        <h1 id="offsetTitle"><%= __('offset_setting') %></h1>
-        <div class="offsetPreviewContainer">
-          <div class="offsetViewContainer">
-            <span class="offsetText"><%= __('input') %></span>
-            <div id="offsetInputCircle" class="offsetCircle"></div>
+        <h1 id="offsetTitle" class="overlayTitle"><%= __('offset_setting') %></h1>
+        <div class="syncLayout">
+          <div class="optionCard syncPreview">
+            <div class="optionCardHead syncHead">
+              <p class="optionTitle" id="offsetDescription">
+                <%= __('offset_description_before') %><strong><%= __('offset_description_strong') %></strong
+                ><%= __('offset_description_after') %>
+              </p>
+              <p class="optionNote" id="offsetSubDescription"><%= __('offset_sub_description') %></p>
+            </div>
+            <div class="offsetPreviewContainer">
+              <div class="offsetViewContainer">
+                <div id="offsetInputCircle" class="offsetCircle"></div>
+                <span class="offsetText"><%= __('input') %></span>
+              </div>
+              <div class="offsetViewContainer">
+                <div id="offsetOffsetCircle" class="offsetCircle"></div>
+                <span class="offsetText"><%= __('offset') %></span>
+              </div>
+            </div>
+            <div class="offsetPreviewContainer offsetTimingContainer">
+              <div class="offsetViewContainer">
+                <div id="offsetPrevCircle" class="timingCircle"></div>
+                <span class="timingText">-50ms</span>
+              </div>
+              <div class="offsetViewContainer">
+                <div id="offsetTimingCircle" class="timingCircle"></div>
+                <span class="timingText">0ms</span>
+              </div>
+              <div class="offsetViewContainer">
+                <div id="offsetNextCircle" class="timingCircle"></div>
+                <span class="timingText">50ms</span>
+              </div>
+            </div>
           </div>
-          <div class="offsetViewContainer">
-            <span class="offsetText"><%= __('offset') %></span>
-            <div id="offsetOffsetCircle" class="offsetCircle"></div>
+          <div class="optionCard syncControls">
+            <div id="offsetTapButton" class="syncValue">
+              <span id="offsetButtonText" class="metropolis">TAP</span>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('offset') %></p>
+              <div class="optionControl syncStepper">
+                <img
+                  src="/images/icons/minus.svg"
+                  class="syncStepperButton clickable"
+                  data-action="offsetDown"
+                  loading="lazy"
+                />
+                <img
+                  src="/images/icons/plus.svg"
+                  class="syncStepperButton clickable"
+                  data-action="offsetUp"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('speed') %></p>
+              <div class="optionControl syncStepper">
+                <img
+                  src="/images/icons/minus.svg"
+                  class="syncStepperButton clickable"
+                  data-action="offsetSpeedDown"
+                  loading="lazy"
+                />
+                <span id="offsetSpeedText" class="syncStepperValue">1x</span>
+                <img
+                  src="/images/icons/plus.svg"
+                  class="syncStepperButton clickable"
+                  data-action="offsetSpeedUp"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+            <a class="optionButton optionButtonDanger syncReset" id="offsetResetButton" data-action="offsetReset"
+              ><span id="offsetResetButtonText"><%= __('reset') %></span></a
+            >
           </div>
-        </div>
-        <div class="offsetPreviewContainer">
-          <div class="offsetViewContainer">
-            <div id="offsetPrevCircle" class="timingCircle"></div>
-            <span class="timingText">-50ms</span>
-          </div>
-          <div class="offsetViewContainer">
-            <div id="offsetTimingCircle" class="timingCircle"></div>
-            <span class="timingText">0ms</span>
-          </div>
-          <div class="offsetViewContainer">
-            <div id="offsetNextCircle" class="timingCircle"></div>
-            <span class="timingText">50ms</span>
-          </div>
-        </div>
-        <span id="offsetDescription"
-          ><%= __('offset_description_before') %><strong><%= __('offset_description_strong') %></strong
-          ><%= __('offset_description_after') %></span
-        >
-        <span id="offsetSubDescription"><%= __('offset_sub_description') %></span>
-        <div id="offsetButtonContainer">
-          <div class="offsetSideContainer">
-            <img
-              src="/images/icons/nav-arrow-up.svg"
-              class="icon offsetSideIcon clickable"
-              data-action="offsetSpeedUp"
-              loading="lazy"
-            />
-            <span id="offsetSpeedText" class="metropolis">1x</span>
-            <img
-              src="/images/icons/nav-arrow-down.svg"
-              class="icon offsetSideIcon clickable"
-              data-action="offsetSpeedDown"
-              loading="lazy"
-            />
-          </div>
-          <div id="offsetTapButton">
-            <span id="offsetButtonText" class="metropolis">TAP</span>
-          </div>
-          <div class="offsetSideContainer">
-            <img
-              src="/images/icons/plus.svg"
-              class="icon offsetSideIcon clickable"
-              data-action="offsetUp"
-              loading="lazy"
-            />
-            <img
-              src="/images/icons/minus.svg"
-              class="icon offsetSideIcon clickable"
-              data-action="offsetDown"
-              loading="lazy"
-            />
-          </div>
-        </div>
-        <div id="offsetResetButton" data-action="offsetReset">
-          <span id="offsetResetButtonText" class="metropolis"><%= __('reset') %></span>
         </div>
       </div>
       <div id="visualSyncContainer" class="containers">
@@ -484,33 +496,45 @@
           loading="lazy"
         />
         <span class="escKey">ESC</span>
-        <h1 id="visualSyncTitle"><%= __('visual_sync_setting') %></h1>
-        <canvas id="visualSyncCanvas" width="400" height="200"></canvas>
-        <span id="visualSyncDescription"
-          ><strong><%= __('visual_sync_description_strong') %></strong><%= __('visual_sync_description_after') %></span
-        >
-        <span id="visualSyncSubDescription"><%= __('visual_sync_sub_description') %></span>
-        <div id="visualSyncButtonContainer">
-          <div id="visualSyncValueDisplay">
-            <span id="visualSyncValueText" class="metropolis">0ms</span>
+        <h1 id="visualSyncTitle" class="overlayTitle"><%= __('visual_sync_setting') %></h1>
+        <div class="syncLayout">
+          <div class="optionCard syncPreview">
+            <div class="optionCardHead syncHead">
+              <p class="optionTitle" id="visualSyncDescription">
+                <strong><%= __('visual_sync_description_strong') %></strong><%= __('visual_sync_description_after') %>
+              </p>
+              <p class="optionNote" id="visualSyncSubDescription"><%= __('visual_sync_sub_description') %></p>
+            </div>
+            <canvas id="visualSyncCanvas" width="400" height="200"></canvas>
           </div>
-          <div class="offsetSideContainer">
-            <img
-              src="/images/icons/plus.svg"
-              class="icon offsetSideIcon clickable"
-              data-action="visualSyncUp"
-              loading="lazy"
-            />
-            <img
-              src="/images/icons/minus.svg"
-              class="icon offsetSideIcon clickable"
-              data-action="visualSyncDown"
-              loading="lazy"
-            />
+          <div class="optionCard syncControls">
+            <div id="visualSyncValueDisplay" class="syncValue">
+              <span id="visualSyncValueText" class="metropolis">0ms</span>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('sync') %></p>
+              <div class="optionControl syncStepper">
+                <img
+                  src="/images/icons/minus.svg"
+                  class="syncStepperButton clickable"
+                  data-action="visualSyncDown"
+                  loading="lazy"
+                />
+                <img
+                  src="/images/icons/plus.svg"
+                  class="syncStepperButton clickable"
+                  data-action="visualSyncUp"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+            <a
+              class="optionButton optionButtonDanger syncReset"
+              id="visualSyncResetButton"
+              data-action="visualSyncReset"
+              ><span id="visualSyncResetButtonText"><%= __('reset') %></span></a
+            >
           </div>
-        </div>
-        <div id="visualSyncResetButton" data-action="visualSyncReset">
-          <span id="visualSyncResetButtonText" class="metropolis"><%= __('reset') %></span>
         </div>
       </div>
       <img
@@ -520,9 +544,7 @@
         loading="lazy"
       />
       <span class="escKey">ESC</span>
-      <div id="optionHeader">
-        <h1 id="optionHeading"><%= __('settings') %></h1>
-      </div>
+      <h1 id="optionHeading" class="overlayTitle"><%= __('settings') %></h1>
       <div id="optionElementsContainer">
         <div id="optionSelectorContainer">
           <span class="optionSelectors optionSelected" data-action="optionSelect" data-arg="0"

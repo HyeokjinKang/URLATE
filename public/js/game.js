@@ -1908,8 +1908,7 @@ const visualSyncSetting = () => {
 
   const vsCanvas = document.getElementById("visualSyncCanvas");
   const vsCtx = vsCanvas.getContext("2d");
-  const W = vsCanvas.width;
-  const H = vsCanvas.height;
+  const vsFrame = vsCanvas.parentElement;
   const beat = 60 / 110; // offsetSong BPM
 
   const drawFrame = () => {
@@ -1928,13 +1927,27 @@ const visualSyncSetting = () => {
     const progress = (1 + visualCycleOffset / beat / 2) * 100;
     const safeP = Math.max(Math.min(progress, 100), 0);
 
+    const frameStyle = getComputedStyle(vsFrame);
+    const cssW = Math.floor(
+      vsFrame.getBoundingClientRect().width - parseFloat(frameStyle.paddingLeft) - parseFloat(frameStyle.paddingRight),
+    );
+    const cssH = Math.floor(cssW / 3);
+    const W = Math.round(cssW * window.devicePixelRatio);
+    const H = Math.round(cssH * window.devicePixelRatio);
+    if (vsCanvas.width !== W || vsCanvas.height !== H) {
+      vsCanvas.style.width = `${cssW}px`;
+      vsCanvas.style.height = `${cssH}px`;
+      vsCanvas.width = W;
+      vsCanvas.height = H;
+    }
+
     vsCtx.clearRect(0, 0, W, H);
     vsCtx.fillStyle = "#f5f5f5";
     vsCtx.fillRect(0, 0, W, H);
 
     const cx = W / 2;
     const cy = H / 2;
-    const noteR = W * 0.1;
+    const noteR = H * 0.2;
     const lineW = Math.max(2, noteR * 0.12);
 
     vsCtx.save();

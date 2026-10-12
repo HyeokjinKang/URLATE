@@ -449,6 +449,18 @@ p {
   border-color: rgba(255, 255, 255, 0.6);
 }
 
+.overlayTitle {
+  position: absolute;
+  top: 5vh;
+  left: 5vw;
+  margin: 0;
+  font-size: 5vh;
+  line-height: 1.2;
+  font-weight: 800;
+  text-align: left;
+  color: #333;
+}
+
 .rankCloseBtn {
   z-index: 200;
 }
@@ -758,21 +770,6 @@ p {
 }
 
 /* ---- Settings ---- */
-#optionHeader {
-  position: fixed;
-  top: 5vh;
-  left: 5vw;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-#optionHeading {
-  margin: 0;
-  font-size: 5vh;
-  font-weight: 800;
-  color: #333;
-}
 
 #optionElementsContainer {
   position: fixed;
@@ -1799,205 +1796,162 @@ input[type="number"] {
   overflow-y: auto;
 }
 
-#offsetTitle,
-#visualSyncTitle {
-  font-size: 5vh;
-  margin-top: 4vh;
-  margin-bottom: 5vh;
-  padding: 0;
-  font-weight: 600;
-}
-
 #offsetContiner,
 #visualSyncContainer {
   display: none;
-  flex-direction: column;
-  align-items: center;
   opacity: 0;
   z-index: 101;
   background-color: #fff;
 }
 
+.syncLayout {
+  position: absolute;
+  top: 16vh;
+  left: 5vw;
+  right: 5vw;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 2vw;
+  text-align: left;
+}
+
+.syncLayout > .optionCard {
+  max-width: none;
+}
+
+.syncHead {
+  flex-direction: column;
+  align-items: flex-start;
+  row-gap: 0.8vh;
+  border-bottom: 1px solid #efefef;
+}
+
+.syncHead .optionTitle {
+  font-weight: 500;
+}
+
+.syncHead .optionTitle strong {
+  font-weight: 700;
+}
+
 .offsetPreviewContainer {
-  margin-top: 3vh;
-  width: 100vw;
   display: flex;
-  flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  gap: 3vw;
+  padding: 4vh 0 2vh;
+}
+
+.offsetTimingContainer {
+  gap: 2vw;
+  padding: 1vh 0 3vh;
 }
 
 .offsetViewContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  margin-left: 0.5vw;
-  margin-right: 0.5vw;
+  gap: 1.2vh;
 }
 
-.offsetText {
-  margin-bottom: 1vh;
-  font-size: 3.5vh;
+.offsetText,
+.timingText {
+  font-family: var(--font-montserrat);
+  font-feature-settings: "ss05";
+  font-size: 1.8vh;
   font-weight: 600;
+  color: #606060;
+}
+
+.offsetCircle,
+.timingCircle {
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 3px solid #373737;
+  background-color: #fff;
 }
 
 .offsetCircle {
-  width: 20vh;
-  height: 20vh;
-  border-radius: 100vh;
-  border: 1px solid black;
-}
-
-.timingText {
-  margin-top: 1vh;
-  font-family: var(--font-montserrat);
-  font-feature-settings: "ss05";
-  font-size: 2vh;
-  font-weight: 400;
+  width: 18vh;
+  height: 18vh;
 }
 
 .timingCircle {
   width: 5vh;
   height: 5vh;
-  border-radius: 100vh;
-  border: 1px solid black;
-}
-
-#offsetDescription,
-#visualSyncDescription {
-  letter-spacing: -2px;
-  margin-top: 5vh;
-  font-size: 3.5vh;
-  font-weight: 400;
-}
-
-#offsetSubDescription,
-#visualSyncSubDescription {
-  letter-spacing: -2px;
-  font-size: 2vh;
-  font-weight: 400;
-}
-
-#offsetButtonContainer {
-  margin-top: 3vh;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: 100vw;
-  height: 13vh;
-}
-
-#offsetTapButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #373737;
-  width: 50%;
-  height: 100%;
-  border-radius: 1em;
-  cursor: pointer;
-  box-shadow: 0 0 1vh rgba(50, 50, 50, 0.3);
-}
-
-#offsetButtonText {
-  font-size: 5vh;
-  color: #fff;
-  font-weight: 700;
-}
-
-.offsetSideContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-left: 1vw;
-  margin-right: 1vw;
-}
-
-.offsetSideIcon {
-  margin-top: 1vh;
-  margin-bottom: 1vh;
-}
-
-#offsetSpeedText {
-  padding-right: 0.2vw;
-  font-size: 2vh;
-}
-
-#offsetResetButton {
-  margin-top: 3vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #e56464;
-  width: 10vw;
-  height: 4vh;
-  border-radius: 0.5em;
-  cursor: pointer;
-  box-shadow: 0 0 1vh rgba(50, 50, 50, 0.3);
-}
-
-#offsetResetButtonText {
-  font-size: 2vh;
-  color: #fff;
-  font-weight: 500;
+  border-width: 2px;
 }
 
 #visualSyncCanvas {
-  margin-top: 3vh;
-  width: 400px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 1em;
-  background-color: rgba(255, 255, 255, 0.7);
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 1;
+  margin: 2.6vh 0 2vh;
+  border-radius: 10px;
+  background-color: #f5f5f5;
 }
 
-#visualSyncButtonContainer {
-  margin-top: 3vh;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: 100vw;
-  height: 8vh;
+.syncControls {
+  padding-top: 2.2vw;
 }
 
-#visualSyncValueDisplay {
-  margin-left: calc(2vw + 3vh);
+.syncValue {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #373737;
-  width: 20vw;
-  height: 100%;
-  border-radius: 1em;
-  box-shadow: 0 0 1vh rgba(50, 50, 50, 0.3);
-}
-
-#visualSyncValueText {
-  font-size: 4vh;
+  height: 13vh;
+  margin-bottom: 1vh;
+  border-radius: 10px;
   color: #fff;
+  font-size: 5vh;
   font-weight: 700;
+  background-color: #373737;
+  box-shadow: 0 0 1vh rgba(50, 50, 50, 0.25);
 }
 
-#visualSyncResetButton {
-  margin-top: 3vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #e56464;
-  width: 10vw;
-  height: 4vh;
-  border-radius: 0.5em;
+#offsetTapButton {
   cursor: pointer;
-  box-shadow: 0 0 1vh rgba(50, 50, 50, 0.3);
+  transition-duration: 0.2s;
 }
 
-#visualSyncResetButtonText {
-  font-size: 2vh;
-  color: #fff;
-  font-weight: 500;
+#offsetTapButton:hover {
+  background-color: #222;
+}
+
+.syncStepper {
+  gap: 0.6vw;
+}
+
+.syncStepperButton {
+  box-sizing: border-box;
+  width: 4.8vh;
+  height: 4.8vh;
+  padding: 1.2vh;
+  border-radius: 10px;
+  border: 1px solid #e4e4e4;
+  background-color: #f2f2f2;
+}
+
+.syncStepperButton:hover {
+  background-color: #e6e6e6;
+}
+
+.syncStepperValue {
+  min-width: 4vw;
+  font-family: var(--font-montserrat);
+  font-feature-settings: "ss05";
+  font-size: 1.8vh;
+  font-weight: 700;
+  text-align: center;
+  color: #404040;
+}
+
+.syncReset {
+  display: flex;
+  width: 100%;
+  margin: 1.6vh 0 1.4vh;
 }
 
 .overlay {
@@ -2603,18 +2557,10 @@ input[type="number"] {
   color: white !important;
 }
 
-#rankTitle {
-  margin-top: 4vh;
-  margin-bottom: 5vh;
-  font-weight: 750;
-  color: #404040;
-  font-size: 5vh;
-}
-
 #rankTable {
   border-collapse: collapse;
-  margin-left: 10vw;
-  width: 80vw;
+  margin: 16vh 5vw 6vh;
+  width: 90vw;
   font-size: 2vh;
 }
 
@@ -2814,7 +2760,7 @@ input[type="number"] {
 #selectContainerLeft,
 #selectContainerRight,
 #selectRankContainer,
-#rankTitle,
+.overlayTitle,
 #rankTable,
 #infoProfileLeft,
 #infoProfileRight,
@@ -2823,19 +2769,8 @@ input[type="number"] {
 .infoSubtitle,
 .profileContainer,
 #infoInnerContainer,
-#optionHeader,
 #optionElementsContainer,
-#offsetTitle,
-.offsetPreviewContainer,
-#offsetDescription,
-#offsetSubDescription,
-#offsetButtonContainer,
-#offsetResetButtonText,
-#visualSyncTitle,
-#visualSyncDescription,
-#visualSyncSubDescription,
-#visualSyncButtonContainer,
-#visualSyncResetButtonText,
+.syncLayout,
 #profileDescription,
 #profileNameContainer,
 .overlayContainer {
