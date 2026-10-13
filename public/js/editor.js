@@ -675,6 +675,19 @@ const assignLanes = (elements, start, end, overlapThreshold, endOf = (element) =
   return { laneOf, laneCount: nextLane || 1 };
 };
 
+const laneAnchor = (elements, start, overlapThreshold, reach = 0) => {
+  let anchor = start;
+  while (anchor > 0 && elements[anchor].beat - elements[anchor - 1].beat < overlapThreshold + reach) anchor--;
+  return anchor;
+};
+
+const assignVisibleLanes = (elements, start, end, overlapThreshold, endOf, reach) => {
+  const anchor = laneAnchor(elements, start, overlapThreshold, reach);
+  const { laneOf } = assignLanes(elements, anchor, end, overlapThreshold, endOf);
+  const visibleLanes = laneOf.slice(start - anchor);
+  return { laneOf: visibleLanes, laneCount: visibleLanes.reduce((max, lane) => Math.max(max, lane + 1), 1) };
+};
+
 const isKindShown = (v1) => timelineFilter == "all" || timelineFilter == v1;
 
 const timelineRowAt = (y) => {
@@ -825,8 +838,8 @@ const tmlRender = () => {
       const end = upperBound(elements, renderEnd);
       const { laneOf, laneCount } =
         v1 == 0
-          ? assignLanes(elements, start, end, overlapThreshold, holdEnd)
-          : assignLanes(elements, start, end, v1 == 2 ? overlapThreshold * 1.5 : overlapThreshold);
+          ? assignVisibleLanes(elements, start, end, overlapThreshold, holdEnd, holdReach)
+          : assignVisibleLanes(elements, start, end, v1 == 2 ? overlapThreshold * 1.5 : overlapThreshold);
       tmlRows.start[v1] = tmlRows.total;
       tmlRows.count[v1] = isKindShown(v1) ? laneCount : 0;
       tmlRows.total += tmlRows.count[v1];
@@ -3478,4 +3491,6 @@ delegateMouse("mouseout", "mouseout");
 
 document.addEventListener("contextmenu", (event) => event.preventDefault());
 document.addEventListener("dragstart", (event) => event.preventDefault());
-document.addEventListener("selectstart", (event) => event.preventDefault());
+document.addEventListener("selectstart", (event) => {
+  if (!isTypingTarget(event.target)) event.preventDefault();
+});
