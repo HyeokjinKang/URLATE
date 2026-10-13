@@ -651,7 +651,9 @@ const _heapPop = (heap, cmp) => {
 // Returns laneOf[i - start] = 0-based lane index, and laneCount = total lanes used.
 // O(n log laneCount) via two min-heaps: one tracking active lanes by lastBeat
 // (to detect newly freed lanes), one tracking free lane indices (to pick the lowest).
-const holdEnd = (note) => note.beat + (note.value == 2 ? Math.max(Number(note.duration) || 0, 0) : 0);
+const durationValues = [2, null, 5];
+const spanOf = (v1, element) => (element.value == durationValues[v1] ? Math.max(Number(element.duration) || 0, 0) : 0);
+const spanEnd = (v1) => (element) => element.beat + spanOf(v1, element);
 
 const assignLanes = (elements, start, end, overlapThreshold, endOf = (element) => element.beat) => {
   const active = []; // min-heap of {lastBeat, lane}, ordered by lastBeat
@@ -831,16 +833,14 @@ const tmlRender = () => {
     // Two elements (w = height/3) overlap when pixel distance < 2*w.
     // Converted to beats: overlapThreshold = (2 * height/3) / beatToPx.
     const overlapThreshold = beatToPx > 0 ? (2 * height) / (3 * beatToPx) : Infinity;
-    let holdReach = 0;
-    for (const note of pattern.patterns) if (note.value == 2 && note.duration > holdReach) holdReach = note.duration;
     const visible = [0, 1, 2].map((v1) => {
       const elements = pattern[elementKeys[v1]];
-      const start = lowerBound(elements, renderStart - (v1 == 0 ? holdReach : 0));
+      let reach = 0;
+      if (durationValues[v1] !== null) for (const element of elements) reach = Math.max(reach, spanOf(v1, element));
+      const start = lowerBound(elements, renderStart - reach);
       const end = upperBound(elements, renderEnd);
-      const { laneOf, laneCount } =
-        v1 == 0
-          ? assignVisibleLanes(elements, start, end, overlapThreshold, holdEnd, holdReach)
-          : assignVisibleLanes(elements, start, end, v1 == 2 ? overlapThreshold * 1.5 : overlapThreshold);
+      const threshold = v1 == 2 ? overlapThreshold * 1.5 : overlapThreshold;
+      const { laneOf, laneCount } = assignVisibleLanes(elements, start, end, threshold, spanEnd(v1), reach);
       tmlRows.start[v1] = tmlRows.total;
       tmlRows.count[v1] = isKindShown(v1) ? laneCount : 0;
       tmlRows.total += tmlRows.count[v1];
@@ -898,16 +898,18 @@ const tmlRender = () => {
         if (mouseMode == 1 && x >= tmlStartX) trackMouseSelection(j, v1, v1 == 1 ? 0 : element.value, x, y, beats);
         recordPosition(element, x, y);
         const outline = isSelectedElement(v1, j) ? "#222" : isPointedElement(v1, j) ? "rgba(0, 0, 0, 0.35)" : null;
+        const span = spanOf(v1, element);
+        if (span > 0) {
+          tmlCtx.save();
+          tmlCtx.fillStyle =
+            v1 == 0 ? noteColor(element.value) : (triggerStyles[element.value] ?? triggerStyles[-1])[1];
+          tmlCtx.globalAlpha = 0.35;
+          tmlCtx.beginPath();
+          tmlCtx.roundRect(x, y - w * 0.45, span * beatToPx, w * 0.9, w * 0.45);
+          tmlCtx.fill();
+          tmlCtx.restore();
+        }
         if (v1 == 0) {
-          tmlCtx.fillStyle = noteColor(element.value);
-          if (element.value == 2 && element.duration > 0) {
-            tmlCtx.save();
-            tmlCtx.globalAlpha = 0.35;
-            tmlCtx.beginPath();
-            tmlCtx.roundRect(x, y - w * 0.45, element.duration * beatToPx, w * 0.9, w * 0.45);
-            tmlCtx.fill();
-            tmlCtx.restore();
-          }
           tmlCtx.fillStyle = noteFill(element.value, x, y, w);
           drawTimelineShape(0, x, y, w, outline);
         } else if (v1 == 1) {
