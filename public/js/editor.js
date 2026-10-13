@@ -676,6 +676,7 @@ const assignLanes = (elements, start, end, overlapThreshold, endOf = (element) =
 };
 
 const laneAnchor = (elements, start, overlapThreshold, reach = 0) => {
+  if (start >= elements.length) return start;
   let anchor = start;
   while (anchor > 0 && elements[anchor].beat - elements[anchor - 1].beat < overlapThreshold + reach) anchor--;
   return anchor;
