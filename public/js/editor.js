@@ -3,19 +3,22 @@
 // library scripts; a module can read them via global scope with no extra wiring.
 let upperBound, lowerBound;
 let Factory, Updater, Renderer, getCos, getSin, calcAngleDegrees;
+let parsePattern, Timing, PATTERN_VERSION, GRADUAL_TRIGGERS;
 (async () => {
   try {
-    const [utils, factory, updater, renderer] = await Promise.all([
+    const [utils, factory, updater, renderer, patternModule] = await Promise.all([
       import("../modules/utils.js"),
       import("../modules/factory.js"),
       import("../modules/updater.js"),
       import("../modules/renderer.js"),
+      import("../modules/pattern.js"),
     ]);
 
     ({ upperBound, lowerBound, getCos, getSin, calcAngleDegrees } = utils);
     Factory = factory.default;
     Updater = updater.default;
     Renderer = renderer.default;
+    ({ parsePattern, Timing, PATTERN_VERSION, GRADUAL_TRIGGERS } = patternModule);
 
     console.log("Modules are ready.");
   } catch (err) {
@@ -62,10 +65,7 @@ let background;
 let settings,
   tracks,
   bpm = 130,
-  bpmsync = {
-    ms: 0,
-    beat: 0,
-  },
+  timing = null,
   speed = 2,
   offset = 0,
   sync = 0,
@@ -124,7 +124,7 @@ let canvasW = 0,
 
 let pattern = {
   information: {
-    version: "1.0",
+    version: "1.1",
     track: "",
     producer: "",
     author: "",
@@ -323,8 +323,14 @@ const analyzePattern = (data) => {
   };
 };
 
+const loadPattern = (text) => {
+  const loaded = parsePattern(text);
+  loaded.information.version = PATTERN_VERSION;
+  return loaded;
+};
+
 const patternLoaded = (text) => {
-  pattern = JSON.parse(text);
+  pattern = loadPattern(text);
   console.log(`Analyzing pattern...`);
   const result = analyzePattern(pattern);
   console.table(result);
@@ -338,7 +344,15 @@ const dataLoaded = (event) => {
   let file = event.target.files[0];
   let reader = new FileReader();
   reader.addEventListener("load", (e) => {
-    patternLoaded(e.target.result);
+    try {
+      patternLoaded(e.target.result);
+    } catch (error) {
+      iziToast.error({
+        title: "Open failed",
+        message: error.message,
+      });
+      return;
+    }
     setFileHandle(null);
   });
   reader.readAsText(file);
@@ -348,7 +362,7 @@ const songSelected = (isLoaded = false) => {
   if (!isLoaded) {
     setFileHandle(null);
     pattern.information = {
-      version: "1.0",
+      version: PATTERN_VERSION,
       track: tracks[songSelectBox.selectedIndex].name,
       producer: tracks[songSelectBox.selectedIndex].producer,
       author: userName,
@@ -386,10 +400,7 @@ const songSelected = (isLoaded = false) => {
   settingsPropertiesTextbox[5].value = pattern.information.speed;
   settingsPropertiesTextbox[6].value = pattern.information.offset;
   bpm = pattern.information.bpm;
-  bpmsync = {
-    ms: 0,
-    beat: 0,
-  };
+  timing = new Timing(pattern);
   offset = pattern.information.offset;
   speed = pattern.information.speed;
   document.getElementById("percentage").innerText = "100%";
@@ -514,7 +525,7 @@ const initialize = (isFirstCalled) => {
     setTimelineFilter(storedFilter);
     if (localStorage.pattern) {
       restoreFileHandle();
-      pattern = JSON.parse(localStorage.pattern);
+      pattern = loadPattern(localStorage.pattern);
       for (let i = 0; songSelectBox.options.length > i; i++) {
         if (songSelectBox.options[i].value == pattern.information.track) songSelectBox.selectedIndex = i;
       }
@@ -542,7 +553,7 @@ const gotoMain = (isCalledByMain) => {
     document.getElementById("editorMainContainer").style.display = "none";
     pattern = {
       information: {
-        version: "1.0",
+        version: PATTERN_VERSION,
         track: "",
         producer: "",
         author: "",
@@ -651,8 +662,9 @@ const _heapPop = (heap, cmp) => {
 // Returns laneOf[i - start] = 0-based lane index, and laneCount = total lanes used.
 // O(n log laneCount) via two min-heaps: one tracking active lanes by lastBeat
 // (to detect newly freed lanes), one tracking free lane indices (to pick the lowest).
-const durationValues = [2, null, 5];
-const spanOf = (v1, element) => (element.value == durationValues[v1] ? Math.max(Number(element.duration) || 0, 0) : 0);
+const durationValues = [[2], [], [2, 3, 4, 5]];
+const spanOf = (v1, element) =>
+  durationValues[v1].includes(element.value) ? Math.max(Number(element.duration) || 0, 0) : 0;
 const spanEnd = (v1) => (element) => element.beat + spanOf(v1, element);
 
 const assignLanes = (elements, start, end, overlapThreshold, endOf = (element) => element.beat) => {
@@ -809,7 +821,7 @@ const tmlRender = () => {
     //Initialize
     eraseTml();
     const seekMs = song.seek() * 1000;
-    const beats = bpmsync.beat + (seekMs - bpmsync.ms) / (60000 / bpm);
+    const beats = timing.beatAt(seekMs);
     const tmlStartX = tmlCanvasW / 10, //timeline(element view) start X
       startX = tmlCanvasW / 80,
       startY = tmlCanvasH / 6,
@@ -836,7 +848,7 @@ const tmlRender = () => {
     const visible = [0, 1, 2].map((v1) => {
       const elements = pattern[elementKeys[v1]];
       let reach = 0;
-      if (durationValues[v1] !== null) for (const element of elements) reach = Math.max(reach, spanOf(v1, element));
+      if (durationValues[v1].length) for (const element of elements) reach = Math.max(reach, spanOf(v1, element));
       const start = lowerBound(elements, renderStart - reach);
       const end = upperBound(elements, renderEnd);
       const threshold = v1 == 2 ? overlapThreshold * 1.5 : overlapThreshold;
@@ -874,7 +886,7 @@ const tmlRender = () => {
     }
 
     //Timeline outside of the song
-    const songBeats = song.duration() ? beatAtMs(song.duration() * 1000) : 0;
+    const songBeats = song.duration() ? timing.beatAt(song.duration() * 1000) : 0;
     tmlCtx.fillStyle = "rgba(0, 0, 0, 0.06)";
     if (renderStart < 0) {
       tmlCtx.fillRect(tmlStartX, startY, Math.min(-renderStart * beatToPx, endX - tmlStartX), endY - startY);
@@ -1066,7 +1078,7 @@ const tmlRender = () => {
       tmlCtx.strokeStyle = "#2f91ed";
       const offsetLineX =
         tmlStartX +
-        (beats - renderStart - (offset + sync - visualSync + audioLatency * 1000) / (60000 / bpm)) * beatToPx;
+        (timing.beatAt(seekMs - (offset + sync - visualSync + audioLatency * 1000)) - renderStart) * beatToPx;
       tmlCtx.moveTo(offsetLineX, endY);
       tmlCtx.lineTo(offsetLineX, startY);
       tmlCtx.stroke();
@@ -1240,16 +1252,12 @@ const cntRender = () => {
     // Calculate seeking position
     const isSongPlaying = song.playing();
     const seekMs = (song.seek() - (isSongPlaying ? audioLatency : 0)) * 1000;
-    const beats = Number(
-      (
-        bpmsync.beat +
-        (seekMs - (isSongPlaying ? offset + sync - visualSync : 0) - bpmsync.ms) / (60000 / bpm)
-      ).toPrecision(10),
-    );
+    timing = new Timing(pattern);
+    const beats = Number(timing.beatAt(seekMs - (isSongPlaying ? offset + sync - visualSync : 0)).toPrecision(10));
 
     // Metronome
     const rawSeekMs = song.seek() * 1000;
-    const noSyncBeats = Number((bpmsync.beat + (rawSeekMs - offset - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+    const noSyncBeats = Number(timing.beatAt(rawSeekMs - offset).toPrecision(10));
     if (metronomeToggle) {
       const intBeat = Math.floor(noSyncBeats);
       if (isSongPlaying) {
@@ -1269,12 +1277,8 @@ const cntRender = () => {
     }
 
     // Initialize triggers
-    bpm = pattern.information.bpm;
-    globalAlpha = 1;
-    bpmsync = {
-      ms: 0,
-      beat: 0,
-    };
+    bpm = timing.bpmAt(beats);
+    globalAlpha = timing.opacityAt(beats);
 
     // Draw Grids
     if (gridToggle) Draw.meshGrid();
@@ -1283,7 +1287,7 @@ const cntRender = () => {
 
     // Track triggers from start to now
     let end = upperBound(pattern.triggers, beats);
-    let nowSpeed = pattern.information.speed;
+    const nowSpeed = timing.speedAt(beats);
     const renderTexts = [];
     for (let i = 0; i < end; i++) {
       if (pattern.triggers[i].value == 0) {
@@ -1305,16 +1309,6 @@ const cntRender = () => {
             destroyedBullets.add(j);
           }
         }
-      } else if (pattern.triggers[i].value == 2) {
-        // BPM Change
-        bpmsync.ms = bpmsync.ms + (pattern.triggers[i].beat - bpmsync.beat) * (60000 / bpm);
-        bpm = pattern.triggers[i].bpm;
-        bpmsync.beat = pattern.triggers[i].beat;
-      } else if (pattern.triggers[i].value == 3) {
-        globalAlpha = pattern.triggers[i].opacity;
-      } else if (pattern.triggers[i].value == 4) {
-        // Speed Change
-        nowSpeed = pattern.triggers[i].speed;
       } else if (pattern.triggers[i].value == 5) {
         // Text
         if (pattern.triggers[i].beat <= beats && beats <= pattern.triggers[i].beat + pattern.triggers[i].duration) {
@@ -1415,7 +1409,7 @@ const cntRender = () => {
       if (!destroyedBullets.has(i) || explodingBullets.has(i)) {
         const bullet = pattern.bullets[i];
 
-        const pos = Updater.bulletPos(bullet, beats, pattern.triggers, pattern.information.speed);
+        const pos = Updater.bulletPos(bullet, beats, timing);
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
           if (!prevCreatedBullets.has(i) || explodingBullets.has(i))
@@ -1448,7 +1442,11 @@ const cntRender = () => {
     cntCtx.font = `700 ${canvasH / 50}px ${FONT_STACK}`;
     cntCtx.textAlign = "center";
     cntCtx.textBaseline = "top";
-    cntCtx.fillText(`Speed : ${nowSpeed}, BPM : ${bpm}`, canvasW / 2, canvasH / 50);
+    cntCtx.fillText(
+      `Speed : ${Number(nowSpeed.toFixed(2))}, BPM : ${Number(bpm.toFixed(2))}`,
+      canvasW / 2,
+      canvasH / 50,
+    );
 
     // Editor only - Note & Bullet location live draw (when mode is "Add")
     if (mode == 2 && mouseMode == 0) {
@@ -1610,7 +1608,7 @@ const writePatternFile = async (data, isSaveAs) => {
 const save = async (isSaveAs = false) => {
   let trackSettingsForm = settingsPropertiesTextbox;
   pattern.information = {
-    version: "1.0",
+    version: PATTERN_VERSION,
     track: trackSettingsForm[0].value,
     producer: trackSettingsForm[1].value,
     author: trackSettingsForm[2].value,
@@ -2102,7 +2100,7 @@ const timelineFollowMouse = (v1, v2, i) => {
       }
       if (!dragGroup) startDrag(v1, i);
       if (mouseMode == 1 && mouseX > tmlCanvasW / 10 && mouseX < tmlCanvasW / 1.01) {
-        const beats = bpmsync.beat + (song.seek() * 1000 - (offset + sync) - bpmsync.ms) / (60000 / bpm);
+        const beats = timing.beatAt(song.seek() * 1000 - (offset + sync));
         const tmlStartX = tmlCanvasW / 10;
         const beatToPx = (tmlCanvasW / 1.01 - tmlStartX) / (17 * zoom);
         let calculatedBeat = beats + (mouseX - tmlStartX) / beatToPx - zoom;
@@ -2140,7 +2138,7 @@ const tmlClicked = () => {
 
 const copySeek = () => {
   if (mouseX < tmlCanvasW / 10 && mouseY < tmlCanvasH / 6) {
-    const beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
+    const beats = timing.beatAt(song.seek() * 1000);
     navigator.clipboard.writeText(beats);
     copied = true;
     copiedTime = new Date();
@@ -2149,7 +2147,7 @@ const copySeek = () => {
 
 const timelineAddElement = () => {
   let startY = tmlCanvasH / 6;
-  const beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
+  const beats = timing.beatAt(song.seek() * 1000);
   const tmlStartX = tmlCanvasW / 10;
   const beatToPx = (tmlCanvasW / 1.01 - tmlStartX) / (17 * zoom);
   let calculatedBeat = beats + (mouseX - tmlStartX) / beatToPx - zoom;
@@ -2212,7 +2210,7 @@ const compClicked = () => {
     selectPointing();
     if (pointingCntElement.v1 === "" && mouseMode == 0) startMarquee();
   } else if (mode == 2) {
-    let beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm);
+    let beats = timing.beatAt(song.seek() * 1000);
     beats = Number(beats.toPrecision(10));
     if (mouseMode != -1) {
       if (mouseX < -80 || mouseX > 80) {
@@ -2373,14 +2371,17 @@ const changeSettingsMode = (v1, v2, i) => {
           case 2:
             //BPM
             textBox[1].value = pattern.triggers[i].bpm;
+            textBox[2].value = pattern.triggers[i].duration;
             break;
           case 3:
             //Opacity
             textBox[1].value = pattern.triggers[i].opacity;
+            textBox[2].value = pattern.triggers[i].duration;
             break;
           case 4:
             //Speed
             textBox[1].value = pattern.triggers[i].speed;
+            textBox[2].value = pattern.triggers[i].duration;
             break;
           case 5:
             //Text
@@ -2404,7 +2405,11 @@ const changeSettingsMode = (v1, v2, i) => {
 
 const triggerSet = (isChanged) => {
   const value = (isChanged ? triggerSelectBox : triggerInitBox).selectedIndex - (isChanged ? 0 : 1);
-  for (const { v1, element } of selectedElements()) if (v1 == 2) element.value = value;
+  for (const { v1, element } of selectedElements()) {
+    if (v1 != 2) continue;
+    if (element.value != value && (value in GRADUAL_TRIGGERS || value == 5)) element.duration = value == 5 ? 4 : 0;
+    element.value = value;
+  }
   selectedCntElement = { i: selectedCntElement.i, v1: 2, v2: value };
   patternChanged();
   changeSettingsMode(2, value, selectedCntElement.i);
@@ -2500,7 +2505,7 @@ const patternRedo = () => {
   isTmlUpdateNeeded = true;
 };
 
-const currentBeat = () => Number((bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
+const currentBeat = () => Number(timing.beatAt(song.seek() * 1000).toPrecision(10));
 
 const elementOf = ({ v1, i }) => pattern[elementKeys[v1]][i];
 
@@ -2915,7 +2920,7 @@ const hideHelp = () => {
 };
 
 const tmlScrollHorizontal = (direction, splitBy = split) => {
-  let beats = bpmsync.beat + (song.seek() * 1000 - bpmsync.ms) / (60000 / bpm); // Get current beat from song position
+  let beats = timing.beatAt(song.seek() * 1000); // Get current beat from song position
   let targetSubdivision;
 
   if (direction > 0) {
@@ -2928,36 +2933,11 @@ const tmlScrollHorizontal = (direction, splitBy = split) => {
 };
 
 const seekToBeat = (beats) => {
-  const triggerEnd = upperBound(pattern.triggers, beats);
-  bpm = pattern.information.bpm;
-  bpmsync = {
-    ms: 0,
-    beat: 0,
-  };
-  for (let i = 0; i < triggerEnd; i++) {
-    if (pattern.triggers[i].value == 2) {
-      bpmsync.ms = bpmsync.ms + (pattern.triggers[i].beat - bpmsync.beat) * (60000 / bpm);
-      bpm = pattern.triggers[i].bpm;
-      bpmsync.beat = pattern.triggers[i].beat;
-    }
-  }
-  const seek = (beats - bpmsync.beat) * (60000 / bpm) + bpmsync.ms;
+  timing = new Timing(pattern);
+  const seek = timing.msAt(beats);
   song.seek(seek / 1000);
 
   isTmlUpdateNeeded = true;
-};
-
-const beatAtMs = (ms) => {
-  let beat = 0,
-    at = 0,
-    tempo = pattern.information.bpm;
-  for (const trigger of pattern.triggers) {
-    if (trigger.value != 2) continue;
-    const next = at + (trigger.beat - beat) * (60000 / tempo);
-    if (next > ms) break;
-    [beat, at, tempo] = [trigger.beat, next, trigger.bpm];
-  }
-  return beat + (ms - at) / (60000 / tempo);
 };
 
 const tmlRowHeight = () => tmlCanvasH / 11;
