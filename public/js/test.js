@@ -3,19 +3,22 @@
 // library scripts; a module can read them via global scope with no extra wiring.
 let upperBound, lowerBound, numberWithCommas;
 let Factory, Updater, Renderer;
+let parsePattern, Timing;
 (async () => {
   try {
-    const [utils, factory, updater, renderer] = await Promise.all([
+    const [utils, factory, updater, renderer, patternModule] = await Promise.all([
       import("../modules/utils.js"),
       import("../modules/factory.js"),
       import("../modules/updater.js"),
       import("../modules/renderer.js"),
+      import("../modules/pattern.js"),
     ]);
 
     ({ upperBound, lowerBound, numberWithCommas } = utils);
     Factory = factory.default;
     Updater = updater.default;
     Renderer = renderer.default;
+    ({ parsePattern, Timing } = patternModule);
 
     console.log("Modules are ready.");
   } catch (err) {
@@ -45,12 +48,9 @@ let Draw;
 let background;
 let pattern = {};
 let patternLength = 0;
-let settings, sync, visualSync, song, tracks, pixelRatio, offset, bpm, speed;
+let settings, sync, visualSync, song, tracks, pixelRatio, offset, speed;
 let audioLatency = 0;
-let bpmsync = {
-  ms: 0,
-  beat: 0,
-};
+let timing = null;
 let pointingCntElement = [{ v1: "", v2: "", i: "" }];
 let clickParticles = [];
 let destroyParticles = [];
@@ -62,7 +62,6 @@ let destroyedNotes = new Set([]);
 let grabbedNotes = new Set([]);
 let noteMaxDuration = 0;
 let endBeat = null;
-let bulletCreationSpeeds = [];
 let mouseX = 0,
   mouseY = 0;
 let rawX = 0,
@@ -174,17 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 const calcBeats = (seek = song.seek() * 1000) =>
-  Number((bpmsync.beat + (seek - (offset + sync + audioLatency * 1000) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-
-const calcBulletCreationSpeeds = () =>
-  pattern.bullets.map((b) => {
-    const end = upperBound(pattern.triggers, b.beat);
-    let cs = pattern.information.speed;
-    for (let k = 0; k < end; k++) {
-      if (pattern.triggers[k].value == 4) cs = pattern.triggers[k].speed;
-    }
-    return cs;
-  });
+  Number(timing.beatAt(seek - (offset + sync + audioLatency * 1000)).toPrecision(10));
 
 const initialize = (isFirstCalled) => {
   canvasW = (window.innerWidth * pixelRatio * settings.display.canvasRes) / 100;
@@ -202,7 +191,7 @@ const initialize = (isFirstCalled) => {
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
 
   if (isFirstCalled) {
-    pattern = JSON.parse(localStorage.pattern);
+    pattern = parsePattern(localStorage.pattern);
     patternLength = pattern.patterns.length;
 
     noteMaxDuration = 0;
@@ -216,7 +205,7 @@ const initialize = (isFirstCalled) => {
     const findEnd = pattern.triggers.find((t) => t.value == 6);
     endBeat = findEnd ? findEnd.beat : null;
 
-    bulletCreationSpeeds = calcBulletCreationSpeeds();
+    timing = new Timing(pattern);
 
     document.getElementById("artist").textContent = pattern.information.producer;
     document.getElementById("scoreArtist").textContent = pattern.information.producer;
@@ -228,13 +217,8 @@ const initialize = (isFirstCalled) => {
         document.getElementById("authorIcon").src = data.picture;
       });
     offset = pattern.information.offset;
-    bpm = pattern.information.bpm;
     speed = pattern.information.speed;
     nowSpeed = pattern.information.speed;
-    bpmsync = {
-      ms: 0,
-      beat: 0,
-    };
     currentTriggerIndex = 0;
     background = new URLSearchParams(window.location.search).get("background");
     for (let i = 0; i < tracks.length; i++) {
@@ -381,19 +365,14 @@ const cntRender = () => {
         }
       } else if (trigger.value == 1) {
         destroyAll(trigger.beat);
-      } else if (trigger.value == 2) {
-        bpmsync.ms = bpmsync.ms + (trigger.beat - bpmsync.beat) * (60000 / bpm);
-        bpm = trigger.bpm;
-        bpmsync.beat = trigger.beat;
-      } else if (trigger.value == 3) {
-        globalAlpha = trigger.opacity;
-      } else if (trigger.value == 4) {
-        nowSpeed = trigger.speed;
       } else if (trigger.value == 6) {
         calculateResult();
       }
       currentTriggerIndex++;
     }
+
+    globalAlpha = timing.opacityAt(beats);
+    nowSpeed = timing.speedAt(beats);
 
     let textEnd = upperBound(pattern.triggers, beats);
     let textStart = lowerBound(pattern.triggers, beats - 32);
@@ -470,13 +449,7 @@ const cntRender = () => {
       if (!destroyedBullets.has(i) || explodingBullets.has(i)) {
         const bullet = pattern.bullets[i];
 
-        const pos = Updater.bulletPos(
-          bullet,
-          beats,
-          pattern.triggers,
-          pattern.information.speed,
-          bulletCreationSpeeds[i],
-        );
+        const pos = Updater.bulletPos(bullet, beats, timing);
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
           destroyParticles.push(...Factory.createExplosions(pos.x, pos.y));
@@ -523,7 +496,11 @@ const cntRender = () => {
 
     Draw.keyInputUI(keyInput, keyInputTime);
     Draw.scorePanelUI({ score, combo, difficulty: 3 }, albumImg);
-    Draw.systemInfoUI({ speed: nowSpeed, bpm, fps: displayFPS });
+    Draw.systemInfoUI({
+      speed: Number(nowSpeed.toFixed(2)),
+      bpm: Number(timing.bpmAt(beats).toFixed(2)),
+      fps: displayFPS,
+    });
     Draw.progressBarUI(percentage);
 
     Draw.cursor({ x: mouseX, y: mouseY }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
@@ -882,15 +859,10 @@ const retry = () => {
   setTimeout(() => {
     Draw.initialize();
     song.stop();
-    pattern = JSON.parse(localStorage.pattern);
-    bulletCreationSpeeds = calcBulletCreationSpeeds();
-    bpm = pattern.information.bpm;
+    pattern = parsePattern(localStorage.pattern);
+    timing = new Timing(pattern);
     speed = pattern.information.speed;
     nowSpeed = pattern.information.speed;
-    bpmsync = {
-      ms: 0,
-      beat: 0,
-    };
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
     clickParticles = [];
     destroyParticles = [];

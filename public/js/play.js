@@ -3,19 +3,22 @@
 // library scripts; a module can read them via global scope with no extra wiring.
 let upperBound, lowerBound, numberWithCommas, easeOutQuad;
 let Factory, Updater, Renderer;
+let parsePattern, Timing;
 (async () => {
   try {
-    const [utils, factory, updater, renderer] = await Promise.all([
+    const [utils, factory, updater, renderer, patternModule] = await Promise.all([
       import("../modules/utils.js"),
       import("../modules/factory.js"),
       import("../modules/updater.js"),
       import("../modules/renderer.js"),
+      import("../modules/pattern.js"),
     ]);
 
     ({ upperBound, lowerBound, numberWithCommas, easeOutQuad } = utils);
     Factory = factory.default;
     Updater = updater.default;
     Renderer = renderer.default;
+    ({ parsePattern, Timing } = patternModule);
 
     console.log("Modules are ready.");
   } catch (err) {
@@ -46,12 +49,9 @@ let patternBackup = {};
 let patternLength = 0;
 let userName = "";
 let difficultyNames = ["EZ", "MID", "HARD"];
-let settings, sync, visualSync, song, tracks, pixelRatio, offset, bpm, speed, userid;
+let settings, sync, visualSync, song, tracks, pixelRatio, offset, speed, userid;
 let audioLatency = 0;
-let bpmsync = {
-  ms: 0,
-  beat: 0,
-};
+let timing = null;
 let pointingCntElement = [{ v1: "", v2: "", i: "" }];
 let clickParticles = [];
 let destroyParticles = [];
@@ -103,7 +103,6 @@ let overlayTime = 0;
 let shiftDown = false;
 let currentTriggerIndex = 0;
 let nowSpeed = 1;
-let bulletCreationSpeeds = [];
 let tick = new Howl({
   src: [`/sounds/tick.mp3`],
   autoplay: false,
@@ -180,17 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 const calcBeats = (seek = song.seek() * 1000) =>
-  Number((bpmsync.beat + (seek - (offset + sync + audioLatency * 1000) - bpmsync.ms) / (60000 / bpm)).toPrecision(10));
-
-const calcBulletCreationSpeeds = () =>
-  pattern.bullets.map((b) => {
-    const end = upperBound(pattern.triggers, b.beat);
-    let cs = pattern.information.speed;
-    for (let k = 0; k < end; k++) {
-      if (pattern.triggers[k].value == 4) cs = pattern.triggers[k].speed;
-    }
-    return cs;
-  });
+  Number(timing.beatAt(seek - (offset + sync + audioLatency * 1000)).toPrecision(10));
 
 const initialize = (isFirstCalled) => {
   canvasW = (window.innerWidth * pixelRatio * settings.display.canvasRes) / 100;
@@ -213,7 +202,7 @@ const initialize = (isFirstCalled) => {
     fetch(`${cdn}/URLATE-patterns/${localStorage.songName}/${localStorage.difficultySelection}.json`)
       .then((res) => res.json())
       .then((data) => {
-        patternBackup = data;
+        patternBackup = parsePattern(data);
         pattern = structuredClone(patternBackup);
         patternLength = pattern.patterns.length;
 
@@ -227,9 +216,7 @@ const initialize = (isFirstCalled) => {
 
         const findEnd = pattern.triggers.find((t) => t.value == 6);
         endBeat = findEnd ? findEnd.beat : null;
-
-        // Cache the speed at spawn time so bulletPos does not have to look it up again
-        bulletCreationSpeeds = calcBulletCreationSpeeds();
+        timing = new Timing(pattern);
 
         document.getElementById("scoreDifficultyNum").textContent = localStorage.difficulty;
         document.getElementById("scoreDifficultyName").textContent = difficultyNames[localStorage.difficultySelection];
@@ -245,13 +232,8 @@ const initialize = (isFirstCalled) => {
             document.getElementById("authorIcon").src = data.picture;
           });
         offset = pattern.information.offset;
-        bpm = pattern.information.bpm;
         speed = pattern.information.speed;
         nowSpeed = pattern.information.speed;
-        bpmsync = {
-          ms: 0,
-          beat: 0,
-        };
         currentTriggerIndex = 0;
         for (let i = 0; i < tracks.length; i++) {
           if (tracks[i].name == pattern.information.track) {
@@ -399,19 +381,14 @@ const cntRender = () => {
         }
       } else if (trigger.value == 1) {
         destroyAll(trigger.beat);
-      } else if (trigger.value == 2) {
-        bpmsync.ms = bpmsync.ms + (trigger.beat - bpmsync.beat) * (60000 / bpm);
-        bpm = trigger.bpm;
-        bpmsync.beat = trigger.beat;
-      } else if (trigger.value == 3) {
-        globalAlpha = trigger.opacity;
-      } else if (trigger.value == 4) {
-        nowSpeed = trigger.speed;
       } else if (trigger.value == 6) {
         calculateResult();
       }
       currentTriggerIndex++;
     }
+
+    globalAlpha = timing.opacityAt(beats);
+    nowSpeed = timing.speedAt(beats);
 
     // Text triggers have a duration, so search around the current beat
     let textEnd = upperBound(pattern.triggers, beats);
@@ -510,13 +487,7 @@ const cntRender = () => {
       if (!destroyedBullets.has(i) || explodingBullets.has(i)) {
         const bullet = pattern.bullets[i];
 
-        const pos = Updater.bulletPos(
-          bullet,
-          beats,
-          pattern.triggers,
-          pattern.information.speed,
-          bulletCreationSpeeds[i],
-        );
+        const pos = Updater.bulletPos(bullet, beats, timing);
 
         if (!createdBullets.has(i) || explodingBullets.has(i)) {
           destroyParticles.push(...Factory.createExplosions(pos.x, pos.y));
@@ -563,7 +534,11 @@ const cntRender = () => {
 
     Draw.keyInputUI(keyInput, keyInputTime);
     Draw.scorePanelUI({ score, combo, difficulty: Number(localStorage.difficultySelection) }, albumImg);
-    Draw.systemInfoUI({ speed: nowSpeed, bpm, fps: displayFPS });
+    Draw.systemInfoUI({
+      speed: Number(nowSpeed.toFixed(2)),
+      bpm: Number(timing.bpmAt(beats).toFixed(2)),
+      fps: displayFPS,
+    });
     Draw.progressBarUI(percentage);
 
     Draw.cursor({ x: mouseX, y: mouseY }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
@@ -1020,14 +995,9 @@ const retry = () => {
     Draw.initialize();
     song.stop();
     pattern = structuredClone(patternBackup);
-    bulletCreationSpeeds = calcBulletCreationSpeeds();
-    bpm = pattern.information.bpm;
+    timing = new Timing(pattern);
     speed = pattern.information.speed;
     nowSpeed = pattern.information.speed;
-    bpmsync = {
-      ms: 0,
-      beat: 0,
-    };
     currentTriggerIndex = 0;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
     clickParticles = [];
