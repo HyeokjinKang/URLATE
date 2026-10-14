@@ -171,6 +171,7 @@
   "visual_sync_setting": "화면 싱크 설정",
   "sync": "화면 싱크",
   "vsync": "수직 동기화",
+  "vsync_warning": "*수직 동기화 변경 사항은 새로고침해야 적용됩니다.",
   "visual_sync_description_strong": "소리와 화면이 일치하도록",
   "visual_sync_description_after": " 싱크값을 설정하세요.",
   "visual_sync_sub_description": "방향키(↑↓)를 이용하여 더 세밀한 조정이 가능합니다.",

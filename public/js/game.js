@@ -32,7 +32,6 @@ const goldMedal = document.getElementById("goldMedal");
 const silverMedal = document.getElementById("silverMedal");
 const checkMedal = document.getElementById("checkMedal");
 const offsetCanvas = document.getElementById("offsetCanvas");
-const offsetCtx = offsetCanvas.getContext("2d");
 const offsetSpeedText = document.getElementById("offsetSpeedText");
 const visualSyncSpeedText = document.getElementById("visualSyncSpeedText");
 const volumeOverlay = document.getElementById("volumeOverlay");
@@ -47,6 +46,8 @@ const fastRate = 174 / 110;
 import { escapeHtml, safeUrl } from "../modules/utils.js";
 
 let settings = [];
+let loadedVsync = true;
+let offsetCtx;
 let profileSong;
 let display = -1;
 let userid;
@@ -530,6 +531,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.result == "success") {
         data = data.user;
         settings = JSON.parse(data.settings);
+        loadedVsync = settings.display?.vsync ?? true;
         username = data.nickname;
         userid = data.userid;
         tutorial = data.tutorial;
@@ -1579,6 +1581,7 @@ const settingChanged = (e, v) => {
     settings.display.albumRes = Number(e.value);
   } else if (v == "vsync") {
     settings.display.vsync = e.checked;
+    document.getElementById("vsyncNote").hidden = e.checked == loadedVsync;
   } else if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
     for (let i = 0; i <= 1; i++) {
@@ -1822,6 +1825,7 @@ const offsetDraw = (remain) => {
   if (state === offsetDrawnState) return;
   offsetDrawnState = state;
 
+  offsetCtx ??= offsetCanvas.getContext("2d", { desynchronized: !loadedVsync });
   syncCanvasFit(offsetCanvas);
   const W = offsetCanvas.width;
   const H = offsetCanvas.height;
@@ -1955,7 +1959,7 @@ const visualSyncSetting = () => {
   offsetSong.fade(0, 1, 500);
 
   const vsCanvas = document.getElementById("visualSyncCanvas");
-  const vsCtx = vsCanvas.getContext("2d");
+  const vsCtx = vsCanvas.getContext("2d", { desynchronized: !loadedVsync });
   const beat = 60 / 110; // offsetSong BPM
 
   const drawFrame = () => {
