@@ -3470,7 +3470,7 @@ const delegateMouse = (type, attribute) => {
     if (action) action(event);
   });
 };
-delegateMouse("mousemove", "mousemove");
+delegateMouse("onpointerrawupdate" in window ? "pointerrawupdate" : "pointermove", "mousemove");
 delegateMouse("mousedown", "mousedown");
 delegateMouse("mouseover", "mouseover");
 delegateMouse("mouseout", "mouseout");

@@ -1148,7 +1148,9 @@ window.addEventListener("blur", () => {
 });
 
 window.addEventListener("wheel", globalScrollEvent);
-document.getElementById("componentCanvas").addEventListener("pointermove", trackMousePos);
+document
+  .getElementById("componentCanvas")
+  .addEventListener("onpointerrawupdate" in window ? "pointerrawupdate" : "pointermove", trackMousePos);
 document.getElementById("componentCanvas").addEventListener("mousedown", (event) => {
   compClicked(false, `${event.button}mouse`, false);
 });
