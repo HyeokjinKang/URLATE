@@ -1581,7 +1581,6 @@ const settingChanged = (e, v) => {
     settings.display.albumRes = Number(e.value);
   } else if (v == "vsync") {
     settings.display.vsync = e.checked;
-    document.getElementById("vsyncNote").hidden = e.checked == loadedVsync;
   } else if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
     for (let i = 0; i <= 1; i++) {
