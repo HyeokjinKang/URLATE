@@ -212,6 +212,7 @@ const settingApply = () => {
   document.getElementById("judgeBad").checked = settings.game.applyJudge.Bad;
   document.getElementById("judgeMiss").checked = settings.game.applyJudge.Miss;
   document.getElementById("frameCheck").checked = settings.game.counter;
+  document.getElementById("vsyncCheck").checked = settings.display.vsync ?? true;
   document.getElementById("ignoreCursorCheck").checked = settings.editor.denyCursor;
   document.getElementById("ignoreEditorCheck").checked = settings.editor.denySkin;
   document.getElementById("ignoreSyncCheck").checked = settings.editor.denySync ?? false;
@@ -1576,6 +1577,8 @@ const settingChanged = (e, v) => {
     settings.display.canvasRes = Number(e.value);
   } else if (v == "albumRes") {
     settings.display.albumRes = Number(e.value);
+  } else if (v == "vsync") {
+    settings.display.vsync = e.checked;
   } else if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
     for (let i = 0; i <= 1; i++) {

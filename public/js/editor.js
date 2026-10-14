@@ -46,9 +46,9 @@ const controlBtn = document.getElementById("controlBtn");
 const sidebarBtn = document.getElementById("sidebarBtn");
 const settingsPropertiesTextbox = trackSettings.getElementsByClassName("settingsPropertiesTextbox");
 const cntCanvas = document.getElementById("componentCanvas");
-const cntCtx = cntCanvas.getContext("2d");
+let cntCtx;
 const tmlCanvas = document.getElementById("timelineCanvas");
-const tmlCtx = tmlCanvas.getContext("2d");
+let tmlCtx;
 const timelinePlayController = document.getElementById("timelinePlayController");
 const metronome = document.getElementById("metronome");
 const metronomeContainer = document.getElementById("metronomeContainer");
@@ -474,6 +474,9 @@ const eraseTml = () => {
 };
 
 const initialize = (isFirstCalled) => {
+  const desynchronized = !(settings.display.vsync ?? true);
+  cntCtx ??= cntCanvas.getContext("2d", { desynchronized });
+  tmlCtx ??= tmlCanvas.getContext("2d", { desynchronized });
   if (isSettingsOpened) {
     tmlCanvasW = window.innerWidth * 0.8 * window.devicePixelRatio;
   } else {

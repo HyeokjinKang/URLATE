@@ -170,6 +170,7 @@
   "offset_sub_description": "우측의 버튼으로 직접 조정할 수도 있습니다.",
   "visual_sync_setting": "화면 싱크 설정",
   "sync": "화면 싱크",
+  "vsync": "수직 동기화",
   "visual_sync_description_strong": "소리와 화면이 일치하도록",
   "visual_sync_description_after": " 싱크값을 설정하세요.",
   "visual_sync_sub_description": "방향키(↑↓)를 이용하여 더 세밀한 조정이 가능합니다.",
