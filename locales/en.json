@@ -170,6 +170,8 @@
   "offset_sub_description": "You can also adjust it directly with the buttons on the right.",
   "visual_sync_setting": "Visual Sync Settings",
   "sync": "Visual Sync",
+  "vsync": "V-Sync",
+  "vsync_warning": "*V-Sync changes take effect after a refresh.",
   "visual_sync_description_strong": "Adjust the sync value",
   "visual_sync_description_after": " so that the audio and visuals are in sync.",
   "visual_sync_sub_description": "Use the arrow keys (↑↓) for finer adjustments.",

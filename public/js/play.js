@@ -38,7 +38,7 @@ const floatingResumeContainer = document.getElementById("floatingResumeContainer
 const volumeMasterValue = document.getElementById("volumeMasterValue");
 const volumeOverlay = document.getElementById("volumeOverlay");
 const canvas = document.getElementById("componentCanvas");
-const ctx = canvas.getContext("2d");
+let ctx;
 const missCanvas = document.getElementById("missPointCanvas");
 const missCtx = missCanvas.getContext("2d");
 const volumeMasterInput = document.getElementsByClassName("volumeMaster")[0];
@@ -182,6 +182,7 @@ const calcBeats = (seek = song.seek() * 1000) =>
   Number(timing.beatAt(seek - (offset + sync + audioLatency * 1000)).toPrecision(10));
 
 const initialize = (isFirstCalled) => {
+  ctx ??= canvas.getContext("2d", { desynchronized: !(settings.display.vsync ?? true) });
   canvasW = (window.innerWidth * pixelRatio * settings.display.canvasRes) / 100;
   canvasH = (window.innerHeight * pixelRatio * settings.display.canvasRes) / 100;
   canvas.width = canvasW;
