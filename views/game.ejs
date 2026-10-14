@@ -739,6 +739,15 @@
               <p class="optionTitle"><%= __('details') %></p>
             </div>
             <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('ignore_latency') %></p>
+              <div class="optionControl">
+                <label class="optionToggle">
+                  <input type="checkbox" class="optionCheckbox" id="ignoreLatencyCheck" data-setting="ignoreLatency" />
+                  <span class="optionToggleTrack"></span>
+                </label>
+              </div>
+            </div>
+            <div class="optionRow">
               <p class="optionSemiTitle"><%= __('resolution') %></p>
               <div class="optionControl">
                 <select class="optionSelect" id="soundResSelector" data-setting="soundRes">
@@ -752,15 +761,6 @@
               <p class="optionSemiTitle"><%= __('offset') %></p>
               <div class="optionControl">
                 <a class="optionButton optionButtonArrow" data-action="offsetSetting" id="offsetButton">0ms</a>
-              </div>
-            </div>
-            <div class="optionRow">
-              <p class="optionSemiTitle"><%= __('ignore_latency') %></p>
-              <div class="optionControl">
-                <label class="optionToggle">
-                  <input type="checkbox" class="optionCheckbox" id="ignoreLatencyCheck" data-setting="ignoreLatency" />
-                  <span class="optionToggleTrack"></span>
-                </label>
               </div>
             </div>
           </div>
