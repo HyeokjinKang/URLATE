@@ -4,7 +4,7 @@
 let upperBound, lowerBound;
 let Factory, Updater, Renderer, getCos, getSin, calcAngleDegrees;
 let parsePattern, Timing, PATTERN_VERSION, GRADUAL_TRIGGERS;
-(async () => {
+const modulesReady = (async () => {
   try {
     const [utils, factory, updater, renderer, patternModule] = await Promise.all([
       import("../modules/utils.js"),
@@ -186,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Signed-out visitors were already turned away by the server gate.
   const request = (path) =>
     fetch(`${api}/${path}`, { method: "GET", credentials: "include" }).then((res) => res.json());
-  Promise.all([request("user"), request("tracks")])
+  Promise.all([request("user"), request("tracks"), modulesReady])
     .then(([user, trackList]) => {
       if (user.result != "success") {
         // The session is gone; sign out instead of leaving a dead page.
@@ -3470,7 +3470,7 @@ const delegateMouse = (type, attribute) => {
     if (action) action(event);
   });
 };
-delegateMouse("mousemove", "mousemove");
+delegateMouse("onpointerrawupdate" in window ? "pointerrawupdate" : "pointermove", "mousemove");
 delegateMouse("mousedown", "mousedown");
 delegateMouse("mouseover", "mouseover");
 delegateMouse("mouseout", "mouseout");

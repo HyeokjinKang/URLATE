@@ -4,7 +4,7 @@
 let upperBound, lowerBound, numberWithCommas;
 let Factory, Updater, Renderer;
 let parsePattern, Timing;
-(async () => {
+const modulesReady = (async () => {
   try {
     const [utils, factory, updater, renderer, patternModule] = await Promise.all([
       import("../modules/utils.js"),
@@ -137,7 +137,8 @@ document.addEventListener("DOMContentLoaded", () => {
     credentials: "include",
   })
     .then((res) => res.json())
-    .then((data) => {
+    .then(async (data) => {
+      await modulesReady;
       if (data.result == "success") {
         data = data.user;
         settings = JSON.parse(data.settings);
@@ -1150,7 +1151,9 @@ window.addEventListener("blur", () => {
 });
 
 window.addEventListener("wheel", globalScrollEvent);
-document.getElementById("componentCanvas").addEventListener("pointermove", trackMousePos);
+document
+  .getElementById("componentCanvas")
+  .addEventListener("onpointerrawupdate" in window ? "pointerrawupdate" : "pointermove", trackMousePos);
 document.getElementById("componentCanvas").addEventListener("mousedown", (event) => {
   compClicked(false, `${event.button}mouse`, false);
 });
