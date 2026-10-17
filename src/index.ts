@@ -456,6 +456,11 @@ app.get("/privacy", (req, res) => {
   res.render("privacy", staticPageLocals());
 });
 
+app.get("/privacy/2023-08-02", (req, res) => {
+  setStaticPageCsp(res);
+  res.render("privacy-2023-08-02", staticPageLocals());
+});
+
 app.use(profileRouter);
 
 process.on("unhandledRejection", (reason: unknown, promise: Promise<unknown>) => {
