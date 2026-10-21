@@ -8,7 +8,10 @@ let upperBound,
   judgeTiming,
   judgeReleaseTiming,
   judgeWheelTiming,
-  holdTickCount;
+  holdTickCount,
+  msToFrames,
+  PRESS_WINDOW_FRAMES,
+  RELEASE_LATE_FRAMES;
 let Factory, Updater, Renderer;
 let parsePattern, Timing;
 const modulesReady = (async () => {
@@ -30,6 +33,9 @@ const modulesReady = (async () => {
       judgeReleaseTiming,
       judgeWheelTiming,
       holdTickCount,
+      msToFrames,
+      PRESS_WINDOW_FRAMES,
+      RELEASE_LATE_FRAMES,
     } = utils);
     Factory = factory.default;
     Updater = updater.default;
@@ -78,6 +84,7 @@ let explodingBullets = new Set([]);
 let destroyedNotes = new Set([]);
 let grabbedNotes = new Set([]);
 let holdTicks = new Map();
+let missedNotes = new Set();
 let noteMaxDuration = 0;
 let endBeat = null;
 let mouseX = 0,
@@ -198,6 +205,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const calcBeats = (seek = song.seek() * 1000) =>
   Number(timing.beatAt(seek - (offset + sync + audioLatency * 1000)).toPrecision(10));
+
+const framesFrom = (target, beats) => msToFrames((timing.msAt(beats) - timing.msAt(target)) / rate);
 
 const initialize = (isFirstCalled) => {
   ctx ??= canvas.getContext("2d", { desynchronized: !(settings.display.vsync ?? true) });
@@ -425,7 +434,6 @@ const cntRender = () => {
     for (let textObj of renderTexts) Draw.triggerText(textObj);
 
     let renderDuration = 5 / speed;
-    const lateJudge = rate / 2;
 
     let start = lowerBound(pattern.patterns, beats - noteMaxDuration);
     let end = upperBound(pattern.patterns, beats + renderDuration);
@@ -452,8 +460,12 @@ const cntRender = () => {
     };
     for (let i = end - 1; i >= start; i--) {
       Updater.noteProgress(pattern.patterns[i], beats, speed, _noteState);
-      if (!destroyedNotes.has(i) && _noteState.progress > 100) {
-        _noteState.progress = 100 + ((beats - pattern.patterns[i].beat) / lateJudge) * 30;
+      if ((!destroyedNotes.has(i) || missedNotes.has(i)) && _noteState.progress > 100) {
+        _noteState.progress = 100 + (framesFrom(pattern.patterns[i].beat, beats) / PRESS_WINDOW_FRAMES) * 30;
+      }
+      if (grabbedNotes.has(i) && _noteState.endProgress > 100) {
+        const note = pattern.patterns[i];
+        _noteState.endProgress = 100 + (framesFrom(note.beat + note.duration, beats) / RELEASE_LATE_FRAMES) * 30;
       }
       _noteState.globalAlpha = globalAlpha;
       _noteState.isGrabbed = grabbedNotes.has(i);
@@ -461,10 +473,11 @@ const cntRender = () => {
       Draw.note(pattern.patterns[i], _noteState);
 
       if (
-        beats > pattern.patterns[i].beat + lateJudge &&
+        framesFrom(pattern.patterns[i].beat, beats) > PRESS_WINDOW_FRAMES &&
         !destroyedNotes.has(i) &&
         (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)
       ) {
+        missedNotes.add(i);
         calculateScore("miss", i, true);
         judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Miss"));
         miss += pattern.patterns[i].value == 2 ? 2 : 1;
@@ -485,7 +498,7 @@ const cntRender = () => {
     }
     for (const i of holdTicks.keys()) {
       const note = pattern.patterns[i];
-      if (beats > note.beat + note.duration + (rate * 3) / 4) releaseHoldNote(i, "Miss", beats);
+      if (framesFrom(note.beat + note.duration, beats) > RELEASE_LATE_FRAMES) releaseHoldNote(i, "Bad", beats);
       else advanceHoldTicks(i, beats);
     }
     start = lowerBound(pattern.bullets, beats - 32);
@@ -749,7 +762,9 @@ const trackMouseSelection = (i, v1, v2, x, y, beats, seekMs) => {
         const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
         if (
           distSq <= (canvasW / 40) * (canvasW / 40) &&
-          (pattern.patterns[i].value == 2 ? t <= 100 : beats <= pattern.patterns[i].beat + rate / 2) &&
+          (pattern.patterns[i].value == 2
+            ? t <= 100
+            : framesFrom(pattern.patterns[i].beat, beats) <= PRESS_WINDOW_FRAMES) &&
           p >= 0
         ) {
           pointingCntElement.push({ v1, v2, i });
@@ -821,7 +836,7 @@ const compClicked = (isTyped, key, isWheel) => {
       if (el.v2 == 1 && pNote.direction != key) return;
       const x = pNote.x;
       const y = pNote.y;
-      const judge = (pNote.value == 1 ? judgeWheelTiming : judgeTiming)(beats, pNote.beat, rate);
+      const judge = (pNote.value == 1 ? judgeWheelTiming : judgeTiming)(framesFrom(pNote.beat, beats));
       countJudge(judge);
       if (pNote.value == 2) {
         grabbedNotes.add(el.i);
@@ -1049,6 +1064,7 @@ const retry = () => {
     destroyedNotes = new Set([]);
     grabbedNotes = new Set([]);
     holdTicks = new Map();
+    missedNotes = new Set();
     score = 0;
     combo = 0;
     maxCombo = 0;
@@ -1223,7 +1239,7 @@ const checkHoldNote = (key) => {
   delete keyPressing[key];
   if (!grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) return;
   const note = pattern.patterns[i];
-  releaseHoldNote(i, judgeReleaseTiming(beats, note.beat + note.duration, rate), beats);
+  releaseHoldNote(i, judgeReleaseTiming(framesFrom(note.beat + note.duration, beats)), beats);
 };
 
 document.addEventListener("keydown", (e) => {

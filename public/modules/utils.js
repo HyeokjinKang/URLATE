@@ -101,28 +101,33 @@ export const easeOutSine = (x) => {
   return Math.sin((x * Math.PI) / 2);
 };
 
-export const judgeTiming = (beats, target, rate) => {
-  const diff = (beats - target) / rate;
-  if (Math.abs(diff) <= 1 / 8) return "Perfect";
-  if (Math.abs(diff) <= 1 / 4) return "Great";
-  if (Math.abs(diff) <= 5 / 12) return "Good";
-  if (Math.abs(diff) <= 1 / 2) return "Bad";
+export const PRESS_WINDOW_FRAMES = 12;
+export const RELEASE_LATE_FRAMES = 16;
+
+export const msToFrames = (ms) => (ms * 60) / 1000;
+
+export const judgeTiming = (frames) => {
+  const f = Math.abs(frames);
+  if (f <= 3) return "Perfect";
+  if (f <= 7) return "Great";
+  if (f <= 10) return "Good";
+  if (f <= PRESS_WINDOW_FRAMES) return "Bad";
   return "Miss";
 };
 
-export const judgeReleaseTiming = (beats, target, rate) => {
-  const diff = (beats - target) / rate;
-  if (diff >= -3 / 16 && diff <= 1 / 4) return "Perfect";
-  if (diff >= -1 / 3 && diff <= 5 / 12) return "Great";
-  if (diff >= -1 / 2 && diff <= 3 / 4) return "Good";
+export const judgeReleaseTiming = (frames) => {
+  if (frames >= -4 && frames <= 6) return "Perfect";
+  if (frames >= -8 && frames <= 11) return "Great";
+  if (frames >= -12 && frames <= RELEASE_LATE_FRAMES) return "Good";
+  if (frames > RELEASE_LATE_FRAMES) return "Bad";
   return "Miss";
 };
 
-export const judgeWheelTiming = (beats, target, rate) => {
-  const diff = Math.abs((beats - target) / rate);
-  if (diff <= 3 / 16) return "Perfect";
-  if (diff <= 1 / 3) return "Great";
-  if (diff <= 1 / 2) return "Good";
+export const judgeWheelTiming = (frames) => {
+  const f = Math.abs(frames);
+  if (f <= 5) return "Perfect";
+  if (f <= 9) return "Great";
+  if (f <= PRESS_WINDOW_FRAMES) return "Good";
   return "Miss";
 };
 
