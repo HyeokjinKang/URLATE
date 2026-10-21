@@ -650,6 +650,7 @@ const trackMouseSelection = (i, v1, v2, x, y, beats, seekMs) => {
           (pattern.patterns[i].value == 2
             ? t <= 100
             : framesFrom(pattern.patterns[i].beat, beats) <= PRESS_WINDOW_FRAMES) &&
+          framesFrom(pattern.patterns[i].beat, beats) >= -PRESS_WINDOW_FRAMES &&
           p >= 0
         ) {
           pointingCntElement.push({ v1, v2, i });
