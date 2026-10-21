@@ -79,7 +79,7 @@ export const Config = {
     EXIT_FROM: 0.62,
     EXIT_DURATION: 0.3,
     EXIT_RISE: 14,
-    FONT_WEIGHT: 400,
+    FONT_WEIGHT: 600,
     MISS_FALL: 55,
     MISS_SPACING: 0.12,
     TIMING: { DELAY: 80, FADE_IN: 100, OFFSET: 0.8, SIZE: 0.4, SPACING: 0.14 },

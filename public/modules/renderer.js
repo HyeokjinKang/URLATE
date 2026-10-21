@@ -166,7 +166,7 @@ export default class Renderer {
     // Font strings only change on resize, so build them once here
     const defaultSize = this.CONFIG.UI.DEFAULT_FONT_SIZE;
     const scorePanelSize = this.CONFIG.UI.SCORE_PANEL.FONT_SIZE;
-    const judgeSize = ~~(this.canvasH / 25);
+    const judgeSize = ~~(this.canvasH / 30);
     const judgeTimingSize = Math.max(8, Math.round(judgeSize * Config.JUDGE_EFFECT.TIMING.SIZE));
     this.CONFIG.JUDGE_EFFECT = { SIZE: judgeSize, TIMING_SIZE: judgeTimingSize };
     const systemInfoSize = ~~(this.canvasH / 60);
