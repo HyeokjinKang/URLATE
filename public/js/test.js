@@ -568,7 +568,7 @@ const calculateResult = () => {
   document.getElementById("scoreText").textContent = numberWithCommas(`${score}`);
   document.getElementById("comboText").textContent = `${maxCombo}x`;
   let accuracy = (
-    ((perfect + (great / 10) * 7 + good / 2 + (bad / 10) * 3) / (perfect + great + good + bad + miss + bullet)) *
+    ((perfect + (great / 10) * 8 + (good / 10) * 4 + bad / 10) / (perfect + great + good + bad + miss + bullet)) *
     100
   ).toFixed(1);
   document.getElementById("accuracyText").textContent = `${accuracy}%`;
@@ -788,13 +788,13 @@ const addScore = (judge, weight = 1, silent = false) => {
   } else {
     medalCheck(medal - 1);
     if (judge == "great") {
-      score += Math.round((basicScore * 0.5 + combo * 5) * rateCalc);
+      score += Math.round((basicScore * 0.8 + combo * 5) * rateCalc);
     } else if (judge == "good") {
-      score += Math.round((basicScore * 0.2 + combo * 3) * rateCalc);
+      score += Math.round((basicScore * 0.4 + combo * 3) * rateCalc);
     } else {
       combo = 0;
       medalCheck(medal);
-      score += Math.round(basicScore * 0.05 * rateCalc);
+      score += Math.round(basicScore * 0.1 * rateCalc);
     }
   }
   if (combo % comboCount == 0 && combo != 0) {
