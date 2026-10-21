@@ -409,6 +409,7 @@ const cntRender = () => {
     for (let textObj of renderTexts) Draw.triggerText(textObj);
 
     let renderDuration = 5 / speed;
+    const lateJudge = rate / 2;
 
     let start = lowerBound(pattern.patterns, beats - noteMaxDuration);
     let end = upperBound(pattern.patterns, beats + renderDuration);
@@ -435,13 +436,16 @@ const cntRender = () => {
     };
     for (let i = end - 1; i >= start; i--) {
       Updater.noteProgress(pattern.patterns[i], beats, speed, _noteState);
+      if (!destroyedNotes.has(i) && _noteState.progress > 100) {
+        _noteState.progress = 100 + ((beats - pattern.patterns[i].beat) / lateJudge) * 30;
+      }
       _noteState.globalAlpha = globalAlpha;
       _noteState.isGrabbed = grabbedNotes.has(i);
 
       Draw.note(pattern.patterns[i], _noteState);
 
       if (
-        _noteState.progress >= 120 &&
+        beats > pattern.patterns[i].beat + lateJudge &&
         !destroyedNotes.has(i) &&
         (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)
       ) {
@@ -729,7 +733,7 @@ const trackMouseSelection = (i, v1, v2, x, y, beats, seekMs) => {
         const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
         if (
           distSq <= (canvasW / 40) * (canvasW / 40) &&
-          (pattern.patterns[i].value == 2 ? t <= 100 : p <= 130) &&
+          (pattern.patterns[i].value == 2 ? t <= 100 : beats <= pattern.patterns[i].beat + rate / 2) &&
           p >= 0
         ) {
           pointingCntElement.push({ v1, v2, i });

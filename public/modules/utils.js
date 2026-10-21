@@ -102,10 +102,11 @@ export const easeOutSine = (x) => {
 };
 
 export const judgeTiming = (beats, target, rate) => {
-  if (beats <= target + rate / 6 && beats >= target - rate / 6) return "Perfect";
-  if (beats <= target + rate / 3 && beats >= target - rate / 3) return "Great";
-  if (beats >= target - rate / 2 && beats <= target) return "Good";
-  if (beats >= target - rate) return "Bad";
+  const diff = (beats - target) / rate;
+  if (Math.abs(diff) <= 1 / 8) return "Perfect";
+  if (Math.abs(diff) <= 1 / 4) return "Great";
+  if (Math.abs(diff) <= 5 / 12) return "Good";
+  if (Math.abs(diff) <= 1 / 2) return "Bad";
   return "Miss";
 };
 
