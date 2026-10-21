@@ -1,7 +1,7 @@
 /* global Pace, Howler, Howl, url, cdn, api, lang, confirmExit */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
-let upperBound, lowerBound, numberWithCommas;
+let upperBound, lowerBound, numberWithCommas, judgeTiming;
 let Factory, Updater, Renderer;
 let parsePattern, Timing;
 const modulesReady = (async () => {
@@ -14,7 +14,7 @@ const modulesReady = (async () => {
       import("../modules/pattern.js"),
     ]);
 
-    ({ upperBound, lowerBound, numberWithCommas } = utils);
+    ({ upperBound, lowerBound, numberWithCommas, judgeTiming } = utils);
     Factory = factory.default;
     Updater = updater.default;
     Renderer = renderer.default;
@@ -681,32 +681,12 @@ const compClicked = (isTyped, key, isWheel) => {
     if (el.v1 === 0 && !destroyedNotes.has(el.i) && (el.v2 !== 1) == !isWheel) {
       const pNote = pattern.patterns[el.i];
       if (el.v2 == 1 && pNote.direction != key) return;
-      const beat = pNote.beat;
-      const perfectJudge = (1 / 6) * rate;
-      const greatJudge = (1 / 3) * rate;
-      const goodJudge = (1 / 2) * rate;
-      const badJudge = rate;
       const x = pNote.x;
       const y = pNote.y;
       let judge = "Perfect";
       if (pNote.value != 1) {
-        if (beats <= beat + perfectJudge && beats >= beat - perfectJudge) {
-          judge = "Perfect";
-          perfect++;
-        } else if (beats <= beat + greatJudge && beats >= beat - greatJudge) {
-          judge = "Great";
-          great++;
-        } else if (beats >= beat - goodJudge && beats <= beat) {
-          judge = "Good";
-          good++;
-        } else if ((beats >= beat - badJudge && beats <= beat) || beat <= beats) {
-          judge = "Bad";
-          bad++;
-        } else {
-          judge = "Miss";
-          miss++;
-          showOverlay();
-        }
+        judge = judgeTiming(beats, pNote.beat, rate);
+        countJudge(judge);
       }
       if (pNote.value == 2) {
         grabbedNotes.add(el.i);
@@ -714,7 +694,7 @@ const compClicked = (isTyped, key, isWheel) => {
       }
       calculateScore(judge, el.i);
       clickParticles.push(Factory.createClickNote(x, y, el.v2, judgeSkin, judge));
-      judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge, beats < beat ? "FAST" : "LATE"));
+      judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge, beats < pNote.beat ? "FAST" : "LATE"));
       keyInput.push({
         judge,
         key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•",
@@ -731,13 +711,19 @@ const compClicked = (isTyped, key, isWheel) => {
   clickParticles.push(Factory.createClickDefault(mouseX, mouseY));
 };
 
-const calculateScore = (judge, i, ignoreMs) => {
-  judge = judge.toLowerCase();
-  destroyedNotes.add(i);
-  if (!ignoreMs) {
-    const beats = calcBeats();
-    pattern.patterns[i].beat = beats;
+const countJudge = (judge) => {
+  if (judge == "Perfect") perfect++;
+  else if (judge == "Great") great++;
+  else if (judge == "Good") good++;
+  else if (judge == "Bad") bad++;
+  else {
+    miss++;
+    showOverlay();
   }
+};
+
+const addScore = (judge) => {
+  judge = judge.toLowerCase();
   if (judge == "miss") {
     medalCheck(medal);
     combo = 0;
@@ -773,15 +759,27 @@ const calculateScore = (judge, i, ignoreMs) => {
     comboAlertMs = Date.now();
     comboAlertCount = combo;
   }
-  if (i == patternLength - 1) {
-    if (pattern.bullets.length) destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
-    effectMs = Date.now();
-    if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
-      effectNum = 0;
-    } else if (bad == 0 && miss == 0 && bullet == 0) {
-      effectNum = 1;
-    }
+};
+
+const checkLastNote = (i) => {
+  if (i != patternLength - 1) return;
+  if (pattern.bullets.length) destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
+  effectMs = Date.now();
+  if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
+    effectNum = 0;
+  } else if (bad == 0 && miss == 0 && bullet == 0) {
+    effectNum = 1;
   }
+};
+
+const calculateScore = (judge, i, ignoreMs) => {
+  destroyedNotes.add(i);
+  if (!ignoreMs) {
+    const beats = calcBeats();
+    pattern.patterns[i].beat = beats;
+  }
+  addScore(judge);
+  checkLastNote(i);
 };
 
 Pace.on("done", () => {

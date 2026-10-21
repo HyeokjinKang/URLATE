@@ -100,3 +100,11 @@ export const easeOutQuad = (x) => {
 export const easeOutSine = (x) => {
   return Math.sin((x * Math.PI) / 2);
 };
+
+export const judgeTiming = (beats, target, rate) => {
+  if (beats <= target + rate / 6 && beats >= target - rate / 6) return "Perfect";
+  if (beats <= target + rate / 3 && beats >= target - rate / 3) return "Great";
+  if (beats >= target - rate / 2 && beats <= target) return "Good";
+  if (beats >= target - rate) return "Bad";
+  return "Miss";
+};

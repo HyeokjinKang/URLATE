@@ -1,7 +1,7 @@
 /* global Pace, Howler, Howl, url, cdn, api */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
-let upperBound, lowerBound, numberWithCommas, easeOutQuad;
+let upperBound, lowerBound, numberWithCommas, easeOutQuad, judgeTiming;
 let Factory, Updater, Renderer;
 let parsePattern, Timing;
 const modulesReady = (async () => {
@@ -14,7 +14,7 @@ const modulesReady = (async () => {
       import("../modules/pattern.js"),
     ]);
 
-    ({ upperBound, lowerBound, numberWithCommas, easeOutQuad } = utils);
+    ({ upperBound, lowerBound, numberWithCommas, easeOutQuad, judgeTiming } = utils);
     Factory = factory.default;
     Updater = updater.default;
     Renderer = renderer.default;
@@ -814,32 +814,12 @@ const compClicked = (isTyped, key, isWheel) => {
     if (el.v1 === 0 && !destroyedNotes.has(el.i) && (el.v2 !== 1) == !isWheel) {
       const pNote = pattern.patterns[el.i];
       if (el.v2 == 1 && pNote.direction != key) return;
-      const beat = pNote.beat;
-      const perfectJudge = (1 / 6) * rate;
-      const greatJudge = (1 / 3) * rate;
-      const goodJudge = (1 / 2) * rate;
-      const badJudge = rate;
       const x = pNote.x;
       const y = pNote.y;
       let judge = "Perfect";
       if (pNote.value != 1) {
-        if (beats <= beat + perfectJudge && beats >= beat - perfectJudge) {
-          judge = "Perfect";
-          perfect++;
-        } else if (beats <= beat + greatJudge && beats >= beat - greatJudge) {
-          judge = "Great";
-          great++;
-        } else if (beats >= beat - goodJudge && beats <= beat) {
-          judge = "Good";
-          good++;
-        } else if ((beats >= beat - badJudge && beats <= beat) || beat <= beats) {
-          judge = "Bad";
-          bad++;
-        } else {
-          judge = "Miss";
-          miss++;
-          showOverlay();
-        }
+        judge = judgeTiming(beats, pNote.beat, rate);
+        countJudge(judge);
       }
       if (pNote.value == 2) {
         grabbedNotes.add(el.i);
@@ -847,7 +827,7 @@ const compClicked = (isTyped, key, isWheel) => {
       }
       calculateScore(judge, el.i);
       clickParticles.push(Factory.createClickNote(x, y, el.v2, judgeSkin, judge));
-      judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge, beats < beat ? "FAST" : "LATE"));
+      judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge, beats < pNote.beat ? "FAST" : "LATE"));
       record.push([
         record.length,
         pointingCntElement[0].v1,
@@ -874,60 +854,78 @@ const compClicked = (isTyped, key, isWheel) => {
   clickParticles.push(Factory.createClickDefault(mouseX, mouseY));
 };
 
-const calculateScore = (judge, i, ignoreMs) => {
+const countJudge = (judge) => {
+  if (judge == "Perfect") perfect++;
+  else if (judge == "Great") great++;
+  else if (judge == "Good") good++;
+  else if (judge == "Bad") bad++;
+  else {
+    miss++;
+    showOverlay();
+  }
+};
+
+const addScore = (judge) => {
   judge = judge.toLowerCase();
+  if (judge == "miss") {
+    medalCheck(medal);
+    combo = 0;
+    return;
+  }
+  tick.play();
+  combo++;
+  if (maxCombo < combo) {
+    maxCombo = combo;
+  }
+  let basicScore = 100000000 / patternLength;
+  let rateCalc;
+  if (rate >= 1) {
+    rateCalc = rate * 0.5 + 0.5;
+  } else {
+    rateCalc = rate * rate * 1.3 - 0.3;
+  }
+  if (judge == "perfect") {
+    score += Math.round((basicScore + combo * 5) * rateCalc);
+  } else {
+    medalCheck(medal - 1);
+    if (judge == "great") {
+      score += Math.round((basicScore * 0.5 + combo * 5) * rateCalc);
+    } else if (judge == "good") {
+      score += Math.round((basicScore * 0.2 + combo * 3) * rateCalc);
+    } else {
+      combo = 0;
+      medalCheck(medal);
+      score += Math.round(basicScore * 0.05 * rateCalc);
+    }
+  }
+  if (combo % comboCount == 0 && combo != 0) {
+    comboAlertMs = Date.now();
+    comboAlertCount = combo;
+  }
+};
+
+const checkLastNote = (i) => {
+  if (i != patternLength - 1) return;
+  if (localStorage.record < score) {
+    newRecordTime = Date.now();
+  }
+  if (pattern.bullets.length) destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
+  effectMs = Date.now();
+  if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
+    effectNum = 0;
+  } else if (bad == 0 && miss == 0 && bullet == 0) {
+    effectNum = 1;
+  }
+};
+
+const calculateScore = (judge, i, ignoreMs) => {
   destroyedNotes.add(i);
   if (!ignoreMs) {
     const beats = calcBeats();
     pattern.patterns[i].beat = beats;
   }
-  if (judge == "miss") {
-    medalCheck(medal);
-    combo = 0;
-  } else {
-    tick.play();
-    combo++;
-    if (maxCombo < combo) {
-      maxCombo = combo;
-    }
-    let basicScore = 100000000 / patternLength;
-    let rateCalc;
-    if (rate >= 1) {
-      rateCalc = rate * 0.5 + 0.5;
-    } else {
-      rateCalc = rate * rate * 1.3 - 0.3;
-    }
-    if (judge == "perfect") {
-      score += Math.round((basicScore + combo * 5) * rateCalc);
-    } else {
-      medalCheck(medal - 1);
-      if (judge == "great") {
-        score += Math.round((basicScore * 0.5 + combo * 5) * rateCalc);
-      } else if (judge == "good") {
-        score += Math.round((basicScore * 0.2 + combo * 3) * rateCalc);
-      } else {
-        combo = 0;
-        medalCheck(medal);
-        score += Math.round(basicScore * 0.05 * rateCalc);
-      }
-    }
-    if (combo % comboCount == 0 && combo != 0) {
-      comboAlertMs = Date.now();
-      comboAlertCount = combo;
-    }
-  }
-  if (i == patternLength - 1) {
-    if (localStorage.record < score) {
-      newRecordTime = Date.now();
-    }
-    if (pattern.bullets.length) destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
-    effectMs = Date.now();
-    if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
-      effectNum = 0;
-    } else if (bad == 0 && miss == 0 && bullet == 0) {
-      effectNum = 1;
-    }
-  }
+  addScore(judge);
+  checkLastNote(i);
 };
 
 Pace.on("done", () => {
