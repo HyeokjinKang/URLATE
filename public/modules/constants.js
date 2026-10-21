@@ -67,10 +67,22 @@ export const Config = {
     SCANLINE: { LIFETIME: 240, OPACITY: 0.28, REACH: 0.6, HEIGHT: 1.5 },
   },
   JUDGE_EFFECT: {
-    LIFETIME: 500,
-    DEFAULT_ANIM_Y_ADDER: 100,
-    MISS_ANIM_Y_ADDER: -50,
-    MISS_ANIM_ROTATE: 10,
+    LIFETIME: 700,
+    STAGGER: 22,
+    ENTER_DURATION: 220,
+    RISE: 10,
+    SPACING_FROM: 0.06,
+    SPACING_DURATION: 360,
+    WHITE_DURATION: 160,
+    WHITE_OPACITY: 0.6,
+    FADE_IN: 50,
+    EXIT_FROM: 0.62,
+    EXIT_DURATION: 0.3,
+    EXIT_RISE: 14,
+    FONT_WEIGHT: 400,
+    MISS_FALL: 55,
+    MISS_SPACING: 0.12,
+    TIMING: { DELAY: 80, FADE_IN: 100, OFFSET: 0.8, SIZE: 0.4, SPACING: 0.14 },
   },
   FINAL_EFFECT: {
     LIFETIME: 2000,
@@ -106,6 +118,11 @@ export const JudgeSkin = {
   good: { type: "color", color: "#CCE97C" },
   bad: { type: "color", color: "#EDC77D" },
   miss: { type: "color", color: "#F96C5A" },
+};
+
+export const TimingColors = {
+  FAST: "#6FB7FF",
+  LATE: "#FF8A6F",
 };
 
 /** Colour table for the keyInput overlay. */

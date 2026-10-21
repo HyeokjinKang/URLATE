@@ -99,13 +99,15 @@ export default class Factory {
    * @param {number} y
    * @param {boolean} judgeSkin - settings.game.judgeSkin
    * @param {string} judge
+   * @param {string} [timing] - "FAST" or "LATE"
    */
-  static createJudge(x, y, judgeSkin, judge) {
+  static createJudge(x, y, judgeSkin, judge, timing = null) {
     const p = JUDGE_POOL.pop() || {};
     p.x = x;
     p.y = y;
     p.judgeSkin = judgeSkin;
     p.judge = judge;
+    p.timing = timing;
     p.createdAt = Date.now();
     p.lifeTime = Config.JUDGE_EFFECT.LIFETIME;
     p.type = "judge";

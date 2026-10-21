@@ -2,7 +2,7 @@
  * renderer.js
  * Canvas drawing for the game.
  */
-import { Config, JudgeSkin, KeyInputColors, DiffColors } from "./constants.js";
+import { Config, JudgeSkin, KeyInputColors, DiffColors, TimingColors } from "./constants.js";
 import {
   getSin,
   getCos,
@@ -37,6 +37,7 @@ export default class Renderer {
       finalEffect: new Map(),
       comboAlert: null,
       cursor: new Map(),
+      judgeWidths: new Map(),
     };
 
     // Animation state
@@ -104,6 +105,7 @@ export default class Renderer {
     this.cache.finalEffect.clear();
     this.cache.comboAlert = null;
     this.cache.cursor.clear();
+    this.cache.judgeWidths.clear();
 
     this.cacheConfig();
   }
@@ -165,10 +167,13 @@ export default class Renderer {
     const defaultSize = this.CONFIG.UI.DEFAULT_FONT_SIZE;
     const scorePanelSize = this.CONFIG.UI.SCORE_PANEL.FONT_SIZE;
     const judgeSize = ~~(this.canvasH / 25);
+    const judgeTimingSize = Math.max(8, Math.round(judgeSize * Config.JUDGE_EFFECT.TIMING.SIZE));
+    this.CONFIG.JUDGE_EFFECT = { SIZE: judgeSize, TIMING_SIZE: judgeTimingSize };
     const systemInfoSize = ~~(this.canvasH / 60);
     this.FONT = {
       debug: `600 ${defaultSize}px ${_F}`,
-      judge: `600 ${judgeSize}px ${_F}`,
+      judge: `${Config.JUDGE_EFFECT.FONT_WEIGHT} ${judgeSize}px ${_F}`,
+      judgeTiming: `700 ${judgeTimingSize}px ${_F}`,
       keyInput: `600 ${defaultSize}px ${_F}`,
       scorePanel: `700 ${scorePanelSize}px ${_F}`,
       combo: [400, 500, 600].map((weight) => `${weight} ${defaultSize}px ${_F}`),
@@ -547,46 +552,108 @@ export default class Renderer {
    */
   judges(particles) {
     const { ctx, canvasH, skin } = this;
+    const conf = Config.JUDGE_EFFECT;
+    const size = this.CONFIG.JUDGE_EFFECT.SIZE;
+    const unit = canvasH / 1000;
     const now = Date.now();
+
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
 
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
-      const isJudgeSkin = p.judgeSkin;
       const judgeKey = p.judge.toLowerCase();
+      const isMiss = judgeKey == "miss";
       const elapsed = now - p.createdAt;
+      const exitStart = p.lifeTime * conf.EXIT_FROM;
+      const exitDuration = p.lifeTime * conf.EXIT_DURATION;
 
-      const progress = elapsed / p.lifeTime;
-      const easeInProgress = easeInQuad(progress);
-      const easeOutProgress = easeOutQuad(progress);
+      const text = p.judge;
+      const count = text.length;
+      ctx.font = this.FONT.judge;
+      const widths = this.#judgeWidths(text);
+      const spacing = isMiss
+        ? size * conf.MISS_SPACING
+        : size * conf.SPACING_FROM * (1 - easeOutCubic(Math.min(1, elapsed / conf.SPACING_DURATION)));
+      let x = -(widths.total + spacing * (count - 1)) / 2;
+      const lastDelay = (count - 1) * conf.STAGGER;
 
+      const skinPart = p.judgeSkin && skin.judges[judgeKey] ? skin.judges[judgeKey] : JudgeSkin[judgeKey];
       const { cx, cy } = this.#getPos(p.x, p.y);
 
-      const deg = judgeKey == "miss" ? Config.JUDGE_EFFECT.MISS_ANIM_ROTATE : 0;
-      const animDeg = deg * easeOutProgress;
-
-      const yAdder =
-        judgeKey == "miss" ? Config.JUDGE_EFFECT.MISS_ANIM_Y_ADDER : Config.JUDGE_EFFECT.DEFAULT_ANIM_Y_ADDER;
-      const animY = -(canvasH / 1000) * yAdder * easeOutProgress;
-
-      const opacity = Math.max(0, 100 - easeInProgress * 100);
-
-      const skinPart = isJudgeSkin && skin.judges[judgeKey] ? skin.judges[judgeKey] : JudgeSkin[judgeKey];
-
       ctx.save();
-      ctx.beginPath();
-      ctx.translate(cx, cy + animY);
-      ctx.rotate((Math.PI * animDeg) / 180);
-      ctx.globalAlpha = opacity / 100;
-
+      ctx.translate(cx, cy);
       this.#applyStyle(skinPart, 0, 0, 50, 100, false);
+      const fillStyle = ctx.fillStyle;
 
-      ctx.font = this.FONT.judge;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(p.judge, 0, 0);
+      for (let c = 0; c < count; c++) {
+        const letterX = x + widths.chars[c] / 2;
+        x += widths.chars[c] + spacing;
+        const local = elapsed - c * conf.STAGGER;
+        if (local <= 0) continue;
+
+        let letterY, alpha;
+        let whiten = 0;
+        if (isMiss) {
+          const t = Math.min(1, local / (p.lifeTime - lastDelay));
+          letterY = unit * conf.MISS_FALL * easeInQuad(t);
+          alpha = 1 - easeInQuad(t);
+        } else {
+          const exit = easeInQuad(Math.min(1, Math.max(0, local - exitStart) / exitDuration));
+          letterY =
+            unit * (conf.RISE * (1 - easeOutCubic(Math.min(1, local / conf.ENTER_DURATION))) - conf.EXIT_RISE * exit);
+          alpha = Math.min(1, local / conf.FADE_IN) * (1 - exit);
+          whiten = conf.WHITE_OPACITY * (1 - Math.min(1, local / conf.WHITE_DURATION));
+        }
+        if (alpha <= 0) continue;
+
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = fillStyle;
+        ctx.fillText(text[c], letterX, letterY);
+        if (whiten > 0) {
+          ctx.globalAlpha = alpha * whiten;
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillText(text[c], letterX, letterY);
+        }
+      }
+
+      if (p.timing && !isMiss && judgeKey != "perfect") {
+        const timingConf = conf.TIMING;
+        const exit = easeInQuad(Math.min(1, Math.max(0, elapsed - exitStart) / exitDuration));
+        const timingAlpha =
+          Math.min(1, Math.max(0, elapsed - lastDelay - timingConf.DELAY) / timingConf.FADE_IN) * (1 - exit);
+        if (timingAlpha > 0) {
+          const timingSpacing = this.CONFIG.JUDGE_EFFECT.TIMING_SIZE * timingConf.SPACING;
+          ctx.globalAlpha = timingAlpha;
+          ctx.font = this.FONT.judgeTiming;
+          ctx.letterSpacing = `${timingSpacing}px`;
+          ctx.fillStyle = TimingColors[p.timing];
+          ctx.fillText(p.timing, timingSpacing / 2, size * timingConf.OFFSET);
+          ctx.letterSpacing = "0px";
+        }
+      }
 
       ctx.restore();
     }
+
+    ctx.restore();
+  }
+
+  #judgeWidths(text) {
+    let widths = this.cache.judgeWidths.get(text);
+    if (!widths) {
+      const chars = [];
+      let total = 0;
+      for (const char of text) {
+        const width = this.ctx.measureText(char).width;
+        chars.push(width);
+        total += width;
+      }
+      widths = { chars, total };
+      this.cache.judgeWidths.set(text, widths);
+    }
+    return widths;
   }
 
   /**
