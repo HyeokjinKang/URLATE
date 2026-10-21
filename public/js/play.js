@@ -959,9 +959,10 @@ const releaseHoldNote = (i, judge, beats) => {
   grabbedNotes.add(`${i}!`);
   countJudge(judge);
   if (judge == "Miss") missPoint.push(song.seek() * 1000);
+  const timing = beats < note.beat + note.duration ? "FAST" : "LATE";
   note.beat = beats - note.duration;
   addScore(judge, 2 / total);
-  judgeParticles.push(Factory.createJudge(note.x, note.y, judgeSkin, judge));
+  judgeParticles.push(Factory.createJudge(note.x, note.y, judgeSkin, judge, timing));
   record.push([record.length, 0, 2, i, mouseX, mouseY, `${judge.toLowerCase()}(hold)`, song.seek() * 1000]);
   keyInput.push({ judge, key, time: Date.now() });
   checkLastNote(i);
