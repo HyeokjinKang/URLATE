@@ -57,6 +57,7 @@ let picture;
 let analyser, dataArray;
 let visualizerFrame = null;
 let visualizerLevels = new Float32Array(0);
+let visualizerBins = new Float32Array(0);
 let visualizerLastTime = 0;
 let canvas = document.getElementById("renderer");
 let ctx = canvas.getContext("2d");
@@ -282,6 +283,8 @@ const VISUALIZER_CEIL_DB = -30;
 const VISUALIZER_GAMMA = 2;
 const VISUALIZER_RELEASE_MS = 120;
 const VISUALIZER_HEIGHT_RATIO = 1 / 4;
+const VISUALIZER_BAR_COUNT = 178;
+const VISUALIZER_WINDOW_SEC = 2048 / 48000;
 
 // The analyser taps Howler.masterGain, so its input is already scaled by the volume.
 const syncVisualizerRange = (volume) => {
@@ -313,12 +316,7 @@ const animationLooper = (time) => {
     syncVisualizerRange(volume);
     analyser.getByteFrequencyData(dataArray);
 
-    const binHz = Howler.ctx.sampleRate / analyser.fftSize;
-    const firstBin = Math.ceil(VISUALIZER_MIN_HZ / binHz);
-    const lastBin = Math.min(Math.floor(VISUALIZER_MAX_HZ / binHz), dataArray.length - 1);
-    const barCount = lastBin - firstBin + 1;
-    if (visualizerLevels.length != barCount) visualizerLevels = new Float32Array(barCount);
-
+    const barCount = VISUALIZER_BAR_COUNT;
     const barMaxHeight = wHeight * VISUALIZER_HEIGHT_RATIO;
     const barWidth = wWidth / barCount;
     ctx.strokeStyle = "rgba(255, 255, 255, 0.412)";
@@ -327,7 +325,10 @@ const animationLooper = (time) => {
 
     ctx.beginPath();
     for (let i = 0; i < barCount; i++) {
-      const level = Math.max((dataArray[firstBin + i] / 255) ** VISUALIZER_GAMMA, visualizerLevels[i] * decay);
+      const bin = visualizerBins[i];
+      const low = Math.floor(bin);
+      const value = dataArray[low] + (dataArray[low + 1] - dataArray[low]) * (bin - low);
+      const level = Math.max((value / 255) ** VISUALIZER_GAMMA, visualizerLevels[i] * decay);
       visualizerLevels[i] = level;
       const barHeight = level * barMaxHeight;
       let x = barWidth * (i + 0.5);
@@ -981,12 +982,20 @@ const gameLoaded = () => {
     document.getElementById("footerLeft").classList.add("fadeInAnim");
   }, 500);
   analyser = Howler.ctx.createAnalyser();
-  analyser.fftSize = 2048;
+  const sampleRate = Howler.ctx.sampleRate;
+  analyser.fftSize = Math.min(Math.max(2 ** Math.round(Math.log2(sampleRate * VISUALIZER_WINDOW_SEC)), 32), 32768);
   analyser.smoothingTimeConstant = 0;
   analyser.minDecibels = VISUALIZER_FLOOR_DB;
   analyser.maxDecibels = VISUALIZER_CEIL_DB;
   Howler.masterGain.connect(analyser);
   dataArray = new Uint8Array(analyser.frequencyBinCount);
+  const binHz = sampleRate / analyser.fftSize;
+  const barHz = (VISUALIZER_MAX_HZ - VISUALIZER_MIN_HZ) / VISUALIZER_BAR_COUNT;
+  visualizerBins = new Float32Array(VISUALIZER_BAR_COUNT);
+  visualizerLevels = new Float32Array(VISUALIZER_BAR_COUNT);
+  for (let i = 0; i < VISUALIZER_BAR_COUNT; i++) {
+    visualizerBins[i] = Math.min((VISUALIZER_MIN_HZ + barHz * (i + 0.5)) / binHz, dataArray.length - 2);
+  }
   startVisualizer();
   // Warm the album-art cache during idle time so it doesn't block initial render.
   const preloadAlbums = () => {
