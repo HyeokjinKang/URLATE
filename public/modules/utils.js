@@ -118,4 +118,12 @@ export const judgeReleaseTiming = (beats, target, rate) => {
   return "Miss";
 };
 
+export const judgeWheelTiming = (beats, target, rate) => {
+  const diff = Math.abs((beats - target) / rate);
+  if (diff <= 3 / 16) return "Perfect";
+  if (diff <= 1 / 3) return "Great";
+  if (diff <= 1 / 2) return "Good";
+  return "Miss";
+};
+
 export const holdTickCount = (duration) => Math.max(Math.ceil(duration) - 1, 0) + 2;

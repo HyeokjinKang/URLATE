@@ -1,7 +1,14 @@
 /* global Pace, Howler, Howl, url, cdn, api */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
-let upperBound, lowerBound, numberWithCommas, easeOutQuad, judgeTiming, judgeReleaseTiming, holdTickCount;
+let upperBound,
+  lowerBound,
+  numberWithCommas,
+  easeOutQuad,
+  judgeTiming,
+  judgeReleaseTiming,
+  judgeWheelTiming,
+  holdTickCount;
 let Factory, Updater, Renderer;
 let parsePattern, Timing;
 const modulesReady = (async () => {
@@ -14,7 +21,16 @@ const modulesReady = (async () => {
       import("../modules/pattern.js"),
     ]);
 
-    ({ upperBound, lowerBound, numberWithCommas, easeOutQuad, judgeTiming, judgeReleaseTiming, holdTickCount } = utils);
+    ({
+      upperBound,
+      lowerBound,
+      numberWithCommas,
+      easeOutQuad,
+      judgeTiming,
+      judgeReleaseTiming,
+      judgeWheelTiming,
+      holdTickCount,
+    } = utils);
     Factory = factory.default;
     Updater = updater.default;
     Renderer = renderer.default;
@@ -805,11 +821,8 @@ const compClicked = (isTyped, key, isWheel) => {
       if (el.v2 == 1 && pNote.direction != key) return;
       const x = pNote.x;
       const y = pNote.y;
-      let judge = "Perfect";
-      if (pNote.value != 1) {
-        judge = judgeTiming(beats, pNote.beat, rate);
-        countJudge(judge);
-      }
+      const judge = (pNote.value == 1 ? judgeWheelTiming : judgeTiming)(beats, pNote.beat, rate);
+      countJudge(judge);
       if (pNote.value == 2) {
         grabbedNotes.add(el.i);
         keyPressing[key] = el.i;
