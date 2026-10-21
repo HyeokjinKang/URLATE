@@ -700,7 +700,7 @@ const compClicked = (isTyped, key, isWheel) => {
       if (pNote.value == 2) {
         grabbedNotes.add(el.i);
         keyPressing[key] = el.i;
-        pressHoldNote(judge, el.i, beats);
+        pressHoldNote(judge, el.i, beats, key != undefined ? key : "•");
       } else {
         calculateScore(judge, el.i);
       }
@@ -793,9 +793,9 @@ const calculateScore = (judge, i, ignoreMs) => {
   checkLastNote(i);
 };
 
-const pressHoldNote = (judge, i, beats) => {
+const pressHoldNote = (judge, i, beats, key) => {
   const note = pattern.patterns[i];
-  const hold = { total: holdTickCount(note.duration), next: 1 };
+  const hold = { total: holdTickCount(note.duration), next: 1, key };
   while (hold.next < hold.total - 1 && note.beat + hold.next <= beats) hold.next++;
   holdTicks.set(i, hold);
   destroyedNotes.add(i);
@@ -813,7 +813,7 @@ const advanceHoldTicks = (i, beats) => {
 
 const releaseHoldNote = (i, judge, beats) => {
   const note = pattern.patterns[i];
-  const { total } = holdTicks.get(i);
+  const { total, key } = holdTicks.get(i);
   advanceHoldTicks(i, beats);
   holdTicks.delete(i);
   grabbedNotes.delete(i);
@@ -823,7 +823,7 @@ const releaseHoldNote = (i, judge, beats) => {
   note.beat = beats - note.duration;
   addScore(judge, 2 / total);
   judgeParticles.push(Factory.createJudge(note.x, note.y, judgeSkin, judge));
-  keyInput.push({ judge, key: "-", time: Date.now() });
+  keyInput.push({ judge, key, time: Date.now() });
   checkLastNote(i);
 };
 
