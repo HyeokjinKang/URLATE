@@ -814,7 +814,6 @@ const compClicked = (isTyped, key, isWheel) => {
     if (el.v1 === 0 && !destroyedNotes.has(el.i) && (el.v2 !== 1) == !isWheel) {
       const pNote = pattern.patterns[el.i];
       if (el.v2 == 1 && pNote.direction != key) return;
-      clickParticles.push(Factory.createClickNote(pNote.x, pNote.y, el.v2));
       const beat = pNote.beat;
       const perfectJudge = (1 / 6) * rate;
       const greatJudge = (1 / 3) * rate;
@@ -847,7 +846,8 @@ const compClicked = (isTyped, key, isWheel) => {
         keyPressing[key] = el.i;
       }
       calculateScore(judge, el.i);
-      judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge));
+      clickParticles.push(Factory.createClickNote(x, y, el.v2, judgeSkin, judge));
+      judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge, beats < beat ? "FAST" : "LATE"));
       record.push([
         record.length,
         pointingCntElement[0].v1,

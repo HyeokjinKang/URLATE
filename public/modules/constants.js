@@ -44,11 +44,45 @@ export const Config = {
     LINE_WIDTH: 15,
     OPACITY: 100,
   },
+  NOTE_HIT_EFFECT: {
+    LIFETIME: 990,
+    JUDGE_SCALE: { perfect: 1, great: 0.78, good: 0.58, bad: 0.4 },
+    GLOW: { LIFETIME: 300, RADIUS: 1.5, OPACITY: 0.65 },
+    RING: { LIFETIME: 500, START: 0.9, SPREAD: 1.3, LINE_WIDTH: 5, SWELL: 0.35, FADE_POWER: 3 },
+    DUST: {
+      COUNT: 12,
+      DELAY_MAX: 40,
+      LIFETIME_MIN: 600,
+      LIFETIME_MAX: 950,
+      SPEED_MIN: 3,
+      SPEED_MAX: 7.5,
+      DRAG: 5,
+      RISE: 0.7,
+      SIZE_MIN: 0.05,
+      SIZE_MAX: 0.1,
+      GROW: 0.15,
+      SHRINK: 0.4,
+      TWINKLE: 30,
+    },
+    SCANLINE: { LIFETIME: 240, OPACITY: 0.28, REACH: 0.6, HEIGHT: 1.5 },
+  },
   JUDGE_EFFECT: {
-    LIFETIME: 500,
-    DEFAULT_ANIM_Y_ADDER: 100,
-    MISS_ANIM_Y_ADDER: -50,
-    MISS_ANIM_ROTATE: 10,
+    LIFETIME: 700,
+    STAGGER: 22,
+    ENTER_DURATION: 220,
+    RISE: 10,
+    SPACING_FROM: 0.06,
+    SPACING_DURATION: 360,
+    WHITE_DURATION: 160,
+    WHITE_OPACITY: 0.6,
+    FADE_IN: 50,
+    EXIT_FROM: 0.62,
+    EXIT_DURATION: 0.3,
+    EXIT_RISE: 14,
+    FONT_WEIGHT: 600,
+    MISS_FALL: 55,
+    MISS_SPACING: 0.12,
+    TIMING: { DELAY: 80, FADE_IN: 100, OFFSET: 0.8, SIZE: 0.4, SPACING: 0.14 },
   },
   FINAL_EFFECT: {
     LIFETIME: 2000,
@@ -84,6 +118,11 @@ export const JudgeSkin = {
   good: { type: "color", color: "#CCE97C" },
   bad: { type: "color", color: "#EDC77D" },
   miss: { type: "color", color: "#F96C5A" },
+};
+
+export const TimingColors = {
+  FAST: "#6FB7FF",
+  LATE: "#FF8A6F",
 };
 
 /** Colour table for the keyInput overlay. */

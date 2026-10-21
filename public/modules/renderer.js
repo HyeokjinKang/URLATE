@@ -2,12 +2,13 @@
  * renderer.js
  * Canvas drawing for the game.
  */
-import { Config, JudgeSkin, KeyInputColors, DiffColors } from "./constants.js";
+import { Config, JudgeSkin, KeyInputColors, DiffColors, TimingColors } from "./constants.js";
 import {
   getSin,
   getCos,
   hexadecimal,
   easeInQuad,
+  easeOutCubic,
   easeOutQuad,
   easeOutQuart,
   easeOutSine,
@@ -36,6 +37,7 @@ export default class Renderer {
       finalEffect: new Map(),
       comboAlert: null,
       cursor: new Map(),
+      judgeWidths: new Map(),
     };
 
     // Animation state
@@ -103,6 +105,7 @@ export default class Renderer {
     this.cache.finalEffect.clear();
     this.cache.comboAlert = null;
     this.cache.cursor.clear();
+    this.cache.judgeWidths.clear();
 
     this.cacheConfig();
   }
@@ -163,11 +166,14 @@ export default class Renderer {
     // Font strings only change on resize, so build them once here
     const defaultSize = this.CONFIG.UI.DEFAULT_FONT_SIZE;
     const scorePanelSize = this.CONFIG.UI.SCORE_PANEL.FONT_SIZE;
-    const judgeSize = ~~(this.canvasH / 25);
+    const judgeSize = ~~(this.canvasH / 30);
+    const judgeTimingSize = Math.max(8, Math.round(judgeSize * Config.JUDGE_EFFECT.TIMING.SIZE));
+    this.CONFIG.JUDGE_EFFECT = { SIZE: judgeSize, TIMING_SIZE: judgeTimingSize };
     const systemInfoSize = ~~(this.canvasH / 60);
     this.FONT = {
       debug: `600 ${defaultSize}px ${_F}`,
-      judge: `600 ${judgeSize}px ${_F}`,
+      judge: `${Config.JUDGE_EFFECT.FONT_WEIGHT} ${judgeSize}px ${_F}`,
+      judgeTiming: `700 ${judgeTimingSize}px ${_F}`,
       keyInput: `600 ${defaultSize}px ${_F}`,
       scorePanel: `700 ${scorePanelSize}px ${_F}`,
       combo: [400, 500, 600].map((weight) => `${weight} ${defaultSize}px ${_F}`),
@@ -546,46 +552,108 @@ export default class Renderer {
    */
   judges(particles) {
     const { ctx, canvasH, skin } = this;
+    const conf = Config.JUDGE_EFFECT;
+    const size = this.CONFIG.JUDGE_EFFECT.SIZE;
+    const unit = canvasH / 1000;
     const now = Date.now();
+
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
 
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
-      const isJudgeSkin = p.judgeSkin;
       const judgeKey = p.judge.toLowerCase();
+      const isMiss = judgeKey == "miss";
       const elapsed = now - p.createdAt;
+      const exitStart = p.lifeTime * conf.EXIT_FROM;
+      const exitDuration = p.lifeTime * conf.EXIT_DURATION;
 
-      const progress = elapsed / p.lifeTime;
-      const easeInProgress = easeInQuad(progress);
-      const easeOutProgress = easeOutQuad(progress);
+      const text = p.judge;
+      const count = text.length;
+      ctx.font = this.FONT.judge;
+      const widths = this.#judgeWidths(text);
+      const spacing = isMiss
+        ? size * conf.MISS_SPACING
+        : size * conf.SPACING_FROM * (1 - easeOutCubic(Math.min(1, elapsed / conf.SPACING_DURATION)));
+      let x = -(widths.total + spacing * (count - 1)) / 2;
+      const lastDelay = (count - 1) * conf.STAGGER;
 
+      const skinPart = p.judgeSkin && skin.judges[judgeKey] ? skin.judges[judgeKey] : JudgeSkin[judgeKey];
       const { cx, cy } = this.#getPos(p.x, p.y);
 
-      const deg = judgeKey == "miss" ? Config.JUDGE_EFFECT.MISS_ANIM_ROTATE : 0;
-      const animDeg = deg * easeOutProgress;
-
-      const yAdder =
-        judgeKey == "miss" ? Config.JUDGE_EFFECT.MISS_ANIM_Y_ADDER : Config.JUDGE_EFFECT.DEFAULT_ANIM_Y_ADDER;
-      const animY = -(canvasH / 1000) * yAdder * easeOutProgress;
-
-      const opacity = Math.max(0, 100 - easeInProgress * 100);
-
-      const skinPart = isJudgeSkin && skin.judges[judgeKey] ? skin.judges[judgeKey] : JudgeSkin[judgeKey];
-
       ctx.save();
-      ctx.beginPath();
-      ctx.translate(cx, cy + animY);
-      ctx.rotate((Math.PI * animDeg) / 180);
-      ctx.globalAlpha = opacity / 100;
-
+      ctx.translate(cx, cy);
       this.#applyStyle(skinPart, 0, 0, 50, 100, false);
+      const fillStyle = ctx.fillStyle;
 
-      ctx.font = this.FONT.judge;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(p.judge, 0, 0);
+      for (let c = 0; c < count; c++) {
+        const letterX = x + widths.chars[c] / 2;
+        x += widths.chars[c] + spacing;
+        const local = elapsed - c * conf.STAGGER;
+        if (local <= 0) continue;
+
+        let letterY, alpha;
+        let whiten = 0;
+        if (isMiss) {
+          const t = Math.min(1, local / (p.lifeTime - lastDelay));
+          letterY = unit * conf.MISS_FALL * easeInQuad(t);
+          alpha = 1 - easeInQuad(t);
+        } else {
+          const exit = easeInQuad(Math.min(1, Math.max(0, local - exitStart) / exitDuration));
+          letterY =
+            unit * (conf.RISE * (1 - easeOutCubic(Math.min(1, local / conf.ENTER_DURATION))) - conf.EXIT_RISE * exit);
+          alpha = Math.min(1, local / conf.FADE_IN) * (1 - exit);
+          whiten = conf.WHITE_OPACITY * (1 - Math.min(1, local / conf.WHITE_DURATION));
+        }
+        if (alpha <= 0) continue;
+
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = fillStyle;
+        ctx.fillText(text[c], letterX, letterY);
+        if (whiten > 0) {
+          ctx.globalAlpha = alpha * whiten;
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillText(text[c], letterX, letterY);
+        }
+      }
+
+      if (p.timing && !isMiss && judgeKey != "perfect") {
+        const timingConf = conf.TIMING;
+        const exit = easeInQuad(Math.min(1, Math.max(0, elapsed - exitStart) / exitDuration));
+        const timingAlpha =
+          Math.min(1, Math.max(0, elapsed - lastDelay - timingConf.DELAY) / timingConf.FADE_IN) * (1 - exit);
+        if (timingAlpha > 0) {
+          const timingSpacing = this.CONFIG.JUDGE_EFFECT.TIMING_SIZE * timingConf.SPACING;
+          ctx.globalAlpha = timingAlpha;
+          ctx.font = this.FONT.judgeTiming;
+          ctx.letterSpacing = `${timingSpacing}px`;
+          ctx.fillStyle = TimingColors[p.timing];
+          ctx.fillText(p.timing, timingSpacing / 2, size * timingConf.OFFSET);
+          ctx.letterSpacing = "0px";
+        }
+      }
 
       ctx.restore();
     }
+
+    ctx.restore();
+  }
+
+  #judgeWidths(text) {
+    let widths = this.cache.judgeWidths.get(text);
+    if (!widths) {
+      const chars = [];
+      let total = 0;
+      for (const char of text) {
+        const width = this.ctx.measureText(char).width;
+        chars.push(width);
+        total += width;
+      }
+      widths = { chars, total };
+      this.cache.judgeWidths.set(text, widths);
+    }
+    return widths;
   }
 
   /**
@@ -599,6 +667,11 @@ export default class Renderer {
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       const elapsed = now - p.createdAt;
+
+      if (p.type === "note" && p.judge && p.judge != "Miss") {
+        this.#noteHitEffect(p, elapsed);
+        continue;
+      }
 
       const progress = elapsed / p.lifeTime;
       const easeInProgress = easeInQuad(progress);
@@ -637,6 +710,106 @@ export default class Renderer {
 
       ctx.restore();
     }
+  }
+
+  #skinColors(skinPart) {
+    if (skinPart.type === "gradient") {
+      return [skinPart.stops[0].color, skinPart.stops[skinPart.stops.length - 1].color];
+    }
+    return [skinPart.color, skinPart.color];
+  }
+
+  #noteHitEffect(p, elapsed) {
+    const { ctx, canvasW, skin } = this;
+    const conf = Config.NOTE_HIT_EFFECT;
+    const judgeKey = p.judge.toLowerCase();
+    const skinPart = p.judgeSkin && skin.judges[judgeKey] ? skin.judges[judgeKey] : JudgeSkin[judgeKey];
+    const [colorA, colorB] = this.#skinColors(skinPart);
+    const scale = 0.7 + 0.3 * (conf.JUDGE_SCALE[judgeKey] ?? 1);
+    const unit = canvasW / 1000;
+    const w = this.CONFIG.NOTE.WIDTH;
+    const { cx, cy } = this.#getPos(p.x, p.y);
+
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+
+    if (judgeKey == "perfect" && elapsed < conf.SCANLINE.LIFETIME) {
+      const scan = conf.SCANLINE;
+      const t = elapsed / scan.LIFETIME;
+      const height = (scan.HEIGHT * unit + 0.6) * (1 - 0.5 * t);
+      const half = canvasW * scan.REACH * (0.6 + 0.4 * easeOutCubic(t));
+      const x0 = Math.max(0, cx - half);
+      const x1 = Math.min(canvasW, cx + half);
+      if (x1 - x0 > 1) {
+        const gradient = ctx.createLinearGradient(x0, 0, x1, 0);
+        gradient.addColorStop(0, hexadecimal(colorB, 0));
+        gradient.addColorStop(Math.max(0, Math.min(1, (cx - x0) / (x1 - x0))), "#FFFFFF");
+        gradient.addColorStop(1, hexadecimal(colorA, 0));
+        ctx.globalAlpha = scan.OPACITY * (1 - easeInQuad(t));
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x0, cy - height / 2, x1 - x0, height);
+      }
+    }
+
+    if (elapsed < conf.GLOW.LIFETIME) {
+      const t = elapsed / conf.GLOW.LIFETIME;
+      const radius = w * conf.GLOW.RADIUS * scale * (0.85 + 0.15 * easeOutQuad(t));
+      const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      gradient.addColorStop(0, "#FFFFFF");
+      gradient.addColorStop(0.45, hexadecimal(colorA, 50));
+      gradient.addColorStop(1, hexadecimal(colorB, 0));
+      ctx.globalAlpha = conf.GLOW.OPACITY * Math.pow(1 - t, 1.5);
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    ctx.translate(cx, cy);
+
+    const ring = conf.RING;
+    if (elapsed < ring.LIFETIME) {
+      const t = elapsed / ring.LIFETIME;
+      const swell = t < ring.SWELL ? easeOutQuad(t / ring.SWELL) : 1 - easeInQuad((t - ring.SWELL) / (1 - ring.SWELL));
+      const lineWidth = ring.LINE_WIDTH * unit * swell;
+      if (lineWidth > 0.3) {
+        const radius = w * (ring.START + ring.SPREAD * scale * easeOutCubic(t));
+        ctx.globalAlpha = 1 - Math.pow(t, ring.FADE_POWER);
+        this.#applyStyle(skinPart, 0, 0, Math.round(w * 3), 100, true);
+        ctx.lineWidth = lineWidth;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+        ctx.stroke();
+      }
+    }
+
+    const dustConf = conf.DUST;
+    const dustColors = [colorA, colorB, "#FFFFFF"];
+    for (let d = 0; d < p.dust.length; d++) {
+      const dust = p.dust[d];
+      const age = elapsed - dust.delay;
+      if (age <= 0 || age >= dust.lifeTime) continue;
+      const t = age / dust.lifeTime;
+      const sec = age / 1000;
+      const grow = t < dustConf.GROW ? easeOutQuad(t / dustConf.GROW) : 1 - dustConf.SHRINK * t;
+      const radius = w * dust.size * grow;
+      if (radius <= 0.3) continue;
+      const distance = (w * dust.speed * scale * (1 - Math.exp(-dustConf.DRAG * sec))) / dustConf.DRAG;
+      const twinkle = 0.6 + 0.4 * Math.sin(sec * dustConf.TWINKLE + dust.phase);
+      ctx.globalAlpha = (1 - t) * twinkle;
+      ctx.fillStyle = dustColors[dust.color];
+      ctx.beginPath();
+      ctx.arc(
+        Math.cos(dust.angle) * distance,
+        Math.sin(dust.angle) * distance - w * dustConf.RISE * sec,
+        radius,
+        0,
+        2 * Math.PI,
+      );
+      ctx.fill();
+    }
+
+    ctx.restore();
   }
 
   /**

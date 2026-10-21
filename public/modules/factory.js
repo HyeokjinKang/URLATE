@@ -54,16 +54,42 @@ export default class Factory {
 
   /**
    * Build the data for the note click effect.
+   * @param {boolean} judgeSkin - settings.game.judgeSkin
+   * @param {string} judge
    * @returns { object }
    */
-  static createClickNote(x, y, noteType) {
+  static createClickNote(x, y, noteType, judgeSkin, judge) {
     const p = CLICK_POOL.pop() || {};
     p.type = "note";
     p.x = x;
     p.y = y;
     p.noteType = noteType;
+    p.judgeSkin = judgeSkin;
+    p.judge = judge;
     p.createdAt = Date.now();
-    p.lifeTime = Config.NOTE_CLICK_EFFECT.LIFETIME;
+
+    if (judge == "Miss") {
+      p.lifeTime = Config.NOTE_CLICK_EFFECT.LIFETIME;
+      return p;
+    }
+
+    const conf = Config.NOTE_HIT_EFFECT;
+    const dustConf = conf.DUST;
+    const rand = (min, max) => min + Math.random() * (max - min);
+    p.lifeTime = conf.LIFETIME;
+    p.dust = p.dust || [];
+    p.dust.length = dustConf.COUNT;
+    for (let i = 0; i < dustConf.COUNT; i++) {
+      const dust = p.dust[i] || {};
+      dust.delay = rand(0, dustConf.DELAY_MAX);
+      dust.lifeTime = rand(dustConf.LIFETIME_MIN, dustConf.LIFETIME_MAX);
+      dust.angle = rand(0, Math.PI * 2);
+      dust.speed = rand(dustConf.SPEED_MIN, dustConf.SPEED_MAX);
+      dust.size = rand(dustConf.SIZE_MIN, dustConf.SIZE_MAX);
+      dust.phase = rand(0, Math.PI * 2);
+      dust.color = Math.floor(Math.random() * 3);
+      p.dust[i] = dust;
+    }
     return p;
   }
 
@@ -73,13 +99,15 @@ export default class Factory {
    * @param {number} y
    * @param {boolean} judgeSkin - settings.game.judgeSkin
    * @param {string} judge
+   * @param {string} [timing] - "FAST" or "LATE"
    */
-  static createJudge(x, y, judgeSkin, judge) {
+  static createJudge(x, y, judgeSkin, judge, timing = null) {
     const p = JUDGE_POOL.pop() || {};
     p.x = x;
     p.y = y;
     p.judgeSkin = judgeSkin;
     p.judge = judge;
+    p.timing = timing;
     p.createdAt = Date.now();
     p.lifeTime = Config.JUDGE_EFFECT.LIFETIME;
     p.type = "judge";
