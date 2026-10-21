@@ -89,6 +89,10 @@ export const easeOutQuart = (x) => {
   return 1 - Math.pow(1 - x, 4);
 };
 
+export const easeOutCubic = (x) => {
+  return 1 - Math.pow(1 - x, 3);
+};
+
 export const easeOutQuad = (x) => {
   return 1 - (1 - x) * (1 - x);
 };

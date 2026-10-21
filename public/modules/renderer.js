@@ -8,6 +8,7 @@ import {
   getCos,
   hexadecimal,
   easeInQuad,
+  easeOutCubic,
   easeOutQuad,
   easeOutQuart,
   easeOutSine,
@@ -600,6 +601,11 @@ export default class Renderer {
       const p = particles[i];
       const elapsed = now - p.createdAt;
 
+      if (p.type === "note" && p.judge && p.judge != "Miss") {
+        this.#noteHitEffect(p, elapsed);
+        continue;
+      }
+
       const progress = elapsed / p.lifeTime;
       const easeInProgress = easeInQuad(progress);
       const easeOutProgress = easeOutQuad(progress);
@@ -637,6 +643,106 @@ export default class Renderer {
 
       ctx.restore();
     }
+  }
+
+  #skinColors(skinPart) {
+    if (skinPart.type === "gradient") {
+      return [skinPart.stops[0].color, skinPart.stops[skinPart.stops.length - 1].color];
+    }
+    return [skinPart.color, skinPart.color];
+  }
+
+  #noteHitEffect(p, elapsed) {
+    const { ctx, canvasW, skin } = this;
+    const conf = Config.NOTE_HIT_EFFECT;
+    const judgeKey = p.judge.toLowerCase();
+    const skinPart = p.judgeSkin && skin.judges[judgeKey] ? skin.judges[judgeKey] : JudgeSkin[judgeKey];
+    const [colorA, colorB] = this.#skinColors(skinPart);
+    const scale = 0.7 + 0.3 * (conf.JUDGE_SCALE[judgeKey] ?? 1);
+    const unit = canvasW / 1000;
+    const w = this.CONFIG.NOTE.WIDTH;
+    const { cx, cy } = this.#getPos(p.x, p.y);
+
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+
+    if (judgeKey == "perfect" && elapsed < conf.SCANLINE.LIFETIME) {
+      const scan = conf.SCANLINE;
+      const t = elapsed / scan.LIFETIME;
+      const height = (scan.HEIGHT * unit + 0.6) * (1 - 0.5 * t);
+      const half = canvasW * scan.REACH * (0.6 + 0.4 * easeOutCubic(t));
+      const x0 = Math.max(0, cx - half);
+      const x1 = Math.min(canvasW, cx + half);
+      if (x1 - x0 > 1) {
+        const gradient = ctx.createLinearGradient(x0, 0, x1, 0);
+        gradient.addColorStop(0, hexadecimal(colorB, 0));
+        gradient.addColorStop(Math.max(0, Math.min(1, (cx - x0) / (x1 - x0))), "#FFFFFF");
+        gradient.addColorStop(1, hexadecimal(colorA, 0));
+        ctx.globalAlpha = scan.OPACITY * (1 - easeInQuad(t));
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x0, cy - height / 2, x1 - x0, height);
+      }
+    }
+
+    if (elapsed < conf.GLOW.LIFETIME) {
+      const t = elapsed / conf.GLOW.LIFETIME;
+      const radius = w * conf.GLOW.RADIUS * scale * (0.85 + 0.15 * easeOutQuad(t));
+      const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      gradient.addColorStop(0, "#FFFFFF");
+      gradient.addColorStop(0.45, hexadecimal(colorA, 50));
+      gradient.addColorStop(1, hexadecimal(colorB, 0));
+      ctx.globalAlpha = conf.GLOW.OPACITY * Math.pow(1 - t, 1.5);
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    ctx.translate(cx, cy);
+
+    const ring = conf.RING;
+    if (elapsed < ring.LIFETIME) {
+      const t = elapsed / ring.LIFETIME;
+      const swell = t < ring.SWELL ? easeOutQuad(t / ring.SWELL) : 1 - easeInQuad((t - ring.SWELL) / (1 - ring.SWELL));
+      const lineWidth = ring.LINE_WIDTH * unit * swell;
+      if (lineWidth > 0.3) {
+        const radius = w * (ring.START + ring.SPREAD * scale * easeOutCubic(t));
+        ctx.globalAlpha = 1 - Math.pow(t, ring.FADE_POWER);
+        this.#applyStyle(skinPart, 0, 0, Math.round(w * 3), 100, true);
+        ctx.lineWidth = lineWidth;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+        ctx.stroke();
+      }
+    }
+
+    const dustConf = conf.DUST;
+    const dustColors = [colorA, colorB, "#FFFFFF"];
+    for (let d = 0; d < p.dust.length; d++) {
+      const dust = p.dust[d];
+      const age = elapsed - dust.delay;
+      if (age <= 0 || age >= dust.lifeTime) continue;
+      const t = age / dust.lifeTime;
+      const sec = age / 1000;
+      const grow = t < dustConf.GROW ? easeOutQuad(t / dustConf.GROW) : 1 - dustConf.SHRINK * t;
+      const radius = w * dust.size * grow;
+      if (radius <= 0.3) continue;
+      const distance = (w * dust.speed * scale * (1 - Math.exp(-dustConf.DRAG * sec))) / dustConf.DRAG;
+      const twinkle = 0.6 + 0.4 * Math.sin(sec * dustConf.TWINKLE + dust.phase);
+      ctx.globalAlpha = (1 - t) * twinkle;
+      ctx.fillStyle = dustColors[dust.color];
+      ctx.beginPath();
+      ctx.arc(
+        Math.cos(dust.angle) * distance,
+        Math.sin(dust.angle) * distance - w * dustConf.RISE * sec,
+        radius,
+        0,
+        2 * Math.PI,
+      );
+      ctx.fill();
+    }
+
+    ctx.restore();
   }
 
   /**
