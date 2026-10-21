@@ -1,7 +1,16 @@
 /* global Pace, Howler, Howl, url, cdn, api */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
-let upperBound, lowerBound, numberWithCommas;
+let upperBound,
+  lowerBound,
+  numberWithCommas,
+  judgeTiming,
+  judgeReleaseTiming,
+  judgeWheelTiming,
+  holdTickCount,
+  msToFrames,
+  PRESS_WINDOW_FRAMES,
+  RELEASE_LATE_FRAMES;
 let Factory, Updater, Renderer;
 let parsePattern, Timing;
 const modulesReady = (async () => {
@@ -14,7 +23,18 @@ const modulesReady = (async () => {
       import("../modules/pattern.js"),
     ]);
 
-    ({ upperBound, lowerBound, numberWithCommas } = utils);
+    ({
+      upperBound,
+      lowerBound,
+      numberWithCommas,
+      judgeTiming,
+      judgeReleaseTiming,
+      judgeWheelTiming,
+      holdTickCount,
+      msToFrames,
+      PRESS_WINDOW_FRAMES,
+      RELEASE_LATE_FRAMES,
+    } = utils);
     Factory = factory.default;
     Updater = updater.default;
     Renderer = renderer.default;
@@ -60,6 +80,8 @@ let destroyedBullets = new Set([]);
 let explodingBullets = new Set([]);
 let destroyedNotes = new Set([]);
 let grabbedNotes = new Set([]);
+let holdTicks = new Map();
+let missedNotes = new Set();
 let noteMaxDuration = 0;
 let endBeat = null;
 let mouseX = 0,
@@ -175,6 +197,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const calcBeats = (seek = song.seek() * 1000) =>
   Number(timing.beatAt(seek - (offset + sync + audioLatency * 1000)).toPrecision(10));
+
+const framesFrom = (target, beats) => msToFrames((timing.msAt(beats) - timing.msAt(target)) / rate);
 
 const initialize = (isFirstCalled) => {
   ctx ??= canvas.getContext("2d", { desynchronized: !(settings.display.vsync ?? true) });
@@ -417,33 +441,35 @@ const cntRender = () => {
     };
     for (let i = end - 1; i >= start; i--) {
       Updater.noteProgress(pattern.patterns[i], beats, speed, _noteState);
+      if ((!destroyedNotes.has(i) || missedNotes.has(i)) && _noteState.progress > 100) {
+        _noteState.progress = 100 + (framesFrom(pattern.patterns[i].beat, beats) / PRESS_WINDOW_FRAMES) * 30;
+      }
+      if (grabbedNotes.has(i) && _noteState.endProgress > 100) {
+        const note = pattern.patterns[i];
+        _noteState.endProgress = 100 + (framesFrom(note.beat + note.duration, beats) / RELEASE_LATE_FRAMES) * 30;
+      }
       _noteState.globalAlpha = globalAlpha;
       _noteState.isGrabbed = grabbedNotes.has(i);
       Draw.note(pattern.patterns[i], _noteState);
 
       if (
-        _noteState.progress >= 120 &&
+        framesFrom(pattern.patterns[i].beat, beats) > PRESS_WINDOW_FRAMES &&
         !destroyedNotes.has(i) &&
         (pattern.patterns[i].value == 2 ? !(grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) : true)
       ) {
+        missedNotes.add(i);
         calculateScore("miss", i, true);
         judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Miss"));
-        miss++;
+        miss += pattern.patterns[i].value == 2 ? 2 : 1;
         showOverlay();
         missPoint.push(seekMs);
         keyInput.push({ judge: "Miss", key: "-", time: now });
-      } else if (
-        _noteState.tailProgress >= 100 &&
-        grabbedNotes.has(i) &&
-        !grabbedNotes.has(`${i}!`) &&
-        pattern.patterns[i].value == 2
-      ) {
-        grabbedNotes.add(`${i}!`);
-        grabbedNotes.delete(i);
-        judgeParticles.push(Factory.createJudge(pattern.patterns[i].x, pattern.patterns[i].y, judgeSkin, "Perfect"));
-        calculateScore("Perfect", i, true);
-        keyInput.push({ judge: "Perfect", key: "-", time: now });
       }
+    }
+    for (const i of holdTicks.keys()) {
+      const note = pattern.patterns[i];
+      if (framesFrom(note.beat + note.duration, beats) > RELEASE_LATE_FRAMES) releaseHoldNote(i, "Bad", beats);
+      else advanceHoldTicks(i, beats);
     }
     start = lowerBound(pattern.bullets, beats - 32);
     end = upperBound(pattern.bullets, beats);
@@ -542,7 +568,7 @@ const calculateResult = () => {
   document.getElementById("scoreText").textContent = numberWithCommas(`${score}`);
   document.getElementById("comboText").textContent = `${maxCombo}x`;
   let accuracy = (
-    ((perfect + (great / 10) * 7 + good / 2 + (bad / 10) * 3) / (perfect + great + good + bad + miss + bullet)) *
+    ((perfect + (great / 10) * 8 + (good / 10) * 4 + bad / 10) / (perfect + great + good + bad + miss + bullet)) *
     100
   ).toFixed(1);
   document.getElementById("accuracyText").textContent = `${accuracy}%`;
@@ -635,7 +661,10 @@ const trackMouseSelection = (i, v1, v2, x, y, beats, seekMs) => {
         const t = ((beats - pattern.patterns[i].beat) / pattern.patterns[i].duration) * 100;
         if (
           distSq <= (canvasW / 40) * (canvasW / 40) &&
-          (pattern.patterns[i].value == 2 ? t <= 100 : p <= 130) &&
+          (pattern.patterns[i].value == 2
+            ? t <= 100
+            : framesFrom(pattern.patterns[i].beat, beats) <= PRESS_WINDOW_FRAMES) &&
+          framesFrom(pattern.patterns[i].beat, beats) >= -PRESS_WINDOW_FRAMES &&
           p >= 0
         ) {
           pointingCntElement.push({ v1, v2, i });
@@ -695,40 +724,19 @@ const compClicked = (isTyped, key, isWheel) => {
     if (el.v1 === 0 && !destroyedNotes.has(el.i) && (el.v2 !== 1) == !isWheel) {
       const pNote = pattern.patterns[el.i];
       if (el.v2 == 1 && pNote.direction != key) return;
-      const beat = pNote.beat;
-      const perfectJudge = (1 / 6) * rate;
-      const greatJudge = (1 / 3) * rate;
-      const goodJudge = (1 / 2) * rate;
-      const badJudge = rate;
       const x = pNote.x;
       const y = pNote.y;
-      let judge = "Perfect";
-      if (pNote.value != 1) {
-        if (beats <= beat + perfectJudge && beats >= beat - perfectJudge) {
-          judge = "Perfect";
-          perfect++;
-        } else if (beats <= beat + greatJudge && beats >= beat - greatJudge) {
-          judge = "Great";
-          great++;
-        } else if (beats >= beat - goodJudge && beats <= beat) {
-          judge = "Good";
-          good++;
-        } else if ((beats >= beat - badJudge && beats <= beat) || beat <= beats) {
-          judge = "Bad";
-          bad++;
-        } else {
-          judge = "Miss";
-          miss++;
-          showOverlay();
-        }
-      }
+      const judge = (pNote.value == 1 ? judgeWheelTiming : judgeTiming)(framesFrom(pNote.beat, beats));
+      countJudge(judge);
       if (pNote.value == 2) {
         grabbedNotes.add(el.i);
         keyPressing[key] = el.i;
+        pressHoldNote(judge, el.i, beats, key != undefined ? key : "•");
+      } else {
+        calculateScore(judge, el.i);
       }
-      calculateScore(judge, el.i);
       clickParticles.push(Factory.createClickNote(x, y, el.v2, judgeSkin, judge));
-      judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge, beats < beat ? "FAST" : "LATE"));
+      judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge, beats < pNote.beat ? "FAST" : "LATE"));
       keyInput.push({
         judge,
         key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•",
@@ -745,24 +753,30 @@ const compClicked = (isTyped, key, isWheel) => {
   clickParticles.push(Factory.createClickDefault(mouseX, mouseY));
 };
 
-const calculateScore = (judge, i, ignoreMs) => {
-  judge = judge.toLowerCase();
-  destroyedNotes.add(i);
-  if (!ignoreMs) {
-    const beats = calcBeats();
-    pattern.patterns[i].beat = beats;
+const countJudge = (judge) => {
+  if (judge == "Perfect") perfect++;
+  else if (judge == "Great") great++;
+  else if (judge == "Good") good++;
+  else if (judge == "Bad") bad++;
+  else {
+    miss++;
+    showOverlay();
   }
+};
+
+const addScore = (judge, weight = 1, silent = false) => {
+  judge = judge.toLowerCase();
   if (judge == "miss") {
-    combo = 0;
     medalCheck(medal);
+    combo = 0;
     return;
   }
-  tick.play();
+  if (!silent) tick.play();
   combo++;
   if (maxCombo < combo) {
     maxCombo = combo;
   }
-  let basicScore = 100000000 / patternLength;
+  let basicScore = (100000000 / patternLength) * weight;
   let rateCalc;
   if (rate >= 1) {
     rateCalc = rate * 0.5 + 0.5;
@@ -774,28 +788,75 @@ const calculateScore = (judge, i, ignoreMs) => {
   } else {
     medalCheck(medal - 1);
     if (judge == "great") {
-      score += Math.round((basicScore * 0.5 + combo * 5) * rateCalc);
+      score += Math.round((basicScore * 0.8 + combo * 5) * rateCalc);
     } else if (judge == "good") {
-      score += Math.round((basicScore * 0.2 + combo * 3) * rateCalc);
+      score += Math.round((basicScore * 0.4 + combo * 3) * rateCalc);
     } else {
       combo = 0;
       medalCheck(medal);
-      score += Math.round(basicScore * 0.05 * rateCalc);
+      score += Math.round(basicScore * 0.1 * rateCalc);
     }
   }
   if (combo % comboCount == 0 && combo != 0) {
     comboAlertMs = Date.now();
     comboAlertCount = combo;
   }
-  if (i == patternLength - 1) {
-    if (pattern.bullets.length) destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
-    effectMs = Date.now();
-    if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
-      effectNum = 0;
-    } else if (bad == 0 && miss == 0 && bullet == 0) {
-      effectNum = 1;
-    }
+};
+
+const checkLastNote = (i) => {
+  if (i != patternLength - 1) return;
+  if (pattern.bullets.length) destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
+  effectMs = Date.now();
+  if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
+    effectNum = 0;
+  } else if (bad == 0 && miss == 0 && bullet == 0) {
+    effectNum = 1;
   }
+};
+
+const calculateScore = (judge, i, ignoreMs) => {
+  destroyedNotes.add(i);
+  if (!ignoreMs) {
+    const beats = calcBeats();
+    pattern.patterns[i].beat = beats;
+  }
+  addScore(judge);
+  checkLastNote(i);
+};
+
+const pressHoldNote = (judge, i, beats, key) => {
+  const note = pattern.patterns[i];
+  const hold = { total: holdTickCount(note.duration), next: 1, key };
+  while (hold.next < hold.total - 1 && note.beat + hold.next <= beats) hold.next++;
+  holdTicks.set(i, hold);
+  destroyedNotes.add(i);
+  addScore(judge, 2 / hold.total);
+};
+
+const advanceHoldTicks = (i, beats) => {
+  const note = pattern.patterns[i];
+  const hold = holdTicks.get(i);
+  while (hold.next < hold.total - 1 && note.beat + hold.next <= beats) {
+    hold.next++;
+    addScore("Perfect", 2 / hold.total, true);
+  }
+};
+
+const releaseHoldNote = (i, judge, beats) => {
+  const note = pattern.patterns[i];
+  const { total, key } = holdTicks.get(i);
+  advanceHoldTicks(i, beats);
+  holdTicks.delete(i);
+  grabbedNotes.delete(i);
+  grabbedNotes.add(`${i}!`);
+  countJudge(judge);
+  if (judge == "Miss") missPoint.push(song.seek() * 1000);
+  const timing = beats < note.beat + note.duration ? "FAST" : "LATE";
+  note.beat = beats - note.duration;
+  addScore(judge, 2 / total);
+  judgeParticles.push(Factory.createJudge(note.x, note.y, judgeSkin, judge, timing));
+  keyInput.push({ judge, key, time: Date.now() });
+  checkLastNote(i);
 };
 
 Pace.on("done", () => {
@@ -874,6 +935,8 @@ const retry = () => {
     explodingBullets = new Set([]);
     destroyedNotes = new Set([]);
     grabbedNotes = new Set([]);
+    holdTicks = new Map();
+    missedNotes = new Set();
     score = 0;
     combo = 0;
     maxCombo = 0;
@@ -1041,48 +1104,16 @@ const medalCheck = (n) => {
 };
 
 const checkHoldNote = (key) => {
-  const date = Date.now();
   const beats = calcBeats();
   mouseClicked = false;
-  mouseClickedMs = date;
+  mouseClickedMs = Date.now();
   if (pressingKeys.includes(key)) pressingKeys.splice(pressingKeys.indexOf(key), 1);
-  if (
-    Object.hasOwn(keyPressing, key) &&
-    grabbedNotes.has(keyPressing[key]) &&
-    !grabbedNotes.has(`${keyPressing[key]}!`)
-  ) {
-    grabbedNotes.delete(keyPressing[key]);
-    grabbedNotes.add(`${keyPressing[key]}!`);
-    if (pattern.patterns[keyPressing[key]].beat + pattern.patterns[keyPressing[key]].duration - 1 / 3 > beats) {
-      medalCheck(medal);
-      pattern.patterns[keyPressing[key]].beat = beats - pattern.patterns[keyPressing[key]].duration;
-      calculateScore("Miss", keyPressing[key], true);
-      judgeParticles.push(
-        Factory.createJudge(
-          pattern.patterns[keyPressing[key]].x,
-          pattern.patterns[keyPressing[key]].y,
-          judgeSkin,
-          "Miss",
-        ),
-      );
-      miss++;
-      showOverlay();
-      missPoint.push(song.seek() * 1000);
-      keyInput.push({ judge: "Miss", key: "-", time: date });
-    } else {
-      judgeParticles.push(
-        Factory.createJudge(
-          pattern.patterns[keyPressing[key]].x,
-          pattern.patterns[keyPressing[key]].y,
-          judgeSkin,
-          "Perfect",
-        ),
-      );
-      calculateScore("Perfect", keyPressing[key], true);
-      keyInput.push({ judge: "Perfect", key: "-", time: date });
-    }
-    delete keyPressing[key];
-  }
+  if (!Object.hasOwn(keyPressing, key)) return;
+  const i = keyPressing[key];
+  delete keyPressing[key];
+  if (!grabbedNotes.has(i) || grabbedNotes.has(`${i}!`)) return;
+  const note = pattern.patterns[i];
+  releaseHoldNote(i, judgeReleaseTiming(framesFrom(note.beat + note.duration, beats)), beats);
 };
 
 document.addEventListener("keydown", (e) => {
