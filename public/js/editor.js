@@ -26,11 +26,6 @@ const modulesReady = (async () => {
   }
 })();
 
-const CURSOR_SCALES = [1, 1.25, 1.5, 1.75, 2, 2.5, 3];
-const SELECT_CURSOR = [
-  `image-set(${CURSOR_SCALES.map((scale) => `url('/images/cursors/select${scale === 1 ? "" : `@${scale}x`}.svg') ${scale}x`).join(", ")}) 12 3, pointer`,
-  "url('/images/cursors/select.svg') 12 3, pointer",
-].find((cursor) => CSS.supports("cursor", cursor));
 const songSelectBox = document.getElementById("songSelectBox");
 const trackSettings = document.getElementById("trackSettings");
 const volumeMaster = document.getElementById("volumeMaster");
@@ -1192,12 +1187,12 @@ const tmlRender = () => {
     //Mouse cursor
     if (pointingCntElement.i === "") {
       if (mouseX >= tmlCanvasW / 20 && mouseX <= tmlCanvasW / 10 && mouseY < tmlCanvasH / 6) {
-        timelineContainer.style.cursor = SELECT_CURSOR;
+        timelineContainer.style.cursor = "var(--cursor-pointer)";
       } else {
         timelineContainer.style.cursor = "";
       }
     } else {
-      timelineContainer.style.cursor = SELECT_CURSOR;
+      timelineContainer.style.cursor = "var(--cursor-pointer)";
     }
   } catch (e) {
     displayMessage("Error", `[Runtime] ${e}`);
@@ -1551,7 +1546,7 @@ const cntRender = () => {
       if (pointingCntElement.i === "") {
         componentView.style.cursor = "";
       } else {
-        componentView.style.cursor = SELECT_CURSOR;
+        componentView.style.cursor = "var(--cursor-pointer)";
       }
     }
 
