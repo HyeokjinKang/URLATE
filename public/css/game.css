@@ -913,6 +913,10 @@ p {
   color: #aaa;
 }
 
+.optionWarning {
+  color: #e5533d;
+}
+
 .optionControl {
   display: flex;
   align-items: center;

@@ -777,6 +777,12 @@
               <div class="optionLabel">
                 <p class="optionSemiTitle"><%= __('sensitivity') %></p>
                 <p class="optionHint"><%= __('sensitivity_warning') %></p>
+                <p
+                  class="optionHint optionWarning"
+                  id="sensitivityScaleWarning"
+                  data-template="<%= __('sensitivity_scale_warning') %>"
+                  hidden
+                ></p>
               </div>
               <div class="optionControl">
                 <input
@@ -796,6 +802,9 @@
               <div class="optionLabel">
                 <p class="optionSemiTitle"><%= __('raw_input') %></p>
                 <p class="optionHint"><%= __('raw_input_hint') %></p>
+                <p class="optionHint optionWarning" id="rawInputUnsupported" hidden>
+                  <%= __('raw_input_unsupported') %>
+                </p>
               </div>
               <div class="optionControl">
                 <label class="optionToggle">
