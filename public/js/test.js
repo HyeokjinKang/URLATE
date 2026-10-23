@@ -86,8 +86,6 @@ let noteMaxDuration = 0;
 let endBeat = null;
 let mouseX = 0,
   mouseY = 0;
-let rawX = 0,
-  rawY = 0;
 let score = 0,
   combo = 0,
   maxCombo = 0;
@@ -135,6 +133,10 @@ let resultEffect = new Howl({
   loop: false,
 });
 let isPaused = false;
+let isReadyToStart = false;
+let isStarted = false;
+let pointerUnlockedMs = 0;
+const pointerLockSupported = "requestPointerLock" in canvas;
 let rate = 1;
 let keyInput = [];
 let keyInputMemory = 0;
@@ -362,11 +364,6 @@ const cntRender = () => {
     explodingBullets.clear();
     ctx.globalAlpha = 1;
 
-    let mouseCalcX = ((rawX / canvasOW) * 200 - 100) * sens;
-    let mouseCalcY = ((rawY / canvasOH) * 200 - 100) * sens;
-    mouseX = mouseCalcX >= 100 ? 100 : mouseCalcX <= -100 ? -100 : mouseCalcX;
-    mouseY = mouseCalcY >= 100 ? 100 : mouseCalcY <= -100 ? -100 : mouseCalcY;
-
     if (isResultShowing) {
       if (resultMs == 0) {
         resultMs = now;
@@ -549,15 +546,38 @@ const cntRender = () => {
   }
 };
 
+const clampCursor = (v) => Math.max(-100, Math.min(100, v));
+
 const trackMousePos = (e) => {
-  rawX = e.clientX;
-  rawY = e.clientY;
+  if (isPointerLocked()) {
+    mouseX = clampCursor(mouseX + (e.movementX / canvasOW) * 200 * sens);
+    mouseY = clampCursor(mouseY + (e.movementY / canvasOH) * 200 * sens);
+  } else if (!pointerLockSupported) {
+    mouseX = clampCursor(((e.clientX / canvasOW) * 200 - 100) * sens);
+    mouseY = clampCursor(((e.clientY / canvasOH) * 200 - 100) * sens);
+  }
+};
+
+const isPointerLocked = () => document.pointerLockElement === canvas;
+
+const needsPointerLock = () => pointerLockSupported && !isPointerLocked();
+
+const lockPointer = () => {
+  if (!needsPointerLock()) return;
+  Promise.resolve(canvas.requestPointerLock()).catch((error) => {
+    console.warn(`Pointer lock failed.\n${error}`);
+  });
+};
+
+const unlockPointer = () => {
+  if (isPointerLocked()) document.exitPointerLock();
 };
 
 const calculateResult = () => {
   if (isResultShowing) return;
   isResultShowing = true;
   menuAllowed = false;
+  unlockPointer();
   if (!song.playing()) resultEffect.play();
   document.getElementById("perfectResult").textContent = perfect;
   document.getElementById("greatResult").textContent = great;
@@ -704,17 +724,13 @@ const showOverlay = () => {
 };
 
 const compClicked = (isTyped, key, isWheel) => {
-  if ((!isTyped && !settings.input.mouse && !isWheel) || isMenuOpened || !menuAllowed || mouseClicked == key) {
+  if (isMenuOpened || !menuAllowed || mouseClicked == key) return;
+  if (!song.playing() && isPaused && needsPointerLock()) {
+    lockPointer();
     return;
   }
-  if (!song.playing() && isPaused) {
-    isPaused = false;
-    floatingResumeContainer.style.opacity = 0;
-    setTimeout(() => {
-      floatingResumeContainer.style.display = "none";
-    }, 300);
-    playSong();
-  }
+  if (!isTyped && !settings.input.mouse && !isWheel) return;
+  if (!song.playing() && isPaused) unpause();
   if (key && !isWheel) mouseClicked = key;
   else if (!isWheel) mouseClicked = true;
   mouseClickedMs = Date.now();
@@ -869,24 +885,61 @@ Pace.on("done", () => {
 });
 
 const doneLoading = () => {
+  isReadyToStart = true;
+  document.getElementById("loadingContainer").classList.add("ready");
+};
+
+const requestStart = () => {
+  if (!isReadyToStart || isStarted) return;
+  if (needsPointerLock()) lockPointer();
+  else startGame();
+};
+
+const startGame = () => {
+  if (isStarted) return;
+  isStarted = true;
+  cntRender();
+  document.getElementById("loadingContainer").classList.remove("ready");
+  document.getElementById("componentCanvas").style.opacity = "1";
+  document.getElementById("loadingContainer").style.opacity = "0";
+  medals.forEach((e) => {
+    e.style.opacity = "1";
+  });
   setTimeout(() => {
-    cntRender();
-    document.getElementById("componentCanvas").style.opacity = "1";
-    document.getElementById("loadingContainer").style.opacity = "0";
-    medals.forEach((e) => {
-      e.style.opacity = "1";
-    });
-    setTimeout(() => {
-      document.getElementById("loadingContainer").style.display = "none";
-      document.getElementById("componentCanvas").style.transitionDuration = "0s";
-      menuAllowed = true;
-    }, 1000);
-    setTimeout(() => {
-      if (!isPaused && !song.playing()) {
-        playSong();
-      }
-    }, 2000);
+    document.getElementById("loadingContainer").style.display = "none";
+    document.getElementById("componentCanvas").style.transitionDuration = "0s";
+    menuAllowed = true;
+  }, 1000);
+  setTimeout(() => {
+    if (!isPaused && !song.playing()) {
+      playSong();
+    }
   }, 2000);
+};
+
+const openMenu = () => {
+  isPaused = true;
+  floatingResumeContainer.style.opacity = 0;
+  floatingResumeContainer.style.display = "none";
+  isMenuOpened = true;
+  menuContainer.style.display = "flex";
+  song.pause();
+};
+
+const showResumePrompt = () => {
+  isPaused = true;
+  song.pause();
+  floatingResumeContainer.style.display = "flex";
+  floatingResumeContainer.style.opacity = 1;
+};
+
+const unpause = () => {
+  isPaused = false;
+  floatingResumeContainer.style.opacity = 0;
+  setTimeout(() => {
+    floatingResumeContainer.style.display = "none";
+  }, 300);
+  playSong();
 };
 
 const resume = () => {
@@ -911,12 +964,12 @@ const resume = () => {
     });
   menuContainer.style.display = "none";
   isMenuOpened = false;
-  floatingResumeContainer.style.display = "flex";
-  floatingResumeContainer.style.opacity = 1;
+  showResumePrompt();
 };
 
 const retry = () => {
   if (isResultShowing) return location.reload();
+  lockPointer();
   blackOverlayContainer.classList.add("show");
 
   setTimeout(() => {
@@ -967,8 +1020,12 @@ const retry = () => {
     blackOverlayContainer.classList.remove("show");
     menuContainer.style.display = "none";
     isMenuOpened = false;
-    isPaused = false;
-    playSong();
+    if (needsPointerLock()) {
+      showResumePrompt();
+    } else {
+      isPaused = false;
+      playSong();
+    }
   }, 100);
 };
 
@@ -1126,17 +1183,10 @@ document.addEventListener("keydown", (e) => {
   if (!isResultShowing) {
     if (e.key == "Escape") {
       e.preventDefault();
+      if (Date.now() - pointerUnlockedMs < 200) return;
       if (menuAllowed) {
-        if (!isMenuOpened) {
-          isPaused = true;
-          floatingResumeContainer.style.opacity = 0;
-          floatingResumeContainer.style.display = "none";
-          isMenuOpened = true;
-          menuContainer.style.display = "flex";
-          song.pause();
-        } else {
-          resume();
-        }
+        if (!isMenuOpened) openMenu();
+        else resume();
       }
       return;
     }
@@ -1166,16 +1216,19 @@ window.addEventListener("resize", () => {
 
 window.addEventListener("blur", () => {
   shiftDown = false;
-  if (menuAllowed) {
-    if (!isMenuOpened) {
-      isPaused = true;
-      floatingResumeContainer.style.opacity = 0;
-      floatingResumeContainer.style.display = "none";
-      isMenuOpened = true;
-      menuContainer.style.display = "flex";
-      song.pause();
-    }
+  if (menuAllowed && !isMenuOpened) openMenu();
+});
+
+document.addEventListener("pointerlockchange", () => {
+  if (isPointerLocked()) {
+    if (!isStarted) startGame();
+    else if (isPaused && !isMenuOpened && !isResultShowing) unpause();
+    return;
   }
+  if (!isStarted || isResultShowing || isPaused) return;
+  pointerUnlockedMs = Date.now();
+  if (menuAllowed) openMenu();
+  else showResumePrompt();
 });
 
 window.addEventListener("wheel", globalScrollEvent);
@@ -1196,6 +1249,7 @@ document.addEventListener("selectstart", (event) => event.preventDefault());
 document.querySelector(".volumeMaster").addEventListener("input", (event) => {
   settingChanged(event.target, "volumeMaster");
 });
+document.getElementById("loadingContainer").addEventListener("click", requestStart);
 document.getElementById("retryButton").addEventListener("click", retry);
 document.getElementById("nextButton").addEventListener("click", editor);
 document.getElementById("resume").addEventListener("click", resume);
