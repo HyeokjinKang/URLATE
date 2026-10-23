@@ -1,4 +1,4 @@
-/* global api, projectUrl, lang, loginFailed, loginError */
+/* global api, projectUrl, lang, loginFailed, loginError, googleClientId */
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 const canPlay = !isSafari && window.matchMedia("(pointer: fine)").matches;
@@ -133,26 +133,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const gsiLoaded = () => !!(window.google && window.google.accounts && window.google.accounts.id);
 
-function onGsiSettled() {
-  if (gsiLoaded()) return;
-  console.error("Google Identity Services failed to load.");
+const signInState = fetch(`${api}/auth/state`, {
+  method: "GET",
+  credentials: "include",
+})
+  .then(readJson)
+  .then((data) => {
+    if (typeof data.state !== "string" || !data.state) {
+      throw new Error("Missing sign-in state.");
+    }
+    return data.state;
+  });
+
+function showNotice(id) {
   if (canPlay) {
-    document.getElementById("loginNotice").classList.remove("hide");
+    document.getElementById(id).classList.remove("hide");
   }
 }
 
-function promptSignIn() {
-  if (!canPlay || !gsiLoaded()) return;
-  window.google.accounts.id.prompt();
+function initSignIn(state) {
+  const gsi = window.google.accounts.id;
+  gsi.initialize({
+    client_id: googleClientId,
+    callback: handleCredentialResponse,
+    nonce: state,
+    context: "signin",
+    ux_mode: "popup",
+    use_fedcm_for_prompt: true,
+  });
+
+  const button = document.querySelector(".g_id_signin");
+  const { width, ...options } = button.dataset;
+  gsi.renderButton(button, { ...options, ...(width && { width: Number(width) }), state });
+
+  if (canPlay) gsi.prompt();
 }
 
 let gsiSettled = false;
 let pageLoaded = document.readyState === "complete";
+let signInStarted = false;
 
 function settle() {
-  if (!gsiSettled || !pageLoaded) return;
-  onGsiSettled();
-  promptSignIn();
+  if (!gsiSettled || !pageLoaded || signInStarted) return;
+  signInStarted = true;
+  if (!gsiLoaded()) {
+    console.error("Google Identity Services failed to load.");
+    showNotice("loginNotice");
+    return;
+  }
+  signInState.then(initSignIn).catch((error) => {
+    console.error(error);
+    showNotice("stateNotice");
+  });
 }
 
 const markGsiSettled = () => {
@@ -184,7 +216,6 @@ if (!pageLoaded) {
 
 settle();
 
-// eslint-disable-next-line no-unused-vars
 function handleCredentialResponse(authResult) {
   if (!canPlay) return;
 

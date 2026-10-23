@@ -126,7 +126,8 @@
   outline-color: var(--color-on-ink-accent);
 }
 
-#loginNotice {
+#loginNotice,
+#stateNotice {
   margin: var(--space-2xs) 0 0;
   max-width: 34ch;
   font-size: var(--text-sm);
