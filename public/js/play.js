@@ -139,6 +139,8 @@ let isPaused = false;
 let isReadyToStart = false;
 let isStarted = false;
 let pointerUnlockedMs = 0;
+let resumeX = 0,
+  resumeY = 0;
 const pointerLockSupported = "requestPointerLock" in canvas;
 let rate = 1;
 let record = [];
@@ -558,6 +560,8 @@ const cntRender = () => {
     });
     Draw.progressBarUI(percentage);
 
+    if (isPaused && !isMenuOpened && !isResultShowing) Draw.resumePoint({ x: resumeX, y: resumeY });
+
     Draw.cursor({ x: mouseX, y: mouseY }, { isClicked: mouseClicked != false, clickedMs: mouseClickedMs });
 
     if (effectMs != 0 && effectNum != -1) {
@@ -836,12 +840,12 @@ const showOverlay = () => {
 
 const compClicked = (isTyped, key, isWheel) => {
   if (isMenuOpened || !menuAllowed || mouseClicked == key) return;
-  if (!song.playing() && isPaused && needsPointerLock()) {
-    lockPointer();
+  if (!song.playing() && isPaused) {
+    if (needsPointerLock()) lockPointer();
+    else if (!isWheel && isOnResumePoint()) unpause();
     return;
   }
   if (!isTyped && !settings.input.mouse && !isWheel) return;
-  if (!song.playing() && isPaused) unpause();
   if (key && !isWheel) mouseClicked = key;
   else if (!isWheel) mouseClicked = true;
   mouseClickedMs = Date.now();
@@ -1042,7 +1046,19 @@ const startGame = () => {
   }, 2000);
 };
 
+const markResumePoint = () => {
+  resumeX = mouseX;
+  resumeY = mouseY;
+};
+
+const isOnResumePoint = () => {
+  const dx = ((mouseX - resumeX) * canvasW) / 200;
+  const dy = ((mouseY - resumeY) * canvasH) / 200;
+  return dx * dx + dy * dy <= (canvasW / 40) * (canvasW / 40);
+};
+
 const openMenu = () => {
+  if (!isPaused) markResumePoint();
   isPaused = true;
   floatingResumeContainer.style.opacity = 0;
   floatingResumeContainer.style.display = "none";
@@ -1089,6 +1105,7 @@ const resume = () => {
     });
   menuContainer.style.display = "none";
   isMenuOpened = false;
+  lockPointer();
   showResumePrompt();
 };
 
@@ -1152,6 +1169,7 @@ const retry = () => {
     menuContainer.style.display = "none";
     isMenuOpened = false;
     if (needsPointerLock()) {
+      markResumePoint();
       showResumePrompt();
     } else {
       isPaused = false;
@@ -1349,11 +1367,11 @@ window.addEventListener("blur", () => {
 document.addEventListener("pointerlockchange", () => {
   if (isPointerLocked()) {
     if (!isStarted) startGame();
-    else if (isPaused && !isMenuOpened && !isResultShowing) unpause();
     return;
   }
   if (!isStarted || isResultShowing || isPaused) return;
   pointerUnlockedMs = Date.now();
+  markResumePoint();
   if (menuAllowed) openMenu();
   else showResumePrompt();
 });

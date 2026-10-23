@@ -200,6 +200,7 @@
   "info_upkeep_p2": "URLATE NEXT is currently in planning, which will re-optimize the URLATE client and add new features.",
   "info_upkeep_p3": "Contributions via browser extensions for new features or PRs/Issues through the GitHub repository are always welcome — your interest is appreciated!",
   "click_to_start": "Click to start",
+  "resume_prompt": "Click the circle where you paused to resume",
   "menu_volume": "You can adjust the volume with Shift + Mouse Scroll.",
   "goto_game": "Exit",
   "editor_main": "Editor Main",
