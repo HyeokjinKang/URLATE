@@ -252,7 +252,7 @@ body {
   flex-direction: column;
   align-items: flex-start;
   justify-content: space-around;
-  cursor: initial;
+  cursor: var(--cursor-default);
   z-index: 100;
   position: fixed;
   top: 0;
@@ -274,7 +274,7 @@ body {
 }
 
 .menuBtn {
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   text-align: left;
   box-sizing: border-box;
   color: white;
@@ -304,7 +304,7 @@ body {
   background-color: #222;
   align-items: center;
   justify-content: center;
-  cursor: initial;
+  cursor: var(--cursor-default);
   z-index: 100;
   position: fixed;
   top: 0;
@@ -561,7 +561,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   width: calc(5vh - 2px);
   height: calc(5vh - 2px);
   border: 2px solid white;
@@ -578,7 +578,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   width: 7vw;
   height: 5vh;
   background-color: white;
@@ -742,7 +742,7 @@ body {
   height: 6px;
   border-radius: 6px;
   outline: none;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   background:
     linear-gradient(#373737, #373737) 0 / var(--fill) 100% no-repeat,
     #e2e2e2;
@@ -757,7 +757,7 @@ body {
   border: 3px solid #373737;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   transform: scale(0);
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -776,7 +776,7 @@ body {
   border: 3px solid #373737;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   transform: scale(0);
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

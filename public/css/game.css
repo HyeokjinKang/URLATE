@@ -329,7 +329,7 @@ p {
 
 #name {
   font-weight: 600;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   color: #000;
   font-size: 2.5vh;
   opacity: 0;
@@ -351,7 +351,7 @@ p {
 }
 
 #profilePic {
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   height: 5vh;
   width: 5vh;
   border-radius: 5vh;
@@ -409,7 +409,7 @@ p {
 }
 
 .clickable {
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   transition-duration: 0.3s;
 }
 
@@ -581,7 +581,7 @@ p {
 }
 
 .profileHover {
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   opacity: 0;
   display: flex;
   align-items: center;
@@ -788,7 +788,7 @@ p {
 }
 
 .optionSelectors {
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   display: flex;
   align-items: baseline;
   gap: 1vw;
@@ -813,7 +813,7 @@ p {
 
 .optionSelected,
 .optionSelected:hover {
-  cursor: default;
+  cursor: var(--cursor-default);
   color: #fff;
   font-weight: 800;
   background-color: #373737;
@@ -942,7 +942,7 @@ p {
 
 .optionSelect,
 .optionButton {
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
@@ -1013,7 +1013,7 @@ p {
   height: 6px;
   border-radius: 6px;
   outline: none;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   background:
     linear-gradient(#373737, #373737) 0 / var(--fill) 100% no-repeat,
     #e2e2e2;
@@ -1028,7 +1028,7 @@ p {
   border: 3px solid #373737;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   transform: scale(0);
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -1047,7 +1047,7 @@ p {
   border: 3px solid #373737;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   transform: scale(0);
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -1061,7 +1061,7 @@ p {
 .optionToggle,
 .optionChip {
   position: relative;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
 }
 
 .optionToggle input,
@@ -1218,7 +1218,7 @@ p {
 
 .tracksSelection {
   display: none;
-  cursor: default;
+  cursor: var(--cursor-default);
   margin-bottom: 3px;
   margin-left: 10px;
   color: white;
@@ -1227,7 +1227,7 @@ p {
 
 .tracksSelection.selected {
   display: inline-block;
-  cursor: default;
+  cursor: var(--cursor-default);
   margin-bottom: 3px;
   margin-left: 10px;
   color: white;
@@ -1399,7 +1399,7 @@ p {
   font-size: 2vh;
   text-align: center;
   width: 20%;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   color: white;
   font-weight: 700;
   border: 2px solid white;
@@ -1516,7 +1516,7 @@ input[type="number"] {
   flex-direction: column;
   width: 3.5vw;
   font-size: 3.5vh;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   opacity: 0.3;
   font-weight: 300;
   transition-duration: 0.3s;
@@ -1596,7 +1596,7 @@ input[type="number"] {
   --title-weight: 300;
   padding-top: 2vh;
   padding-bottom: 2vh;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -1885,7 +1885,7 @@ input[type="number"] {
 }
 
 #offsetTapButton {
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   transition-duration: 0.2s;
 }
 
@@ -2103,7 +2103,7 @@ input[type="number"] {
 }
 
 #tutorialSkip {
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   text-decoration: underline;
   color: #222;
   margin-top: 2vh;
@@ -2116,7 +2116,7 @@ input[type="number"] {
 .sortText {
   font-size: 2vh;
   color: #ccc;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   font-weight: 500;
   margin-right: 8px;
 }
@@ -2127,7 +2127,7 @@ input[type="number"] {
 
 .sortText.selected {
   color: white;
-  cursor: default;
+  cursor: var(--cursor-default);
   font-weight: 800;
 }
 
@@ -2597,7 +2597,7 @@ input[type="number"] {
 }
 
 .rankProfileContainer {
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   width: fit-content;
   height: 6vh;
   display: flex;

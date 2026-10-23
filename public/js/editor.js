@@ -1187,12 +1187,12 @@ const tmlRender = () => {
     //Mouse cursor
     if (pointingCntElement.i === "") {
       if (mouseX >= tmlCanvasW / 20 && mouseX <= tmlCanvasW / 10 && mouseY < tmlCanvasH / 6) {
-        timelineContainer.style.cursor = "url('/images/cursors/select.cur'), pointer";
+        timelineContainer.style.cursor = "var(--cursor-pointer)";
       } else {
         timelineContainer.style.cursor = "";
       }
     } else {
-      timelineContainer.style.cursor = "url('/images/cursors/select.cur'), pointer";
+      timelineContainer.style.cursor = "var(--cursor-pointer)";
     }
   } catch (e) {
     displayMessage("Error", `[Runtime] ${e}`);
@@ -1546,7 +1546,7 @@ const cntRender = () => {
       if (pointingCntElement.i === "") {
         componentView.style.cursor = "";
       } else {
-        componentView.style.cursor = "url('/images/cursors/select.cur'), pointer";
+        componentView.style.cursor = "var(--cursor-pointer)";
       }
     }
 
