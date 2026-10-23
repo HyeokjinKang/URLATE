@@ -1060,7 +1060,8 @@ const markResumePoint = () => {
 const isOnResumePoint = () => {
   const dx = ((mouseX - resumeX) * canvasW) / 200;
   const dy = ((mouseY - resumeY) * canvasH) / 200;
-  return dx * dx + dy * dy <= (canvasW / 40) * (canvasW / 40);
+  const radius = Draw.CONFIG.CURSOR.SIZE;
+  return dx * dx + dy * dy <= radius * radius;
 };
 
 const openMenu = () => {

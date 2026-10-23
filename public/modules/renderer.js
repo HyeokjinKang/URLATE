@@ -516,7 +516,7 @@ export default class Renderer {
   resumePoint(point) {
     const { ctx, canvasW } = this;
     const { cx, cy } = this.#getPos(point.x, point.y);
-    const radius = canvasW / 40;
+    const radius = this.CONFIG.CURSOR.SIZE;
     const pulse = (Math.sin(Date.now() / 200) + 1) / 2;
 
     ctx.save();
