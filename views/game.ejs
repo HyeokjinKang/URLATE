@@ -777,18 +777,39 @@
               <div class="optionLabel">
                 <p class="optionSemiTitle"><%= __('sensitivity') %></p>
                 <p class="optionHint"><%= __('sensitivity_warning') %></p>
+                <p
+                  class="optionHint optionWarning"
+                  id="sensitivityScaleWarning"
+                  data-template="<%= __('sensitivity_scale_warning') %>"
+                  hidden
+                ></p>
               </div>
               <div class="optionControl">
                 <input
                   type="range"
-                  min="100"
-                  max="250"
+                  min="25"
+                  max="300"
+                  step="5"
                   value="100"
                   id="inputSensitive"
                   class="optionSlider"
                   data-setting="sensitive"
                 />
                 <p id="sensitiveValue" class="optionValue">1x</p>
+              </div>
+            </div>
+            <div class="optionRow">
+              <div class="optionLabel">
+                <p class="optionSemiTitle"><%= __('raw_input') %></p>
+                <p class="optionHint optionWarning" id="rawInputUnsupported" hidden>
+                  <%= __('raw_input_unsupported') %>
+                </p>
+              </div>
+              <div class="optionControl">
+                <label class="optionToggle">
+                  <input type="checkbox" class="optionCheckbox" id="rawInputCheck" data-setting="rawInput" />
+                  <span class="optionToggleTrack"></span>
+                </label>
               </div>
             </div>
             <div class="optionRow">

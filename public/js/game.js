@@ -12,6 +12,9 @@ const volumeHitValue = document.getElementById("volumeHitValue");
 const volumeEftValue = document.getElementById("volumeEftValue");
 const offsetButton = document.getElementById("offsetButton");
 const sensitiveValue = document.getElementById("sensitiveValue");
+const sensitivityScaleWarning = document.getElementById("sensitivityScaleWarning");
+const rawInputCheck = document.getElementById("rawInputCheck");
+const rawInputSupported = ["Windows", "macOS", "Chrome OS", "ChromeOS"].includes(navigator.userAgentData?.platform);
 const inputSizeValue = document.getElementById("inputSizeValue");
 const offsetButtonText = document.getElementById("offsetButtonText");
 const warningContainer = document.getElementById("warningContainer");
@@ -187,6 +190,14 @@ const sliderFillAll = () => {
   document.querySelectorAll(".optionSlider").forEach(sliderFill);
 };
 
+const updateScaleWarning = () => {
+  const scale = Math.round(window.devicePixelRatio * 100);
+  sensitivityScaleWarning.hidden = scale == 100;
+  sensitivityScaleWarning.textContent = sensitivityScaleWarning.dataset.template.replace("{scale}", scale);
+};
+
+window.addEventListener("resize", updateScaleWarning);
+
 const settingApply = () => {
   langDetailSelector.value = settings.general.detailLang;
   canvasResSelector.value = settings.display.canvasRes;
@@ -207,6 +218,10 @@ const settingApply = () => {
   document.getElementById("inputSensitive").value = settings.input.sens * 100;
   document.getElementById("inputSize").value = settings.game.size * 10;
   document.getElementById("mouseCheck").checked = settings.input.mouse;
+  rawInputCheck.checked = rawInputSupported && (settings.input.rawInput ?? false);
+  rawInputCheck.disabled = !rawInputSupported;
+  document.getElementById("rawInputUnsupported").hidden = rawInputSupported;
+  updateScaleWarning();
   document.getElementById("judgeSkin").checked = settings.game.judgeSkin;
   document.getElementById("judgePerfect").checked = settings.game.applyJudge.Perfect;
   document.getElementById("judgeGreat").checked = settings.game.applyJudge.Great;
@@ -1623,6 +1638,8 @@ const settingChanged = (e, v) => {
     settings.input.keys = Number(e.value);
   } else if (v == "inputMouse") {
     settings.input.mouse = e.checked;
+  } else if (v == "rawInput") {
+    settings.input.rawInput = e.checked;
   } else if (v == "skin") {
     settings.game.skin = e.value;
   } else if (v == "judgeSkin") {

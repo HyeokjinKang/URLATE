@@ -513,6 +513,28 @@ export default class Renderer {
     ctx.drawImage(sprite.canvas, cx - sprite.half, cy - sprite.half);
   }
 
+  resumePoint(point) {
+    const { ctx, canvasW } = this;
+    const { cx, cy } = this.#getPos(point.x, point.y);
+    const radius = this.CONFIG.CURSOR.SIZE;
+    const pulse = (Math.sin(Date.now() / 200) + 1) / 2;
+
+    ctx.save();
+    ctx.globalAlpha = 1;
+    ctx.lineWidth = canvasW / 400;
+    ctx.strokeStyle = "#fff";
+    ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+    ctx.shadowBlur = canvasW / 200;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+    ctx.stroke();
+    ctx.globalAlpha = 0.6 * (1 - pulse);
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius * (1 + pulse * 0.4), 0, 2 * Math.PI);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   #getCursorSprite(w) {
     const cached = this.cache.cursor.get(w);
     if (cached) return cached;
