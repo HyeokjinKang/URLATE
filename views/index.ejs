@@ -21,15 +21,6 @@
     <title>URLATE</title>
   </head>
   <body>
-    <div
-      id="g_id_onload"
-      data-client_id="<%= googleClientId %>"
-      data-context="signin"
-      data-ux_mode="popup"
-      data-callback="handleCredentialResponse"
-      data-auto_prompt="false"
-      data-use_fedcm_for_prompt="true"
-    ></div>
     <div class="rails" aria-hidden="true"></div>
 
     <%- include('partials/masthead', { page: 'index' }) %>
@@ -66,6 +57,7 @@
               data-logo_alignment="left"
             ></div>
             <p id="loginNotice" class="hide"><%= __('login_blocked') %></p>
+            <p id="stateNotice" class="hide"><%= __('login_unavailable') %></p>
             <p id="unsupportedNotice" class="hide"><%= __('idx_unsupported') %></p>
           </div>
         </div>
@@ -239,6 +231,7 @@
     <script nonce="<%= cspNonce %>">
       const projectUrl = "<%= url %>";
       const api = "<%= api %>";
+      const googleClientId = "<%= googleClientId %>";
       const loginFailed = "<%= __('login_failed') %>";
       const loginError = "<%= __('login_error') %>";
       const lang = "<%= __('lang') %>";
