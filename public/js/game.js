@@ -207,6 +207,7 @@ const settingApply = () => {
   document.getElementById("inputSensitive").value = settings.input.sens * 100;
   document.getElementById("inputSize").value = settings.game.size * 10;
   document.getElementById("mouseCheck").checked = settings.input.mouse;
+  document.getElementById("rawInputCheck").checked = settings.input.rawInput ?? false;
   document.getElementById("judgeSkin").checked = settings.game.judgeSkin;
   document.getElementById("judgePerfect").checked = settings.game.applyJudge.Perfect;
   document.getElementById("judgeGreat").checked = settings.game.applyJudge.Great;
@@ -1623,6 +1624,8 @@ const settingChanged = (e, v) => {
     settings.input.keys = Number(e.value);
   } else if (v == "inputMouse") {
     settings.input.mouse = e.checked;
+  } else if (v == "rawInput") {
+    settings.input.rawInput = e.checked;
   } else if (v == "skin") {
     settings.game.skin = e.value;
   } else if (v == "judgeSkin") {

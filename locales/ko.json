@@ -137,6 +137,8 @@
   "mouse": "마우스",
   "sensitivity": "감도",
   "sensitivity_warning": "*게임 내 커서에만 적용됩니다.",
+  "raw_input": "Raw Input",
+  "raw_input_hint": "*게임 중 OS 마우스 가속을 끕니다. Chrome·Edge에서만 지원됩니다.",
   "wheel": "휠 방향",
   "wheel_forward": "정방향",
   "wheel_reverse": "역방향",

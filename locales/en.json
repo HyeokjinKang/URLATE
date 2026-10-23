@@ -137,6 +137,8 @@
   "mouse": "Mouse",
   "sensitivity": "Sensitivity",
   "sensitivity_warning": "*Applies only to the in-game cursor.",
+  "raw_input": "Raw Input",
+  "raw_input_hint": "*Turns off OS mouse acceleration in game. Chrome and Edge only.",
   "wheel": "Scroll Direction",
   "wheel_forward": "Forward",
   "wheel_reverse": "Reverse",

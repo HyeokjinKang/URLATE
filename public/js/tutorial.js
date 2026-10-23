@@ -540,9 +540,15 @@ const needsPointerLock = () => pointerLockSupported && !isPointerLocked();
 
 const lockPointer = () => {
   if (!needsPointerLock()) return;
-  Promise.resolve(canvas.requestPointerLock()).catch((error) => {
-    console.warn(`Pointer lock failed.\n${error}`);
-  });
+  const rawInput = settings.input.rawInput ?? false;
+  Promise.resolve(canvas.requestPointerLock(rawInput ? { unadjustedMovement: true } : undefined))
+    .catch((error) => {
+      if (rawInput && error?.name == "NotSupportedError") return canvas.requestPointerLock();
+      throw error;
+    })
+    .catch((error) => {
+      console.warn(`Pointer lock failed.\n${error}`);
+    });
 };
 
 const unlockPointer = () => {
