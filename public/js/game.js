@@ -1558,6 +1558,7 @@ const fadeRate = (track, start, end, duration, time) => {
 };
 
 const langChanged = (e) => {
+  if (e.value == lang) return;
   window.location.href = `${url}/${encodeURIComponent(e.value)}`;
 };
 
