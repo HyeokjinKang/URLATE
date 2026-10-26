@@ -944,6 +944,24 @@ p {
   background-color: #f2f2f2;
 }
 
+input.optionValue {
+  width: 4vw;
+  border: 1px solid transparent;
+  outline: none;
+  color: #404040;
+  user-select: text;
+  transition-duration: 0.2s;
+}
+
+input.optionValue:hover {
+  background-color: #ebebeb;
+}
+
+input.optionValue:focus {
+  border-color: #373737;
+  background-color: #fff;
+}
+
 .optionSelect,
 .optionButton {
   cursor: var(--cursor-pointer);

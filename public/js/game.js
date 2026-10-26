@@ -211,7 +211,7 @@ const settingApply = () => {
   document.getElementById("inputSelector").value = settings.input.keys;
   for (let i = 0; i <= 1; i++) {
     document.getElementsByClassName("volumeMaster")[i].value = settings.sound.volume.master * 100;
-    document.getElementsByClassName("volumeMasterValue")[i].textContent =
+    document.getElementsByClassName("volumeMasterValue")[i].value =
       Math.round(settings.sound.volume.master * 100) + "%";
   }
   document.getElementById("volumeSong").value = settings.sound.volume.music * 100;
@@ -238,12 +238,12 @@ const settingApply = () => {
   document.getElementById("ignoreLatencyCheck").checked = settings.sound.denyLatency ?? false;
   editorLatencyApply();
   document.getElementById("comboAlertCheck").checked = settings.game.comboAlert;
-  volumeSongValue.textContent = Math.round(settings.sound.volume.music * 100) + "%";
-  volumeHitValue.textContent = Math.round(settings.sound.volume.hitSound * 100) + "%";
-  volumeEftValue.textContent = Math.round(settings.sound.volume.effect * 100) + "%";
+  volumeSongValue.value = Math.round(settings.sound.volume.music * 100) + "%";
+  volumeHitValue.value = Math.round(settings.sound.volume.hitSound * 100) + "%";
+  volumeEftValue.value = Math.round(settings.sound.volume.effect * 100) + "%";
   offsetButton.textContent = settings.sound.offset + "ms";
-  sensitiveValue.textContent = settings.input.sens + "x";
-  inputSizeValue.textContent = settings.game.size + "x";
+  sensitiveValue.value = settings.input.sens + "x";
+  inputSizeValue.value = settings.game.size + "x";
   offset = settings.sound.offset;
   if (offset != 0) {
     offsetButtonText.textContent = offset + "ms";
@@ -1620,7 +1620,7 @@ const settingChanged = (e, v) => {
   } else if (v == "volumeMaster") {
     settings.sound.volume.master = e.value / 100;
     for (let i = 0; i <= 1; i++) {
-      document.getElementsByClassName("volumeMasterValue")[i].textContent = Math.round(e.value) + "%";
+      document.getElementsByClassName("volumeMasterValue")[i].value = Math.round(e.value) + "%";
     }
     overlayTime = Date.now();
     setTimeout(() => {
@@ -1631,14 +1631,14 @@ const settingChanged = (e, v) => {
     intro2video.volume = settings.sound.volume.master * settings.sound.volume.music;
   } else if (v == "volumeSong") {
     settings.sound.volume.music = e.value / 100;
-    volumeSongValue.textContent = Math.round(e.value) + "%";
+    volumeSongValue.value = Math.round(e.value) + "%";
     Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
   } else if (v == "volumeHitsound") {
     settings.sound.volume.hitSound = e.value / 100;
-    volumeHitValue.textContent = Math.round(e.value) + "%";
+    volumeHitValue.value = Math.round(e.value) + "%";
   } else if (v == "volumeEffect") {
     settings.sound.volume.effect = e.value / 100;
-    volumeEftValue.textContent = Math.round(e.value) + "%";
+    volumeEftValue.value = Math.round(e.value) + "%";
   } else if (v == "soundRes") {
     settings.sound.res = e.value;
   } else if (v == "hitSound") {
@@ -1646,7 +1646,7 @@ const settingChanged = (e, v) => {
     hitSoundPreview();
   } else if (v == "sensitive") {
     settings.input.sens = e.value / 100;
-    sensitiveValue.textContent = e.value / 100 + "x";
+    sensitiveValue.value = e.value / 100 + "x";
   } else if (v == "wheel") {
     settings.input.wheelReverse = Number(e.value);
   } else if (v == "inputKey") {
@@ -1661,7 +1661,7 @@ const settingChanged = (e, v) => {
     settings.game.judgeSkin = e.checked;
   } else if (v == "inputSize") {
     settings.game.size = e.value / 10;
-    inputSizeValue.textContent = e.value / 10 + "x";
+    inputSizeValue.value = e.value / 10 + "x";
   } else if (v == "Perfect" || v == "Great" || v == "Good" || v == "Bad" || v == "Miss" || v == "Bullet") {
     settings.game.applyJudge[v] = e.checked;
   } else if (v == "frameCounter") {
@@ -2080,7 +2080,7 @@ let volumeOverlayHeld = false;
 
 const overlayClose = (s) => {
   if (s == "volume") {
-    if (volumeOverlayHeld || volumeOverlay.matches(":hover")) return;
+    if (volumeOverlayHeld || volumeOverlay.matches(":hover, :focus-within")) return;
     if (overlayTime + 1400 <= Date.now()) {
       volumeOverlay.classList.remove("overlayOpen");
     }
@@ -2311,7 +2311,7 @@ const scrollEvent = (e) => {
       }
       for (let i = 0; i <= 1; i++) {
         document.getElementsByClassName("volumeMaster")[i].value = Math.round(settings.sound.volume.master * 100);
-        document.getElementsByClassName("volumeMasterValue")[i].textContent =
+        document.getElementsByClassName("volumeMasterValue")[i].value =
           `${Math.round(settings.sound.volume.master * 100)}%`;
       }
       Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
@@ -2498,6 +2498,84 @@ const handleSettingChange = (event) => {
 document.addEventListener("input", handleSettingChange);
 document.addEventListener("change", handleSettingChange);
 
+const wheelSteps = new WeakMap();
+const selectChangeTimers = new WeakMap();
+
+const wheelStepCount = (target, e) => {
+  let delta = e.deltaY || e.deltaX;
+  if (e.deltaMode == 1) delta *= 40;
+  else if (e.deltaMode == 2) delta *= 800;
+  if (Math.abs(delta) >= 50) {
+    wheelSteps.set(target, 0);
+    return Math.sign(delta);
+  }
+  const total = (wheelSteps.get(target) || 0) + delta;
+  const steps = Math.trunc(total / 50);
+  wheelSteps.set(target, total - steps * 50);
+  return steps;
+};
+
+const optionWheel = (e) => {
+  const target = e.target.closest(".optionSlider, .optionSelect");
+  if (!target || target.disabled || e.ctrlKey) return;
+  e.preventDefault();
+  e.stopPropagation();
+  let steps = wheelStepCount(target, e);
+  if (steps == 0) return;
+  if (target.type == "range") {
+    if (!settings.input?.wheelReverse) steps *= -1;
+    const step = Number(target.dataset.wheelStep || target.step || 1);
+    const before = target.value;
+    target.value = Number(target.value) + steps * step;
+    if (target.value == before) return;
+    target.dispatchEvent(new Event("input", { bubbles: true }));
+    target.dispatchEvent(new Event("change", { bubbles: true }));
+    return;
+  }
+  const options = [...target.options].filter((option) => !option.disabled);
+  const index = options.indexOf(target.selectedOptions[0]);
+  const next = options[Math.max(0, Math.min(options.length - 1, index + steps))];
+  if (!next || next.selected) return;
+  next.selected = true;
+  if (target.dataset.change) {
+    clearTimeout(selectChangeTimers.get(target));
+    selectChangeTimers.set(
+      target,
+      setTimeout(() => target.dispatchEvent(new Event("change", { bubbles: true })), 600),
+    );
+  } else {
+    target.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+};
+document.addEventListener("wheel", optionWheel, { passive: false });
+
+const optionValueCommit = (input) => {
+  const slider = input.previousElementSibling;
+  const value = parseFloat(input.value);
+  if (!isNaN(value)) slider.value = Math.round(value * Number(input.dataset.scale || 1));
+  slider.dispatchEvent(new Event("input", { bubbles: true }));
+  slider.dispatchEvent(new Event("change", { bubbles: true }));
+};
+
+document.querySelectorAll(".optionSlider + .optionValue").forEach((input) => {
+  input.addEventListener("focus", () => {
+    input.dataset.before = input.value;
+    const value = parseFloat(input.value);
+    if (!isNaN(value)) input.value = value;
+    input.select();
+  });
+  input.addEventListener("blur", () => optionValueCommit(input));
+  input.addEventListener("keydown", (e) => {
+    e.stopPropagation();
+    if (e.key == "Enter") {
+      input.blur();
+    } else if (e.key == "Escape") {
+      input.value = input.dataset.before;
+      input.blur();
+    }
+  });
+});
+
 // Selects whose handler needs the element itself, not just its value.
 const changeActions = { langChanged, rateChanged };
 document.addEventListener("change", (event) => {
@@ -2556,4 +2634,7 @@ setTimeout(scheduleWarm, 10000);
 
 document.addEventListener("contextmenu", (event) => event.preventDefault());
 document.addEventListener("dragstart", (event) => event.preventDefault());
-document.addEventListener("selectstart", (event) => event.preventDefault());
+document.addEventListener("selectstart", (event) => {
+  if (event.target.closest?.("input")) return;
+  event.preventDefault();
+});
