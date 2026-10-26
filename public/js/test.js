@@ -10,7 +10,8 @@ let upperBound,
   holdTickCount,
   msToFrames,
   PRESS_WINDOW_FRAMES,
-  RELEASE_LATE_FRAMES;
+  RELEASE_LATE_FRAMES,
+  hitSoundSrc;
 let Factory, Updater, Renderer;
 let parsePattern, Timing;
 const modulesReady = (async () => {
@@ -34,6 +35,7 @@ const modulesReady = (async () => {
       msToFrames,
       PRESS_WINDOW_FRAMES,
       RELEASE_LATE_FRAMES,
+      hitSoundSrc,
     } = utils);
     Factory = factory.default;
     Updater = updater.default;
@@ -122,11 +124,7 @@ let overlayTime = 0;
 let shiftDown = false;
 let currentTriggerIndex = 0;
 let nowSpeed = 1;
-let tick = new Howl({
-  src: [`/sounds/tick.mp3`],
-  autoplay: false,
-  loop: false,
-});
+let tick;
 let resultEffect = new Howl({
   src: [`${cdn}/tracks/result.mp3`],
   autoplay: false,
@@ -306,7 +304,10 @@ const initialize = (isFirstCalled) => {
 };
 
 const settingApply = () => {
-  tick.volume(settings.sound.volume.hitSound);
+  tick = new Howl({
+    src: [hitSoundSrc(settings.sound.hitSound)],
+    volume: settings.sound.volume.hitSound,
+  });
   resultEffect.volume(settings.sound.volume.effect);
   sync = settings.sound.offset;
   visualSync = settings.display.offset ?? 0;
