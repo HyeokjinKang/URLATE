@@ -988,6 +988,13 @@ p {
   background-color: #222;
 }
 
+.optionButtonIcon {
+  min-width: 0;
+  width: 4.8vh;
+  padding: 0;
+  justify-content: center;
+}
+
 .optionButtonArrow::after {
   content: "";
   width: 0.7vh;
