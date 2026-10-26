@@ -131,7 +131,7 @@ export const judgeWheelTiming = (frames) => {
   return "Miss";
 };
 
-export const HIT_SOUNDS = ["default", "crisp", "rimshot", "hihat", "snap", "blip"];
+export const HIT_SOUNDS = ["default", "tick", "metal", "spark", "clap", "8bit"];
 
 export const hitSoundSrc = (name) => `/sounds/hitsounds/${HIT_SOUNDS.includes(name) ? name : HIT_SOUNDS[0]}.wav`;
 
