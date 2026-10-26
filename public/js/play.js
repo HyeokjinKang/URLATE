@@ -865,6 +865,7 @@ const compClicked = (isTyped, key, isWheel) => {
       const x = pNote.x;
       const y = pNote.y;
       const judge = (pNote.value == 1 ? judgeWheelTiming : judgeTiming)(framesFrom(pNote.beat, beats));
+      const timing = beats < pNote.beat ? "FAST" : "LATE";
       countJudge(judge);
       if (pNote.value == 2) {
         grabbedNotes.add(el.i);
@@ -874,7 +875,7 @@ const compClicked = (isTyped, key, isWheel) => {
         calculateScore(judge, el.i);
       }
       clickParticles.push(Factory.createClickNote(x, y, el.v2, judgeSkin, judge));
-      judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge, beats < pNote.beat ? "FAST" : "LATE"));
+      judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge, timing));
       record.push([
         record.length,
         pointingCntElement[0].v1,
