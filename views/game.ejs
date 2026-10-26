@@ -738,6 +738,30 @@
           </div>
           <div class="optionCard">
             <div class="optionCardHead">
+              <p class="optionTitle"><%= __('customize') %></p>
+            </div>
+            <div class="optionRow">
+              <p class="optionSemiTitle"><%= __('hitsound') %></p>
+              <div class="optionControl">
+                <select class="optionSelect" id="hitSoundSelector" data-setting="hitSound">
+                  <option value="default"><%= __('hitsound_punch') %></option>
+                  <option value="tick"><%= __('hitsound_tick') %></option>
+                  <option value="metal"><%= __('hitsound_metal') %></option>
+                  <option value="hihat"><%= __('hitsound_hihat') %></option>
+                  <option value="clap"><%= __('hitsound_clap') %></option>
+                  <option value="blip"><%= __('hitsound_blip') %></option>
+                </select>
+                <a
+                  class="optionButton optionButtonIcon"
+                  data-action="hitSoundPreview"
+                  aria-label="<%= __('hitsound_preview') %>"
+                  >▶</a
+                >
+              </div>
+            </div>
+          </div>
+          <div class="optionCard">
+            <div class="optionCardHead">
               <p class="optionTitle"><%= __('details') %></p>
             </div>
             <div class="optionRow">

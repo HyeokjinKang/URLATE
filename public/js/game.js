@@ -7,6 +7,7 @@ const albumResSelector = document.getElementById("albumResSelector");
 const soundResSelector = document.getElementById("soundResSelector");
 const comboSelector = document.getElementById("comboSelector");
 const skinSelector = document.getElementById("skinSelector");
+const hitSoundSelector = document.getElementById("hitSoundSelector");
 const volumeSongValue = document.getElementById("volumeSongValue");
 const volumeHitValue = document.getElementById("volumeHitValue");
 const volumeEftValue = document.getElementById("volumeEftValue");
@@ -46,7 +47,7 @@ const profileNameContainer = document.getElementById("profileNameContainer");
 const slowRate = 110 / 174;
 const fastRate = 174 / 110;
 
-import { escapeHtml, safeUrl } from "../modules/utils.js";
+import { escapeHtml, safeUrl, HIT_SOUNDS, hitSoundSrc } from "../modules/utils.js";
 
 let settings = [];
 let loadedVsync = true;
@@ -203,6 +204,7 @@ const settingApply = () => {
   canvasResSelector.value = settings.display.canvasRes;
   albumResSelector.value = settings.display.albumRes;
   soundResSelector.value = settings.sound.res;
+  hitSoundSelector.value = HIT_SOUNDS.includes(settings.sound.hitSound) ? settings.sound.hitSound : HIT_SOUNDS[0];
   comboSelector.value = settings.game.comboCount + "x";
   skinSelector.value = settings.game.skin;
   document.getElementById("wheelSelector").value = settings.input.wheelReverse;
@@ -1596,6 +1598,16 @@ const bannerToggle = (n) => {
     });
 };
 
+const hitSoundPreviews = new Map();
+
+const hitSoundPreview = () => {
+  const src = hitSoundSrc(hitSoundSelector.value);
+  if (!hitSoundPreviews.has(src)) hitSoundPreviews.set(src, new Howl({ src: [src] }));
+  const preview = hitSoundPreviews.get(src);
+  preview.volume(settings.sound.volume.hitSound);
+  preview.play();
+};
+
 const settingChanged = (e, v) => {
   if (v == "detailLang") {
     settings.general.detailLang = e.value;
@@ -1629,6 +1641,9 @@ const settingChanged = (e, v) => {
     volumeEftValue.textContent = Math.round(e.value) + "%";
   } else if (v == "soundRes") {
     settings.sound.res = e.value;
+  } else if (v == "hitSound") {
+    settings.sound.hitSound = e.value;
+    hitSoundPreview();
   } else if (v == "sensitive") {
     settings.input.sens = e.value / 100;
     sensitiveValue.textContent = e.value / 100 + "x";
@@ -2432,6 +2447,7 @@ const clickActions = {
   difficultySelected: (arg) => difficultySelected(Number(arg)),
   displayClose,
   goTutorial: () => (window.location.href = `${url}/tutorial`),
+  hitSoundPreview,
   infoScreen,
   intro1skip,
   intro2skip,
