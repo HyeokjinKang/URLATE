@@ -686,8 +686,9 @@
                   value="50"
                   class="optionSlider volumeMaster"
                   data-setting="volumeMaster"
+                  data-wheel-step="5"
                 />
-                <p class="optionValue volumeMasterValue">50%</p>
+                <input type="text" inputmode="decimal" class="optionValue volumeMasterValue" value="50%" />
               </div>
             </div>
             <div class="optionRow">
@@ -701,8 +702,9 @@
                   id="volumeSong"
                   class="optionSlider"
                   data-setting="volumeSong"
+                  data-wheel-step="5"
                 />
-                <p class="optionValue" id="volumeSongValue">100%</p>
+                <input type="text" inputmode="decimal" class="optionValue" id="volumeSongValue" value="100%" />
               </div>
             </div>
             <div class="optionRow">
@@ -716,8 +718,9 @@
                   id="volumeHit"
                   class="optionSlider"
                   data-setting="volumeHitsound"
+                  data-wheel-step="5"
                 />
-                <p class="optionValue" id="volumeHitValue">100%</p>
+                <input type="text" inputmode="decimal" class="optionValue" id="volumeHitValue" value="100%" />
               </div>
             </div>
             <div class="optionRow">
@@ -731,8 +734,9 @@
                   id="volumeEft"
                   class="optionSlider"
                   data-setting="volumeEffect"
+                  data-wheel-step="5"
                 />
-                <p class="optionValue" id="volumeEftValue">100%</p>
+                <input type="text" inputmode="decimal" class="optionValue" id="volumeEftValue" value="100%" />
               </div>
             </div>
           </div>
@@ -819,7 +823,14 @@
                   class="optionSlider"
                   data-setting="sensitive"
                 />
-                <p id="sensitiveValue" class="optionValue">1x</p>
+                <input
+                  type="text"
+                  inputmode="decimal"
+                  id="sensitiveValue"
+                  class="optionValue"
+                  data-scale="100"
+                  value="1x"
+                />
               </div>
             </div>
             <div class="optionRow">
@@ -898,7 +909,14 @@
                   class="optionSlider"
                   data-setting="inputSize"
                 />
-                <p id="inputSizeValue" class="optionValue">1x</p>
+                <input
+                  type="text"
+                  inputmode="decimal"
+                  id="inputSizeValue"
+                  class="optionValue"
+                  data-scale="10"
+                  value="1x"
+                />
               </div>
             </div>
             <div class="optionRow">
@@ -1167,8 +1185,16 @@
     <img src="/images/ui/loading.webp" alt="loading" class="loadingCircle" id="loadingCircle" />
     <div class="overlay" id="volumeOverlay">
       <p class="optionSemiTitle"><%= __('volume') %></p>
-      <input type="range" min="0" max="100" value="50" class="optionSlider volumeMaster" data-setting="volumeMaster" />
-      <p class="optionValue volumeMasterValue">50%</p>
+      <input
+        type="range"
+        min="0"
+        max="100"
+        value="50"
+        class="optionSlider volumeMaster"
+        data-setting="volumeMaster"
+        data-wheel-step="5"
+      />
+      <input type="text" inputmode="decimal" class="optionValue volumeMasterValue" value="50%" />
     </div>
     <script nonce="<%= cspNonce %>">
       const cdn = "<%= cdn %>";
