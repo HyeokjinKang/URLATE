@@ -2501,6 +2501,17 @@ document.addEventListener("change", handleSettingChange);
 
 const wheelSteps = new WeakMap();
 const selectChangeTimers = new WeakMap();
+let wheelGestureReverse;
+let wheelGestureTimer;
+
+const wheelReversed = () => {
+  wheelGestureReverse ??= Boolean(settings.input?.wheelReverse);
+  clearTimeout(wheelGestureTimer);
+  wheelGestureTimer = setTimeout(() => {
+    wheelGestureReverse = undefined;
+  }, 300);
+  return wheelGestureReverse;
+};
 
 const wheelStepCount = (target, e) => {
   let delta = e.deltaY || e.deltaX;
@@ -2521,10 +2532,12 @@ const optionWheel = (e) => {
   if (!target || target.disabled || e.ctrlKey) return;
   e.preventDefault();
   e.stopPropagation();
+  const reversed = wheelReversed();
   let steps = wheelStepCount(target, e);
   if (steps == 0) return;
+  if (reversed) steps *= -1;
   if (target.type == "range") {
-    if (!settings.input?.wheelReverse) steps *= -1;
+    steps *= -1;
     const step = Number(target.dataset.wheelStep || target.step || 1);
     const before = target.value;
     target.value = Number(target.value) + steps * step;
