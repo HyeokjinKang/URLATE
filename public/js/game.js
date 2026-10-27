@@ -569,6 +569,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         settingApply();
         await hydrateSelectPreferences();
+        restoreMods();
         fetch(`${api}/tracks`, {
           method: "GET",
           credentials: "include",
@@ -605,7 +606,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-const SELECT_PREFERENCE_KEYS = ["sort", "difficultySelection", "songName"];
+const SELECT_PREFERENCE_KEYS = ["sort", "difficultySelection", "songName", "rate", "disableText", "autoPlay"];
+const BOOLEAN_PREFERENCE_KEYS = ["disableText", "autoPlay"];
+
+const preferenceValue = (key, value) => {
+  if (key == "songName") return value;
+  if (BOOLEAN_PREFERENCE_KEYS.includes(key)) return value == "true";
+  return Number(value);
+};
 
 const hydrateSelectPreferences = async () => {
   if (SELECT_PREFERENCE_KEYS.every((key) => localStorage[key] !== undefined)) {
@@ -635,7 +643,7 @@ const sendSelectPreferences = () => {
   const preferences = {};
   SELECT_PREFERENCE_KEYS.forEach((key) => {
     if (localStorage[key] === undefined) return;
-    preferences[key] = key == "songName" ? localStorage[key] : Number(localStorage[key]);
+    preferences[key] = preferenceValue(key, localStorage[key]);
   });
   if (!Object.keys(preferences).length) return;
   fetch(`${api}/selectPreferences`, {
@@ -658,6 +666,30 @@ const saveSelectPreferences = (immediate) => {
     return;
   }
   selectPreferenceSaveTimeout = setTimeout(sendSelectPreferences, 500);
+};
+
+const renderMods = () => {
+  document.getElementById("trackModsRate").value = rate.toFixed(1);
+  trackModsText.textContent = disableText ? "Yes" : "No";
+  trackModsText.classList.toggle("enabled", disableText);
+  trackModsAuto.textContent = autoPlay ? "Yes" : "No";
+  trackModsAuto.classList.toggle("enabled", autoPlay);
+};
+
+const restoreMods = () => {
+  const savedRate = Number(localStorage.rate);
+  rate = savedRate >= 0.5 && savedRate <= 2 ? Math.round(savedRate * 10) / 10 : 1;
+  disableText = localStorage.disableText == "true";
+  autoPlay = localStorage.autoPlay == "true";
+  renderMods();
+};
+
+const saveMods = () => {
+  localStorage.rate = rate;
+  localStorage.disableText = disableText;
+  localStorage.autoPlay = autoPlay;
+  renderMods();
+  saveSelectPreferences();
 };
 
 const restoreSortSettings = () => {
@@ -818,14 +850,6 @@ const songSelected = (n, refreshed, seek) => {
     loadingHide();
     return;
   }
-  disableText = false;
-  rate = 1;
-  document.getElementById("trackModsRate").value = "1.0";
-  trackModsText.textContent = "No";
-  trackModsText.classList.remove("enabled");
-  autoPlay = false;
-  trackModsAuto.textContent = "No";
-  trackModsAuto.classList.remove("enabled");
   if (!(songSelection == -1 && tracks[n].name == "URLATE Theme")) {
     document.getElementById("songNameText").textContent =
       settings.general.detailLang == "original" ? tracks[n].originalName : tracks[n].name;
@@ -911,29 +935,18 @@ const songSelected = (n, refreshed, seek) => {
 
 const textDisabled = () => {
   disableText = !disableText;
-  if (disableText) {
-    trackModsText.textContent = "Yes";
-    trackModsText.classList.add("enabled");
-  } else {
-    trackModsText.textContent = "No";
-    trackModsText.classList.remove("enabled");
-  }
+  saveMods();
 };
 
 const autoPlayToggled = () => {
   autoPlay = !autoPlay;
-  trackModsAuto.textContent = autoPlay ? "Yes" : "No";
-  trackModsAuto.classList.toggle("enabled", autoPlay);
+  saveMods();
 };
 
 const rateChanged = (e) => {
-  e.value = Number(e.value).toFixed(1);
-  if (e.value > 2) {
-    e.value = 2;
-  } else if (e.value < 0.5) {
-    e.value = 0.5;
-  }
-  rate = Number(e.value);
+  const value = Number(e.value);
+  rate = Number.isFinite(value) ? Math.min(2, Math.max(0.5, Math.round(value * 10) / 10)) : 1;
+  saveMods();
 };
 
 const updateRanks = () => {
