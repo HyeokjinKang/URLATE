@@ -236,7 +236,7 @@ const initialize = (isFirstCalled) => {
 
   missCanvas.width = window.innerWidth * 0.2 * pixelRatio;
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
-  rate = localStorage.rate;
+  rate = Math.min(2, Math.max(0.5, Number(localStorage.rate) || 1));
 
   if (isFirstCalled) {
     fetch(`${cdn}/URLATE-patterns/${localStorage.songName}/${localStorage.difficultySelection}.json`)
@@ -316,7 +316,7 @@ const initialize = (isFirstCalled) => {
             Howler.autoSuspend = false;
             Howler.volume(settings.sound.volume.master);
             song.volume(settings.sound.volume.music);
-            song.rate(localStorage.rate);
+            song.rate(rate);
             if (load == 1) {
               doneLoading();
             }

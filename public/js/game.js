@@ -2554,7 +2554,7 @@ const wheelStepCount = (target, e) => {
 };
 
 const optionWheel = (e) => {
-  const target = e.target.closest(".optionSlider, .optionSelect");
+  const target = e.target.closest(".optionSlider, .optionSelect, #trackModsRate");
   if (!target || target.disabled || e.ctrlKey) return;
   e.preventDefault();
   e.stopPropagation();
@@ -2569,6 +2569,15 @@ const optionWheel = (e) => {
     target.value = Number(target.value) + steps * step;
     if (target.value == before) return;
     target.dispatchEvent(new Event("input", { bubbles: true }));
+    target.dispatchEvent(new Event("change", { bubbles: true }));
+    return;
+  }
+  if (target.type == "number") {
+    const step = Number(target.step || 1);
+    const value = Math.round((Number(target.value) - steps * step) * 10) / 10;
+    const next = Math.min(Number(target.max), Math.max(Number(target.min), value));
+    if (next == Number(target.value)) return;
+    target.value = next;
     target.dispatchEvent(new Event("change", { bubbles: true }));
     return;
   }
