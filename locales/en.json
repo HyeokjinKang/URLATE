@@ -94,6 +94,7 @@
   "note_density": "Note Density",
   "speed": "Speed",
   "playback_rate": "Playback Rate",
+  "auto_play": "Auto Play",
   "disable_text": "Disable Text",
   "medal_description": "Medals you can earn through gameplay. In order, they represent AP (All Perfect), FC (Full Combo), and Clear.",
   "not_available": "This difficulty has no pattern yet :( We're working on it — please wait a little longer..!",

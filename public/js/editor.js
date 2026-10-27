@@ -2455,7 +2455,11 @@ const test = () => {
   pattern.information.author = trackSettingsForm[2].value;
   pattern.information.comment = trackSettingsForm[3].value;
   localStorage.pattern = JSON.stringify(pattern);
-  window.location.href = `${url}/test${background == "0" ? "?background=0" : ""}`;
+  const params = new URLSearchParams();
+  if (background == "0") params.set("background", "0");
+  if (shiftDown) params.set("auto", "1");
+  const query = params.toString();
+  window.location.href = `${url}/test${query ? `?${query}` : ""}`;
 };
 
 const changeSplit = (isTriggeredByKey) => {

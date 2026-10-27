@@ -27,6 +27,7 @@ const intro2container = document.getElementById("intro2container");
 const langSelector = document.getElementById("langSelector");
 const selectSongContainer = document.getElementById("selectSongContainer");
 const trackModsText = document.getElementById("trackModsText");
+const trackModsAuto = document.getElementById("trackModsAuto");
 const selectTitle = document.getElementById("selectTitle");
 const overlayPaymentContainer = document.getElementById("overlayPaymentContainer");
 const overlayLoadingContainer = document.getElementById("overlayLoadingContainer");
@@ -84,6 +85,7 @@ let banners;
 
 let rate = 1;
 let disableText = false;
+let autoPlay = false;
 
 let intro1skipped = 0;
 let intro2skipped = 0;
@@ -803,6 +805,7 @@ const songSelected = (n, refreshed, seek) => {
       getSong(songSelection)?.fade(1, 0, 2000);
       localStorage.rate = rate;
       localStorage.disableText = disableText;
+      localStorage.autoPlay = autoPlay;
       localStorage.difficultySelection = difficultySelection;
       localStorage.difficulty = JSON.parse(tracks[songSelection].difficulty)[difficultySelection];
       localStorage.songName = tracks[songSelection].fileName;
@@ -820,6 +823,9 @@ const songSelected = (n, refreshed, seek) => {
   document.getElementById("trackModsRate").value = "1.0";
   trackModsText.textContent = "No";
   trackModsText.classList.remove("enabled");
+  autoPlay = false;
+  trackModsAuto.textContent = "No";
+  trackModsAuto.classList.remove("enabled");
   if (!(songSelection == -1 && tracks[n].name == "URLATE Theme")) {
     document.getElementById("songNameText").textContent =
       settings.general.detailLang == "original" ? tracks[n].originalName : tracks[n].name;
@@ -912,6 +918,12 @@ const textDisabled = () => {
     trackModsText.textContent = "No";
     trackModsText.classList.remove("enabled");
   }
+};
+
+const autoPlayToggled = () => {
+  autoPlay = !autoPlay;
+  trackModsAuto.textContent = autoPlay ? "Yes" : "No";
+  trackModsAuto.classList.toggle("enabled", autoPlay);
 };
 
 const rateChanged = (e) => {
@@ -2472,6 +2484,7 @@ const clickActions = {
   songSelected: (arg) => songSelected(Number(arg)),
   sortSelected: (arg) => sortSelected(Number(arg)),
   textDisabled,
+  autoPlayToggled,
   tutorialSkip,
   visualSyncDown,
   visualSyncReset,
