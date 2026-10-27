@@ -427,22 +427,14 @@ const songSelected = (isLoaded = false) => {
 const toggleSettings = () => {
   if (isSettingsOpened) {
     document.getElementById("settingsContainer").style.display = "none";
-    document.getElementById("timelineContainer").style.width = "100vw";
     document.getElementById("timelineZoomController").style.right = "1.5vw";
-    document.getElementById("timelineSplitController").style.left = "11vw";
     componentView.style.marginRight = "5vw";
-    tmlCanvas.style.width = "100vw";
-    tmlCanvasW = window.innerWidth;
     sidebarBtn.classList.remove("sidebar-collapse");
     sidebarBtn.classList.add("sidebar-expand");
   } else {
     document.getElementById("settingsContainer").style.display = "flex";
-    document.getElementById("timelineContainer").style.width = "80vw";
     document.getElementById("timelineZoomController").style.right = "21vw";
-    document.getElementById("timelineSplitController").style.left = "9vw";
     componentView.style.marginRight = "0vw";
-    tmlCanvas.style.width = "80vw";
-    tmlCanvasW = window.innerWidth * 0.8;
     sidebarBtn.classList.remove("sidebar-expand");
     sidebarBtn.classList.add("sidebar-collapse");
   }
@@ -483,11 +475,7 @@ const initialize = (isFirstCalled) => {
   const desynchronized = !(settings.display.vsync ?? true);
   cntCtx ??= cntCanvas.getContext("2d", { desynchronized });
   tmlCtx ??= tmlCanvas.getContext("2d", { desynchronized });
-  if (isSettingsOpened) {
-    tmlCanvasW = window.innerWidth * 0.8 * window.devicePixelRatio;
-  } else {
-    tmlCanvasW = window.innerWidth * window.devicePixelRatio;
-  }
+  tmlCanvasW = window.innerWidth * window.devicePixelRatio;
   canvasW = (window.innerWidth * 0.6 * window.devicePixelRatio * settings.display.canvasRes) / 100;
   canvasH = (window.innerHeight * 0.65 * window.devicePixelRatio * settings.display.canvasRes) / 100;
   tmlCanvasH = window.innerHeight * 0.27 * window.devicePixelRatio;
@@ -833,7 +821,9 @@ const cycleTimelineFilter = (direction) => {
   setTimelineFilter(filters[(filters.indexOf(timelineFilter) + direction + filters.length) % filters.length]);
 };
 
-const tmlSpan = () => 17 * zoom * (isSettingsOpened ? 0.8 : 1);
+const tmlVisibleW = () => tmlCanvasW * (isSettingsOpened ? 0.8 : 1);
+const tmlEndX = () => tmlVisibleW() / 1.01;
+const tmlSpan = () => (17 * zoom * (tmlEndX() - tmlCanvasW / 10)) / (tmlCanvasW / 1.01 - tmlCanvasW / 10);
 
 const tmlRender = () => {
   try {
@@ -844,7 +834,7 @@ const tmlRender = () => {
     const tmlStartX = tmlCanvasW / 10, //timeline(element view) start X
       startX = tmlCanvasW / 80,
       startY = tmlCanvasH / 6,
-      endX = tmlCanvasW / 1.01,
+      endX = tmlEndX(),
       endY = tmlCanvasH / 1.1,
       height = tmlRowHeight();
     tmlPositions = [];
@@ -1133,7 +1123,7 @@ const tmlRender = () => {
     const rows = scrollRows();
     if (-timelineYLoc / height > rows) setScrollRow(rows);
     const vertical = {
-      x: endX + (tmlCanvasW - endX - barSize) / 2,
+      x: endX + (tmlVisibleW() - endX - barSize) / 2,
       y: startY,
       w: barSize,
       h: endY - startY,
@@ -2131,10 +2121,10 @@ const timelineFollowMouse = (v1, v2, i) => {
         i = pointingCntElement.i;
       }
       if (!dragGroup) startDrag(v1, i);
-      if (mouseMode == 1 && mouseX > tmlCanvasW / 10 && mouseX < tmlCanvasW / 1.01) {
+      if (mouseMode == 1 && mouseX > tmlCanvasW / 10 && mouseX < tmlEndX()) {
         const beats = timing.beatAt(song.seek() * 1000 - (offset + sync));
         const tmlStartX = tmlCanvasW / 10;
-        const beatToPx = (tmlCanvasW / 1.01 - tmlStartX) / tmlSpan();
+        const beatToPx = (tmlEndX() - tmlStartX) / tmlSpan();
         let calculatedBeat = beats + (mouseX - tmlStartX) / beatToPx - zoom;
         if (calculatedBeat <= 0) calculatedBeat = 0;
         calculatedBeat = Number(calculatedBeat.toPrecision(10));
@@ -2181,13 +2171,13 @@ const timelineAddElement = () => {
   let startY = tmlCanvasH / 6;
   const beats = timing.beatAt(song.seek() * 1000);
   const tmlStartX = tmlCanvasW / 10;
-  const beatToPx = (tmlCanvasW / 1.01 - tmlStartX) / tmlSpan();
+  const beatToPx = (tmlEndX() - tmlStartX) / tmlSpan();
   let calculatedBeat = beats + (mouseX - tmlStartX) / beatToPx - zoom;
   if (calculatedBeat <= 0) calculatedBeat = 0;
   calculatedBeat = Number(calculatedBeat.toPrecision(10));
   calculatedBeat = magnetToggle ? Math.round(calculatedBeat * split) / split : calculatedBeat;
   const target = timelineRowAt(mouseY - timelineYLoc);
-  if (mouseX > tmlCanvasW / 10 && mouseX < tmlCanvasW / 1.01 && mouseY > startY && mouseY < tmlCanvasH / 1.1) {
+  if (mouseX > tmlCanvasW / 10 && mouseX < tmlEndX() && mouseY > startY && mouseY < tmlCanvasH / 1.1) {
     if (!target) {
       return;
     } else if (target.v1 == 0) {

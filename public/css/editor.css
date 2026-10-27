@@ -283,7 +283,7 @@ body {
   color: #555;
   flex-direction: column;
   align-items: center;
-  position: static;
+  position: relative;
   z-index: 5;
   width: 25vw;
   height: 100vh;
