@@ -1,3 +1,6 @@
+import Updater from "./updater.js";
+import { lowerBound, upperBound } from "./utils.js";
+
 const SAMPLE_MS = 8;
 const HORIZON_MS = 3000;
 const REPLAN_MS = 400;
@@ -13,7 +16,7 @@ const easeOut = (u) => 1 - (1 - u) ** 3;
 const clampUnit = (v) => Math.max(-100, Math.min(100, v));
 const clampPoint = (p) => ({ x: clampUnit(p.x), y: clampUnit(p.y) });
 
-export default class AutoPlay {
+class Planner {
   constructor() {
     this.plan = null;
     this.last = null;
@@ -41,8 +44,8 @@ export default class AutoPlay {
   }
 
   move({ beats, timing, rate, cursor, target, due, bulletsAt }) {
-    if (timing !== this.timing || Number(rate) != this.rate) {
-      this.timing = timing;
+    this.timing = timing;
+    if ((Number(rate) || 1) != this.rate) {
       this.rate = Number(rate) || 1;
       this.plan = null;
     }
@@ -252,3 +255,117 @@ export default class AutoPlay {
     return min;
   }
 }
+
+/* ---- Drivers ----------------------------------------------------------- */
+
+const PREVIEW_JUMP_MS = 250;
+
+const bulletsOf = (pattern, timing, destroyed) => (beats) => {
+  const list = [];
+  const end = upperBound(pattern.bullets, beats);
+  for (let i = lowerBound(pattern.bullets, beats - 32); i < end; i++) {
+    if (!destroyed.has(i)) list.push(Updater.bulletPos(pattern.bullets[i], beats, timing));
+  }
+  return list;
+};
+
+export const createGameAutoPlay = (game) => {
+  const planner = new Planner();
+  let holds = new Set();
+
+  const targetAt = (beats) => {
+    const { patterns } = game.pattern;
+    for (let i = lowerBound(patterns, beats - game.noteMaxDuration); i < patterns.length; i++) {
+      if (!game.destroyedNotes.has(i)) return i;
+    }
+    return -1;
+  };
+
+  const isDue = (beat, beats) => game.framesFrom(beat, beats) >= -0.5;
+
+  return {
+    setScale: (scale) => planner.setScale(scale),
+
+    reset() {
+      planner.reset();
+      holds = new Set();
+    },
+
+    step(renderBeats, cursor) {
+      const { pattern, timing } = game;
+      const beats = game.calcBeats();
+
+      for (const i of holds) {
+        const note = pattern.patterns[i];
+        if (!isDue(note.beat + note.duration, beats)) continue;
+        holds.delete(i);
+        game.release(i);
+      }
+
+      let i = targetAt(renderBeats);
+      const position = planner.move({
+        beats: renderBeats,
+        timing,
+        rate: game.rate,
+        cursor,
+        target: i < 0 ? null : pattern.patterns[i],
+        due: i >= 0 && isDue(pattern.patterns[i].beat, beats),
+        bulletsAt: bulletsOf(pattern, timing, game.destroyedBullets),
+      });
+      game.moveCursor(position);
+
+      while (i >= 0 && isDue(pattern.patterns[i].beat, beats) && planner.inNote(position, pattern.patterns[i])) {
+        planner.hit();
+        if (pattern.patterns[i].value == 2) holds.add(i);
+        game.press(i, beats);
+        i = targetAt(renderBeats);
+      }
+    },
+  };
+};
+
+export const createPreviewAutoPlay = () => {
+  const planner = new Planner();
+  let cursor = null;
+  let next = 0;
+  let lastMs = null;
+
+  return {
+    setScale: (scale) => planner.setScale(scale),
+
+    reset() {
+      planner.reset();
+      cursor = null;
+      lastMs = null;
+    },
+
+    step({ beats, pattern, timing, rate, destroyedBullets }) {
+      const { patterns } = pattern;
+      const target = upperBound(patterns, beats);
+      const ms = timing.msAt(beats);
+      const hits = [];
+      const jumped = lastMs == null || ms < lastMs || ms - lastMs > PREVIEW_JUMP_MS * rate || target < next;
+      if (jumped || !cursor) {
+        planner.reset();
+        const previous = patterns[target - 1];
+        cursor = previous ? { x: previous.x, y: previous.y } : { x: 0, y: 0 };
+      } else {
+        for (let i = next; i < target; i++) hits.push(i);
+        if (hits.length) planner.hit();
+      }
+      next = target;
+      lastMs = ms;
+
+      cursor = planner.move({
+        beats,
+        timing,
+        rate,
+        cursor,
+        target: patterns[target] ?? null,
+        due: false,
+        bulletsAt: bulletsOf(pattern, timing, destroyedBullets),
+      });
+      return { cursor, hits };
+    },
+  };
+};

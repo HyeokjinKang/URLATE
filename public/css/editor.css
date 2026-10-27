@@ -227,7 +227,7 @@ body {
 }
 
 #canvasContainer {
-  position: initial;
+  position: relative;
   background-color: #fff;
   width: 60vw;
   height: 100%;
@@ -602,6 +602,42 @@ body {
 
 #controlBtn {
   height: 1.6vh;
+}
+
+#autoPreviewBtn {
+  position: absolute;
+  top: 1vh;
+  right: 1vh;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.5vh;
+  padding: 0.45vh 0.95vh;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 99px;
+  background-color: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-family: inherit;
+  font-size: 1.25vh;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  transition: background-color 0.2s;
+}
+
+#autoPreviewBtn img {
+  height: 1.8vh;
+  filter: invert(1);
+}
+
+#autoPreviewBtn.auto-preview-off {
+  border-color: rgba(255, 255, 255, 0.25);
+  background-color: rgba(0, 0, 0, 0.25);
+  color: rgba(255, 255, 255, 0.55);
+}
+
+#autoPreviewBtn.auto-preview-off img {
+  opacity: 0.55;
 }
 
 #helpContainer {

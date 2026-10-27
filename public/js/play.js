@@ -13,7 +13,8 @@ let upperBound,
   PRESS_WINDOW_FRAMES,
   RELEASE_LATE_FRAMES,
   hitSoundSrc;
-let Factory, Updater, Renderer, AutoPlay;
+const autoPlay = localStorage.autoPlay == "true";
+let Factory, Updater, Renderer, createGameAutoPlay;
 let parsePattern, Timing;
 const modulesReady = (async () => {
   try {
@@ -23,7 +24,7 @@ const modulesReady = (async () => {
       import("../modules/updater.js"),
       import("../modules/renderer.js"),
       import("../modules/pattern.js"),
-      import("../modules/autoplay.js"),
+      autoPlay ? import(`../modules/autoplay.js${new URL(import.meta.url).search}`) : null,
     ]);
 
     ({
@@ -43,7 +44,7 @@ const modulesReady = (async () => {
     Factory = factory.default;
     Updater = updater.default;
     Renderer = renderer.default;
-    AutoPlay = autoplay.default;
+    createGameAutoPlay = autoplay?.createGameAutoPlay;
     ({ parsePattern, Timing } = patternModule);
 
     console.log("Modules are ready.");
@@ -162,9 +163,7 @@ const FONT_STACK = "Montserrat, Pretendard Variable, Pretendard";
 let UIFontNormal = "",
   UIFontItalic = "";
 const albumImg = new Image();
-const autoPlay = localStorage.autoPlay == "true";
 let auto = null;
-let autoHolds = new Set();
 
 document.addEventListener("DOMContentLoaded", () => {
   fetch(`${api}/tracks`, {
@@ -230,7 +229,7 @@ const initialize = (isFirstCalled) => {
   canvasOH = canvas.offsetHeight;
 
   if (autoPlay) {
-    auto ??= new AutoPlay();
+    auto ??= startAutoPlay();
     auto.setScale(autoScale());
   }
 
@@ -445,7 +444,7 @@ const cntRender = () => {
 
     let renderDuration = 5 / speed;
 
-    if (auto && song.playing()) autoStep(beats);
+    if (auto && song.playing()) auto.step(beats, { x: mouseX, y: mouseY });
 
     let start = lowerBound(pattern.patterns, beats - noteMaxDuration);
     let end = upperBound(pattern.patterns, beats + renderDuration);
@@ -931,63 +930,44 @@ const autoScale = () => {
   };
 };
 
-const autoBullets = (beats) => {
-  const list = [];
-  const end = upperBound(pattern.bullets, beats);
-  for (let i = lowerBound(pattern.bullets, beats - 32); i < end; i++) {
-    if (!destroyedBullets.has(i)) list.push(Updater.bulletPos(pattern.bullets[i], beats, timing));
-  }
-  return list;
-};
-
-const autoTarget = (beats) => {
-  for (let i = lowerBound(pattern.patterns, beats - noteMaxDuration); i < patternLength; i++) {
-    if (!destroyedNotes.has(i)) return i;
-  }
-  return -1;
-};
-
-const isDue = (beat, beats) => framesFrom(beat, beats) >= -0.5;
-
-const autoStep = (renderBeats) => {
-  const beats = calcBeats();
-
-  for (const i of autoHolds) {
-    const note = pattern.patterns[i];
-    if (!isDue(note.beat + note.duration, beats)) continue;
-    autoHolds.delete(i);
-    checkHoldNote(`auto${i}`);
-  }
-
-  let i = autoTarget(renderBeats);
-  const position = auto.move({
-    beats: renderBeats,
-    timing,
-    rate,
-    cursor: { x: mouseX, y: mouseY },
-    target: i < 0 ? null : pattern.patterns[i],
-    due: i >= 0 && isDue(pattern.patterns[i].beat, beats),
-    bulletsAt: autoBullets,
-  });
-  mouseX = position.x;
-  mouseY = position.y;
-
-  while (i >= 0 && isDue(pattern.patterns[i].beat, beats) && auto.inNote(position, pattern.patterns[i])) {
-    const note = pattern.patterns[i];
-    auto.hit();
-    mouseClickedMs = Date.now();
-    if (note.value == 1) {
-      hitNote(i, note.direction, true, beats);
-    } else {
-      if (note.value == 2) {
-        mouseClicked = true;
-        autoHolds.add(i);
+const startAutoPlay = () =>
+  createGameAutoPlay({
+    get pattern() {
+      return pattern;
+    },
+    get timing() {
+      return timing;
+    },
+    get rate() {
+      return rate;
+    },
+    get noteMaxDuration() {
+      return noteMaxDuration;
+    },
+    get destroyedNotes() {
+      return destroyedNotes;
+    },
+    get destroyedBullets() {
+      return destroyedBullets;
+    },
+    calcBeats,
+    framesFrom,
+    moveCursor: (point) => {
+      mouseX = point.x;
+      mouseY = point.y;
+    },
+    press: (i, beats) => {
+      const note = pattern.patterns[i];
+      mouseClickedMs = Date.now();
+      if (note.value == 1) {
+        hitNote(i, note.direction, true, beats);
+        return;
       }
+      if (note.value == 2) mouseClicked = true;
       hitNote(i, `auto${i}`, false, beats, "•");
-    }
-    i = autoTarget(renderBeats);
-  }
-};
+    },
+    release: (i) => checkHoldNote(`auto${i}`),
+  });
 
 const countJudge = (judge) => {
   if (judge == "Perfect") perfect++;
@@ -1257,7 +1237,6 @@ const retry = () => {
     effectNum = -1;
     keyPressing = {};
     pressingKeys = [];
-    autoHolds = new Set();
     auto?.reset();
     medal = 1;
     medals[0].classList.remove("hide");
