@@ -13,16 +13,18 @@ let upperBound,
   PRESS_WINDOW_FRAMES,
   RELEASE_LATE_FRAMES,
   hitSoundSrc;
-let Factory, Updater, Renderer;
+const autoPlay = localStorage.autoPlay == "true";
+let Factory, Updater, Renderer, createGameAutoPlay;
 let parsePattern, Timing;
 const modulesReady = (async () => {
   try {
-    const [utils, factory, updater, renderer, patternModule] = await Promise.all([
+    const [utils, factory, updater, renderer, patternModule, autoplay] = await Promise.all([
       import("../modules/utils.js"),
       import("../modules/factory.js"),
       import("../modules/updater.js"),
       import("../modules/renderer.js"),
       import("../modules/pattern.js"),
+      autoPlay ? import(`../modules/autoplay.js${new URL(import.meta.url).search}`) : null,
     ]);
 
     ({
@@ -42,6 +44,7 @@ const modulesReady = (async () => {
     Factory = factory.default;
     Updater = updater.default;
     Renderer = renderer.default;
+    createGameAutoPlay = autoplay?.createGameAutoPlay;
     ({ parsePattern, Timing } = patternModule);
 
     console.log("Modules are ready.");
@@ -160,6 +163,7 @@ const FONT_STACK = "Montserrat, Pretendard Variable, Pretendard";
 let UIFontNormal = "",
   UIFontItalic = "";
 const albumImg = new Image();
+let auto = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   fetch(`${api}/tracks`, {
@@ -224,9 +228,14 @@ const initialize = (isFirstCalled) => {
   canvasOW = canvas.offsetWidth;
   canvasOH = canvas.offsetHeight;
 
+  if (autoPlay) {
+    auto ??= startAutoPlay();
+    auto.setScale(autoScale());
+  }
+
   missCanvas.width = window.innerWidth * 0.2 * pixelRatio;
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
-  rate = localStorage.rate;
+  rate = Math.min(2, Math.max(0.5, Number(localStorage.rate) || 1));
 
   if (isFirstCalled) {
     fetch(`${cdn}/URLATE-patterns/${localStorage.songName}/${localStorage.difficultySelection}.json`)
@@ -306,7 +315,7 @@ const initialize = (isFirstCalled) => {
             Howler.autoSuspend = false;
             Howler.volume(settings.sound.volume.master);
             song.volume(settings.sound.volume.music);
-            song.rate(localStorage.rate);
+            song.rate(rate);
             if (load == 1) {
               doneLoading();
             }
@@ -435,6 +444,8 @@ const cntRender = () => {
 
     let renderDuration = 5 / speed;
 
+    if (auto && song.playing()) auto.step(beats, { x: mouseX, y: mouseY });
+
     let start = lowerBound(pattern.patterns, beats - noteMaxDuration);
     let end = upperBound(pattern.patterns, beats + renderDuration);
     for (let i = start; i < end; i++) {
@@ -558,6 +569,7 @@ const cntRender = () => {
       speed: Number(nowSpeed.toFixed(2)),
       bpm: Number(timing.bpmAt(beats).toFixed(2)),
       fps: displayFPS,
+      auto: autoPlay,
     });
     Draw.progressBarUI(percentage);
 
@@ -621,6 +633,7 @@ const cntRender = () => {
 const clampCursor = (v) => Math.max(-100, Math.min(100, v));
 
 const trackMousePos = (e) => {
+  if (auto && song.playing()) return;
   if (isPointerLocked()) {
     mouseX = clampCursor(mouseX + (e.movementX / canvasOW) * 200 * sens);
     mouseY = clampCursor(mouseY + (e.movementY / canvasOH) * 200 * sens);
@@ -746,6 +759,10 @@ const calculateResult = () => {
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
   }
+  if (autoPlay) {
+    document.getElementById("scoreDifficulty").append(" · AUTO");
+    return;
+  }
   fetch(`${api}/playRecord`, {
     method: "PUT",
     credentials: "include",
@@ -852,6 +869,7 @@ const compClicked = (isTyped, key, isWheel) => {
     else if (!isWheel && isOnResumePoint()) unpause();
     return;
   }
+  if (auto) return;
   if (!isTyped && !settings.input.mouse && !isWheel) return;
   if (key && !isWheel) mouseClicked = key;
   else if (!isWheel) mouseClicked = true;
@@ -860,47 +878,96 @@ const compClicked = (isTyped, key, isWheel) => {
   for (let i = 0; i < pointingCntElement.length; i++) {
     const el = pointingCntElement[i];
     if (el.v1 === 0 && !destroyedNotes.has(el.i) && (el.v2 !== 1) == !isWheel) {
-      const pNote = pattern.patterns[el.i];
-      if (el.v2 == 1 && pNote.direction != key) return;
-      const x = pNote.x;
-      const y = pNote.y;
-      const judge = (pNote.value == 1 ? judgeWheelTiming : judgeTiming)(framesFrom(pNote.beat, beats));
-      const timing = beats < pNote.beat ? "FAST" : "LATE";
-      countJudge(judge);
-      if (pNote.value == 2) {
-        grabbedNotes.add(el.i);
-        keyPressing[key] = el.i;
-        pressHoldNote(judge, el.i, beats, key != undefined ? key : "•");
-      } else {
-        calculateScore(judge, el.i);
-      }
-      clickParticles.push(Factory.createClickNote(x, y, el.v2, judgeSkin, judge));
-      judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge, timing));
-      record.push([
-        record.length,
-        pointingCntElement[0].v1,
-        pointingCntElement[0].v2,
-        pointingCntElement[0].i,
-        mouseX,
-        mouseY,
-        judge,
-        song.seek() * 1000,
-      ]);
-      keyInput.push({
-        judge,
-        key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•",
-        time: Date.now(),
-      });
+      if (el.v2 == 1 && pattern.patterns[el.i].direction != key) return;
+      hitNote(el.i, key, isWheel, beats);
       return;
     }
   }
-  keyInput.push({
-    judge: "Empty",
-    key: isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•",
-    time: Date.now(),
-  });
+  keyInput.push({ judge: "Empty", key: keyLabel(key, isWheel), time: Date.now() });
   clickParticles.push(Factory.createClickDefault(mouseX, mouseY));
 };
+
+const keyLabel = (key, isWheel) => (isWheel ? (key == 1 ? "↑" : "↓") : key != undefined ? key : "•");
+
+const hitNote = (i, key, isWheel, beats, label = keyLabel(key, isWheel)) => {
+  const pNote = pattern.patterns[i];
+  const x = pNote.x;
+  const y = pNote.y;
+  const judge = (pNote.value == 1 ? judgeWheelTiming : judgeTiming)(framesFrom(pNote.beat, beats));
+  const timing = beats < pNote.beat ? "FAST" : "LATE";
+  countJudge(judge);
+  if (pNote.value == 2) {
+    grabbedNotes.add(i);
+    keyPressing[key] = i;
+    pressHoldNote(judge, i, beats, label);
+  } else {
+    calculateScore(judge, i);
+  }
+  clickParticles.push(Factory.createClickNote(x, y, pNote.value, judgeSkin, judge));
+  judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge, timing));
+  record.push([
+    record.length,
+    pointingCntElement[0].v1,
+    pointingCntElement[0].v2,
+    pointingCntElement[0].i,
+    mouseX,
+    mouseY,
+    judge,
+    song.seek() * 1000,
+  ]);
+  keyInput.push({ judge, key: label, time: Date.now() });
+};
+
+/* ---- Auto play ---------------------------------------------------------- */
+
+const autoScale = () => {
+  const res = (pixelRatio * settings.display.canvasRes) / 100;
+  return {
+    sx: (canvasOW / 200) * res,
+    sy: (canvasOH / 200) * res,
+    bulletRadius: canvasW / 80,
+    noteRadius: canvasW / 40,
+  };
+};
+
+const startAutoPlay = () =>
+  createGameAutoPlay({
+    get pattern() {
+      return pattern;
+    },
+    get timing() {
+      return timing;
+    },
+    get rate() {
+      return rate;
+    },
+    get noteMaxDuration() {
+      return noteMaxDuration;
+    },
+    get destroyedNotes() {
+      return destroyedNotes;
+    },
+    get destroyedBullets() {
+      return destroyedBullets;
+    },
+    calcBeats,
+    framesFrom,
+    moveCursor: (point) => {
+      mouseX = point.x;
+      mouseY = point.y;
+    },
+    press: (i, beats) => {
+      const note = pattern.patterns[i];
+      mouseClickedMs = Date.now();
+      if (note.value == 1) {
+        hitNote(i, note.direction, true, beats);
+        return;
+      }
+      if (note.value == 2) mouseClicked = true;
+      hitNote(i, `auto${i}`, false, beats, "•");
+    },
+    release: (i) => checkHoldNote(`auto${i}`),
+  });
 
 const countJudge = (judge) => {
   if (judge == "Perfect") perfect++;
@@ -954,7 +1021,7 @@ const addScore = (judge, weight = 1, silent = false) => {
 
 const checkLastNote = (i) => {
   if (i != patternLength - 1) return;
-  if (localStorage.record < score) {
+  if (!autoPlay && localStorage.record < score) {
     newRecordTime = Date.now();
   }
   if (pattern.bullets.length) destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
@@ -1120,7 +1187,7 @@ const resume = () => {
 
 const retry = () => {
   if (isResultShowing) {
-    if (localStorage.record < score) localStorage.record = score;
+    if (!autoPlay && localStorage.record < score) localStorage.record = score;
     return location.reload();
   }
   lockPointer();
@@ -1170,6 +1237,7 @@ const retry = () => {
     effectNum = -1;
     keyPressing = {};
     pressingKeys = [];
+    auto?.reset();
     medal = 1;
     medals[0].classList.remove("hide");
     medals[1].classList.remove("hide");

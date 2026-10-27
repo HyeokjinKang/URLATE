@@ -94,6 +94,7 @@
   "note_density": "노트 밀도",
   "speed": "속도",
   "playback_rate": "재생속도",
+  "auto_play": "오토 플레이",
   "disable_text": "텍스트 비활성화",
   "medal_description": "게임 플레이를 통해 얻을 수 있는 메달입니다. 차례대로 AP(All Perfect), FC(Full Combo), 클리어를 의미합니다.",
   "not_available": "이 난이도는 아직 패턴이 없습니다 :( 빠른 시일 내에 패턴을 개발하려 노력중이니 조금만 기다려주세요..!",

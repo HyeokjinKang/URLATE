@@ -55,8 +55,10 @@
               <span class="helpDescription">Tool Selection</span>
             </div>
             <div class="helpKeyContainer">
-              <span class="helpKey"><kbd class="ctrl">Ctrl</kbd> + <kbd>P</kbd></span>
-              <span class="helpDescription">Test Play</span>
+              <span class="helpKey"
+                ><kbd class="ctrl">Ctrl</kbd> ( + <kbd class="shift">Shift</kbd> ) + <kbd>P</kbd></span
+              >
+              <span class="helpDescription">Test Play (Auto)</span>
             </div>
             <div class="helpKeyContainer">
               <span class="helpKey"
@@ -209,6 +211,7 @@
               data-arg="2"
             />
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
+            <img src="/images/icons/play-auto.svg" class="menuIcon clickable" data-action="autoTest" />
             <img src="/images/icons/play-solid.svg" class="menuIcon clickable" data-action="test" />
             <img src="/images/icons/floppy-disk-solid.svg" class="menuIcon clickable" data-action="save" />
             <div id="horizontalLine" class="menuIcon">&nbsp;</div>
@@ -250,6 +253,14 @@
             <div id="canvasContainer">
               <div id="canvasBackground"></div>
               <canvas id="componentCanvas" width="100%" height="100%"> </canvas>
+              <button
+                id="autoPreviewBtn"
+                class="clickable auto-preview-off"
+                data-action="toggleAutoPreview"
+                data-mousedown="none"
+              >
+                <img src="/images/icons/auto.svg" />AUTO
+              </button>
             </div>
           </div>
         </div>

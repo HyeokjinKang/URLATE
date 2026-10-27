@@ -198,12 +198,19 @@
                   id="trackModsRate"
                   class="trackModsValue metropolis"
                   value="1.0"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
                   data-change="rateChanged"
                 />
               </div>
               <div class="trackStatContainer">
                 <span class="trackModsTitle"><%= __('disable_text') %></span>
                 <div class="trackModsValue" id="trackModsText" data-action="textDisabled">No</div>
+              </div>
+              <div class="trackStatContainer">
+                <span class="trackModsTitle"><%= __('auto_play') %></span>
+                <div class="trackModsValue" id="trackModsAuto" data-action="autoPlayToggled">No</div>
               </div>
             </div>
           </div>

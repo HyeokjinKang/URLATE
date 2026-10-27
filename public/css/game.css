@@ -1401,7 +1401,7 @@ input.optionValue:focus {
 }
 
 #modsTitleContainer {
-  margin-top: 5vh;
+  margin-top: 1.5vh;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -1464,6 +1464,7 @@ input[type="number"] {
 }
 
 .trackStatLineContainer {
+  flex-shrink: 0;
   margin-top: 0.5vh;
   width: 70%;
   height: 5px;
@@ -1485,6 +1486,11 @@ input[type="number"] {
   justify-content: flex-start;
   height: 15%;
   width: 100%;
+  pointer-events: none;
+}
+
+#selectContainerInfo > * {
+  pointer-events: auto;
 }
 
 #selectInnerContainer {

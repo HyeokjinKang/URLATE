@@ -1253,7 +1253,7 @@ export default class Renderer {
    */
   systemInfoUI(info) {
     const { ctx, canvasW, canvasH } = this;
-    const { speed, bpm, fps } = info;
+    const { speed, bpm, fps, auto } = info;
 
     ctx.save();
     ctx.beginPath();
@@ -1273,6 +1273,11 @@ export default class Renderer {
     if (fps !== undefined) {
       ctx.textAlign = "right";
       ctx.fillText(fps, canvasW - canvasW / 100, canvasH - canvasH / 70);
+    }
+
+    if (auto) {
+      ctx.textAlign = "center";
+      ctx.fillText("AUTO PLAY", canvasW / 2, canvasH - canvasH / 25);
     }
 
     ctx.restore();
