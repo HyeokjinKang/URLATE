@@ -174,8 +174,6 @@
   "ignore_cursor_at_editor": "에디터에서 커서 무시",
   "ignore_at_editor": "에디터에서 스킨 무시",
   "ignore_sync_at_editor": "프리뷰 시 싱크 오프셋 무시",
-  "ignore_latency_at_editor": "프리뷰 시 기기 지연 보정값 무시",
-  "ignore_latency": "기기 지연 보정값 무시",
   "offset_setting": "오프셋 설정",
   "offset": "오프셋",
   "offset_description_before": "소리에 맞춰 ",

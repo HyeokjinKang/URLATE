@@ -174,8 +174,6 @@
   "ignore_cursor_at_editor": "Ignore Cursor in Editor",
   "ignore_at_editor": "Ignore Skin in Editor",
   "ignore_sync_at_editor": "Ignore Sync Offsets in Preview",
-  "ignore_latency_at_editor": "Ignore Device Latency Correction in Preview",
-  "ignore_latency": "Ignore Device Latency Correction",
   "offset_setting": "Offset Settings",
   "offset": "Offset",
   "offset_description_before": "Press the ",

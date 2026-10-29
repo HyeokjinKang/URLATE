@@ -74,7 +74,6 @@ let settings,
   visualSync = 0,
   rate = 1,
   split = 2;
-let audioLatency = 0;
 let song;
 let mouseX = 0,
   mouseY = 0,
@@ -96,7 +95,7 @@ let destroyParticles = [];
 let pixelRatio = window.devicePixelRatio;
 let tmlRows = { start: [0, 1, 2], count: [1, 1, 1], total: 3 };
 let timelineFilter = "all";
-let skin, denyCursor, denySync, denyLatency;
+let skin, denyCursor, denySync;
 let dragMouseX, dragMouseY, dragGroup, marquee;
 let tmlPositions = [],
   cntPositions = [];
@@ -181,7 +180,6 @@ const settingApply = () => {
   volumeMasterValue.textContent = settings.sound.volume.master * 100 + "%";
   volumeMaster.style.setProperty("--fill", `${volumeMaster.value}%`);
   denySync = settings.editor.denySync ?? false;
-  denyLatency = (settings.sound.denyLatency ?? false) || (settings.editor.denyLatency ?? false);
   sync = denySync ? 0 : settings.sound.offset;
   visualSync = denySync ? 0 : (settings.display.offset ?? 0);
   denyCursor = settings.editor.denyCursor;
@@ -1085,9 +1083,7 @@ const tmlRender = () => {
       tmlCtx.beginPath();
       tmlCtx.fillStyle = "#2f91ed";
       tmlCtx.strokeStyle = "#2f91ed";
-      const offsetLineX =
-        tmlStartX +
-        (timing.beatAt(seekMs - (offset + sync - visualSync + audioLatency * 1000)) - renderStart) * beatToPx;
+      const offsetLineX = tmlStartX + (timing.beatAt(seekMs - (offset + sync - visualSync)) - renderStart) * beatToPx;
       tmlCtx.moveTo(offsetLineX, endY);
       tmlCtx.lineTo(offsetLineX, startY);
       tmlCtx.stroke();
@@ -1260,7 +1256,7 @@ const cntRender = () => {
 
     // Calculate seeking position
     const isSongPlaying = song.playing();
-    const seekMs = (song.seek() - (isSongPlaying ? audioLatency : 0)) * 1000;
+    const seekMs = song.seek() * 1000;
     timing = new Timing(pattern);
     const beats = Number(timing.beatAt(seekMs - (isSongPlaying ? offset + sync - visualSync : 0)).toPrecision(10));
 
@@ -1596,9 +1592,6 @@ const songPlayPause = () => {
       controlBtn.classList.add("timeline-pause");
       controlBtn.classList.remove("timeline-play");
       song.play();
-
-      const ctx = Howler.ctx;
-      audioLatency = denyLatency ? 0 : (ctx?.outputLatency ?? 0) + (ctx?.baseLatency ?? 0);
     }
   }
 };
