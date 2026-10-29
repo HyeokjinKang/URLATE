@@ -135,4 +135,6 @@ export const HIT_SOUNDS = ["default", "tick", "metal", "hihat", "clap", "blip"];
 
 export const hitSoundSrc = (name) => `/sounds/hitsounds/${HIT_SOUNDS.includes(name) ? name : HIT_SOUNDS[0]}.wav`;
 
+export const holdTickSoundSrc = (name) => `/sounds/holdticks/${HIT_SOUNDS.includes(name) ? name : HIT_SOUNDS[0]}.wav`;
+
 export const holdTickCount = (duration) => Math.max(Math.ceil(duration) - 1, 0) + 2;
