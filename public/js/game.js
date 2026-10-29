@@ -48,7 +48,7 @@ const profileNameContainer = document.getElementById("profileNameContainer");
 const slowRate = 110 / 174;
 const fastRate = 174 / 110;
 
-import { escapeHtml, safeUrl, HIT_SOUNDS, hitSoundSrc } from "../modules/utils.js";
+import { escapeHtml, safeUrl, HIT_SOUNDS, hitSoundSrc, holdTickSoundSrc } from "../modules/utils.js";
 
 let settings = [];
 let loadedVsync = true;
@@ -1626,12 +1626,20 @@ const bannerToggle = (n) => {
 
 const hitSoundPreviews = new Map();
 
-const hitSoundPreview = () => {
-  const src = hitSoundSrc(hitSoundSelector.value);
+let holdTickPreviewTimers = [];
+
+const loadHitSoundPreview = (src) => {
   if (!hitSoundPreviews.has(src)) hitSoundPreviews.set(src, new Howl({ src: [src] }));
   const preview = hitSoundPreviews.get(src);
   preview.volume(settings.sound.volume.hitSound);
-  preview.play();
+  return preview;
+};
+
+const hitSoundPreview = () => {
+  holdTickPreviewTimers.forEach(clearTimeout);
+  loadHitSoundPreview(hitSoundSrc(hitSoundSelector.value)).play();
+  const holdTick = loadHitSoundPreview(holdTickSoundSrc(hitSoundSelector.value));
+  holdTickPreviewTimers = [300, 600, 900].map((ms) => setTimeout(() => holdTick.play(), ms));
 };
 
 const settingChanged = (e, v) => {

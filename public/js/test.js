@@ -11,7 +11,8 @@ let upperBound,
   msToFrames,
   PRESS_WINDOW_FRAMES,
   RELEASE_LATE_FRAMES,
-  hitSoundSrc;
+  hitSoundSrc,
+  holdTickSoundSrc;
 const autoPlay = new URLSearchParams(window.location.search).get("auto") == "1";
 let Factory, Updater, Renderer, createGameAutoPlay;
 let parsePattern, Timing;
@@ -38,6 +39,7 @@ const modulesReady = (async () => {
       PRESS_WINDOW_FRAMES,
       RELEASE_LATE_FRAMES,
       hitSoundSrc,
+      holdTickSoundSrc,
     } = utils);
     Factory = factory.default;
     Updater = updater.default;
@@ -127,7 +129,7 @@ let overlayTime = 0;
 let shiftDown = false;
 let currentTriggerIndex = 0;
 let nowSpeed = 1;
-let tick;
+let tick, holdTick;
 let resultEffect = new Howl({
   src: [`${cdn}/tracks/result.mp3`],
   autoplay: false,
@@ -315,6 +317,10 @@ const initialize = (isFirstCalled) => {
 const settingApply = () => {
   tick = new Howl({
     src: [hitSoundSrc(settings.sound.hitSound)],
+    volume: settings.sound.volume.hitSound,
+  });
+  holdTick = new Howl({
+    src: [holdTickSoundSrc(settings.sound.hitSound)],
     volume: settings.sound.volume.hitSound,
   });
   resultEffect.volume(settings.sound.volume.effect);
@@ -928,10 +934,12 @@ const pressHoldNote = (judge, i, beats, key) => {
 const advanceHoldTicks = (i, beats) => {
   const note = pattern.patterns[i];
   const hold = holdTicks.get(i);
+  const from = hold.next;
   while (hold.next < hold.total - 1 && note.beat + hold.next <= beats) {
     hold.next++;
     addScore("Perfect", 2 / hold.total, true);
   }
+  if (hold.next > from) holdTick.play();
 };
 
 const releaseHoldNote = (i, judge, beats) => {
