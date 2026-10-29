@@ -72,7 +72,6 @@ let pattern = {};
 let patternBackup = {};
 let patternLength = 0;
 let settings, sync, visualSync, song, pixelRatio, offset, speed;
-let audioLatency = 0;
 let timing = null;
 let pointingCntElement = [{ v1: "", v2: "", i: "" }];
 let clickParticles = [];
@@ -181,8 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-const calcBeats = (seek = song.seek() * 1000) =>
-  Number(timing.beatAt(seek - (offset + sync + audioLatency * 1000)).toPrecision(10));
+const calcBeats = (seek = song.seek() * 1000) => Number(timing.beatAt(seek - (offset + sync)).toPrecision(10));
 
 const framesFrom = (target, beats) => msToFrames((timing.msAt(beats) - timing.msAt(target)) / rate);
 
@@ -308,9 +306,6 @@ const settingApply = () => {
 
 const playSong = () => {
   song.play();
-
-  const ctx = Howler.ctx;
-  audioLatency = settings.sound.denyLatency ? 0 : (ctx?.outputLatency ?? 0) + (ctx?.baseLatency ?? 0);
 };
 
 const eraseCnt = () => {

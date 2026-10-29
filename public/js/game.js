@@ -171,19 +171,6 @@ const initialize = () => {
   canvas.height = window.innerHeight * canvasRes;
 };
 
-const editorLatencyApply = () => {
-  const check = document.getElementById("ignoreEditorLatencyCheck");
-  const locked = settings.sound.denyLatency ?? false;
-  check.disabled = locked;
-  check.checked = locked || (settings.editor.denyLatency ?? false);
-};
-
-const getAudioLatency = () => {
-  if (settings.sound?.denyLatency) return 0;
-  const ctx = Howler.ctx;
-  return (ctx?.outputLatency ?? 0) + (ctx?.baseLatency ?? 0);
-};
-
 const sliderFill = (slider) => {
   const ratio = (slider.value - slider.min) / (slider.max - slider.min);
   slider.style.setProperty("--fill", `${ratio * 100}%`);
@@ -237,8 +224,6 @@ const settingApply = () => {
   document.getElementById("ignoreCursorCheck").checked = settings.editor.denyCursor;
   document.getElementById("ignoreEditorCheck").checked = settings.editor.denySkin;
   document.getElementById("ignoreSyncCheck").checked = settings.editor.denySync ?? false;
-  document.getElementById("ignoreLatencyCheck").checked = settings.sound.denyLatency ?? false;
-  editorLatencyApply();
   document.getElementById("comboAlertCheck").checked = settings.game.comboAlert;
   volumeSongValue.value = Math.round(settings.sound.volume.music * 100) + "%";
   volumeHitValue.value = Math.round(settings.sound.volume.hitSound * 100) + "%";
@@ -1710,12 +1695,6 @@ const settingChanged = (e, v) => {
     settings.editor.denySkin = e.checked;
   } else if (v == "ignoreSync") {
     settings.editor.denySync = e.checked;
-  } else if (v == "ignoreLatency") {
-    settings.sound.denyLatency = e.checked;
-    editorLatencyApply();
-  } else if (v == "ignoreEditorLatency") {
-    if (!settings.sound.denyLatency) settings.editor.denyLatency = e.checked;
-    editorLatencyApply();
   }
 };
 
@@ -1926,7 +1905,7 @@ window.addEventListener("resize", () => {
 
 const offsetUpdate = () => {
   const beat = 60 / 110;
-  const seek = Math.max(0, offsetSong.seek() - getAudioLatency());
+  const seek = offsetSong.seek();
   const beatPosition = seek % beat;
   const beatOffset = beatPosition <= beat / 1.5 ? beatPosition : beatPosition - beat;
   const remain = (beatOffset * 1000) / offsetRate;
@@ -2040,7 +2019,7 @@ const visualSyncSetting = () => {
     if (display !== 13) return;
 
     // Compute the audio based seek the same way offsetUpdate does.
-    const seek = Math.max(0, offsetSong.seek() - getAudioLatency());
+    const seek = offsetSong.seek();
 
     const cycle = beat * 2; // one note every two beats
 
