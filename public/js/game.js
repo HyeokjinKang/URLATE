@@ -2139,12 +2139,10 @@ const changeProfile = (e) => {
         iziToast.show({
           overlay: true,
           displayMode: "once",
-          theme: "dark",
           id: "inputs",
           zindex: 999,
           timeout: 20000,
           title: aliasSelect,
-          progressBarColor: "#999",
           message: "",
           position: "center",
           drag: false,
@@ -2201,10 +2199,8 @@ const changeProfile = (e) => {
           overlay: true,
           timeout: 20000,
           zindex: 999,
-          theme: "dark",
           title: pictureMessage,
           position: "center",
-          progressBarColor: "#999",
           buttons: [
             [
               "<button>Profile</button>",

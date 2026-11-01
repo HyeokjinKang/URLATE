@@ -2562,14 +2562,6 @@ input[type="number"] {
   opacity: 0 !important;
 }
 
-.iziToast-theme-dark > .iziToast-body > .iziToast-inputs > select {
-  color: white !important;
-}
-
-.iziToast-theme-dark > .iziToast-body > .iziToast-inputs > input {
-  color: white !important;
-}
-
 #rankTable {
   border-collapse: collapse;
   margin: 16vh 10vw 6vh;

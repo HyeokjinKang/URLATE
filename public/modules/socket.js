@@ -4,6 +4,15 @@ import { escapeHtml } from "./utils.js";
 const body = document.querySelector("body");
 let isErrorOccured = false;
 let achievementCount = 0;
+
+iziToast.settings({
+  position: "topCenter",
+  transitionIn: "fadeInDown",
+  transitionOut: "fadeOutUp",
+  transitionInMobile: "fadeInDown",
+  transitionOutMobile: "fadeOutUp",
+});
+
 export const socket = io(game, {
   withCredentials: true,
 });
@@ -23,8 +32,6 @@ socket.on("connect", () => {
       title: "Connected",
       message: socketi18n.connected,
       timeout: 2000,
-      layout: 2,
-      transitionIn: "fadeInLeft",
     });
   }
 });
@@ -39,8 +46,6 @@ socket.on("disconnect", (reason) => {
     title: "Disconnected",
     message: socketi18n.reconnecting,
     timeout: 2000,
-    layout: 2,
-    transitionIn: "fadeInLeft",
   });
   isErrorOccured = true;
 });
@@ -59,8 +64,6 @@ socket.on("connect_error", (err) => {
     title: "Connection error",
     message: socketi18n.reconnecting,
     timeout: 2000,
-    layout: 2,
-    transitionIn: "fadeInLeft",
   });
   setTimeout(() => {
     socket.connect();
