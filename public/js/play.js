@@ -768,7 +768,7 @@ const calculateResult = () => {
     method: "PUT",
     credentials: "include",
     body: JSON.stringify({
-      difficultySelection: Number(localStorage.difficultySelection),
+      difficultySelection: Number(localStorage.difficultySelection) + 1,
       fileName,
       userid,
       userName,
