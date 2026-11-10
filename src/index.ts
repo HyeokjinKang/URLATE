@@ -71,9 +71,7 @@ app.use((req, res, next) => {
 });
 
 app.use(compression());
-
-// Static assets are cache-busted via ?v=<ver>, so a long max-age is safe.
-app.use(express.static(__dirname + "/../public", { maxAge: "7d" }));
+app.use(express.static(__dirname + "/../public"));
 app.use(i18n);
 
 // Google Identity Services origin, used by the login button's script, style and frame.
