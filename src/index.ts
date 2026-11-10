@@ -41,6 +41,7 @@ app.disable("x-powered-by");
 app.set("trust proxy", config.project.trustProxy ?? 2);
 
 app.set("view engine", "ejs");
+app.set("view cache", true);
 app.set("views", __dirname + "/../views");
 app.use(cookieParser());
 
