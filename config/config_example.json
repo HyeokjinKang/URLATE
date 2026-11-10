@@ -6,7 +6,6 @@
     "game": "https://game.example.com",
     "nsfw": "https://nsfw.example.com",
     "secretKey": "Something Random",
-    "mode": "production",
     "port": 3000,
     "host": "127.0.0.1",
     "trustProxy": 2,
