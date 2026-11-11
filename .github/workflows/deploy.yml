@@ -66,3 +66,12 @@ jobs:
         run: |
           ssh URLATE-PRODUCTION \
             "cd '${{secrets.DEPLOY_TARGET}}' && pm2 startOrReload ecosystem.config.js --update-env"
+
+      - name: Purge CDN cache
+        env:
+          BUNNY_API_KEY: ${{ secrets.BUNNY_API_KEY }}
+          BUNNY_PULLZONE_ID: ${{ secrets.BUNNY_PULLZONE_ID }}
+        run: |
+          curl -fsS -X POST \
+            -H "AccessKey: $BUNNY_API_KEY" \
+            "https://api.bunny.net/pullzone/$BUNNY_PULLZONE_ID/purgeCache"
