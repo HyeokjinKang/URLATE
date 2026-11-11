@@ -16,7 +16,7 @@
     <link rel="preconnect" href="<%= cdn %>" crossorigin />
     <link rel="preload" as="image" href="/images/brand/logo-lite-mark.webp" fetchpriority="high" />
     <link rel="stylesheet" href="/css/pretendard.css" />
-    <link rel="stylesheet" href="/css/cursors.css?v=<%= ver %>" />
+    <link rel="stylesheet" href="/css/cursors.css" />
     <%- inlineCss("fonts", "montserrat", "tokens", "chrome", "index") %>
     <title>URLATE</title>
   </head>
@@ -237,6 +237,6 @@
       const lang = "<%= __('lang') %>";
     </script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="/js/index.js?v=<%= ver %>"></script>
+    <script src="/js/index.js"></script>
   </body>
 </html>

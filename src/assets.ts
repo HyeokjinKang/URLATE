@@ -1,14 +1,7 @@
 import { readFileSync } from "fs";
 import path from "path";
 
-// config.json differs per deployment, so it can't be a static import target.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const config = require(__dirname + "/../config/config.json");
-
 const CSS_DIR = path.join(__dirname, "..", "public", "css");
-
-// Test builds re-read, so a stylesheet edit shows up without a restart.
-const CACHE = config.project.mode !== "test";
 
 const cache = new Map<string, string>();
 
@@ -26,7 +19,7 @@ const read = (name: string): string => {
   if (/<\/style/i.test(css)) {
     throw new Error(`${name}.css contains </style> and cannot be inlined.`);
   }
-  if (CACHE) cache.set(name, css);
+  cache.set(name, css);
   return css;
 };
 

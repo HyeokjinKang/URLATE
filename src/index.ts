@@ -41,6 +41,7 @@ app.disable("x-powered-by");
 app.set("trust proxy", config.project.trustProxy ?? 2);
 
 app.set("view engine", "ejs");
+app.set("view cache", true);
 app.set("views", __dirname + "/../views");
 app.use(cookieParser());
 
@@ -50,8 +51,8 @@ app.locals.api = config.project.api;
 app.locals.game = config.project.game;
 app.locals.cdn = config.project.cdn;
 app.locals.inlineCss = inlineCss;
-app.locals.ver = config.project.mode == "test" ? Date.now() : version;
-app.locals.branch = "production";
+app.locals.ver = version;
+app.locals.branch = "main";
 exec("git branch --show-current", (err, stdout) => {
   if (!err) app.locals.branch = stdout.trim();
 });
@@ -70,9 +71,7 @@ app.use((req, res, next) => {
 });
 
 app.use(compression());
-
-// Static assets are cache-busted via ?v=<ver>, so a long max-age is safe.
-app.use(express.static(__dirname + "/../public", { maxAge: "7d" }));
+app.use(express.static(__dirname + "/../public"));
 app.use(i18n);
 
 // Google Identity Services origin, used by the login button's script, style and frame.
@@ -212,7 +211,6 @@ app.get("/", authPageLimiter, (req, res) => {
   res.render("index", {
     googleClientId: googleClientId,
     cspNonce: withAuthPageCsp(res, true),
-    ver: config.project.mode == "test" ? Date.now() : version,
   });
 });
 
@@ -228,7 +226,6 @@ app.get("/ko", function (req, res) {
 
 app.get("/join", authPageLimiter, (req, res) => {
   res.render("join", {
-    ver: config.project.mode == "test" ? Date.now() : version,
     cspNonce: withAuthPageCsp(res, false),
   });
 });
@@ -408,57 +405,46 @@ app.get("/logout", logoutLimiter, (req, res) => {
 app.get("/game", gateLimiter, requireAuth, async (req, res) => {
   res.render("game", {
     cspNonce: withGamePageCsp(res),
-    ver: config.project.mode == "test" ? Date.now() : version,
   });
 });
 
 app.get("/editor", gateLimiter, requireAuth, async (req, res) => {
   res.render("editor", {
     cspNonce: withPlayPageCsp(res),
-    ver: config.project.mode == "test" ? Date.now() : version,
   });
 });
 
 app.get("/test", gateLimiter, requireAuth, async (req, res) => {
   res.render("test", {
     cspNonce: withPlayPageCsp(res),
-    ver: config.project.mode == "test" ? Date.now() : version,
   });
 });
 
 app.get("/play", gateLimiter, requireAuth, async (req, res) => {
   res.render("play", {
     cspNonce: withPlayPageCsp(res),
-    ver: config.project.mode == "test" ? Date.now() : version,
   });
 });
 
 app.get("/tutorial", gateLimiter, requireAuth, async (req, res) => {
   res.render("tutorial", {
     cspNonce: withPlayPageCsp(res),
-    ver: config.project.mode == "test" ? Date.now() : version,
   });
-});
-
-// Both wear the same masthead as the landing page, which reads the build it is
-// looking at.
-const staticPageLocals = () => ({
-  ver: config.project.mode == "test" ? Date.now() : version,
 });
 
 app.get("/info", (req, res) => {
   setStaticPageCsp(res);
-  res.render("info", staticPageLocals());
+  res.render("info");
 });
 
 app.get("/privacy", (req, res) => {
   setStaticPageCsp(res);
-  res.render("privacy", staticPageLocals());
+  res.render("privacy");
 });
 
 app.get("/privacy/2023-08-02", (req, res) => {
   setStaticPageCsp(res);
-  res.render("privacy-2023-08-02", staticPageLocals());
+  res.render("privacy-2023-08-02");
 });
 
 app.use(profileRouter);
@@ -482,7 +468,7 @@ process.on("uncaughtException", (error: Error) => {
     // would expose the port directly regardless of firewall policy.
     const host = config.project.host ?? "127.0.0.1";
     app.listen(config.project.port, host, () => {
-      logger.info(`URLATE-v3l-frontend is running on version ${config.project.mode == "test" ? Date.now() : version}.`);
+      logger.info(`URLATE is running on version ${version}.`);
       logger.success(`HTTP Server running at ${host}:${config.project.port}.`);
     });
   } catch (err) {

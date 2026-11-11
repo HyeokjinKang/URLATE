@@ -23,7 +23,7 @@
     "preinstall": "npx only-allow pnpm",
     "build": "tsc",
     "auto-build": "tsc-watch",
-    "dev": "supervisor dist/index.js",
+    "dev": "supervisor -e node,js,css,ejs,json dist/index.js",
     "start": "pm2 start ecosystem.config.js",
     "stop": "pm2 stop URLATE-v3l-frontend",
     "minify": "for f in public/js/*.js public/modules/*.js; do terser \"$f\" --compress --mangle --output \"$f\"; done",
