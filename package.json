@@ -37,16 +37,16 @@
   "dependencies": {
     "@tensorflow/tfjs": "^4.22.0",
     "@tensorflow/tfjs-backend-wasm": "^4.22.0",
-    "compression": "^1.8.1",
+    "compression": "^1.8.2",
     "cookie-parser": "^1.4.7",
     "ejs": "^3.1.10",
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",
     "i18n": "^0.15.4",
-    "multer": "^2.3.0",
+    "multer": "^2.5.0",
     "node-fetch": "^3.3.2",
     "nsfwjs": "^4.4.0",
-    "sharp": "^0.35.4",
+    "sharp": "^0.35.5",
     "signale": "^1.4.0"
   },
   "devDependencies": {
