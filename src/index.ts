@@ -72,6 +72,10 @@ app.use((req, res, next) => {
 
 app.use(compression());
 app.use(express.static(__dirname + "/../public"));
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache");
+  next();
+});
 app.use(i18n);
 
 // Google Identity Services origin, used by the login button's script, style and frame.
@@ -310,8 +314,6 @@ const unavailable = (req: Request, res: Response) => {
  * server-side means the check cannot be skipped by disabling JavaScript.
  */
 const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
-  // Depends on the session, so neither the CDN nor the browser may cache it.
-  res.setHeader("Cache-Control", "no-store");
   if (!req.headers.cookie) return res.redirect(authRedirects["Not logined"]);
 
   // Only passing statuses are cached, so a hit is a pass.
