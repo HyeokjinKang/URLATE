@@ -169,9 +169,33 @@ export const initProfile = async () => {
   model = await nsfw.load(`${config.project.nsfw}/mobilenet_v2/`);
 };
 
+const ownOrigin = new URL(config.project.url).origin;
+
+const isSameOrigin = (req): boolean => {
+  const header = req.get("origin") ?? req.get("referer");
+  if (!header) return false;
+  try {
+    return new URL(header).origin === ownOrigin;
+  } catch {
+    return false;
+  }
+};
+
 export const profileRouter = Router();
 
 profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => {
+  if (!isSameOrigin(req)) {
+    logger.warn("Rejected cross-origin profile upload", {
+      origin: req.get("origin") ?? req.get("referer") ?? null,
+    });
+    res.status(403).json({
+      result: "failed",
+      message: "Request origin is not allowed",
+      error: "Forbidden Origin",
+    });
+    return;
+  }
+
   if (!/^[0-9]+$/.test(req.params.userid)) {
     res.status(400).json({
       result: "failed",
