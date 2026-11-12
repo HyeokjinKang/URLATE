@@ -6,6 +6,7 @@ import i18n from "./i18n";
 import fetch from "node-fetch";
 import { exec } from "child_process";
 import { logger } from "./logger";
+import { visitorHeaders } from "./visitor";
 import { errorHandler, notFoundHandler, sendError, setStaticPageCsp } from "./middleware";
 import { inlineCss } from "./assets";
 import { initProfile, profileRouter } from "./profile";
@@ -326,6 +327,7 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
       headers: {
         "Content-Type": "application/json",
         Cookie: req.headers.cookie,
+        ...visitorHeaders(req),
       },
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });

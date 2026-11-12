@@ -8,6 +8,7 @@ import "@tensorflow/tfjs-backend-wasm";
 import * as nsfw from "nsfwjs";
 import sharp from "sharp";
 import { logger } from "./logger";
+import { visitorHeaders } from "./visitor";
 import { URL } from "url";
 import { randomUUID } from "crypto";
 
@@ -137,6 +138,7 @@ const resolveSessionUserid = async (req): Promise<string | null> => {
       headers: {
         "Content-Type": "application/json",
         Cookie: req.headers.cookie,
+        ...visitorHeaders(req),
       },
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
@@ -228,6 +230,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        ...visitorHeaders(req),
       },
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
@@ -331,6 +334,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        ...visitorHeaders(req),
       },
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
       body: JSON.stringify({
