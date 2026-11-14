@@ -8,6 +8,7 @@ import "@tensorflow/tfjs-backend-wasm";
 import * as nsfw from "nsfwjs";
 import sharp from "sharp";
 import { logger } from "./logger";
+import { visitorHeaders } from "./visitor";
 import { URL } from "url";
 import { randomUUID } from "crypto";
 
@@ -116,8 +117,25 @@ const upload = multer({
   },
 }).single("img");
 
+const MAX_INPUT_PIXELS = 40_000_000;
+const ALLOWED_FORMATS = new Set(["jpeg", "png", "webp", "gif"]);
+
+const isAllowedImage = async (buffer: Buffer): Promise<boolean> => {
+  try {
+    const { format, width, height } = await sharp(buffer, { limitInputPixels: MAX_INPUT_PIXELS }).metadata();
+    return ALLOWED_FORMATS.has(format) && width * height <= MAX_INPUT_PIXELS;
+  } catch {
+    return false;
+  }
+};
+
+const CLASSIFY_SIZE = 512;
+
 const imageToTensor = async (fileBuffer) => {
-  const { data, info } = await sharp(fileBuffer).raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = await sharp(fileBuffer)
+    .resize({ width: CLASSIFY_SIZE, height: CLASSIFY_SIZE, fit: "inside", withoutEnlargement: true })
+    .raw()
+    .toBuffer({ resolveWithObject: true });
 
   return tf.tensor3d(new Uint8Array(data), [info.height, info.width, info.channels], "int32");
 };
@@ -137,6 +155,7 @@ const resolveSessionUserid = async (req): Promise<string | null> => {
       headers: {
         "Content-Type": "application/json",
         Cookie: req.headers.cookie,
+        ...visitorHeaders(req),
       },
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
@@ -169,9 +188,33 @@ export const initProfile = async () => {
   model = await nsfw.load(`${config.project.nsfw}/mobilenet_v2/`);
 };
 
+const ownOrigin = new URL(config.project.url).origin;
+
+const isSameOrigin = (req): boolean => {
+  const header = req.get("origin") ?? req.get("referer");
+  if (!header) return false;
+  try {
+    return new URL(header).origin === ownOrigin;
+  } catch {
+    return false;
+  }
+};
+
 export const profileRouter = Router();
 
 profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => {
+  if (!isSameOrigin(req)) {
+    logger.warn("Rejected cross-origin profile upload", {
+      origin: req.get("origin") ?? req.get("referer") ?? null,
+    });
+    res.status(403).json({
+      result: "failed",
+      message: "Request origin is not allowed",
+      error: "Forbidden Origin",
+    });
+    return;
+  }
+
   if (!/^[0-9]+$/.test(req.params.userid)) {
     res.status(400).json({
       result: "failed",
@@ -205,13 +248,11 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
   }
 
   let type = "";
-  let width = 256;
-  let height = 256;
+  let resize: sharp.ResizeOptions = { width: 256, height: 256 };
   if (req.params.type == "picture") {
     type = "picture";
   } else if (req.params.type == "background") {
-    width = 2560;
-    height = null;
+    resize = { width: 2560, height: 2560, fit: "inside", withoutEnlargement: true };
     type = "background";
   } else {
     res.status(400).json({
@@ -228,6 +269,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        ...visitorHeaders(req),
       },
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
@@ -276,13 +318,26 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
       return;
     }
 
+    if (!(await isAllowedImage(file.buffer))) {
+      logger.warn("Rejected an unsupported or oversized image", {
+        userid: req.params.userid,
+        type: req.params.type,
+      });
+      res.status(400).json({
+        result: "failed",
+        message: "Error occured while uploading",
+        error: "Invalid image",
+      });
+      return;
+    }
+
     // multer's callback is not an Express handler, so a rejection here is not
     // turned into a response -- the request would hang.
     let fileBuffer: Buffer;
     let explicit = false;
     try {
-      fileBuffer = await sharp(file.buffer)
-        .resize({ width, height })
+      fileBuffer = await sharp(file.buffer, { limitInputPixels: MAX_INPUT_PIXELS })
+        .resize(resize)
         .flatten({ background: "#ffffff" })
         .webp({
           quality: 70,
@@ -331,6 +386,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        ...visitorHeaders(req),
       },
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
       body: JSON.stringify({

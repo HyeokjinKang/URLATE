@@ -1,7 +1,7 @@
 /* global Howler, Howl, iziToast, url, api, cdn, syncAlert, timeAlert, copiedText */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
-let upperBound, lowerBound;
+let upperBound, lowerBound, escapeHtml;
 let Factory, Updater, Renderer, getCos, getSin, calcAngleDegrees;
 let parsePattern, Timing, PATTERN_VERSION, GRADUAL_TRIGGERS;
 let createPreviewAutoPlay;
@@ -15,7 +15,7 @@ const modulesReady = (async () => {
       import("../modules/pattern.js"),
     ]);
 
-    ({ upperBound, lowerBound, getCos, getSin, calcAngleDegrees } = utils);
+    ({ upperBound, lowerBound, getCos, getSin, calcAngleDegrees, escapeHtml } = utils);
     Factory = factory.default;
     Updater = updater.default;
     Renderer = renderer.default;
@@ -275,7 +275,7 @@ const loadEditor = async () => {
     if (e.name == "AbortError") return;
     iziToast.error({
       title: "Open failed",
-      message: e.message,
+      message: escapeHtml(e.message),
     });
   }
 };
@@ -353,7 +353,7 @@ const dataLoaded = (event) => {
     } catch (error) {
       iziToast.error({
         title: "Open failed",
-        message: error.message,
+        message: escapeHtml(error.message),
       });
       return;
     }
@@ -1647,13 +1647,13 @@ const save = async (isSaveAs = false) => {
     markSaved(data);
     iziToast.success({
       title: "Save",
-      message: `Saved to ${fileHandle.name}`,
+      message: `Saved to ${escapeHtml(fileHandle.name)}`,
     });
   } catch (e) {
     if (e.name == "AbortError") return;
     iziToast.error({
       title: "Save failed",
-      message: e.message,
+      message: escapeHtml(e.message),
     });
   }
 };
