@@ -719,7 +719,7 @@ const tracksUpdate = () => {
     maxcombo: 0,
   });
 
-  fetch(`${api}/trackRecords/${username}`, {
+  fetch(`${api}/trackRecords/${encodeURIComponent(username)}`, {
     method: "GET",
     credentials: "include",
   })
@@ -1369,59 +1369,21 @@ const profileUpdate = async (nickname, isMe) => {
             const recentDate = new Date(data.date);
             document.getElementsByClassName("profileStatValue")[5].textContent = `${recentDate.toLocaleDateString()}`;
           }
-          const song = tracks.find((e) => e.fileName == data.filename);
-          const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
-          recentHTML += `<div class="playContainer">
-              <div class="playContainerLeft">
-                <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${escapeHtml(difficulty)}</span>
-                <img src="${cdn}/albums/50/${song.fileName}.webp" class="playAlbum" />
-                <div class="playTitleContainer">
-                  <span class="playTitle">${escapeHtml(settings.general.detailLang == "original" ? song.originalName : song.name)}</span>
-                  <span class="playProducer">${escapeHtml(song.producer)}</span>
-                </div>
-              </div>
-              <div class="playContainerRight">
-                <span class="playDetail">${escapeHtml(data.judge)}</span>
-                <span class="playDetail">${numberWithCommas(Number(data.record))}</span>
-                <span class="playDetail">${Number(data.accuracy).toFixed(2)}%</span>
-                <span class="playRate">${rating} +${Number(data.rating / 100).toFixed(2)}</span>
-              </div>
-            </div>`;
+          recentHTML += playRecordHTML(data, `+${Number(data.rating / 100).toFixed(2)}`);
         }
       }
       document.getElementById("profileRecentPlay").innerHTML = recentHTML;
     }
-    let bestRecords = await fetch(`${api}/bestRecords/${profile.nickname}`, {
+    const bestRes = await fetch(`${api}/bestRecords/${encodeURIComponent(profile.nickname)}`, {
       method: "GET",
       credentials: "include",
-    });
-    bestRecords = await bestRecords.json();
-    if (bestRecords.result == "success") {
-      document.getElementById("profileBestPlay").innerHTML = "";
-      bestRecords = bestRecords.results;
-      if (bestRecords.length == 0)
-        document.getElementById("profileBestPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
-      for (let i = 0; i < bestRecords.length; i++) {
-        const data = bestRecords[i];
-        const song = tracks.find((e) => e.fileName == data.filename);
-        const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
-        document.getElementById("profileBestPlay").innerHTML += `<div class="playContainer">
-        <div class="playContainerLeft">
-          <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${escapeHtml(difficulty)}</span>
-          <img src="${cdn}/albums/50/${song.fileName}.webp" class="playAlbum" />
-          <div class="playTitleContainer">
-            <span class="playTitle">${escapeHtml(settings.general.detailLang == "original" ? song.originalName : song.name)}</span>
-            <span class="playProducer">${escapeHtml(song.producer)}</span>
-          </div>
-        </div>
-        <div class="playContainerRight">
-          <span class="playDetail">${escapeHtml(data.judge)}</span>
-          <span class="playDetail">${numberWithCommas(Number(data.record))}</span>
-          <span class="playDetail">${Number(data.accuracy).toFixed(2)}%</span>
-          <span class="playRate">${rating} ${data.rating == 0 ? "-" : `+${Number(data.rating / 100).toFixed(2)}`}</span>
-        </div>
-      </div>`;
-      }
+    }).then((res) => res.json());
+    if (bestRes.result == "success") {
+      const bestHTML = bestRes.results
+        .map((data) => playRecordHTML(data, data.rating == 0 ? "-" : `+${Number(data.rating / 100).toFixed(2)}`))
+        .join("");
+      document.getElementById("profileBestPlay").innerHTML =
+        bestHTML || `<span class="nothingHere">${nothingHere}</span>`;
     }
     document.getElementsByClassName("profileMedalText")[0].textContent = profile.ap;
     document.getElementsByClassName("profileMedalText")[1].textContent = profile.fc;
@@ -1495,6 +1457,28 @@ const profileUpdate = async (nickname, isMe) => {
     console.error(`Error occurred.\n${profile.error}`);
   }
   loadingOverlayHide();
+};
+
+const playRecordHTML = (data, ratingText) => {
+  const song = tracks.find((e) => e.fileName == data.filename);
+  if (!song) return "";
+  const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
+  return `<div class="playContainer">
+      <div class="playContainerLeft">
+        <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${escapeHtml(difficulty)}</span>
+        <img src="${cdn}/albums/50/${song.fileName}.webp" class="playAlbum" />
+        <div class="playTitleContainer">
+          <span class="playTitle">${escapeHtml(settings.general.detailLang == "original" ? song.originalName : song.name)}</span>
+          <span class="playProducer">${escapeHtml(song.producer)}</span>
+        </div>
+      </div>
+      <div class="playContainerRight">
+        <span class="playDetail">${escapeHtml(data.judge)}</span>
+        <span class="playDetail">${numberWithCommas(Number(data.record))}</span>
+        <span class="playDetail">${Number(data.accuracy).toFixed(2)}%</span>
+        <span class="playRate">${rating} ${ratingText}</span>
+      </div>
+    </div>`;
 };
 
 const showProfileBackground = (event) => {
@@ -1653,7 +1637,7 @@ const showProfile = (name) => {
   loadingShow();
   document.getElementById("infoProfileContainer").style.display = "flex";
   document.getElementById("infoProfileContainer").classList.add("fadeInAnim");
-  fetch(`${api}/teamProfile/${name}`, {
+  fetch(`${api}/teamProfile/${encodeURIComponent(name)}`, {
     method: "GET",
     credentials: "include",
   })
@@ -1662,10 +1646,10 @@ const showProfile = (name) => {
       let info = JSON.parse(data.data);
       document.getElementById("infoProfileName").textContent = info[0].name;
       document.getElementById("infoProfilePosition").textContent = info[0].position;
-      document.getElementById("infoProfileImg").src = `images/credits/${info[0].profile}`;
+      document.getElementById("infoProfileImg").src = `/images/credits/${encodeURIComponent(info[0].profile)}`;
       let innerHTML = `<div class="infoProfilePart">
                           <img src="/images/icons/quote.svg" class="infoIcon">
-                          <span id="quote">${info[0].quote}</span>
+                          <span id="quote">${escapeHtml(info[0].quote)}</span>
                      </div>`;
       for (let i = 1; i < info.length; i++) {
         let link = "";
@@ -1688,8 +1672,8 @@ const showProfile = (name) => {
         }
         innerHTML += `
                     <div class="infoProfilePart">
-                        <img src="/images/icons/${info[i].icon}.svg" class="infoIcon">
-                        ${link == "" ? `<span>` : `<a class="blackLink" href="${link}" target="_blank" rel="noopener noreferrer">`}${info[i].content}${link == "" ? `</span>` : `</a>`}
+                        <img src="/images/icons/${encodeURIComponent(info[i].icon)}.svg" class="infoIcon">
+                        ${link == "" ? `<span>` : `<a class="blackLink" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">`}${escapeHtml(info[i].content)}${link == "" ? `</span>` : `</a>`}
                     </div>`;
       }
       document.getElementById("infoProfileBottom").innerHTML = innerHTML;
