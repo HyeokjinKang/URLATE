@@ -38,7 +38,7 @@ socket.on("connect", () => {
 socket.on("disconnect", (reason) => {
   if (reason === "io server disconnect") {
     alert(socketi18n.error);
-    window.location.href = "/logout"; // Session error, need to relogin
+    window.location.href = "/logout";
   } else if (reason === "io client disconnect") return;
   console.error("[Socket.IO] Disconnected from server");
   iziToast.warning({

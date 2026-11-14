@@ -1,4 +1,3 @@
-/** Constants and settings for in-game effects and rendering. */
 export const Config = {
   MATH: {
     PI_5: Math.PI / 5,
@@ -103,7 +102,6 @@ export const Config = {
   },
 };
 
-/** Default judgement skin. */
 export const JudgeSkin = {
   perfect: {
     type: "gradient",
@@ -123,7 +121,6 @@ export const TimingColors = {
   LATE: "#FF8A6F",
 };
 
-/** Colour table for the keyInput overlay. */
 export const KeyInputColors = {
   Perfect: "#57BEEB",
   Great: "#73DFD2",

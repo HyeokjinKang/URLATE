@@ -1,19 +1,10 @@
-/**
- * factory.js
- * Creates game objects.
- */
 import { Config } from "./constants.js";
 
 const EXPLOSION_POOL = [];
 const CLICK_POOL = [];
 const JUDGE_POOL = [];
 
-/** Builds the plain data for the game objects (particles, notes, ...) drawn on the canvas. */
 export default class Factory {
-  /**
-   * Build the particle data for an explosion effect.
-   * @returns {Array<object>} the particle objects
-   */
   static createExplosions(x, y) {
     const particles = [];
     const conf = Config.EXPLODE_EFFECT;
@@ -38,10 +29,6 @@ export default class Factory {
     return particles;
   }
 
-  /**
-   * Build the data for the default click effect.
-   * @returns { object }
-   */
   static createClickDefault(x, y) {
     const p = CLICK_POOL.pop() || {};
     p.type = "default";
@@ -52,12 +39,6 @@ export default class Factory {
     return p;
   }
 
-  /**
-   * Build the data for the note click effect.
-   * @param {boolean} judgeSkin - settings.game.judgeSkin
-   * @param {string} judge
-   * @returns { object }
-   */
   static createClickNote(x, y, noteType, judgeSkin, judge) {
     const p = CLICK_POOL.pop() || {};
     p.type = "note";
@@ -93,14 +74,6 @@ export default class Factory {
     return p;
   }
 
-  /**
-   * Build the data for the judgement text effect.
-   * @param {number} x
-   * @param {number} y
-   * @param {boolean} judgeSkin - settings.game.judgeSkin
-   * @param {string} judge
-   * @param {string} [timing] - "FAST" or "LATE"
-   */
   static createJudge(x, y, judgeSkin, judge, timing = null) {
     const p = JUDGE_POOL.pop() || {};
     p.x = x;
@@ -114,9 +87,6 @@ export default class Factory {
     return p;
   }
 
-  /**
-   * Return an object that reached the end of its life to the pool.
-   */
   static recycle(p) {
     if (!p) return;
     if (p.type === "explosion") EXPLOSION_POOL.push(p);

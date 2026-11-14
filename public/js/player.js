@@ -1,6 +1,4 @@
 /* global Pace, Howler, Howl, url, cdn, api, lang, confirmExit */
-// url/cdn/api etc. are set by the page's inline <script> and by the classic
-// library scripts; a module can read them via global scope with no extra wiring.
 let upperBound,
   lowerBound,
   numberWithCommas,
@@ -103,7 +101,7 @@ let great = 0;
 let good = 0;
 let bad = 0;
 let miss = 0;
-let bullet = 0; // miss and bullet are tracked separately
+let bullet = 0;
 let mouseClicked = false;
 let menuAllowed = false;
 let mouseClickedMs = -1;
@@ -167,7 +165,6 @@ const albumImg = new Image();
 let auto = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Signed-out visitors were already turned away by the server gate.
   fetch(`${api}/user`, {
     method: "GET",
     credentials: "include",
@@ -181,7 +178,6 @@ document.addEventListener("DOMContentLoaded", () => {
         initialize(true);
         settingApply();
       } else {
-        // The session is gone; sign out instead of leaving a dead page.
         window.location.href = "/logout";
       }
     })
@@ -451,7 +447,6 @@ const cntRender = () => {
     globalAlpha = timing.opacityAt(beats);
     nowSpeed = timing.speedAt(beats);
 
-    // Text triggers have a duration, so search around the current beat
     let textEnd = upperBound(pattern.triggers, beats);
     let textStart = lowerBound(pattern.triggers, beats - 32);
     for (let i = textStart; i < textEnd; i++) {
@@ -610,7 +605,6 @@ const cntRender = () => {
       if (now - effectMs >= 2000) effectMs = 0;
     }
 
-    //new record
     if (newRecordTime != 0) {
       let p1 = easeOutQuad(Math.min(1, (now - newRecordTime) / 500));
       let p2 = easeOutQuad(Math.min(1, Math.max(0, (now - newRecordTime - 300) / 500)));
@@ -1369,14 +1363,12 @@ const globalScrollEvent = (e) => {
     if (!settings.input.wheelReverse) delta *= -1;
     if (shiftDown) {
       if (delta == 1) {
-        //UP
         if (settings.sound.volume.master <= 0.95) {
           settings.sound.volume.master = Math.round((settings.sound.volume.master + 0.05) * 100) / 100;
         } else {
           settings.sound.volume.master = 1;
         }
       } else {
-        //DOWN
         if (settings.sound.volume.master >= 0.05) {
           settings.sound.volume.master = Math.round((settings.sound.volume.master - 0.05) * 100) / 100;
         } else {
@@ -1417,10 +1409,8 @@ const globalScrollEvent = (e) => {
       }, 1000);
     } else {
       if (delta == 1) {
-        //UP
         compClicked(false, 1, true);
       } else {
-        //DOWN
         compClicked(false, -1, true);
       }
     }

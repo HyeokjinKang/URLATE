@@ -12,7 +12,6 @@ import { initProfile, profileRouter } from "./profile";
 import { URL } from "url";
 import { createHash, randomBytes } from "crypto";
 
-// config.json differs per deployment, so it can't be a static import target.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const config = require(__dirname + "/../config/config.json");
 
@@ -26,12 +25,10 @@ if (!googleClientId) {
   process.exit(1);
 }
 
-// fetch has no default timeout: a hung backend would pin the request handler.
 const API_TIMEOUT_MS = 5000;
 
 const app = express();
 
-// Do not advertise the framework version.
 app.disable("x-powered-by");
 
 // Rate limiting keys on the client address, which arrives via X-Forwarded-For.
@@ -44,7 +41,6 @@ app.set("view cache", true);
 app.set("views", __dirname + "/../views");
 app.use(cookieParser());
 
-// Shared across every view -- set once instead of passing on each render().
 app.locals.url = config.project.url;
 app.locals.api = config.project.api;
 app.locals.game = config.project.game;
@@ -56,13 +52,10 @@ exec("git branch --show-current", (err, stdout) => {
   if (!err) app.locals.branch = stdout.trim();
 });
 
-// Baseline security headers applied to every response. CSP itself is set per route.
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-  // Only meaningful over HTTPS; browsers ignore it elsewhere. includeSubDomains is
-  // left off because sibling hosts under the parent domain are not ours to commit.
   if (req.secure) {
     res.setHeader("Strict-Transport-Security", "max-age=31536000");
   }
@@ -134,7 +127,6 @@ const gamePageCsp = (nonce: string) =>
     frame: "'none'",
   });
 
-// A fresh nonce per request; a reused one would let an injected inline script pass.
 const withCsp = (res: Response, policy: (nonce: string) => string): string => {
   const nonce = randomBytes(16).toString("base64");
   res.setHeader("Content-Security-Policy", policy(nonce));
@@ -145,19 +137,11 @@ const withAuthPageCsp = (res: Response, withGsi: boolean) => withCsp(res, (nonce
 const withGamePageCsp = (res: Response) => withCsp(res, gamePageCsp);
 const withPlayPageCsp = (res: Response) => withCsp(res, playPageCsp);
 
-/**
- * Own budget for the login/join screens, separate from gateLimiter. That one
- * skips its count on an auth-cache hit, but every visitor here is signed out,
- * so that escape hatch never applies -- the limit is set generously so users
- * behind a shared address (e.g. a NAT) aren't locked out of signing in.
- */
 const authPageLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 240,
   standardHeaders: true,
   legacyHeaders: false,
-  // The default response is a bare line of text, which looks broken on a landing
-  // page. Route it through the same error screen as everything else.
   handler: (req, res) => sendError(req, res, 429),
 });
 
@@ -191,19 +175,10 @@ const authRedirects: Record<string, string> = {
 
 const gatedStatuses = new Set(Object.keys(authRedirects));
 
-/**
- * Short-lived cache of the backend's auth status, keyed by the caller's cookies.
- * Gated pages are `no-store`, so without it every navigation costs a round trip.
- *
- * Only passing statuses are stored. A cached gated status would trap the user who
- * just resolved it: finishing signup sends the browser to /game, a stale
- * "Not registered" bounces it to /join, and /join sends it back to /game.
- */
 const AUTH_CACHE_TTL_MS = 30 * 1000;
 const AUTH_CACHE_MAX_ENTRIES = 5000;
 const authStatusCache = new Map<string, { status: string; expiresAt: number }>();
 
-// Hashed so live session cookies are not held in memory for the TTL.
 const authCacheKey = (cookie: string) => createHash("sha256").update(cookie).digest("hex");
 
 const readCachedStatus = (key: string): string | null => {
@@ -218,7 +193,6 @@ const readCachedStatus = (key: string): string | null => {
 
 const writeCachedStatus = (key: string, status: string) => {
   if (gatedStatuses.has(status)) return;
-  // Re-insert so the cap evicts the least recently written entry.
   authStatusCache.delete(key);
   const oldest = authStatusCache.keys().next().value;
   if (authStatusCache.size >= AUTH_CACHE_MAX_ENTRIES && oldest !== undefined) {
@@ -230,13 +204,6 @@ const writeCachedStatus = (key: string, status: string) => {
   });
 };
 
-/**
- * Bound the backend traffic one address can drive through the gate: a cache miss
- * costs a lookup, and a caller can force one every time by varying the cookie.
- *
- * A cached pass never reaches the backend, so it does not spend from the budget.
- * That also keeps users behind one shared address from starving each other.
- */
 const gateLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 30,
@@ -246,7 +213,6 @@ const gateLimiter = rateLimit({
   handler: (req, res) => sendError(req, res, 429),
 });
 
-// Its own budget, so a burst of page loads can never leave a visitor unable to sign out.
 const logoutLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 20,
@@ -255,21 +221,14 @@ const logoutLimiter = rateLimit({
   handler: (req, res) => sendError(req, res, 429),
 });
 
-// The gate could not reach a verdict. Say so instead of redirecting, which the
-// browser would read as "you are not signed in".
 const unavailable = (req: Request, res: Response) => {
   res.set("Retry-After", "5");
   sendError(req, res, 503);
 };
 
-/**
- * Gate the pages that only make sense for a signed-in player. Doing this
- * server-side means the check cannot be skipped by disabling JavaScript.
- */
 const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   if (!req.headers.cookie) return res.redirect(authRedirects["Not logined"]);
 
-  // Only passing statuses are cached, so a hit is a pass.
   const key = authCacheKey(req.headers.cookie);
   if (readCachedStatus(key) !== null) return next();
 
@@ -283,11 +242,6 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
       },
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
-    // A backend that is rate limiting or broken has not said anything about who
-    // the caller is. Redirecting on it signs a valid session out of the page it
-    // asked for -- and every gate lookup leaves this server's single address, so
-    // the backend's per-address limit is reached by the site as a whole, not by
-    // one visitor.
     if (response.status === 429 || response.status >= 500) {
       logger.warn("Auth status unavailable", {
         path: req.path,
@@ -303,8 +257,6 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
     if (gatedStatuses.has(status)) return res.redirect(authRedirects[status]);
     next();
   } catch (err) {
-    // Fail closed: an unreachable backend must not open the gate. It must not
-    // claim the visitor is signed out either, so this is not a redirect.
     logger.warn("Failed to check auth status", { path: req.path, error: err });
     unavailable(req, res);
   }
@@ -318,8 +270,6 @@ const ownOrigin = (() => {
   }
 })();
 
-// A top-level GET carries no Origin, so fall back to the Referer -- the same pair
-// the backend reads on its own logout route.
 const startedHere = (req: Request) => {
   const header = req.get("origin") ?? req.get("referer");
   if (!header || ownOrigin === null) return false;
@@ -330,19 +280,6 @@ const startedHere = (req: Request) => {
   }
 };
 
-/**
- * Sign the visitor out. The backend still performs the real logout; this route
- * drops the session cookie and the cached status on the way there, so a destroyed
- * session stops passing the gate at once rather than when its entry expires.
- *
- * Those two are done only for a sign-out that started on our own pages, or a link
- * from anywhere else could sign a visitor out. The redirect stays unconditional,
- * so a request that fails the check behaves exactly as it did before this route
- * existed: the backend applies the same check and refuses.
- *
- * `sessionCookie` and `cookieDomain` must match what the backend sets; if they do
- * not the cookie survives and only the eviction takes effect.
- */
 app.get("/logout", logoutLimiter, (req, res) => {
   if (startedHere(req)) {
     if (req.headers.cookie) authStatusCache.delete(authCacheKey(req.headers.cookie));
@@ -423,8 +360,6 @@ process.on("uncaughtException", (error: Error) => {
   try {
     await initProfile();
 
-    // Defaults to loopback since a reverse proxy sits in front; a wildcard bind
-    // would expose the port directly regardless of firewall policy.
     const host = config.project.host ?? "127.0.0.1";
     app.listen(config.project.port, host, () => {
       logger.info(`URLATE is running on version ${version}.`);
@@ -436,8 +371,6 @@ process.on("uncaughtException", (error: Error) => {
   }
 })();
 
-// Must come after the routes: placed earlier, every request would end in a 404.
 app.use(notFoundHandler);
 
-// Must be last.
 app.use(errorHandler);

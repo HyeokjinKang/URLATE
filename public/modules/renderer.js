@@ -1,7 +1,3 @@
-/**
- * renderer.js
- * Canvas drawing for the game.
- */
 import { Config, JudgeSkin, KeyInputColors, DiffColors, TimingColors } from "./constants.js";
 import {
   getSin,
@@ -15,13 +11,7 @@ import {
   numberWithCommas,
 } from "./utils.js";
 
-/** Takes the data and renders it into the canvas context. */
 export default class Renderer {
-  /**
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {object} layout - { canvasW, canvasH, cursorZoom? }
-   * @param {object} skin - skin data
-   */
   constructor(ctx, layout, skin) {
     this.ctx = ctx;
     this.canvasW = layout.canvasW;
@@ -29,18 +19,16 @@ export default class Renderer {
     this.cursorZoom = layout.cursorZoom ?? 1;
     this.skin = skin;
 
-    // Render caches
     this.cache = {
       bulletPath: null,
       lastCacheW: 0,
-      gradient: new Map(), // skinPart -> Map(size -> gradient)
+      gradient: new Map(),
       finalEffect: new Map(),
       comboAlert: null,
       cursor: new Map(),
       judgeWidths: new Map(),
     };
 
-    // Animation state
     this.animState = {
       score: { current: 0, start: 0, target: 0, startTime: 0 },
       combo: { value: 0, startTime: 0 },
@@ -49,7 +37,6 @@ export default class Renderer {
     this.cacheConfig();
   }
 
-  /** Helper: game coordinates -> canvas coordinates. */
   #getPos(x, y) {
     return {
       cx: ~~((this.canvasW / 200) * (x + 100)),
@@ -57,9 +44,6 @@ export default class Renderer {
     };
   }
 
-  /** Helper: read the skin data (gradient or colour) and set fillStyle or strokeStyle.
-   * Gradients are cached fully opaque, and opacity is applied through ctx.globalAlpha.
-   */
   #applyStyle(skinPart, x, y, size, opacity, isStroke = false, ctx = this.ctx) {
     const { canvasW } = this;
     let style;
@@ -71,15 +55,12 @@ export default class Renderer {
       }
       style = sizeMap.get(size);
       if (!style) {
-        // A cached gradient is built relative to (x, y) as the origin (usually 0, 0)
         style = ctx.createLinearGradient(x - size, y - size, x + size, y + size);
         for (let s = 0; s < skinPart.stops.length; s++) {
           style.addColorStop(skinPart.stops[s].percentage / 100, skinPart.stops[s].color);
         }
         sizeMap.set(size, style);
       }
-      // For a gradient the caller normally handles opacity through globalAlpha;
-      // setting it here works too, but globalAlpha accumulates.
     } else {
       style = hexadecimal(skinPart.color, opacity);
     }
@@ -90,14 +71,10 @@ export default class Renderer {
     } else ctx.fillStyle = style;
   }
 
-  /** Called when the canvas size changed.
-   * @param {object} layout - { canvasW, canvasH }
-   */
   setSize(layout) {
     this.canvasW = layout.canvasW;
     this.canvasH = layout.canvasH;
 
-    // A new canvas width invalidates the caches
     if (this.canvasW !== this.cache.lastCacheW) {
       this.cache.bulletPath = null;
       this.cache.gradient.clear();
@@ -110,7 +87,6 @@ export default class Renderer {
     this.cacheConfig();
   }
 
-  /** Store the config values that depend on the canvas size. */
   cacheConfig() {
     const refX = this.canvasW / 1000;
     const refY = this.canvasH / 1000;
@@ -163,7 +139,6 @@ export default class Renderer {
       },
     };
 
-    // Font strings only change on resize, so build them once here
     const defaultSize = this.CONFIG.UI.DEFAULT_FONT_SIZE;
     const scorePanelSize = this.CONFIG.UI.SCORE_PANEL.FONT_SIZE;
     const judgeSize = ~~(this.canvasH / 30);
@@ -181,7 +156,6 @@ export default class Renderer {
     };
   }
 
-  /** Reset the score panel animation state. */
   initialize() {
     this.animState = {
       score: { current: 0, start: 0, target: 0, startTime: 0 },
@@ -189,28 +163,16 @@ export default class Renderer {
     };
   }
 
-  /**
-   * Draw outlined text. The styles must already be set.
-   * @param {string} text
-   * @param {number} x
-   * @param {number} y
-   */
   outlinedText(text, x, y) {
     this.ctx.strokeText(text, x, y);
     this.ctx.fillText(text, x, y);
   }
 
-  /**
-   * Draw a note.
-   * @param {object} note - { x, y, value, direction, debugIndex? }
-   * @param {object} state - { globalAlpha, progress, tailProgress, endProgress, isGrabbed, isSelected? }
-   */
   note(note, state) {
     const { ctx, skin } = this;
     const { x, y, value: type, direction } = note;
     const { globalAlpha, progress, tailProgress, endProgress, isGrabbed, isSelected } = state;
 
-    // A finished note is not drawn
     if (type !== 2 && progress >= 130) return;
     if (type === 2 && endProgress >= 130) return;
 
@@ -254,14 +216,11 @@ export default class Renderer {
       ctx.fillStyle = "#ebd534";
       ctx.strokeStyle = "#ebd534";
     } else {
-      // Pass opacity 100 so the cached gradient can be reused; globalAlpha does the fading
       this.#applyStyle(noteSkin, 0, 0, w, 100, false);
       this.#applyStyle(noteSkin.indicator, 0, 0, w, 100, true);
     }
 
-    // Type 0: Circle Note
     if (type === 0) {
-      // Timing indicator
       ctx.beginPath();
       ctx.arc(0, 0, w, 1.5 * Math.PI, 1.5 * Math.PI + (safeP / 50) * Math.PI);
       ctx.stroke();
@@ -279,44 +238,35 @@ export default class Renderer {
       ctx.fillStyle = ctx.strokeStyle;
       ctx.arc(0, 0, w, 0, 2 * Math.PI);
       ctx.fill();
-    }
-
-    // Type 1: Arrow Note (flick)
-    else if (type === 1) {
+    } else if (type === 1) {
       w = w * 0.9;
 
-      // Animation stages: progress within 0-20, 20-80 and 80-100
       const p1 = safeP <= 20 ? safeP * 5 : 100;
       const p2 = safeP > 20 ? Math.min((safeP - 20) * 1.66, 100) : 0;
       const p3 = safeP > 80 ? Math.min((safeP - 80) * 5, 100) : 0;
 
       const { PI_5, COS_36, SIN_36 } = Config.MATH;
 
-      // Flip the canvas by direction
       ctx.save();
       ctx.scale(direction, direction);
 
       ctx.beginPath();
 
-      // Wing tip, which is also where the arc meets
       const tipX = w * COS_36;
       const tipY = -w * SIN_36;
-      const tailY = -1.5 * w; // the sharp end
+      const tailY = -1.5 * w;
 
-      // [Path 1] Tail(0, tailY) -> Right Tip(tipX, tipY)
       const dx1 = tipX;
       const dy1 = tipY - tailY;
 
       ctx.moveTo(0, tailY);
       ctx.lineTo((dx1 / 100) * p1, tailY + (dy1 / 100) * p1);
 
-      // [Path 2] Arc (clockwise)
       if (p2 > 0) {
         const arcLen = ((PI_5 * 7) / 100) * p2;
         ctx.arc(0, 0, w, -PI_5, -PI_5 + arcLen);
       }
 
-      // [Path 3] Left Tip(-tipX, tipY) -> Tail(0, tailY)
       if (p3 > 0) {
         const dx3 = tipX;
         const dy3 = tailY - tipY;
@@ -326,7 +276,7 @@ export default class Renderer {
       ctx.stroke();
 
       ctx.beginPath();
-      ctx.moveTo(0, -1.5 * (w / 100) * safeP); // centre axis
+      ctx.moveTo(0, -1.5 * (w / 100) * safeP);
       ctx.arc(0, 0, (w / 100) * safeP, -PI_5, PI_5 * 6);
       ctx.lineTo(0, -1.5 * (w / 100) * safeP);
       ctx.fill();
@@ -344,13 +294,9 @@ export default class Renderer {
       ctx.fill();
 
       ctx.restore();
-    }
-
-    // Type 2: Hold Note
-    else if (type === 2) {
+    } else if (type === 2) {
       ctx.beginPath();
       if (safeP <= 100) {
-        // growing
         ctx.arc(0, 0, w, 1.5 * Math.PI, 1.5 * Math.PI + (safeP / 50) * Math.PI);
         ctx.lineTo(0, 0);
         ctx.fill();
@@ -358,12 +304,10 @@ export default class Renderer {
         ctx.arc(0, 0, w, 1.5 * Math.PI, 1.5 * Math.PI + (safeP / 50) * Math.PI);
         ctx.stroke();
       } else if (!isGrabbed) {
-        // missed
         ctx.arc(0, 0, w, 0, 2 * Math.PI);
         ctx.fill();
         ctx.stroke();
       } else if (tailProgress <= 100) {
-        // held
         ctx.arc(0, 0, w, 1.5 * Math.PI + (tailProgress / 50) * Math.PI, 1.5 * Math.PI);
         ctx.lineTo(0, 0);
         ctx.fill();
@@ -371,7 +315,6 @@ export default class Renderer {
         ctx.arc(0, 0, w, 0, 2 * Math.PI);
         ctx.stroke();
       } else {
-        // finished
         ctx.arc(0, 0, w, 0, 2 * Math.PI);
         ctx.stroke();
       }
@@ -386,11 +329,6 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /**
-   * Draw a bullet.
-   * @param {object} bullet - { x, y, angle, location?, direction?, debugIndex? }
-   * @param {object} state - { isSelected?, isHit? }
-   */
   bullet(bullet, state = {}) {
     const { ctx, canvasW, canvasH, skin } = this;
     const { x, y, angle: realAngle } = bullet;
@@ -399,7 +337,6 @@ export default class Renderer {
     const { cx, cy } = this.#getPos(x, y);
     const w = canvasW / 80;
 
-    // Rebuild the cached bullet path when the width changed
     if (this.cache.lastCacheW !== canvasW || !this.cache.bulletPath) {
       const path = new Path2D();
       path.arc(0, 0, w, 0.5 * Math.PI, 1.5 * Math.PI);
@@ -410,7 +347,6 @@ export default class Renderer {
       this.cache.lastCacheW = canvasW;
     }
 
-    // (editor) selected object
     if (isSelected) {
       ctx.beginPath();
       ctx.font = this.FONT.debug;
@@ -430,9 +366,7 @@ export default class Renderer {
       }
 
       ctx.fillStyle = "#ebd534";
-    }
-    // (editor) object that was hit
-    else if (isHit) {
+    } else if (isHit) {
       ctx.fillStyle = "#fb4934";
     } else {
       this.#applyStyle(skin.bullet, 0, 0, w, 100, false);
@@ -453,10 +387,6 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /**
-   * Draw the text defined by a trigger.
-   * @param {object} textObj - pattern.trigger[i]
-   */
   triggerText(textObj) {
     const { ctx, canvasH } = this;
     const { text, x, y, align, valign, size, weight } = textObj;
@@ -478,11 +408,6 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /**
-   * Draw the mouse cursor.
-   * @param {object} cursor - { x, y }
-   * @param {object} state - { isClicked?, clickedMs? }
-   */
   cursor(cursor, state) {
     const { ctx } = this;
     const { x: mouseX, y: mouseY } = cursor;
@@ -494,14 +419,11 @@ export default class Renderer {
     let w = this.CONFIG.CURSOR.SIZE;
     let adder = this.CONFIG.CURSOR.ANIM_SIZE_ADDER;
 
-    // Click animation
     if (clickedMs !== undefined && clickedMs !== -1) {
       const now = Date.now();
       if (isClicked) {
-        // grows a little while held
         w = w + adder;
       } else {
-        // eases back after release
         if (now < clickedMs + conf.RELEASE_ANIM_LENGTH) {
           const progress = (clickedMs + conf.RELEASE_ANIM_LENGTH - now) / conf.RELEASE_ANIM_LENGTH;
           w = w + adder * progress;
@@ -568,10 +490,6 @@ export default class Renderer {
     return sprite;
   }
 
-  /**
-   * Draw the judgement text.
-   * @param {Array<object>} particles - the judgement particles
-   */
   judges(particles) {
     const { ctx, canvasH, skin } = this;
     const conf = Config.JUDGE_EFFECT;
@@ -678,10 +596,6 @@ export default class Renderer {
     return widths;
   }
 
-  /**
-   * Draw the click effects.
-   * @param {Array<object>} particles
-   */
   clickEffects(particles) {
     const { ctx, skin } = this;
     const now = Date.now();
@@ -834,10 +748,6 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /**
-   * Update the explosion particles and draw them.
-   * @param {Array<object>} particles
-   */
   explosions(particles) {
     const { ctx } = this;
     const now = Date.now();
@@ -986,11 +896,6 @@ export default class Renderer {
     return this.cache.comboAlert;
   }
 
-  /**
-   * Draw the combo alert.
-   * @param {number} count - the combo to show
-   * @param {number} startMs - when the alert started
-   */
   comboAlert(count, startMs) {
     const elapsed = Date.now() - startMs;
     if (elapsed < 0 || elapsed >= 1000) return;
@@ -1014,11 +919,6 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /**
-   * Draw the FC / AP effect.
-   * @param {number} effectNum - 0: AP / 1 : FC
-   * @param {number} effectMs - when the effect started
-   */
   finalEffect(effectNum, effectMs) {
     const { ctx, canvasW, canvasH } = this;
     const now = Date.now();
@@ -1062,28 +962,20 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /**
-   * Draw the key input log overlay.
-   * @param {Array} keyInput - the key input entries
-   * @param {number} keyInputTime - when the last key input happened
-   */
   keyInputUI(keyInput, keyInputTime) {
     if (keyInput.length === 0) return;
 
-    // Nothing is drawn 4 seconds after the last input
     if (keyInput[keyInput.length - 1].time + 4000 <= Date.now()) return;
 
     const { ctx, canvasW, canvasH } = this;
     const now = Date.now();
 
-    // Fade out starts 3 seconds after the last input
     let alpha = 1;
     if (keyInput[keyInput.length - 1].time + 3000 <= now) {
       alpha = 1 - (now - keyInput[keyInput.length - 1].time - 3000) / 1000;
       if (alpha <= 0) return;
     }
 
-    // A new input pushes the row aside
     let animDuration = 0;
     let animX = 0;
     if (keyInputTime + 100 >= now) {
@@ -1095,7 +987,6 @@ export default class Renderer {
       let j = i - keyInput.length + 13;
       let partAlpha = alpha;
 
-      // Fade-in of the entering box
       if (j < 8) {
         partAlpha *= (1 / 8) * (j + animDuration);
       }
@@ -1134,10 +1025,6 @@ export default class Renderer {
     }
   }
 
-  /**
-   * Draw the progress bar at the bottom.
-   * @param {number} percentage - progress, 0 to 1
-   */
   progressBarUI(percentage) {
     const { ctx, canvasW, canvasH } = this;
 
@@ -1158,27 +1045,19 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /**
-   * Draw the score panel and the album art.
-   * @param {object} data - { score, combo, difficulty }
-   * @param {HTMLImageElement} albumImg
-   */
   scorePanelUI(data, albumImg) {
     const { ctx } = this;
     const { score, combo, difficulty } = data;
     const now = Date.now();
 
-    // 1. Score animation
     const s = this.animState.score;
 
-    // A changed score becomes the new target
     if (score !== s.target) {
       s.start = s.current;
       s.target = score;
       s.startTime = now;
     }
 
-    // Counts up over 0.5s
     const scoreElapsed = now - s.startTime;
     if (scoreElapsed < 500) {
       const progress = easeOutQuart(scoreElapsed / 500);
@@ -1187,28 +1066,24 @@ export default class Renderer {
       s.current = s.target;
     }
 
-    // 2. Combo animation
     const c = this.animState.combo;
 
-    // A higher combo restarts the pop
     if (combo > c.value) {
       c.startTime = now;
     }
     c.value = combo;
 
-    // Pops for 0.5s, then shrinks back
     const comboElapsed = now - c.startTime;
     let comboScale = 0;
     if (comboElapsed < 500) {
       comboScale = Math.max(0, 1 - easeOutQuart(comboElapsed / 500));
     }
 
-    // 3. Rendering
     ctx.save();
 
     ctx.beginPath();
 
-    ctx.fillStyle = DiffColors[difficulty] ?? "#6021ff"; // EZ / MID / HARD / TEST
+    ctx.fillStyle = DiffColors[difficulty] ?? "#6021ff";
 
     const Conf = this.CONFIG.UI.SCORE_PANEL;
     const xBase = Conf.X_BASE;
@@ -1247,10 +1122,6 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /**
-   * Draw the system info.
-   * @param {object} info - { speed, bpm, fps }
-   */
   systemInfoUI(info) {
     const { ctx, canvasW, canvasH } = this;
     const { speed, bpm, fps, auto } = info;
@@ -1263,13 +1134,11 @@ export default class Renderer {
     ctx.font = this.FONT.systemInfo;
     ctx.textBaseline = "bottom";
 
-    // Speed & BPM (bottom left)
     if (speed !== undefined && bpm !== undefined) {
       ctx.textAlign = "left";
       ctx.fillText(`Speed : ${speed}, BPM : ${bpm}`, canvasW / 100, canvasH - canvasH / 60);
     }
 
-    // FPS (bottom right)
     if (fps !== undefined) {
       ctx.textAlign = "right";
       ctx.fillText(fps, canvasW - canvasW / 100, canvasH - canvasH / 70);
@@ -1283,7 +1152,6 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /** Editor: overlay prompting for a trigger. */
   triggerAddOverlay() {
     const { ctx, canvasW, canvasH } = this;
 
@@ -1311,7 +1179,6 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /** Editor: centre crosshair. */
   axis() {
     const { ctx, canvasW, canvasH } = this;
     const tw = canvasW / 200;
@@ -1319,7 +1186,7 @@ export default class Renderer {
 
     ctx.save();
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "#ed3a2680"; // red accent
+    ctx.strokeStyle = "#ed3a2680";
     ctx.beginPath();
 
     ctx.moveTo(tw * 100, 0);
@@ -1331,7 +1198,6 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /** Editor: background mesh grid. */
   meshGrid() {
     const { ctx, canvasW, canvasH } = this;
     const tw = canvasW / 200;
@@ -1339,14 +1205,13 @@ export default class Renderer {
 
     ctx.save();
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "#bbbbbb20"; // light grey
+    ctx.strokeStyle = "#bbbbbb20";
     ctx.beginPath();
 
     let x1 = 0,
       x2 = tw * 5,
       y = 0;
 
-    // Loops past the screen edges
     for (let i = -100; i <= 100; i += 10) {
       ctx.moveTo(x1, 0);
       ctx.lineTo(x1, canvasH);
@@ -1363,10 +1228,6 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /**
-   * Editor: radial grid.
-   * @param {object} centerNote - pattern.patterns[i], the note at the centre
-   */
   radialGrid(centerNote) {
     const { ctx, canvasW } = this;
     const { cx, cy } = this.#getPos(centerNote.x, centerNote.y);
@@ -1384,12 +1245,6 @@ export default class Renderer {
     ctx.restore();
   }
 
-  /**
-   * Editor: connector line between notes.
-   * @param {object} prevNote - { x, y }
-   * @param {object} currNote - { x, y }
-   * @param {number} alpha - 0 ~ 255
-   */
   noteConnector(prevNote, currNote, alpha) {
     const { ctx } = this;
     const { cx: x1, cy: y1 } = this.#getPos(prevNote.x, prevNote.y);
@@ -1403,11 +1258,6 @@ export default class Renderer {
     ctx.stroke();
   }
 
-  /**
-   * Editor: ghost of a note that already passed.
-   * @param {object} note - { x, y, value, direction }
-   * @param {number} alpha - opacity
-   */
   noteShadow(note, alpha) {
     const { ctx } = this;
     const { x, y, value, direction } = note;
@@ -1420,14 +1270,11 @@ export default class Renderer {
 
     ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
 
-    // Type 0: Circle, Type 2: Hold
     if (value !== 1) {
       ctx.beginPath();
       ctx.arc(0, 0, w, 0, 2 * Math.PI);
       ctx.fill();
-    }
-    // Type 1: Arrow Note
-    else {
+    } else {
       w = w * 0.9;
       const { PI_5, COS_36, SIN_36 } = Config.MATH;
 

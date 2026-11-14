@@ -2,8 +2,6 @@
 
 // A 4xx/5xx response body isn't guaranteed to be JSON (a proxy's HTML error page,
 // for example), so check the status before parsing to avoid a misleading error.
-// Duplicated in index.js: both are classic scripts (they expose a GSI callback
-// globally), and sharing this would mean reworking how the views load scripts.
 function readJson(res) {
   if (!res.ok) {
     throw new Error(`${res.status} ${res.statusText}`);
@@ -28,7 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
     .catch((error) => {
-      // A failed status check shouldn't block the page -- the name field still works.
       console.error(error);
     });
 });
@@ -70,7 +67,6 @@ const check = () => {
         if (data.result == "success") {
           window.location.href = `${projectUrl}/game`;
         } else {
-          // A rejection the user fixes by changing the name stays next to the field.
           const reason = {
             "Exist Name": joini18n.nameExist,
             "Reserved Name": joini18n.nameReserved,
@@ -87,7 +83,6 @@ const check = () => {
         }
       })
       .catch((error) => {
-        // Show a translated message to the user; log the raw error for diagnostics.
         console.error(error);
         alert(joini18n.error);
       });

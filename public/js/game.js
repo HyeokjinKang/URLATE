@@ -1,6 +1,4 @@
 /* global Howler, Howl, Pace, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable, medalDesc, alias, nothingHere, rating, aliasSelect, pictureMessage, imageError */
-// url/cdn/api etc. are set by the page's inline <script> and by the classic
-// library scripts; a module can read them via global scope with no extra wiring.
 const langDetailSelector = document.getElementById("langDetailSelector");
 const canvasResSelector = document.getElementById("canvasResSelector");
 const albumResSelector = document.getElementById("albumResSelector");
@@ -142,19 +140,12 @@ let songPlayTimeout;
 let chartVar;
 let chartLib = null;
 
-/**
- * Load Chart.js on demand, for the profile screen's rank graph.
- *
- * Resolves with the Chart constructor; the promise is cached so repeated opens
- * reuse the one load.
- */
 const loadChart = () => {
   if (chartLib) return chartLib;
   chartLib = new Promise((resolve, reject) => {
     const script = document.createElement("script");
     script.src = "/lib/chart.min.js";
     script.onload = () => resolve(window.Chart);
-    // Drop the cached promise so a later open can try again.
     script.onerror = () => {
       chartLib = null;
       reject(new Error("Failed to load chart.min.js"));
@@ -412,8 +403,6 @@ const warningSkip = () => {
   }
 };
 
-// Intro gate: enable "press anywhere" once both intro videos are loaded
-// and the warning screen has been shown for at least 3 seconds.
 const introReady = {
   video1: false,
   video2: false,
@@ -425,7 +414,6 @@ const checkIntroReady = () => {
   if (introReady.done || !(introReady.video1 && introReady.video2 && introReady.minDelay)) return;
   introReady.done = true;
   document.getElementById("pressAnywhere").textContent = pressAnywhere;
-  // Set only once ready, rather than in markup, so clicks before that do nothing.
   warningContainer.dataset.action = "warningSkip";
 };
 
@@ -508,8 +496,6 @@ document.addEventListener("DOMContentLoaded", () => {
     intro2container.style.display = "flex";
   }
 
-  // The header shows the newest MIRAI announcement. Its own request, so a slow
-  // or failing feed never delays the profile call the screen actually needs.
   fetch(`${api}/notices/${lang}?limit=1`)
     .then((res) => res.json())
     .then((body) => {
@@ -521,11 +507,9 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("noticeSlot").classList.remove("hide");
     })
     .catch((error) => {
-      // Nothing else on the screen depends on it; leave the slot hidden.
       console.error(error);
     });
 
-  // Signed-out visitors were already turned away by the server gate.
   fetch(`${api}/user`, {
     method: "GET",
     credentials: "include",
@@ -563,7 +547,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.result == "success") {
               tracks = data.tracks;
               tracks.sort(sortAsName);
-              // sortSelected already runs tracksUpdate, so skip it when a saved sort was restored.
               if (!restoreSortSettings()) tracksUpdate();
               Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
               intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
@@ -579,7 +562,6 @@ document.addEventListener("DOMContentLoaded", () => {
             location.reload();
           });
       } else {
-        // The session is gone; sign out instead of leaving a dead page.
         window.location.href = "/logout";
       }
     })
@@ -994,7 +976,6 @@ const gameLoaded = () => {
     visualizerBins[i] = Math.min((VISUALIZER_MIN_HZ + barHz * (i + 0.5)) / binHz, dataArray.length - 2);
   }
   startVisualizer();
-  // Warm the album-art cache during idle time so it doesn't block initial render.
   const preloadAlbums = () => {
     tracks.forEach((e) => {
       const img = new Image();
@@ -1239,7 +1220,6 @@ const menuSelected = (n) => {
     display = 1;
     startVisualizer();
     if (songSelection == -1) {
-      // Restore the last played song; pick a random one only when there is nothing to restore.
       const savedIndex = localStorage.songName ? tracks.findIndex((e) => e.fileName == localStorage.songName) : -1;
       if (savedIndex != -1) {
         songSelected(savedIndex);
@@ -1294,8 +1274,6 @@ const rankUpdate = async () => {
   }
 };
 
-// Profiles are looked up by nickname: the ranking payload carries no userid,
-// and nothing on this screen needs the internal identifier.
 const profileUpdate = async (nickname, isMe) => {
   profileid = nickname;
   const res = await fetch(`${api}/profile/nickname/${encodeURIComponent(nickname)}`, {
@@ -1355,7 +1333,6 @@ const profileUpdate = async (nickname, isMe) => {
       document.getElementsByClassName("profileStatValue")[5].textContent = "-";
       document.getElementById("profileRecentPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
     } else {
-      // Fetch the whole recent play list at once instead of asking per record id.
       const recentRes = await fetch(`${api}/recentPlays/nickname/${encodeURIComponent(nickname)}`, {
         method: "GET",
         credentials: "include",
@@ -1405,8 +1382,6 @@ const profileUpdate = async (nickname, isMe) => {
     let gradientFill = chartCtx.createLinearGradient(0, 0, 0, document.getElementById("profileChart").clientHeight);
     gradientFill.addColorStop(0, "rgba(255, 255, 255, 0.5)");
     gradientFill.addColorStop(1, "rgba(255, 255, 255, 0)");
-    // Without this the throw would skip loadingOverlayHide() below, leaving the
-    // loading overlay stuck over an otherwise finished profile.
     try {
       const Chart = await loadChart();
       if (chartVar) chartVar.destroy();
@@ -1936,7 +1911,6 @@ const visualSyncSetting = () => {
   document.getElementById("visualSyncContainer").classList.add("fadeInAnim");
   document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
 
-  // Play offsetSong, same as the offset setting screen.
   if (songSelection != -1) {
     const selSong = getSong(songSelection);
     if (selSong) selSong.fade(1, 0, 500);
@@ -1948,20 +1922,18 @@ const visualSyncSetting = () => {
 
   const vsCanvas = document.getElementById("visualSyncCanvas");
   const vsCtx = vsCanvas.getContext("2d", { desynchronized: !loadedVsync });
-  const beat = 60 / 110; // offsetSong BPM
+  const beat = 60 / 110;
 
   const drawFrame = () => {
     if (display !== 13) return;
 
-    // Compute the audio based seek the same way offsetUpdate does.
     const seek = offsetSong.seek();
 
-    const cycle = beat * 2; // one note every two beats
+    const cycle = beat * 2;
 
-    // Compute the note progress from a visual seek pulled ahead by visualSyncOffset.
     const visualSeek = seek + (visualSyncOffset / 1000) * offsetRate;
     const visualCyclePos = ((visualSeek % cycle) + cycle) % cycle;
-    const visualCycleOffset = visualCyclePos - cycle; // -cycle ~ 0
+    const visualCycleOffset = visualCyclePos - cycle;
 
     const progress = (1 + visualCycleOffset / beat / 2) * 100;
     const safeP = Math.max(Math.min(progress, 100), 0);
@@ -2237,14 +2209,12 @@ const scrollEvent = (e) => {
     if (!settings.input.wheelReverse) delta *= -1;
     if (shiftDown) {
       if (delta == 1) {
-        //UP
         if (settings.sound.volume.master <= 0.95) {
           settings.sound.volume.master = Math.round((settings.sound.volume.master + 0.05) * 100) / 100;
         } else {
           settings.sound.volume.master = 1;
         }
       } else {
-        //DOWN
         if (settings.sound.volume.master >= 0.05) {
           settings.sound.volume.master = Math.round((settings.sound.volume.master - 0.05) * 100) / 100;
         } else {
@@ -2364,13 +2334,8 @@ window.onpopstate = () => {
   }
 };
 
-// Delegated click handlers, keyed by each element's data-action attribute.
-
-// Actions invoked without an argument.
 const clickActions = {
   changeProfile: (arg) => changeProfile(arg),
-  // These attach to elements created via innerHTML rather than markup;
-  // delegation still catches them once inserted.
   bannerToggle: (arg) => bannerToggle(Number(arg)),
   difficultySelected: (arg) => difficultySelected(Number(arg)),
   displayClose,
@@ -2382,7 +2347,6 @@ const clickActions = {
   logout,
   medalDescription,
   menuSelected: (arg) => menuSelected(Number(arg)),
-  // Swallows clicks on the description text; intentionally a no-op.
   noop: () => {},
   offsetDown,
   offsetReset,
@@ -2408,8 +2372,6 @@ const clickActions = {
   warningSkip,
 };
 
-// data-arg is always a string, so numeric actions convert it with Number();
-// otherwise e.g. sortSelected would receive "0" instead of 0.
 document.addEventListener("click", (event) => {
   const target = event.target.closest("[data-action]");
   if (!target) return;
@@ -2527,7 +2489,6 @@ document.querySelectorAll(".optionSlider + .optionValue").forEach((input) => {
   });
 });
 
-// Selects whose handler needs the element itself, not just its value.
 const changeActions = { langChanged, rateChanged };
 document.addEventListener("change", (event) => {
   const target = event.target.closest("[data-change]");
@@ -2539,18 +2500,11 @@ document.addEventListener("change", (event) => {
 document.getElementById("offsetTapButton").addEventListener("mousedown", offsetButtonDown);
 document.getElementById("offsetTapButton").addEventListener("mouseup", offsetButtonUp);
 
-/**
- * Fetch the images of the panels that have not been opened yet.
- *
- * Serial and in document order: the menu icons come first in the markup, and a
- * one-at-a-time queue keeps this off the track and album requests.
- */
 const warmDeferredImages = () => {
   const urls = [];
   const seen = new Set();
   for (const img of document.querySelectorAll('img[loading="lazy"]')) {
     const src = img.getAttribute("src");
-    // An empty src is filled in later by script; skip those and duplicates.
     if (src && !seen.has(src)) {
       seen.add(src);
       urls.push(src);
@@ -2561,7 +2515,6 @@ const warmDeferredImages = () => {
   const next = () => {
     if (i >= urls.length) return;
     const img = new Image();
-    // Move on either way; opening the panel retries.
     img.onload = next;
     img.onerror = next;
     img.src = urls[i++];
@@ -2569,7 +2522,6 @@ const warmDeferredImages = () => {
   next();
 };
 
-// load can be held up indefinitely by one slow CDN resource, so cap the wait.
 let warmScheduled = false;
 const scheduleWarm = () => {
   if (warmScheduled) return;

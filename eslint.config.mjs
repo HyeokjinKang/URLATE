@@ -6,18 +6,15 @@ import prettier from "eslint-config-prettier/flat";
 
 export default defineConfig([
   {
-    // Build output and vendored files aren't lint targets.
     ignores: ["dist/**", "public/lib/**", "**/*.min.js"],
   },
   {
-    // Server code.
     files: ["src/**/*.{js,mjs,cjs,ts,mts,cts}", "*.{js,mjs,cjs}"],
     plugins: { js },
     extends: ["js/recommended"],
     languageOptions: { globals: globals.node },
   },
   {
-    // Code shipped to the browser.
     files: ["public/**/*.{js,mjs,cjs}"],
     plugins: { js },
     extends: ["js/recommended"],
@@ -30,8 +27,6 @@ export default defineConfig([
     files: ["**/*.{ts,mts,cts}"],
     extends: [tseslint.configs.recommended],
   },
-  // Must stay last. Turns off formatting rules prettier owns, so the two
-  // don't fight each other. This was a real conflict: eslint's
-  // no-unexpected-multiline was flagging line breaks prettier inserted.
+  // Must stay last: it turns off the formatting rules prettier owns.
   prettier,
 ]);

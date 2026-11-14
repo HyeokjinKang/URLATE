@@ -1,11 +1,9 @@
-// Escape user-controlled strings before inserting into innerHTML (XSS prevention).
 export const escapeHtml = (value) =>
   String(value ?? "").replace(
     /[&<>"']/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
   );
 
-// Only allow http(s) or root-relative URLs; block javascript:/data: schemes in src/background contexts.
 export const safeUrl = (value) => {
   const str = String(value ?? "").trim();
   return /^https?:\/\//i.test(str) || str.startsWith("/") ? str : "";

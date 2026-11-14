@@ -11,20 +11,13 @@ import { visitorHeaders } from "./visitor";
 import { URL } from "url";
 import { randomUUID } from "crypto";
 
-// config.json differs per deployment, so it can't be a static import target.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const config = require(__dirname + "/../config/config.json");
 
-// fetch has no default timeout: a hung backend would pin the request handler.
 const API_TIMEOUT_MS = 5000;
 
 let model: nsfw.NSFWJS | undefined;
 
-/**
- * An upload costs a 3MB read, a sharp re-encode, an NSFW inference and a push to
- * the CDN storage zone. Cheap for the caller, expensive for us -- so it gets a
- * budget of its own, well below the gate's.
- */
 const uploadLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 10,
@@ -34,12 +27,8 @@ const uploadLimiter = rateLimit({
 
 const BUNNY_PATH = String(config.bunny?.path ?? "profiles").replace(/^\/+|\/+$/g, "");
 
-// A storage upload pushes up to 3MB over the network, so it needs more room than
-// a backend call.
 const BUNNY_TIMEOUT_MS = 15000;
 
-// Only files we uploaded may be deleted. A name that does not match may be a
-// default image or an avatar we do not own.
 const PROFILE_FILENAME = /^[0-9]+-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$/;
 
 // Never deleted, whatever a profile points at. pfp.webp is the shared default
@@ -49,7 +38,6 @@ const PROTECTED_FILENAMES = new Set(["pfp.webp"]);
 const bunnyStorageUrl = (filename: string) =>
   `https://${config.bunny.endpoint}/${config.bunny.storageZone}/${BUNNY_PATH}/${filename}`;
 
-// The address browsers fetch: a pull zone sits in front of the storage zone.
 const bunnyPublicUrl = (filename: string) => `${config.project.cdn}/${BUNNY_PATH}/${filename}`;
 
 const uploadToBunny = async (filename: string, buffer: Buffer) => {
@@ -71,12 +59,9 @@ const deleteFromBunny = async (filename: string) => {
     headers: { AccessKey: config.bunny.accessKey },
     signal: AbortSignal.timeout(BUNNY_TIMEOUT_MS),
   });
-  // A file that is already gone answers 404, which is the state we wanted.
   if (!response.ok && response.status !== 404) throw new Error(`BunnyCDN storage responded with ${response.status}`);
 };
 
-// Once the file is in the storage zone, a later failure would leave it there
-// unreferenced. Clean up behind the response instead of holding it.
 const discardUpload = (filename: string | null, context: Record<string, unknown>) => {
   if (!filename) return;
   deleteFromBunny(filename).catch((err) => {
@@ -88,8 +73,6 @@ const discardUpload = (filename: string | null, context: Record<string, unknown>
   });
 };
 
-// The storage zone file a previous profile URL points at, but only when we
-// uploaded it. Default images and external avatars return null and are left alone.
 const oldStorageFile = (fileUrl: string): string | null => {
   if (!fileUrl.startsWith(`${config.project.cdn}/${BUNNY_PATH}/`)) return null;
   let filename: string;
@@ -103,14 +86,10 @@ const oldStorageFile = (fileUrl: string): string | null => {
 };
 
 const upload = multer({
-  // The file never touches the disk: sharp reads the buffer and only the result
-  // is pushed to the storage zone.
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 3 * 1024 * 1024, // 3MB
+    fileSize: 3 * 1024 * 1024,
   },
-  // Rejecting here keeps a non-image from ever being buffered; the handler's
-  // own check runs after multer has already read the file.
   fileFilter: function (req, file, cb) {
     cb(null, file.mimetype.indexOf("image") === 0);
   },
@@ -139,13 +118,6 @@ const imageToTensor = async (fileBuffer: Buffer) => {
   return tf.tensor3d(new Uint8Array(data), [info.height, info.width, info.channels], "int32");
 };
 
-/**
- * Resolve the caller's identity from the backend session.
- *
- * This route supplies the backend's project secret on the caller's behalf, so
- * the `:userid` path segment must never be trusted. The browser already sends
- * its session cookie here, so forward it and let the backend session decide.
- */
 const resolveSessionUserid = async (req: Request): Promise<string | null> => {
   if (!req.headers.cookie) return null;
   try {
@@ -176,8 +148,6 @@ const assertBunnyConfig = () => {
   if (missing.length) throw new Error(`Missing BunnyCDN storage config: bunny.${missing.join(", bunny.")}`);
 };
 
-// Config check and model load have to finish before the server accepts traffic:
-// learning about a broken storage config on the first upload is too late.
 export const initProfile = async () => {
   assertBunnyConfig();
 
@@ -223,7 +193,6 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
     return;
   }
 
-  // Authenticate before multer, sharp and the NSFW model spend any work.
   const sessionUserid = await resolveSessionUserid(req);
   if (!sessionUserid) {
     res.status(401).json({
@@ -361,8 +330,6 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
       return;
     }
 
-    // Date.now() alone collides: two uploads in the same millisecond overwrite
-    // each other's image.
     const filename = `${Date.now()}-${randomUUID()}.webp`;
     try {
       await uploadToBunny(filename, fileBuffer);
@@ -391,7 +358,6 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
       body: JSON.stringify({
         explicit,
-        // Verified against the backend session, never the raw path segment.
         userid: sessionUserid,
         value: publicUrl,
         secret: config.project.secretKey,
@@ -417,7 +383,6 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
         }
 
         if (oldFileUrl) {
-          // Delete the old file without blocking the response.
           (async () => {
             const oldFilename = oldStorageFile(oldFileUrl);
             if (!oldFilename) {

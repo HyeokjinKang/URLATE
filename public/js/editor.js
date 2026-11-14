@@ -1,6 +1,4 @@
 /* global Howler, Howl, iziToast, url, api, cdn, syncAlert, timeAlert, copiedText */
-// url/cdn/api etc. are set by the page's inline <script> and by the classic
-// library scripts; a module can read them via global scope with no extra wiring.
 let upperBound, lowerBound, escapeHtml;
 let Factory, Updater, Renderer, getCos, getSin, calcAngleDegrees;
 let parsePattern, Timing, PATTERN_VERSION, GRADUAL_TRIGGERS;
@@ -76,11 +74,11 @@ let song;
 let mouseX = 0,
   mouseY = 0,
   mouseMode = 0;
-let mode = 0; //0: move tool, 1: edit tool, 2: add tool
+let mode = 0;
 let zoom = 1;
 let timelineYLoc = 0,
   timelineElementNum = 0;
-let selectedValue = 0; //same with spec value
+let selectedValue = 0;
 let isSettingsOpened = false;
 let overlayTime = 0;
 let mouseDown = false,
@@ -185,13 +183,11 @@ const settingApply = () => {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Signed-out visitors were already turned away by the server gate.
   const request = (path) =>
     fetch(`${api}/${path}`, { method: "GET", credentials: "include" }).then((res) => res.json());
   Promise.all([request("user"), request("tracks"), modulesReady])
     .then(([user, trackList]) => {
       if (user.result != "success") {
-        // The session is gone; sign out instead of leaving a dead page.
         window.location.href = "/logout";
         return;
       }
@@ -320,7 +316,7 @@ const analyzePattern = (data) => {
 
   return {
     speed: data.information.speed,
-    noteDensity: calculateDensity(notePerBeat, 0.25, 1.5), // 1 per 4 beats = 0.25, 3 per 2 beats = 1.5
+    noteDensity: calculateDensity(notePerBeat, 0.25, 1.5),
     bulletDensity: calculateLogDensity(bulletPerBeat, 20, 100),
   };
 };
@@ -658,19 +654,14 @@ const _heapPop = (heap, cmp) => {
   return top;
 };
 
-// Assigns each element (sorted by beat) to the lowest-indexed vertical lane
-// that doesn't visually overlap with the previous element in that lane.
-// Returns laneOf[i - start] = 0-based lane index, and laneCount = total lanes used.
-// O(n log laneCount) via two min-heaps: one tracking active lanes by lastBeat
-// (to detect newly freed lanes), one tracking free lane indices (to pick the lowest).
 const durationValues = [[2], [], [2, 3, 4, 5]];
 const spanOf = (v1, element) =>
   durationValues[v1].includes(element.value) ? Math.max(Number(element.duration) || 0, 0) : 0;
 const spanEnd = (v1) => (element) => element.beat + spanOf(v1, element);
 
 const assignLanes = (elements, start, end, overlapThreshold, endOf = (element) => element.beat) => {
-  const active = []; // min-heap of {lastBeat, lane}, ordered by lastBeat
-  const free = []; // min-heap of free lane indices, ordered ascending
+  const active = [];
+  const free = [];
   const laneOf = [];
   let nextLane = 0;
   const cmpBeat = (a, b) => a.lastBeat - b.lastBeat;
@@ -678,11 +669,9 @@ const assignLanes = (elements, start, end, overlapThreshold, endOf = (element) =
 
   for (let i = start; i < end; i++) {
     const beat = elements[i].beat;
-    // Release all lanes whose last occupant is no longer overlapping.
     while (active.length > 0 && beat - active[0].lastBeat >= overlapThreshold) {
       _heapPush(free, _heapPop(active, cmpBeat).lane, cmpIdx);
     }
-    // Pick the lowest available lane, or open a new one.
     const lane = free.length > 0 ? _heapPop(free, cmpIdx) : nextLane++;
     _heapPush(active, { lastBeat: endOf(elements[i]), lane }, cmpBeat);
     laneOf.push(lane);
@@ -823,11 +812,10 @@ const tmlSpan = () => (17 * zoom * (tmlEndX() - tmlCanvasW / 10)) / (tmlCanvasW 
 
 const tmlRender = () => {
   try {
-    //Initialize
     eraseTml();
     const seekMs = song.seek() * 1000;
     const beats = timing.beatAt(seekMs);
-    const tmlStartX = tmlCanvasW / 10, //timeline(element view) start X
+    const tmlStartX = tmlCanvasW / 10,
       startX = tmlCanvasW / 80,
       startY = tmlCanvasH / 6,
       endX = tmlEndX(),
@@ -841,14 +829,11 @@ const tmlRender = () => {
       renderEnd = Number((beats - zoom + tmlSpan()).toPrecision(10)),
       beatToPx = (endX - tmlStartX) / (renderEnd - renderStart);
 
-    //Timeline background
     tmlCtx.beginPath();
     tmlCtx.fillStyle = "#F3F3F3";
     tmlCtx.fillRect(tmlStartX, startY, endX - tmlStartX, endY - startY);
     tmlRows = { start: [0, 0, 0], count: [0, 0, 0], total: 0 };
     const rowY = (v1, lane) => startY + timelineYLoc + height * (tmlRows.start[v1] + lane) + height / 2;
-    // Two elements (w = height/3) overlap when pixel distance < 2*w.
-    // Converted to beats: overlapThreshold = (2 * height/3) / beatToPx.
     const overlapThreshold = beatToPx > 0 ? (2 * height) / (3 * beatToPx) : Infinity;
     const visible = [0, 1, 2].map((v1) => {
       const elements = pattern[elementKeys[v1]];
@@ -864,7 +849,6 @@ const tmlRender = () => {
       return { elements, start, end, laneOf };
     });
 
-    //Timeline row bands
     for (let row = 0; row < tmlRows.total; row++) {
       const top = startY + timelineYLoc + height * row;
       if (row % 2) {
@@ -877,7 +861,6 @@ const tmlRender = () => {
       }
     }
 
-    //Timeline beat grid
     for (let t = Math.floor(renderStart); t <= renderEnd; t++) {
       for (let i = 0; i < split; i++) {
         if (t + i / split < 0) continue;
@@ -890,7 +873,6 @@ const tmlRender = () => {
       }
     }
 
-    //Timeline outside of the song
     const songBeats = song.duration() ? timing.beatAt(song.duration() * 1000) : 0;
     tmlCtx.fillStyle = "rgba(0, 0, 0, 0.06)";
     if (renderStart < 0) {
@@ -903,7 +885,6 @@ const tmlRender = () => {
       tmlCtx.fillRect(songEndX, startY, pixelRatio, endY - startY);
     }
 
-    //Timeline elements
     const w = height / 3;
     for (let v1 = 0; v1 < 3; v1++) {
       if (!isKindShown(v1)) continue;
@@ -940,7 +921,6 @@ const tmlRender = () => {
       }
     }
 
-    //Destroy trigger links
     if (isKindShown(1) && isKindShown(2)) {
       const positions = new Map(tmlPositions.map((position) => [position.element, position]));
       const { elements, start, end } = visible[2];
@@ -968,11 +948,9 @@ const tmlRender = () => {
       tmlCtx.restore();
     }
 
-    //Cover the overflowed
     tmlCtx.fillStyle = "#FFF";
     tmlCtx.fillRect(0, 0, tmlStartX, endY);
 
-    //Timeline elements text(Notes, Bullets, Triggers)
     tmlCtx.textAlign = "left";
     tmlCtx.textBaseline = "middle";
     tmlCtx.font = `${height * 0.64}px ${FONT_STACK}`;
@@ -1003,7 +981,6 @@ const tmlRender = () => {
       tmlCtx.fillText(["Note", "Bullet", "Trigger"][v1], startX * 1.2 + height / 6, y + height / 18);
     }
 
-    //Timeline time line + text
     timelineElementNum = tmlRows.total;
     tmlCtx.fillStyle = "#FFF";
     tmlCtx.fillRect(0, 0, tmlCanvasW, startY);
@@ -1032,13 +1009,11 @@ const tmlRender = () => {
       }
     }
 
-    //Cover the overflowed
     tmlCtx.fillStyle = "#FFF";
     tmlCtx.fillRect(0, 0, tmlStartX, startY);
     tmlCtx.fillRect(0, endY, tmlCanvasW, tmlCanvasH - endY);
     tmlCtx.fillRect(endX, startY, tmlCanvasW, tmlCanvasH);
 
-    //Timeline time text
     tmlCtx.fillStyle = "#2f91ed";
     tmlCtx.font = `${tmlCanvasH / 11}px Heebo`;
     tmlCtx.textBaseline = "middle";
@@ -1067,7 +1042,6 @@ const tmlRender = () => {
       );
     }
 
-    //Timeline playhead
     tmlCtx.beginPath();
     tmlCtx.fillStyle = "#ed5b45";
     tmlCtx.strokeStyle = "#ed5b45";
@@ -1076,7 +1050,6 @@ const tmlRender = () => {
     tmlCtx.lineTo(lineX, startY);
     tmlCtx.stroke();
 
-    //Timeline offset playhead
     if (song.playing()) {
       tmlCtx.beginPath();
       tmlCtx.fillStyle = "#2f91ed";
@@ -1087,7 +1060,6 @@ const tmlRender = () => {
       tmlCtx.stroke();
     }
 
-    //Add mode yellow preview
     if (mode == 2 && mouseMode == 1) {
       if (mouseX > tmlStartX && mouseX < endX && mouseY > startY && mouseY < endY) {
         const target = timelineRowAt(mouseY - timelineYLoc);
@@ -1107,7 +1079,6 @@ const tmlRender = () => {
       }
     }
 
-    //Scrollbars
     const barSize = tmlCanvasH / 45;
     const totalBeats = songBeats;
     const horizontal = { x: tmlStartX, y: endY - barSize * 1.5, w: endX - tmlStartX, h: barSize, max: totalBeats };
@@ -1141,7 +1112,6 @@ const tmlRender = () => {
       tmlCtx.fill();
     }
 
-    //Marquee
     if (marquee?.area == 1) {
       const x = Math.min(marquee.x0, marquee.x1),
         y = Math.min(marquee.y0, marquee.y1);
@@ -1153,7 +1123,6 @@ const tmlRender = () => {
       tmlCtx.strokeRect(x, y, w, h);
     }
 
-    //Sync alert text
     tmlCtx.font = `400 ${tmlCanvasH / 15}px ${FONT_STACK}`;
     tmlCtx.fillStyle = "#555";
     tmlCtx.textAlign = "right";
@@ -1164,7 +1133,6 @@ const tmlRender = () => {
       tmlCtx.fillText(`${selectedCount()} selected`, endX, endY + 5);
     }
 
-    //Key indicator(or copied text)
     tmlCtx.textAlign = "left";
     let msg = timeAlert;
     if (copied) {
@@ -1184,7 +1152,6 @@ const tmlRender = () => {
       copied = false;
     }
 
-    //Mouse cursor
     if (pointingCntElement.i === "") {
       if (mouseX >= tmlCanvasW / 20 && mouseX <= tmlCanvasW / 10 && mouseY < tmlCanvasH / 6) {
         timelineContainer.style.cursor = "var(--cursor-pointer)";
@@ -1233,13 +1200,11 @@ const cntRender = () => {
       return;
     }
 
-    // Always maintain the aspect ratio
     if (window.devicePixelRatio != pixelRatio) {
       pixelRatio = window.devicePixelRatio;
       initialize();
     }
 
-    // Initialize
     pointingCntElement = mouseMode == 1 ? pointingTmlElement : { v1: "", v2: "", i: "" };
     [prevCreatedBullets, createdBullets] = [createdBullets, prevCreatedBullets];
     createdBullets.clear();
@@ -1252,13 +1217,11 @@ const cntRender = () => {
 
     errorCount = 0;
 
-    // Calculate seeking position
     const isSongPlaying = song.playing();
     const seekMs = song.seek() * 1000;
     timing = new Timing(pattern);
     const beats = Number(timing.beatAt(seekMs - (isSongPlaying ? offset + sync - visualSync : 0)).toPrecision(10));
 
-    // Metronome
     const rawSeekMs = song.seek() * 1000;
     const noSyncBeats = Number(timing.beatAt(rawSeekMs - offset).toPrecision(10));
     if (metronomeToggle) {
@@ -1279,22 +1242,18 @@ const cntRender = () => {
       }
     }
 
-    // Initialize triggers
     bpm = timing.bpmAt(beats);
     globalAlpha = timing.opacityAt(beats);
 
-    // Draw Grids
     if (gridToggle) Draw.meshGrid();
     if (circleToggle && selectedCntElement.v1 === 0) Draw.radialGrid(pattern.patterns[selectedCntElement.i]);
     Draw.axis();
 
-    // Track triggers from start to now
     let end = upperBound(pattern.triggers, beats);
     const nowSpeed = timing.speedAt(beats);
     const renderTexts = [];
     for (let i = 0; i < end; i++) {
       if (pattern.triggers[i].value == 0) {
-        // Bullet Destroy
         if (!destroyedBullets.has(pattern.triggers[i].num)) {
           if (!prevDestroyedBullets.has(pattern.triggers[i].num)) {
             explodingBullets.add(pattern.triggers[i].num);
@@ -1302,7 +1261,6 @@ const cntRender = () => {
           destroyedBullets.add(pattern.triggers[i].num);
         }
       } else if (pattern.triggers[i].value == 1) {
-        // Bullet Destroy ALL
         let bulletEnd = upperBound(pattern.bullets, pattern.triggers[i].beat);
         for (let j = 0; j < bulletEnd; j++) {
           if (!destroyedBullets.has(j)) {
@@ -1313,12 +1271,10 @@ const cntRender = () => {
           }
         }
       } else if (pattern.triggers[i].value == 5) {
-        // Text
         if (pattern.triggers[i].beat <= beats && beats <= pattern.triggers[i].beat + pattern.triggers[i].duration) {
           renderTexts.push(pattern.triggers[i]);
         }
       } else if (pattern.triggers[i].value == 6) {
-        // End
         song.stop();
       }
     }
@@ -1327,13 +1283,11 @@ const cntRender = () => {
 
     for (let textObj of renderTexts) Draw.triggerText(textObj);
 
-    // Note render
     let renderDuration = 5 / speed;
 
     let start = 0;
     end = upperBound(pattern.patterns, beats + renderDuration);
 
-    // Mouse tracking loop
     cntPositions = [];
     let prevNoteBeat = -1;
     for (let i = start; i < end; i++) {
@@ -1351,7 +1305,6 @@ const cntRender = () => {
       }
     }
 
-    // Note drawing loop
     const _noteState = {
       progress: 0,
       tailProgress: 0,
@@ -1405,7 +1358,6 @@ const cntRender = () => {
       }
     }
 
-    //Bullet render
     start = lowerBound(pattern.bullets, beats - 32);
     end = upperBound(pattern.bullets, beats);
     for (let i = start; i < end; i++) {
@@ -1451,7 +1403,6 @@ const cntRender = () => {
       canvasH / 50,
     );
 
-    // Editor only - Note & Bullet location live draw (when mode is "Add")
     if (mode == 2 && mouseMode == 0) {
       let p = [0, 0];
       if (mouseX < -80) {
@@ -1540,10 +1491,8 @@ const cntRender = () => {
     Draw.explosions(destroyParticles);
     Draw.clickEffects(autoClicks);
 
-    // Editor only - Trigger add guide overlay (when mode is "Add")
     if (mode == 2 && mouseMode == -1) Draw.triggerAddOverlay();
 
-    //Cursor
     if (denyCursor) {
       if (pointingCntElement.i === "") {
         componentView.style.cursor = "";
@@ -2378,26 +2327,21 @@ const changeSettingsMode = (v1, v2, i) => {
         let textBox = properties[v2 + start].getElementsByClassName("settingsPropertiesTextbox");
         switch (v2) {
           case 0:
-            //Destroy
             textBox[1].value = pattern.triggers[i].num;
             break;
           case 2:
-            //BPM
             textBox[1].value = pattern.triggers[i].bpm;
             textBox[2].value = pattern.triggers[i].duration;
             break;
           case 3:
-            //Opacity
             textBox[1].value = pattern.triggers[i].opacity;
             textBox[2].value = pattern.triggers[i].duration;
             break;
           case 4:
-            //Speed
             textBox[1].value = pattern.triggers[i].speed;
             textBox[2].value = pattern.triggers[i].duration;
             break;
           case 5:
-            //Text
             textBox[1].value = pattern.triggers[i].valign;
             textBox[2].value = pattern.triggers[i].align;
             textBox[3].value = pattern.triggers[i].weight;
@@ -2487,7 +2431,6 @@ const patternChanged = () => {
   preventUnload = true;
   songName.innerText = pattern.information.track + "*";
 
-  // Clear all following history from the current midpoint.
   if (patternSeek != patternHistory.length - 1) {
     patternHistory.splice(patternSeek + 1, patternHistory.length - 1 - patternSeek);
   }
@@ -2938,7 +2881,7 @@ const hideHelp = () => {
 };
 
 const tmlScrollHorizontal = (direction, splitBy = split) => {
-  let beats = timing.beatAt(song.seek() * 1000); // Get current beat from song position
+  let beats = timing.beatAt(song.seek() * 1000);
   let targetSubdivision;
 
   if (direction > 0) {
@@ -3025,12 +2968,10 @@ const scrollEvent = (e) => {
   else delta = Math.max(-1, Math.min(1, e.deltaX));
   if (!settings.input.wheelReverse) delta *= -1;
   if (delta == 1) {
-    //UP
     if (shiftDown) tmlScrollUp();
     else if (ctrlDown) zoomIn();
     else tmlScrollHorizontal(1);
   } else {
-    //DOWN
     if (shiftDown) tmlScrollDown();
     else if (ctrlDown) zoomOut();
     else tmlScrollHorizontal(-1);
@@ -3100,14 +3041,12 @@ const globalScrollEvent = (e) => {
     if (!settings.input.wheelReverse) delta *= -1;
     if (shiftDown && mouseMode != 1) {
       if (delta == 1) {
-        //UP
         if (settings.sound.volume.master <= 0.95) {
           settings.sound.volume.master = Math.round((settings.sound.volume.master + 0.05) * 100) / 100;
         } else {
           settings.sound.volume.master = 1;
         }
       } else {
-        //DOWN
         if (settings.sound.volume.master >= 0.05) {
           settings.sound.volume.master = Math.round((settings.sound.volume.master - 0.05) * 100) / 100;
         } else {
@@ -3416,7 +3355,6 @@ window.addEventListener("load", () => {
   }
 });
 
-// Delegated click handlers, keyed by each element's data-action attribute.
 const clickActions = {
   changeMode: (arg) => changeMode(Number(arg)),
   changeNote,
@@ -3427,7 +3365,6 @@ const clickActions = {
   elementPaste,
   goGame: () => (window.location.href = `${url}/game?initialize=0`),
   gotoMain,
-  // Confirms before leaving unsaved work.
   gotoMainConfirm: () => gotoMain(true),
   loadEditor,
   newEditor,
@@ -3455,7 +3392,6 @@ document.addEventListener("click", (event) => {
   if (action) action(target.dataset.arg);
 });
 
-// Some of these take a key argument along with the element, others just the element.
 const inputActions = {
   settingsInput,
   triggersInput,
