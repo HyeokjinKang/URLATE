@@ -2,10 +2,10 @@
 
 # Avoid & Get on the tempo, URLATE.
 
-![GitHub License](https://img.shields.io/github/license/HyeokjinKang/URLATE-v3l-frontend)
+![GitHub License](https://img.shields.io/github/license/HyeokjinKang/URLATE)
 ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/HyeokjinKang/URLATE/build.yml)
-![GitHub last commit (branch)](https://img.shields.io/github/last-commit/HyeokjinKang/urlate-v3l-frontend/main?label=updated)
-![GitHub Issues](https://badgen.net/github/issues/HyeokjinKang/URLATE-v3l-frontend)
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/HyeokjinKang/URLATE/main?label=updated)
+![GitHub Issues](https://badgen.net/github/issues/HyeokjinKang/URLATE)
 ![GitHub closed issues](https://img.shields.io/github/issues-closed/HyeokjinKang/URLATE)
 [![Discord](https://img.shields.io/discord/1160914703892103298?label=Discord)](https://discord.gg/YMhYzPbEYV)
 [![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/HyeokjinKang)
@@ -15,7 +15,7 @@
 > [!warning]
 > This project is still under development, and the contents below are subject to change at any time.
 
-URLATE is a open-source rhythm game built with web technologies.  
+URLATE is an open-source rhythm game built with web technologies.  
 It does not support Safari, but it is compatible with Firefox and Blink based browsers such as Chrome, Edge, and Opera.
 
 This repository is based on [URLATE-v3-frontend](https://github.com/Team-Croissant/URLATE-v3-frontend), and is a new version of URLATE with a new UI and new features.  
@@ -35,7 +35,7 @@ If you need to refer to the past commit history, please refer to the repository 
 ## Try it out
 
 You can play the latest version of URLATE at [urlate.coupy.dev](https://urlate.coupy.dev/).  
-There's an development version of URLATE at [dev.urlate.coupy.dev](https://dev.urlate.coupy.dev/), but it's not recommended to play it because it's not stable, and it may not be playable.
+There's a development version of URLATE at [dev.urlate.coupy.dev](https://dev.urlate.coupy.dev/), but it's not recommended to play it because it's not stable, and it may not be playable.
 
 ## How to play
 
@@ -90,7 +90,7 @@ Detailed information about the license can be found [here](https://choosealicens
 Note that the license only applies to the source code of this repository, and does not apply to the assets used in the game.  
 Brand "URLATE" and its logo are credited to Coupyworks.
 
-Copyright informations can be found [here](https://urlate.coupy.dev/info).
+Copyright information can be found [here](https://urlate.coupy.dev/info).
 
 ## Tumblbug supporters
 
