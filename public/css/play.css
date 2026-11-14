@@ -856,7 +856,7 @@ body {
   transition-duration: 0.1s;
 }
 
-#arrow {
+.arrow {
   height: 5vh;
 }
 

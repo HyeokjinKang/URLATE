@@ -1148,8 +1148,8 @@ const displayClose = () => {
     } else if (display == 7) {
       //OPTION Offset
       offsetButton.textContent = offset + "ms";
-      document.getElementById("offsetContiner").classList.remove("fadeInAnim");
-      document.getElementById("offsetContiner").classList.add("fadeOutAnim");
+      document.getElementById("offsetContainer").classList.remove("fadeInAnim");
+      document.getElementById("offsetContainer").classList.add("fadeOutAnim");
       if (songSelection != -1) {
         const selSong = getSong(songSelection);
         if (selSong) {
@@ -1162,8 +1162,8 @@ const displayClose = () => {
       }
       offsetSong.fade(1, 0, 500);
       setTimeout(() => {
-        document.getElementById("offsetContiner").classList.remove("fadeOutAnim");
-        document.getElementById("offsetContiner").style.display = "none";
+        document.getElementById("offsetContainer").classList.remove("fadeOutAnim");
+        document.getElementById("offsetContainer").style.display = "none";
         offsetSong.stop();
       }, 500);
       display = 2;
@@ -1757,8 +1757,8 @@ const showRank = () => {
 const offsetSetting = () => {
   offsetDrawnState = "";
   display = 7;
-  document.getElementById("offsetContiner").style.display = "flex";
-  document.getElementById("offsetContiner").classList.add("fadeInAnim");
+  document.getElementById("offsetContainer").style.display = "flex";
+  document.getElementById("offsetContainer").classList.add("fadeInAnim");
   if (!themeSong.playing()) {
     const selSong = getSong(songSelection);
     if (selSong) selSong.fade(1, 0, 500);
