@@ -116,8 +116,13 @@ const upload = multer({
   },
 }).single("img");
 
+const CLASSIFY_SIZE = 512;
+
 const imageToTensor = async (fileBuffer) => {
-  const { data, info } = await sharp(fileBuffer).raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = await sharp(fileBuffer)
+    .resize({ width: CLASSIFY_SIZE, height: CLASSIFY_SIZE, fit: "inside", withoutEnlargement: true })
+    .raw()
+    .toBuffer({ resolveWithObject: true });
 
   return tf.tensor3d(new Uint8Array(data), [info.height, info.width, info.channels], "int32");
 };
@@ -229,13 +234,11 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
   }
 
   let type = "";
-  let width = 256;
-  let height = 256;
+  let resize: sharp.ResizeOptions = { width: 256, height: 256 };
   if (req.params.type == "picture") {
     type = "picture";
   } else if (req.params.type == "background") {
-    width = 2560;
-    height = null;
+    resize = { width: 2560, height: 2560, fit: "inside", withoutEnlargement: true };
     type = "background";
   } else {
     res.status(400).json({
@@ -306,7 +309,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
     let explicit = false;
     try {
       fileBuffer = await sharp(file.buffer)
-        .resize({ width, height })
+        .resize(resize)
         .flatten({ background: "#ffffff" })
         .webp({
           quality: 70,
