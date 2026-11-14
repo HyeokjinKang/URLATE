@@ -29,7 +29,6 @@ const selectSongContainer = document.getElementById("selectSongContainer");
 const trackModsText = document.getElementById("trackModsText");
 const trackModsAuto = document.getElementById("trackModsAuto");
 const selectTitle = document.getElementById("selectTitle");
-const overlayPaymentContainer = document.getElementById("overlayPaymentContainer");
 const overlayLoadingContainer = document.getElementById("overlayLoadingContainer");
 const loadingCircle = document.getElementById("loadingCircle");
 const loadingOverlayCircle = document.getElementById("loadingOverlayCircle");
@@ -1000,10 +999,6 @@ const gameLoaded = () => {
     document.getElementById("songName").style.fontSize = "3vh";
     document.getElementById("header").classList.add("fadeInAnim");
     setTimeout(() => {
-      let backIcons = document.getElementsByClassName("backIcon");
-      for (let i = 0; i < backIcons.length; i++) {
-        backIcons[i].classList.add("show");
-      }
       document.getElementById("songName").classList.add("fadeInAnim");
     });
     document.getElementById("footerLeft").classList.add("fadeInAnim");
@@ -1201,22 +1196,6 @@ const displayClose = () => {
     } else if (display == 8) {
       //STORE
       fadeOutContainer("storeContainer");
-    } else if (display == 9) {
-      //DLC info
-      fadeOutContainer("storeDLCInfo");
-      display = 8;
-      return;
-    } else if (display == 10) {
-      //Skin info
-      fadeOutContainer("storeSkinInfo");
-      display = 8;
-      return;
-    } else if (display == 11) {
-      //Store purchase method selection
-      overlayPaymentContainer.style.pointerEvents = "none";
-      overlayPaymentContainer.style.opacity = "0";
-      display = 8;
-      return;
     } else if (display == 13) {
       //OPTION VisualSync
       if (visualSyncAnimId) {
@@ -2159,10 +2138,11 @@ const changeProfile = (e) => {
             [
               "<button><b>OK</b></button>",
               async (instance, toast) => {
-                loadingOverlayShow();
                 instance.hide({ transitionOut: "fadeOut" }, toast, "confirm");
-                if (element !== "" && ownedAlias.has(Number(element))) {
-                  await fetch(`${api}/profile/alias`, {
+                if (element === "" || !ownedAlias.has(Number(element))) return;
+                loadingOverlayShow();
+                try {
+                  const res = await fetch(`${api}/profile/alias`, {
                     method: "PUT",
                     credentials: "include",
                     body: JSON.stringify({
@@ -2171,21 +2151,19 @@ const changeProfile = (e) => {
                     headers: {
                       "Content-Type": "application/json",
                     },
-                  })
-                    .then((res) => res.json())
-                    .then((data) => {
-                      if (data.result != "success") {
-                        alert(`Error occured.\n${data.error}`);
-                      }
-                    })
-                    .catch((error) => {
-                      alert(`Error occured.\n${error}`);
-                      console.error(`Error occured.\n${error}`);
-                      location.reload();
-                    });
+                  });
+                  const data = await res.json();
+                  if (data.result == "success") {
+                    aliasNum = Number(element);
+                    document.getElementById("profileBio").textContent = `| ${alias[aliasNum]}`;
+                  } else {
+                    alert(`Error occured.\n${data.error}`);
+                  }
+                } catch (error) {
+                  alert(`Error occured.\n${error}`);
+                  console.error(`Error occured.\n${error}`);
+                  location.reload();
                 }
-                aliasNum = Number(element);
-                document.getElementById("profileBio").textContent = `| ${alias[aliasNum]}`;
                 loadingOverlayHide();
               },
               true,
