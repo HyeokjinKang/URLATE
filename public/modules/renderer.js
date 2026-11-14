@@ -484,7 +484,7 @@ export default class Renderer {
    * @param {object} state - { isClicked?, clickedMs? }
    */
   cursor(cursor, state) {
-    const { ctx, canvasW, skin } = this;
+    const { ctx } = this;
     const { x: mouseX, y: mouseY } = cursor;
     const { isClicked = false, clickedMs = -1 } = state;
 
