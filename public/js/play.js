@@ -775,6 +775,7 @@ const calculateResult = () => {
       rank,
       score,
       maxCombo,
+      rate,
       perfect,
       great,
       good,
