@@ -2176,7 +2176,6 @@ const picLoaded = async (e, type) => {
   }
   let payload = new FormData();
   payload.append("img", file);
-  payload.append("userid", userid);
   fetch(`${url}/profile/${userid}/${type}`, {
     credentials: "include",
     method: "POST",

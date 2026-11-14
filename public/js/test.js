@@ -46,8 +46,6 @@ const modulesReady = (async () => {
     Renderer = renderer.default;
     createGameAutoPlay = autoplay?.createGameAutoPlay;
     ({ parsePattern, Timing } = patternModule);
-
-    console.log("Modules are ready.");
   } catch (err) {
     console.error("Error occurred while loading modules: ", err);
   }

@@ -20,8 +20,6 @@ const modulesReady = (async () => {
     Updater = updater.default;
     Renderer = renderer.default;
     ({ parsePattern, Timing, PATTERN_VERSION, GRADUAL_TRIGGERS } = patternModule);
-
-    console.log("Modules are ready.");
   } catch (err) {
     console.error("Error occurred while loading modules: ", err);
   }
