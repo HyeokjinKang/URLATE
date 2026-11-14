@@ -110,7 +110,7 @@ let themeSong;
 const SONG_CACHE_MAX = 5;
 const songs = new Map();
 const getSong = (n) => {
-  if (n < 0 || !tracks[n] || tracks[n].type == 3) return null;
+  if (n < 0 || !tracks[n]) return null;
   if (songs.has(n)) {
     const s = songs.get(n);
     songs.delete(n);
@@ -695,32 +695,12 @@ const tracksUpdate = () => {
   songs.forEach((s) => s.unload());
   songs.clear();
   let songList = "";
-  const fetchTargets = [];
 
   for (let i = 0; i < tracks.length; i++) {
-    if (tracks[i].type == 3) {
-      songList += `<div class="songSelectionContainer songSelectionDisable">
-        <div class="songSelectionInfo">
-            <span class="songSelectionTitle"></span>
-            <span class="songSelectionArtist"></span>
-        </div>
-        <div class="songSelectionRank">
-            <span class="ranks rankQ"></span>
-        </div>
-      </div>`;
-      continue;
-    }
     songList += `<div class="songSelectionContainer" data-action="songSelected" data-arg="${i}">
               <div class="songSelectionInfo">
                 <div class="songSelectionTitle">
                   ${settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name}
-                  ${
-                    tracks[i].type == 1
-                      ? "<img src='/images/ui/track-advanced.webp' class='songSelectionIcon'>"
-                      : tracks[i].type == 2
-                        ? "<img src='/images/ui/track-dlc.webp' class='songSelectionIcon'>"
-                        : ""
-                  }
                 </div>
                 <span class="songSelectionArtist">${tracks[i].producer}</span>
               </div>
@@ -728,13 +708,12 @@ const tracksUpdate = () => {
                 <span class="ranks rankQ"></span>
               </div>
           </div>`;
-    fetchTargets.push(i);
   }
 
   selectSongContainer.innerHTML = songList;
 
-  const defaultRecord = (type) => ({
-    rank: type == 1 ? "rankL" : "rankQ",
+  const defaultRecord = () => ({
+    rank: "rankQ",
     record: 0,
     medal: 0,
     maxcombo: 0,
@@ -747,8 +726,8 @@ const tracksUpdate = () => {
     .then((res) => res.json())
     .then((data) => {
       const records = data.result == "success" ? data.records : {};
-      fetchTargets.forEach((i) => {
-        trackRecords[i] = [defaultRecord(tracks[i].type), defaultRecord(tracks[i].type), defaultRecord(tracks[i].type)];
+      tracks.forEach((_, i) => {
+        trackRecords[i] = [defaultRecord(), defaultRecord(), defaultRecord()];
         const results = records[tracks[i].fileName];
         if (results && results.length) {
           for (let j = 0; j < 3; j++) {
@@ -764,10 +743,6 @@ const tracksUpdate = () => {
               };
             }
           }
-        } else if (tracks[i].type == 1) {
-          const rankEl = document.getElementsByClassName("ranks")[i];
-          rankEl.className = "ranks rankL";
-          document.getElementsByClassName("songSelectionInfo")[i].classList.add("locked");
         }
       });
       if (iniMode != -1) {
@@ -1266,13 +1241,10 @@ const menuSelected = (n) => {
     if (songSelection == -1) {
       // Restore the last played song; pick a random one only when there is nothing to restore.
       const savedIndex = localStorage.songName ? tracks.findIndex((e) => e.fileName == localStorage.songName) : -1;
-      if (savedIndex != -1 && tracks[savedIndex].type != 3) {
+      if (savedIndex != -1) {
         songSelected(savedIndex);
-      } else {
-        const playable = tracks.map((t, i) => (t.type != 3 ? i : -1)).filter((i) => i != -1);
-        if (playable.length > 0) {
-          songSelected(playable[Math.floor(Math.random() * playable.length)]);
-        }
+      } else if (tracks.length > 0) {
+        songSelected(Math.floor(Math.random() * tracks.length));
       }
     }
     document.getElementById("selectContainer").style.display = "flex";
@@ -2351,24 +2323,10 @@ document.addEventListener("keydown", (e) => {
   if (display == 1 || display == 6) {
     if (key == "arrowup") {
       e.preventDefault();
-      if (songSelection != 0) {
-        let i = songSelection - 1;
-        while (tracks[i].type == 3) {
-          i--;
-          if (i == 0) return;
-        }
-        songSelected(i);
-      }
+      if (songSelection > 0) songSelected(songSelection - 1);
     } else if (key == "arrowdown") {
       e.preventDefault();
-      if (songSelection < tracks.length - 1) {
-        let i = songSelection + 1;
-        while (tracks[i].type == 3) {
-          i++;
-          if (i == tracks.length - 1) return;
-        }
-        songSelected(i);
-      }
+      if (songSelection < tracks.length - 1) songSelected(songSelection + 1);
     } else if (key == "tab") {
       e.preventDefault();
       difficultySelected(difficultySelection + 1 == 3 ? 0 : difficultySelection + 1);
