@@ -390,11 +390,11 @@ const tutorialSkip = () => {
       .then((res) => res.json())
       .then((data) => {
         if (data.result != "success") {
-          alert(`Error occured.\n${data.error}`);
+          alert(`Error occurred.\n${data.error}`);
         }
       })
       .catch((error) => {
-        console.error(`Error occured.\n${error}`);
+        console.error(`Error occurred.\n${error}`);
         location.reload();
       });
     tutorial -= 2;
@@ -574,8 +574,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           })
           .catch((error) => {
-            alert(`Error occured.\n${error}`);
-            console.error(`Error occured.\n${error}`);
+            alert(`Error occurred.\n${error}`);
+            console.error(`Error occurred.\n${error}`);
             location.reload();
           });
       } else {
@@ -584,8 +584,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
       location.reload();
     });
 });
@@ -779,8 +779,8 @@ const tracksUpdate = () => {
       }
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
       location.reload();
     });
 };
@@ -1141,13 +1141,13 @@ const displayClose = () => {
         .then((res) => res.json())
         .then((data) => {
           if (data.result != "success") {
-            alert(`Error occured.\n${data.error}`);
+            alert(`Error occurred.\n${data.error}`);
           }
           loadingHide();
         })
         .catch((error) => {
-          alert(`Error occured.\n${error}`);
-          console.error(`Error occured.\n${error}`);
+          alert(`Error occurred.\n${error}`);
+          console.error(`Error occurred.\n${error}`);
           location.reload();
         });
       fadeOutContainer("optionContainer");
@@ -1481,8 +1481,8 @@ const profileUpdate = async (nickname, isMe) => {
       console.error(e);
     }
   } else {
-    alert(`Error occured.\n${profile.error}`);
-    console.error(`Error occured.\n${profile.error}`);
+    alert(`Error occurred.\n${profile.error}`);
+    console.error(`Error occurred.\n${profile.error}`);
   }
   loadingOverlayHide();
 };
@@ -1562,12 +1562,12 @@ const bannerToggle = (n) => {
     .then((res) => res.json())
     .then((data) => {
       if (data.result != "success") {
-        alert(`Error occured.\n${data.error}`);
+        alert(`Error occurred.\n${data.error}`);
       }
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
       location.reload();
     });
 };
@@ -1709,8 +1709,8 @@ const showProfile = (name) => {
       display = 5;
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
       location.reload();
     });
 };
@@ -2141,11 +2141,11 @@ const changeProfile = (e) => {
                     aliasNum = Number(element);
                     document.getElementById("profileBio").textContent = `| ${alias[aliasNum]}`;
                   } else {
-                    alert(`Error occured.\n${data.error}`);
+                    alert(`Error occurred.\n${data.error}`);
                   }
                 } catch (error) {
-                  alert(`Error occured.\n${error}`);
-                  console.error(`Error occured.\n${error}`);
+                  alert(`Error occurred.\n${error}`);
+                  console.error(`Error occurred.\n${error}`);
                   location.reload();
                 }
                 loadingOverlayHide();
@@ -2309,12 +2309,12 @@ const scrollEvent = (e) => {
           .then((res) => res.json())
           .then((data) => {
             if (data.result != "success") {
-              alert(`Error occured.\n${data.error}`);
+              alert(`Error occurred.\n${data.error}`);
             }
           })
           .catch((error) => {
-            alert(`Error occured.\n${error}`);
-            console.error(`Error occured.\n${error}`);
+            alert(`Error occurred.\n${error}`);
+            console.error(`Error occurred.\n${error}`);
             location.reload();
           });
       }, 1000);
