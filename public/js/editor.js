@@ -3249,7 +3249,6 @@ window.addEventListener("blur", () => {
 });
 
 document.addEventListener("keyup", (e) => {
-  e = e || window.event;
   if (isMac ? e.key == "Meta" : e.key == "Control") {
     ctrlDown = false;
     isTmlUpdateNeeded = true;
@@ -3260,7 +3259,6 @@ document.addEventListener("keyup", (e) => {
 });
 
 document.addEventListener("keydown", (e) => {
-  e = e || window.event;
   const isTyping = isTypingTarget(e.target);
   if (e.key == "Escape") {
     if (isTyping) {
