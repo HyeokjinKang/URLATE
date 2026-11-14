@@ -1169,8 +1169,8 @@ const displayClose = () => {
       display = 2;
       return;
     } else if (display == 8) {
-      //STORE
-      fadeOutContainer("storeContainer");
+      //ABOUT
+      fadeOutContainer("aboutContainer");
     } else if (display == 13) {
       //OPTION VisualSync
       if (visualSyncAnimId) {
@@ -1261,9 +1261,9 @@ const menuSelected = (n) => {
     document.getElementById("advancedContainer").classList.add("fadeInAnim");
     rankUpdate();
   } else if (n == 3) {
-    //store
-    document.getElementById("storeContainer").style.display = "flex";
-    document.getElementById("storeContainer").classList.add("fadeInAnim");
+    //about
+    document.getElementById("aboutContainer").style.display = "flex";
+    document.getElementById("aboutContainer").classList.add("fadeInAnim");
     display = 8;
   }
 };
