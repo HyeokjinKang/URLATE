@@ -2470,6 +2470,7 @@ const test = (isAuto = shiftDown) => {
   const params = new URLSearchParams();
   if (background == "0") params.set("background", "0");
   if (isAuto) params.set("auto", "1");
+  if (rate != 1) params.set("rate", rate);
   const query = params.toString();
   window.location.href = `${url}/test${query ? `?${query}` : ""}`;
 };

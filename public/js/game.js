@@ -29,7 +29,6 @@ const selectSongContainer = document.getElementById("selectSongContainer");
 const trackModsText = document.getElementById("trackModsText");
 const trackModsAuto = document.getElementById("trackModsAuto");
 const selectTitle = document.getElementById("selectTitle");
-const overlayPaymentContainer = document.getElementById("overlayPaymentContainer");
 const overlayLoadingContainer = document.getElementById("overlayLoadingContainer");
 const loadingCircle = document.getElementById("loadingCircle");
 const loadingOverlayCircle = document.getElementById("loadingOverlayCircle");
@@ -741,7 +740,7 @@ const tracksUpdate = () => {
     maxcombo: 0,
   });
 
-  fetch(`${api}/trackRecords/${username}`, {
+  fetch(`${api}/trackRecords/${encodeURIComponent(username)}`, {
     method: "GET",
     credentials: "include",
   })
@@ -1000,10 +999,6 @@ const gameLoaded = () => {
     document.getElementById("songName").style.fontSize = "3vh";
     document.getElementById("header").classList.add("fadeInAnim");
     setTimeout(() => {
-      let backIcons = document.getElementsByClassName("backIcon");
-      for (let i = 0; i < backIcons.length; i++) {
-        backIcons[i].classList.add("show");
-      }
       document.getElementById("songName").classList.add("fadeInAnim");
     });
     document.getElementById("footerLeft").classList.add("fadeInAnim");
@@ -1201,22 +1196,6 @@ const displayClose = () => {
     } else if (display == 8) {
       //STORE
       fadeOutContainer("storeContainer");
-    } else if (display == 9) {
-      //DLC info
-      fadeOutContainer("storeDLCInfo");
-      display = 8;
-      return;
-    } else if (display == 10) {
-      //Skin info
-      fadeOutContainer("storeSkinInfo");
-      display = 8;
-      return;
-    } else if (display == 11) {
-      //Store purchase method selection
-      overlayPaymentContainer.style.pointerEvents = "none";
-      overlayPaymentContainer.style.opacity = "0";
-      display = 8;
-      return;
     } else if (display == 13) {
       //OPTION VisualSync
       if (visualSyncAnimId) {
@@ -1418,59 +1397,21 @@ const profileUpdate = async (nickname, isMe) => {
             const recentDate = new Date(data.date);
             document.getElementsByClassName("profileStatValue")[5].textContent = `${recentDate.toLocaleDateString()}`;
           }
-          const song = tracks.find((e) => e.fileName == data.filename);
-          const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
-          recentHTML += `<div class="playContainer">
-              <div class="playContainerLeft">
-                <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${escapeHtml(difficulty)}</span>
-                <img src="${cdn}/albums/50/${song.fileName}.webp" class="playAlbum" />
-                <div class="playTitleContainer">
-                  <span class="playTitle">${escapeHtml(settings.general.detailLang == "original" ? song.originalName : song.name)}</span>
-                  <span class="playProducer">${escapeHtml(song.producer)}</span>
-                </div>
-              </div>
-              <div class="playContainerRight">
-                <span class="playDetail">${escapeHtml(data.judge)}</span>
-                <span class="playDetail">${numberWithCommas(Number(data.record))}</span>
-                <span class="playDetail">${Number(data.accuracy).toFixed(2)}%</span>
-                <span class="playRate">${rating} +${Number(data.rating / 100).toFixed(2)}</span>
-              </div>
-            </div>`;
+          recentHTML += playRecordHTML(data, `+${Number(data.rating / 100).toFixed(2)}`);
         }
       }
       document.getElementById("profileRecentPlay").innerHTML = recentHTML;
     }
-    let bestRecords = await fetch(`${api}/bestRecords/${profile.nickname}`, {
+    const bestRes = await fetch(`${api}/bestRecords/${encodeURIComponent(profile.nickname)}`, {
       method: "GET",
       credentials: "include",
-    });
-    bestRecords = await bestRecords.json();
-    if (bestRecords.result == "success") {
-      document.getElementById("profileBestPlay").innerHTML = "";
-      bestRecords = bestRecords.results;
-      if (bestRecords.length == 0)
-        document.getElementById("profileBestPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
-      for (let i = 0; i < bestRecords.length; i++) {
-        const data = bestRecords[i];
-        const song = tracks.find((e) => e.fileName == data.filename);
-        const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
-        document.getElementById("profileBestPlay").innerHTML += `<div class="playContainer">
-        <div class="playContainerLeft">
-          <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${escapeHtml(difficulty)}</span>
-          <img src="${cdn}/albums/50/${song.fileName}.webp" class="playAlbum" />
-          <div class="playTitleContainer">
-            <span class="playTitle">${escapeHtml(settings.general.detailLang == "original" ? song.originalName : song.name)}</span>
-            <span class="playProducer">${escapeHtml(song.producer)}</span>
-          </div>
-        </div>
-        <div class="playContainerRight">
-          <span class="playDetail">${escapeHtml(data.judge)}</span>
-          <span class="playDetail">${numberWithCommas(Number(data.record))}</span>
-          <span class="playDetail">${Number(data.accuracy).toFixed(2)}%</span>
-          <span class="playRate">${rating} ${data.rating == 0 ? "-" : `+${Number(data.rating / 100).toFixed(2)}`}</span>
-        </div>
-      </div>`;
-      }
+    }).then((res) => res.json());
+    if (bestRes.result == "success") {
+      const bestHTML = bestRes.results
+        .map((data) => playRecordHTML(data, data.rating == 0 ? "-" : `+${Number(data.rating / 100).toFixed(2)}`))
+        .join("");
+      document.getElementById("profileBestPlay").innerHTML =
+        bestHTML || `<span class="nothingHere">${nothingHere}</span>`;
     }
     document.getElementsByClassName("profileMedalText")[0].textContent = profile.ap;
     document.getElementsByClassName("profileMedalText")[1].textContent = profile.fc;
@@ -1544,6 +1485,28 @@ const profileUpdate = async (nickname, isMe) => {
     console.error(`Error occured.\n${profile.error}`);
   }
   loadingOverlayHide();
+};
+
+const playRecordHTML = (data, ratingText) => {
+  const song = tracks.find((e) => e.fileName == data.filename);
+  if (!song) return "";
+  const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
+  return `<div class="playContainer">
+      <div class="playContainerLeft">
+        <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${escapeHtml(difficulty)}</span>
+        <img src="${cdn}/albums/50/${song.fileName}.webp" class="playAlbum" />
+        <div class="playTitleContainer">
+          <span class="playTitle">${escapeHtml(settings.general.detailLang == "original" ? song.originalName : song.name)}</span>
+          <span class="playProducer">${escapeHtml(song.producer)}</span>
+        </div>
+      </div>
+      <div class="playContainerRight">
+        <span class="playDetail">${escapeHtml(data.judge)}</span>
+        <span class="playDetail">${numberWithCommas(Number(data.record))}</span>
+        <span class="playDetail">${Number(data.accuracy).toFixed(2)}%</span>
+        <span class="playRate">${rating} ${ratingText}</span>
+      </div>
+    </div>`;
 };
 
 const showProfileBackground = (event) => {
@@ -1702,7 +1665,7 @@ const showProfile = (name) => {
   loadingShow();
   document.getElementById("infoProfileContainer").style.display = "flex";
   document.getElementById("infoProfileContainer").classList.add("fadeInAnim");
-  fetch(`${api}/teamProfile/${name}`, {
+  fetch(`${api}/teamProfile/${encodeURIComponent(name)}`, {
     method: "GET",
     credentials: "include",
   })
@@ -1711,10 +1674,10 @@ const showProfile = (name) => {
       let info = JSON.parse(data.data);
       document.getElementById("infoProfileName").textContent = info[0].name;
       document.getElementById("infoProfilePosition").textContent = info[0].position;
-      document.getElementById("infoProfileImg").src = `images/credits/${info[0].profile}`;
+      document.getElementById("infoProfileImg").src = `/images/credits/${encodeURIComponent(info[0].profile)}`;
       let innerHTML = `<div class="infoProfilePart">
                           <img src="/images/icons/quote.svg" class="infoIcon">
-                          <span id="quote">${info[0].quote}</span>
+                          <span id="quote">${escapeHtml(info[0].quote)}</span>
                      </div>`;
       for (let i = 1; i < info.length; i++) {
         let link = "";
@@ -1737,8 +1700,8 @@ const showProfile = (name) => {
         }
         innerHTML += `
                     <div class="infoProfilePart">
-                        <img src="/images/icons/${info[i].icon}.svg" class="infoIcon">
-                        ${link == "" ? `<span>` : `<a class="blackLink" href="${link}" target="_blank" rel="noopener noreferrer">`}${info[i].content}${link == "" ? `</span>` : `</a>`}
+                        <img src="/images/icons/${encodeURIComponent(info[i].icon)}.svg" class="infoIcon">
+                        ${link == "" ? `<span>` : `<a class="blackLink" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">`}${escapeHtml(info[i].content)}${link == "" ? `</span>` : `</a>`}
                     </div>`;
       }
       document.getElementById("infoProfileBottom").innerHTML = innerHTML;
@@ -2159,10 +2122,11 @@ const changeProfile = (e) => {
             [
               "<button><b>OK</b></button>",
               async (instance, toast) => {
-                loadingOverlayShow();
                 instance.hide({ transitionOut: "fadeOut" }, toast, "confirm");
-                if (element !== "" && ownedAlias.has(Number(element))) {
-                  await fetch(`${api}/profile/alias`, {
+                if (element === "" || !ownedAlias.has(Number(element))) return;
+                loadingOverlayShow();
+                try {
+                  const res = await fetch(`${api}/profile/alias`, {
                     method: "PUT",
                     credentials: "include",
                     body: JSON.stringify({
@@ -2171,21 +2135,19 @@ const changeProfile = (e) => {
                     headers: {
                       "Content-Type": "application/json",
                     },
-                  })
-                    .then((res) => res.json())
-                    .then((data) => {
-                      if (data.result != "success") {
-                        alert(`Error occured.\n${data.error}`);
-                      }
-                    })
-                    .catch((error) => {
-                      alert(`Error occured.\n${error}`);
-                      console.error(`Error occured.\n${error}`);
-                      location.reload();
-                    });
+                  });
+                  const data = await res.json();
+                  if (data.result == "success") {
+                    aliasNum = Number(element);
+                    document.getElementById("profileBio").textContent = `| ${alias[aliasNum]}`;
+                  } else {
+                    alert(`Error occured.\n${data.error}`);
+                  }
+                } catch (error) {
+                  alert(`Error occured.\n${error}`);
+                  console.error(`Error occured.\n${error}`);
+                  location.reload();
                 }
-                aliasNum = Number(element);
-                document.getElementById("profileBio").textContent = `| ${alias[aliasNum]}`;
                 loadingOverlayHide();
               },
               true,
