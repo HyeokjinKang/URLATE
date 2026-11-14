@@ -116,6 +116,18 @@ const upload = multer({
   },
 }).single("img");
 
+const MAX_INPUT_PIXELS = 40_000_000;
+const ALLOWED_FORMATS = new Set(["jpeg", "png", "webp", "gif"]);
+
+const isAllowedImage = async (buffer: Buffer): Promise<boolean> => {
+  try {
+    const { format, width, height } = await sharp(buffer, { limitInputPixels: MAX_INPUT_PIXELS }).metadata();
+    return ALLOWED_FORMATS.has(format) && width * height <= MAX_INPUT_PIXELS;
+  } catch {
+    return false;
+  }
+};
+
 const CLASSIFY_SIZE = 512;
 
 const imageToTensor = async (fileBuffer) => {
@@ -303,12 +315,25 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
       return;
     }
 
+    if (!(await isAllowedImage(file.buffer))) {
+      logger.warn("Rejected an unsupported or oversized image", {
+        userid: req.params.userid,
+        type: req.params.type,
+      });
+      res.status(400).json({
+        result: "failed",
+        message: "Error occured while uploading",
+        error: "Invalid image",
+      });
+      return;
+    }
+
     // multer's callback is not an Express handler, so a rejection here is not
     // turned into a response -- the request would hang.
     let fileBuffer: Buffer;
     let explicit = false;
     try {
-      fileBuffer = await sharp(file.buffer)
+      fileBuffer = await sharp(file.buffer, { limitInputPixels: MAX_INPUT_PIXELS })
         .resize(resize)
         .flatten({ background: "#ffffff" })
         .webp({
