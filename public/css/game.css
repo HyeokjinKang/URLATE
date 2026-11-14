@@ -1654,10 +1654,6 @@ input[type="number"] {
   opacity: 1;
 }
 
-.songSelectionInfo.locked {
-  opacity: 0.5;
-}
-
 .songSelectionTitle {
   display: flex;
   flex-direction: row;
@@ -1665,12 +1661,6 @@ input[type="number"] {
   justify-content: flex-end;
   font-size: 3.5vh;
   font-weight: var(--title-weight);
-}
-
-.songSelectionIcon {
-  margin-left: 7px;
-  margin-bottom: 2px;
-  height: 2.5vh;
 }
 
 .songSelectionArtist {
@@ -1735,14 +1725,6 @@ input[type="number"] {
   color: #fff;
   opacity: 0.2;
   content: "?";
-}
-
-.rankL:before {
-  font-size: 4vh;
-  font-weight: 800;
-  color: #fff;
-  opacity: 0.2;
-  content: "🔒";
 }
 
 .songSelected {
@@ -2142,10 +2124,6 @@ input[type="number"] {
   text-decoration: underline;
   color: #222;
   margin-top: 2vh;
-}
-
-.songSelectionDisable {
-  display: none;
 }
 
 .sortText {
