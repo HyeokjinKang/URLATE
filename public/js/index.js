@@ -133,17 +133,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const gsiLoaded = () => !!(window.google && window.google.accounts && window.google.accounts.id);
 
-const signInState = fetch(`${api}/auth/state`, {
-  method: "GET",
-  credentials: "include",
-})
-  .then(readJson)
-  .then((data) => {
-    if (typeof data.state !== "string" || !data.state) {
-      throw new Error("Missing sign-in state.");
-    }
-    return data.state;
-  });
+const SIGN_IN_STATE_REFRESH_MS = 1000 * 60 * 8;
+
+const fetchSignInState = () =>
+  fetch(`${api}/auth/state`, {
+    method: "GET",
+    credentials: "include",
+  })
+    .then(readJson)
+    .then((data) => {
+      if (typeof data.state !== "string" || !data.state) {
+        throw new Error("Missing sign-in state.");
+      }
+      return data.state;
+    });
+
+const signInState = fetchSignInState();
 
 function showNotice(id) {
   if (canPlay) {
@@ -151,7 +156,7 @@ function showNotice(id) {
   }
 }
 
-function initSignIn(state) {
+function initSignIn(state, prompt = true) {
   const gsi = window.google.accounts.id;
   gsi.initialize({
     client_id: googleClientId,
@@ -166,7 +171,18 @@ function initSignIn(state) {
   const { width, ...options } = button.dataset;
   gsi.renderButton(button, { ...options, ...(width && { width: Number(width) }), state });
 
-  if (canPlay) gsi.prompt();
+  if (prompt && canPlay) gsi.prompt();
+}
+
+function scheduleSignInStateRefresh() {
+  setInterval(() => {
+    fetchSignInState()
+      .then((state) => {
+        window.google.accounts.id.cancel();
+        initSignIn(state, false);
+      })
+      .catch((error) => console.error(error));
+  }, SIGN_IN_STATE_REFRESH_MS);
 }
 
 let gsiSettled = false;
@@ -181,10 +197,15 @@ function settle() {
     showNotice("loginNotice");
     return;
   }
-  signInState.then(initSignIn).catch((error) => {
-    console.error(error);
-    showNotice("stateNotice");
-  });
+  signInState
+    .then((state) => {
+      initSignIn(state);
+      scheduleSignInStateRefresh();
+    })
+    .catch((error) => {
+      console.error(error);
+      showNotice("stateNotice");
+    });
 }
 
 const markGsiSettled = () => {
