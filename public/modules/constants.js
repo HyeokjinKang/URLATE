@@ -34,8 +34,6 @@ export const Config = {
   },
   CLICK_EFFECT: {
     LIFETIME: 500,
-    SIZE: 30,
-    LINE_WIDTH: 10,
     OPACITY: 20,
   },
   NOTE_CLICK_EFFECT: {
