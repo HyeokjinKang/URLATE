@@ -77,122 +77,73 @@ app.use((req, res, next) => {
 });
 app.use(i18n);
 
-// Google Identity Services origin, used by the login button's script, style and frame.
 const GSI_ORIGIN = "https://accounts.google.com";
 
-/**
- * @param withGsi Whether the page uses Google Sign-In. The join page never calls
- *   GSI, so it has no reason to allow accounts.google.com.
- */
+// socket.io starts over https polling and then upgrades to a websocket, so both schemes are needed.
+const GAME_SOCKET = config.project.game.replace(/^https:/, "wss:");
+
+type CspSources = {
+  script?: string[];
+  style?: string[];
+  img?: string[];
+  media?: boolean;
+  connect: string[];
+  frame: string;
+};
+
+const buildCsp = (nonce: string, sources: CspSources) => {
+  const list = (origins: string[] = []) => origins.map((origin) => ` ${origin}`).join("");
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}'${list(sources.script)}`,
+    // The GSI button injects inline styles, so 'unsafe-inline' can't be narrowed to a nonce.
+    `style-src 'self' 'unsafe-inline'${list(sources.style)}`,
+    `font-src 'self' ${config.project.cdn}`,
+    `img-src 'self' data:${list(sources.img)}`,
+    // Howler falls back to <audio> (media-src) when Web Audio (connect-src) is unavailable.
+    ...(sources.media ? [`media-src 'self' ${config.project.cdn}`] : []),
+    `connect-src 'self'${list(sources.connect)}`,
+    `frame-src ${sources.frame}`,
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'self'",
+    "object-src 'none'",
+  ].join("; ");
+};
+
 const authPageCsp = (nonce: string, withGsi: boolean) => {
-  const gsi = (directive: string) => (withGsi ? ` ${directive}` : "");
-
-  return [
-    "default-src 'self'",
-    // Allows the GSI client script and the page's own inline config script.
-    `script-src 'self' 'nonce-${nonce}'${gsi(GSI_ORIGIN)}`,
-    // The GSI button injects inline styles, so 'unsafe-inline' can't be narrowed to
-    // a nonce. accounts.google.com also serves the button's stylesheet (/gsi/style).
-    `style-src 'self' 'unsafe-inline'${gsi(GSI_ORIGIN)}`,
-    `font-src 'self' ${config.project.cdn}`,
-    "img-src 'self' data:",
-    `connect-src 'self' ${config.project.api}${gsi(GSI_ORIGIN)}`,
-    // The login button renders in an accounts.google.com iframe. The join page
-    // uses no frames at all, so it blocks them outright.
-    withGsi ? `frame-src ${GSI_ORIGIN}` : "frame-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'self'",
-    "object-src 'none'",
-  ].join("; ");
+  const gsi = withGsi ? [GSI_ORIGIN] : [];
+  return buildCsp(nonce, {
+    script: gsi,
+    style: gsi,
+    connect: [config.project.api, ...gsi],
+    frame: withGsi ? GSI_ORIGIN : "'none'",
+  });
 };
 
-/**
- * Policy shared by the play screens (play/test/tutorial) and the editor. They
- * load the same assets, and their inline handlers use few enough origins that
- * merging with the account-page policy would only grant unused permissions.
- *
- * The editor's pattern download creates a blob URL, but it's only ever used
- * through <a download>, so it isn't a target for any fetch directive. socket.io
- * is served by this app itself, so script-src needs no external origin for it.
- */
-const playPageCsp = (nonce: string) => {
-  // socket.io connects over polling (https) before upgrading to a websocket, so
-  // both schemes are needed -- allowing only one breaks either the initial
-  // connection or the upgrade.
-  const gameSocket = config.project.game.replace(/^https:/, "wss:");
+const gameConnect = [config.project.api, config.project.cdn, config.project.game, GAME_SOCKET];
 
-  return [
-    "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'`,
-    "style-src 'self' 'unsafe-inline'",
-    // The Montserrat, Pretendard and Metropolis webfonts are all served from the CDN.
-    `font-src 'self' ${config.project.cdn}`,
-    // Album art and backgrounds come from the CDN.
-    `img-src 'self' data: ${config.project.cdn}`,
-    // Howler prefers Web Audio, which uses connect-src, but falls back to <audio>
-    // (media-src) when that isn't supported. Both are allowed so playback works
-    // either way.
-    `media-src 'self' ${config.project.cdn}`,
-    // Pattern/skin JSON and track files (CDN), the record/settings API, and the game socket.
-    `connect-src 'self' ${config.project.api} ${config.project.cdn} ${config.project.game} ${gameSocket}`,
-    "frame-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'self'",
-    "object-src 'none'",
-  ].join("; ");
-};
+const playPageCsp = (nonce: string) =>
+  buildCsp(nonce, { img: [config.project.cdn], media: true, connect: gameConnect, frame: "'none'" });
 
-// Generated fresh per request -- reusing it would let an attacker learn the
-// value and pass off their own inline script, defeating the point of a nonce.
-const withAuthPageCsp = (res: Response, withGsi: boolean): string => {
+const gamePageCsp = (nonce: string) =>
+  buildCsp(nonce, {
+    img: [config.project.cdn, "https://*.googleusercontent.com"],
+    media: true,
+    connect: gameConnect,
+    frame: "'none'",
+  });
+
+// A fresh nonce per request; a reused one would let an injected inline script pass.
+const withCsp = (res: Response, policy: (nonce: string) => string): string => {
   const nonce = randomBytes(16).toString("base64");
-  res.setHeader("Content-Security-Policy", authPageCsp(nonce, withGsi));
+  res.setHeader("Content-Security-Policy", policy(nonce));
   return nonce;
 };
 
-/**
- * Policy for the game screen. Mostly the same as the play-screen policy, except
- * that profile pictures come from two places: uploads live on the CDN, while the
- * Google account picture captured at signup is served from googleusercontent.
- *
- * chart.js (the ranking graph) and socket.io are both served by this app itself,
- * so script-src needs no external origin for either. Merging this with the play
- * screens' policy would grant them origins they never use.
- */
-const gamePageCsp = (nonce: string) => {
-  const gameSocket = config.project.game.replace(/^https:/, "wss:");
-
-  return [
-    "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'`,
-    "style-src 'self' 'unsafe-inline'",
-    // The Montserrat, Pretendard and Metropolis webfonts are all served from the CDN.
-    `font-src 'self' ${config.project.cdn}`,
-    // Album art and banners come from the CDN; profile pictures from the CDN or a Google account picture.
-    `img-src 'self' data: ${config.project.cdn} https://*.googleusercontent.com`,
-    `media-src 'self' ${config.project.cdn}`,
-    `connect-src 'self' ${config.project.api} ${config.project.cdn} ${config.project.game} ${gameSocket}`,
-    "frame-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'self'",
-    "object-src 'none'",
-  ].join("; ");
-};
-
-const withGamePageCsp = (res: Response): string => {
-  const nonce = randomBytes(16).toString("base64");
-  res.setHeader("Content-Security-Policy", gamePageCsp(nonce));
-  return nonce;
-};
-
-const withPlayPageCsp = (res: Response): string => {
-  const nonce = randomBytes(16).toString("base64");
-  res.setHeader("Content-Security-Policy", playPageCsp(nonce));
-  return nonce;
-};
+const withAuthPageCsp = (res: Response, withGsi: boolean) => withCsp(res, (nonce) => authPageCsp(nonce, withGsi));
+const withGamePageCsp = (res: Response) => withCsp(res, gamePageCsp);
+const withPlayPageCsp = (res: Response) => withCsp(res, playPageCsp);
 
 /**
  * Own budget for the login/join screens, separate from gateLimiter. That one
