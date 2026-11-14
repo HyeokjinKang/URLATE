@@ -220,8 +220,9 @@ const writeCachedStatus = (key: string, status: string) => {
   if (gatedStatuses.has(status)) return;
   // Re-insert so the cap evicts the least recently written entry.
   authStatusCache.delete(key);
-  if (authStatusCache.size >= AUTH_CACHE_MAX_ENTRIES) {
-    authStatusCache.delete(authStatusCache.keys().next().value);
+  const oldest = authStatusCache.keys().next().value;
+  if (authStatusCache.size >= AUTH_CACHE_MAX_ENTRIES && oldest !== undefined) {
+    authStatusCache.delete(oldest);
   }
   authStatusCache.set(key, {
     status,

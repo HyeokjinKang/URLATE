@@ -153,12 +153,24 @@ importers:
       '@types/compression':
         specifier: ^1.8.1
         version: 1.8.1
+      '@types/cookie-parser':
+        specifier: ^1.4.10
+        version: 1.4.10(@types/express@5.0.6)
+      '@types/express':
+        specifier: ^5.0.6
+        version: 5.0.6
+      '@types/i18n':
+        specifier: ^0.13.12
+        version: 0.13.12
       '@types/multer':
         specifier: ^2.3.0
         version: 2.3.0
       '@types/node':
         specifier: ^24.19.2
         version: 24.19.2
+      '@types/signale':
+        specifier: ^1.4.7
+        version: 1.4.7
       eslint:
         specifier: ^10.14.0
         version: 10.14.0(supports-color@7.2.0)
@@ -512,6 +524,11 @@ packages:
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
 
+  '@types/cookie-parser@1.4.10':
+    resolution: {integrity: sha512-B4xqkqfZ8Wek+rCOeRxsjMS9OgvzebEzzLYw7NHYuvzb7IdxOkI0ZHGgeEBX4PUM7QGVvNSK60T3OvWj3YfBRg==}
+    peerDependencies:
+      '@types/express': '*'
+
   '@types/emscripten@0.0.34':
     resolution: {integrity: sha512-QSb9ojDincskc+uKMI0KXp8e1NALFINCrMlp8VGKGcTSxeEyRTTKyjWw75NYrCZHUsVEEEpr1tYHpbtaC++/sQ==}
 
@@ -529,6 +546,9 @@ packages:
 
   '@types/http-errors@2.0.5':
     resolution: {integrity: sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg==}
+
+  '@types/i18n@0.13.12':
+    resolution: {integrity: sha512-iAd2QjKh+0ToBXocmCS3m38GskiaGzmSV1MTQz2GaOraqSqBiLf46J7u3EGINl+st+Uk4lO3OL7QyIjTJlrWIg==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -565,6 +585,9 @@ packages:
 
   '@types/serve-static@2.2.0':
     resolution: {integrity: sha512-8mam4H1NHLtu7nmtalF7eyBH14QyOASmcxHhSfEoRyr0nP/YdoesEtU+uSRvMe96TW/HPTtkoKqQLl53N7UXMQ==}
+
+  '@types/signale@1.4.7':
+    resolution: {integrity: sha512-nc0j37QupTT7OcYeH3gRE1ZfzUalEUsDKJsJ3IsJr0pjjFZTjtrX1Bsn6Kv56YXI/H9rNSwAkIPRxNlZI8GyQw==}
 
   '@typescript-eslint/eslint-plugin@8.72.2':
     resolution: {integrity: sha512-222PKFXKihmFpi/pS5njoBgdAqsPhj2/GBmFbrNw8Tq8gEG9Sv+kSlKFy4u2q+mJv9ZzJgM2Gkv/bUzRZwZw5g==}
@@ -1928,6 +1951,10 @@ snapshots:
     dependencies:
       '@types/node': 24.19.2
 
+  '@types/cookie-parser@1.4.10(@types/express@5.0.6)':
+    dependencies:
+      '@types/express': 5.0.6
+
   '@types/emscripten@0.0.34': {}
 
   '@types/esrecurse@4.3.1': {}
@@ -1948,6 +1975,8 @@ snapshots:
       '@types/serve-static': 2.2.0
 
   '@types/http-errors@2.0.5': {}
+
+  '@types/i18n@0.13.12': {}
 
   '@types/json-schema@7.0.15': {}
 
@@ -1983,6 +2012,10 @@ snapshots:
   '@types/serve-static@2.2.0':
     dependencies:
       '@types/http-errors': 2.0.5
+      '@types/node': 24.19.2
+
+  '@types/signale@1.4.7':
+    dependencies:
       '@types/node': 24.19.2
 
   '@typescript-eslint/eslint-plugin@8.72.2(@typescript-eslint/parser@8.72.2(eslint@10.14.0(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3))(eslint@10.14.0(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)':

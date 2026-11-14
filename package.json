@@ -51,8 +51,12 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/compression": "^1.8.1",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/i18n": "^0.13.12",
     "@types/multer": "^2.3.0",
     "@types/node": "^24.19.2",
+    "@types/signale": "^1.4.7",
     "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.14.0",
