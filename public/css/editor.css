@@ -169,7 +169,7 @@ body {
   height: 2vh;
 }
 
-#horizontalLine {
+.horizontalLine {
   filter: invert(83%) sepia(53%) saturate(0%) hue-rotate(222deg) brightness(100%) contrast(95%);
   width: 2vw;
   height: 2px;
