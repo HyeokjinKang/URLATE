@@ -12,9 +12,6 @@
 [![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/URLATE_)](https://twitter.com/URLATE_)
 ![Badge](https://hitscounter.dev/api/hit?url=https%3A%2F%2Fgithub.com%2FHyeokjinKang%2FURLATE&label=Visitors&icon=people-fill&color=%23198754&message=&style=social&tz=Japan)
 
-> [!warning]
-> This project is still under development, and the contents below are subject to change at any time.
-
 URLATE is an open-source rhythm game built with web technologies.  
 It does not support Safari, but it is compatible with Firefox and Blink based browsers such as Chrome, Edge, and Opera.
 
