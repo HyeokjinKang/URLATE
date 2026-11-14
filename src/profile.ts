@@ -2,7 +2,6 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import multer from "multer";
 import path from "path";
-import fetch from "node-fetch";
 import * as tf from "@tensorflow/tfjs";
 import "@tensorflow/tfjs-backend-wasm";
 import * as nsfw from "nsfwjs";
@@ -16,7 +15,7 @@ import { randomUUID } from "crypto";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const config = require(__dirname + "/../config/config.json");
 
-// node-fetch has no default timeout: a hung backend would pin the request handler.
+// fetch has no default timeout: a hung backend would pin the request handler.
 const API_TIMEOUT_MS = 5000;
 
 let model;
@@ -60,7 +59,7 @@ const uploadToBunny = async (filename: string, buffer: Buffer) => {
       AccessKey: config.bunny.accessKey,
       "Content-Type": "image/webp",
     },
-    body: buffer,
+    body: new Uint8Array(buffer),
     signal: AbortSignal.timeout(BUNNY_TIMEOUT_MS),
   });
   if (!response.ok) throw new Error(`BunnyCDN storage responded with ${response.status}`);

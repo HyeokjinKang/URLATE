@@ -3,7 +3,6 @@ import cookieParser from "cookie-parser";
 import express, { NextFunction, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
 import i18n from "./i18n";
-import fetch from "node-fetch";
 import { exec } from "child_process";
 import { logger } from "./logger";
 import { visitorHeaders } from "./visitor";
@@ -27,7 +26,7 @@ if (!googleClientId) {
   process.exit(1);
 }
 
-// node-fetch has no default timeout: a hung backend would pin the request handler.
+// fetch has no default timeout: a hung backend would pin the request handler.
 const API_TIMEOUT_MS = 5000;
 
 const app = express();
