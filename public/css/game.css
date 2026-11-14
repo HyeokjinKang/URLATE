@@ -485,7 +485,7 @@ p {
 }
 
 #infoContainer::before,
-#storeContainer::before,
+#aboutContainer::before,
 #optionContainer::before,
 #offsetContainer::before,
 #visualSyncContainer::before {
@@ -503,7 +503,7 @@ p {
   background-position: center bottom;
 }
 
-#storeContainer::before {
+#aboutContainer::before {
   background-image: url(/images/backgrounds/decorations-advanced.webp);
 }
 
@@ -747,7 +747,7 @@ p {
   }
 }
 
-#storeContainer {
+#aboutContainer {
   display: none;
   align-items: flex-start;
   justify-content: center;
