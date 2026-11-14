@@ -3,8 +3,3 @@ allowBuilds:
   sharp: true
 
 injectWorkspacePackages: true
-
-onlyBuiltDependencies:
-  - "@tensorflow/tfjs-node"
-  - core-js
-  - sharp

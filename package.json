@@ -10,7 +10,6 @@
   "name": "urlate",
   "version": "1.0.0-rc.6",
   "description": "URLATE, Online rhythm game based on web technologies.",
-  "main": "src/",
   "files": [
     "dist",
     "public",
