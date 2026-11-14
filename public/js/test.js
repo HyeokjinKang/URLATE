@@ -49,7 +49,7 @@ const modulesReady = (async () => {
 
     console.log("Modules are ready.");
   } catch (err) {
-    console.error("Error occured while loading modules: ", err);
+    console.error("Error occurred while loading modules: ", err);
   }
 })();
 
@@ -175,8 +175,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
     });
   // Signed-out visitors were already turned away by the server gate.
   fetch(`${api}/user`, {
@@ -197,8 +197,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
     });
 });
 
@@ -226,6 +226,7 @@ const initialize = (isFirstCalled) => {
 
   missCanvas.width = window.innerWidth * 0.2 * pixelRatio;
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
+  rate = parseFloat(new URLSearchParams(window.location.search).get("rate")) || 1;
 
   if (isFirstCalled) {
     pattern = parsePattern(localStorage.pattern);
@@ -286,8 +287,8 @@ const initialize = (isFirstCalled) => {
         Draw = new Renderer(ctx, { canvasW, canvasH, cursorZoom: settings.game.size }, skin);
       })
       .catch((error) => {
-        alert(`Error occured.\n${error}`);
-        console.error(`Error occured.\n${error}`);
+        alert(`Error occurred.\n${error}`);
+        console.error(`Error occurred.\n${error}`);
       });
     song = new Howl({
       src: `${cdn}/tracks/${settings.sound.res}/${fileName}.ogg`,
@@ -301,8 +302,7 @@ const initialize = (isFirstCalled) => {
         Howler.autoSuspend = false;
         Howler.volume(settings.sound.volume.master);
         song.volume(settings.sound.volume.music);
-        let rate = new URLSearchParams(window.location.search).get("rate");
-        song.rate(rate ? parseFloat(rate) : 1);
+        song.rate(rate);
         if (load == 1) {
           doneLoading();
         }
@@ -1048,11 +1048,11 @@ const resume = () => {
     .then((res) => res.json())
     .then((data) => {
       if (data.result != "success") {
-        alert(`Error occured.\n${data.error}`);
+        alert(`Error occurred.\n${data.error}`);
       }
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
     });
   menuContainer.style.display = "none";
   isMenuOpened = false;
@@ -1072,6 +1072,7 @@ const retry = () => {
     timing = new Timing(pattern);
     speed = pattern.information.speed;
     nowSpeed = pattern.information.speed;
+    currentTriggerIndex = 0;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
     clickParticles = [];
     destroyParticles = [];
@@ -1228,12 +1229,12 @@ const globalScrollEvent = (e) => {
           .then((res) => res.json())
           .then((data) => {
             if (data.result != "success") {
-              alert(`Error occured.\n${data.error}`);
+              alert(`Error occurred.\n${data.error}`);
             }
           })
           .catch((error) => {
-            alert(`Error occured.\n${error}`);
-            console.error(`Error occured.\n${error}`);
+            alert(`Error occurred.\n${error}`);
+            console.error(`Error occurred.\n${error}`);
           });
       }, 1000);
     } else {

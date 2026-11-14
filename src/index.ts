@@ -30,7 +30,6 @@ if (!googleClientId) {
 const API_TIMEOUT_MS = 5000;
 
 const app = express();
-app.locals.pretty = true;
 
 // Do not advertise the framework version.
 app.disable("x-powered-by");
@@ -292,6 +291,7 @@ const gateLimiter = rateLimit({
   skip: (req) => !!req.headers.cookie && readCachedStatus(authCacheKey(req.headers.cookie)) !== null,
   standardHeaders: true,
   legacyHeaders: false,
+  handler: (req, res) => sendError(req, res, 429),
 });
 
 // Its own budget, so a burst of page loads can never leave a visitor unable to sign out.
@@ -300,6 +300,7 @@ const logoutLimiter = rateLimit({
   limit: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  handler: (req, res) => sendError(req, res, 429),
 });
 
 // The gate could not reach a verdict. Say so instead of redirecting, which the

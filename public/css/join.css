@@ -93,15 +93,6 @@ form {
   opacity: 1;
 }
 
-#pw {
-  opacity: 0;
-  transition-duration: 0.5s;
-}
-
-#pw.show {
-  opacity: 1;
-}
-
 #failed {
   opacity: 0;
   color: red;
