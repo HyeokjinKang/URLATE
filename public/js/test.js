@@ -226,6 +226,7 @@ const initialize = (isFirstCalled) => {
 
   missCanvas.width = window.innerWidth * 0.2 * pixelRatio;
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
+  rate = parseFloat(new URLSearchParams(window.location.search).get("rate")) || 1;
 
   if (isFirstCalled) {
     pattern = parsePattern(localStorage.pattern);
@@ -301,8 +302,7 @@ const initialize = (isFirstCalled) => {
         Howler.autoSuspend = false;
         Howler.volume(settings.sound.volume.master);
         song.volume(settings.sound.volume.music);
-        let rate = new URLSearchParams(window.location.search).get("rate");
-        song.rate(rate ? parseFloat(rate) : 1);
+        song.rate(rate);
         if (load == 1) {
           doneLoading();
         }
@@ -1072,6 +1072,7 @@ const retry = () => {
     timing = new Timing(pattern);
     speed = pattern.information.speed;
     nowSpeed = pattern.information.speed;
+    currentTriggerIndex = 0;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
     clickParticles = [];
     destroyParticles = [];

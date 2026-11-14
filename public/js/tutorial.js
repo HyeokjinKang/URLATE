@@ -994,6 +994,7 @@ const retry = () => {
     timing = new Timing(pattern);
     speed = pattern.information.speed;
     nowSpeed = pattern.information.speed;
+    currentTriggerIndex = 0;
     pointingCntElement = [{ v1: "", v2: "", i: "" }];
     clickParticles = [];
     destroyParticles = [];
