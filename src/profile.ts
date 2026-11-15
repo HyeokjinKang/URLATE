@@ -1,8 +1,7 @@
-import { Router } from "express";
+import { Request, Router } from "express";
 import rateLimit from "express-rate-limit";
 import multer from "multer";
 import path from "path";
-import fetch from "node-fetch";
 import * as tf from "@tensorflow/tfjs";
 import "@tensorflow/tfjs-backend-wasm";
 import * as nsfw from "nsfwjs";
@@ -16,10 +15,10 @@ import { randomUUID } from "crypto";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const config = require(__dirname + "/../config/config.json");
 
-// node-fetch has no default timeout: a hung backend would pin the request handler.
+// fetch has no default timeout: a hung backend would pin the request handler.
 const API_TIMEOUT_MS = 5000;
 
-let model;
+let model: nsfw.NSFWJS | undefined;
 
 /**
  * An upload costs a 3MB read, a sharp re-encode, an NSFW inference and a push to
@@ -60,7 +59,7 @@ const uploadToBunny = async (filename: string, buffer: Buffer) => {
       AccessKey: config.bunny.accessKey,
       "Content-Type": "image/webp",
     },
-    body: buffer,
+    body: new Uint8Array(buffer),
     signal: AbortSignal.timeout(BUNNY_TIMEOUT_MS),
   });
   if (!response.ok) throw new Error(`BunnyCDN storage responded with ${response.status}`);
@@ -131,7 +130,7 @@ const isAllowedImage = async (buffer: Buffer): Promise<boolean> => {
 
 const CLASSIFY_SIZE = 512;
 
-const imageToTensor = async (fileBuffer) => {
+const imageToTensor = async (fileBuffer: Buffer) => {
   const { data, info } = await sharp(fileBuffer)
     .resize({ width: CLASSIFY_SIZE, height: CLASSIFY_SIZE, fit: "inside", withoutEnlargement: true })
     .raw()
@@ -147,7 +146,7 @@ const imageToTensor = async (fileBuffer) => {
  * the `:userid` path segment must never be trusted. The browser already sends
  * its session cookie here, so forward it and let the backend session decide.
  */
-const resolveSessionUserid = async (req): Promise<string | null> => {
+const resolveSessionUserid = async (req: Request): Promise<string | null> => {
   if (!req.headers.cookie) return null;
   try {
     const response = await fetch(`${config.project.api}/user`, {
@@ -190,7 +189,7 @@ export const initProfile = async () => {
 
 const ownOrigin = new URL(config.project.url).origin;
 
-const isSameOrigin = (req): boolean => {
+const isSameOrigin = (req: Request): boolean => {
   const header = req.get("origin") ?? req.get("referer");
   if (!header) return false;
   try {
@@ -215,7 +214,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
     return;
   }
 
-  if (!/^[0-9]+$/.test(req.params.userid)) {
+  if (!/^[0-9]+$/.test(String(req.params.userid))) {
     res.status(400).json({
       result: "failed",
       message: "Invalid userid format",
@@ -278,7 +277,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
       user?: Record<string, string | undefined>;
     };
     if (profileData.result === "success" && profileData.user && profileData.user[type]) {
-      oldFileUrl = profileData.user[type];
+      oldFileUrl = profileData.user[type] ?? null;
     }
   } catch (err) {
     logger.warn("Failed to fetch existing profile data", {
@@ -344,6 +343,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
           effort: 6,
         })
         .toBuffer();
+      if (!model) throw new Error("NSFW model is not loaded");
       const image = await imageToTensor(fileBuffer);
       const predictions = await model.classify(image);
       image.dispose();

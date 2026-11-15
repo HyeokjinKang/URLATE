@@ -2,12 +2,9 @@
   "compilerOptions": {
     "target": "es2023",
     "module": "node20",
-    // "lib": [],                             /* Specify library files to be included in the compilation. */
-    "checkJs": false,
     "outDir": "dist",
     "rootDir": "src",
-    // Disable for now...
-    "strict": false,
+    "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true
   },

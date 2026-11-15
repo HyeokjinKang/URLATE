@@ -35,7 +35,6 @@ jobs:
 
       - name: Prepare deployment artifact
         run: |
-          cp ./src/i18n.js ./dist/
           pnpm --filter=urlate deploy --prod ./deploy
 
       - name: Setup SSH
