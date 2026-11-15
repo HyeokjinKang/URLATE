@@ -1,9 +1,10 @@
-/* global Pace, Howler, Howl, url, cdn, api */
+/* global Pace, Howler, Howl, url, cdn, api, lang, confirmExit */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
 let upperBound,
   lowerBound,
   numberWithCommas,
+  easeOutQuad,
   judgeTiming,
   judgeReleaseTiming,
   judgeWheelTiming,
@@ -13,7 +14,9 @@ let upperBound,
   RELEASE_LATE_FRAMES,
   hitSoundSrc,
   holdTickSoundSrc;
-const autoPlay = new URLSearchParams(window.location.search).get("auto") == "1";
+const mode = document.body.dataset.mode;
+const query = new URLSearchParams(window.location.search);
+const autoPlay = mode == "play" ? localStorage.autoPlay == "true" : mode == "test" && query.get("auto") == "1";
 let Factory, Updater, Renderer, createGameAutoPlay;
 let parsePattern, Timing;
 const modulesReady = (async () => {
@@ -31,6 +34,7 @@ const modulesReady = (async () => {
       upperBound,
       lowerBound,
       numberWithCommas,
+      easeOutQuad,
       judgeTiming,
       judgeReleaseTiming,
       judgeWheelTiming,
@@ -52,7 +56,6 @@ const modulesReady = (async () => {
 })();
 
 const menuContainer = document.getElementById("menuContainer");
-const canvasBackground = document.getElementById("canvasBackground");
 const canvasContainer = document.getElementById("canvasContainer");
 const rankImg = document.getElementById("rankImg");
 const floatingArrowContainer = document.getElementById("floatingArrowContainer");
@@ -70,9 +73,11 @@ const missCtx = missCanvas.getContext("2d");
 const volumeMasterInput = document.getElementsByClassName("volumeMaster")[0];
 const medals = Array.from(document.getElementsByClassName("medal"));
 let Draw;
-let background;
 let pattern = {};
+let background = null;
+let patternBackup = {};
 let patternLength = 0;
+let difficultyNames = ["EZ", "MID", "HARD"];
 let settings, sync, visualSync, song, tracks, pixelRatio, offset, speed;
 let timing = null;
 let pointingCntElement = [{ v1: "", v2: "", i: "" }];
@@ -120,7 +125,7 @@ let comboAlertMs = 0,
 let hide = {},
   frameCounter;
 let load = 0;
-let fileName = "";
+let fileName = mode == "tutorial" ? "tutorial" : "";
 let paceLoaded = 0;
 let overlayTime = 0;
 let shiftDown = false;
@@ -140,42 +145,28 @@ let resumeX = 0,
   resumeY = 0;
 const pointerLockSupported = "requestPointerLock" in canvas;
 let rate = 1;
+let record = [];
 let keyInput = [];
 let keyInputMemory = 0;
 let keyInputTime = 0;
-let effectMs = 0;
-let effectNum = -1;
 let keyPressing = {};
 let pressingKeys = [];
 let medal = 1;
+let newRecordTime = 0;
+let effectMs = 0;
+let effectNum = -1;
 let globalAlpha = 1;
 let canvasW = 0,
   canvasH = 0,
   canvasOW = 0,
   canvasOH = 0;
 const FONT_STACK = "Montserrat, Pretendard Variable, Pretendard";
-let UIFontNormal = "";
+let UIFontNormal = "",
+  UIFontItalic = "";
 const albumImg = new Image();
 let auto = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-  fetch(`${api}/tracks`, {
-    method: "GET",
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.result == "success") {
-        tracks = data.tracks;
-      } else {
-        alert("Failed to load song list.");
-        console.error("Failed to load song list.");
-      }
-    })
-    .catch((error) => {
-      alert(`Error occurred.\n${error}`);
-      console.error(`Error occurred.\n${error}`);
-    });
   // Signed-out visitors were already turned away by the server gate.
   fetch(`${api}/user`, {
     method: "GET",
@@ -200,6 +191,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+const tracksReady =
+  mode == "tutorial"
+    ? Promise.resolve([])
+    : fetch(`${api}/tracks`, { method: "GET", credentials: "include" })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.result == "success") return data.tracks;
+          throw new Error("Failed to load song list.");
+        });
+
 const calcBeats = (seek = song.seek() * 1000) => Number(timing.beatAt(seek - (offset + sync)).toPrecision(10));
 
 const framesFrom = (target, beats) => msToFrames((timing.msAt(beats) - timing.msAt(target)) / rate);
@@ -211,6 +212,7 @@ const initialize = (isFirstCalled) => {
   canvas.width = canvasW;
   canvas.height = canvasH;
   UIFontNormal = `500 ${canvasH / 30}px ${FONT_STACK}`;
+  UIFontItalic = `italic 600 ${canvasH / 40}px ${FONT_STACK}`;
 
   if (Draw) Draw.setSize({ canvasW, canvasH });
 
@@ -224,90 +226,131 @@ const initialize = (isFirstCalled) => {
 
   missCanvas.width = window.innerWidth * 0.2 * pixelRatio;
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
-  rate = parseFloat(new URLSearchParams(window.location.search).get("rate")) || 1;
+  if (mode == "play") rate = Math.min(2, Math.max(0.5, Number(localStorage.rate) || 1));
+  else if (mode == "test") rate = parseFloat(query.get("rate")) || 1;
 
   if (isFirstCalled) {
-    pattern = parsePattern(localStorage.pattern);
-    patternLength = pattern.patterns.length;
+    Promise.all([loadPatternData(), tracksReady])
+      .then(([data, trackList]) => {
+        tracks = trackList;
+        applyPattern(data);
+      })
+      .catch((e) => {
+        alert(`Error occurred.\n${e}`);
+        if (mode == "play") window.location.href = `${url}/game?initialize=1`;
+      });
+  }
+};
 
-    noteMaxDuration = 0;
-    for (const note of pattern.patterns) {
-      if (note.duration && note.duration > noteMaxDuration) {
-        noteMaxDuration = note.duration;
-      }
+const loadPatternData = () => {
+  if (mode == "test") return Promise.resolve(localStorage.pattern);
+  const path =
+    mode == "tutorial"
+      ? `tutorial/0_${lang}.json`
+      : `${localStorage.songName}/${localStorage.difficultySelection}.json`;
+  return fetch(`${cdn}/URLATE-patterns/${path}`).then((res) => res.json());
+};
+
+const setText = (id, text) => {
+  document.getElementById(id).textContent = text;
+};
+
+const albumUrl = (name) => `url("${cdn}/albums/${settings.display.albumRes}/${name}.webp")`;
+
+const applyPattern = (data) => {
+  patternBackup = parsePattern(data);
+  pattern = structuredClone(patternBackup);
+  patternLength = pattern.patterns.length;
+
+  noteMaxDuration = 0;
+  for (const note of pattern.patterns) {
+    if (note.duration && note.duration > noteMaxDuration) {
+      noteMaxDuration = note.duration;
     }
-    noteMaxDuration += 4;
+  }
+  noteMaxDuration += 4;
 
-    const findEnd = pattern.triggers.find((t) => t.value == 6);
-    endBeat = findEnd ? findEnd.beat : null;
+  const findEnd = pattern.triggers.find((t) => t.value == 6);
+  endBeat = findEnd ? findEnd.beat : null;
+  timing = new Timing(pattern);
 
-    timing = new Timing(pattern);
+  offset = pattern.information.offset;
+  speed = pattern.information.speed;
+  nowSpeed = pattern.information.speed;
+  currentTriggerIndex = 0;
 
-    document.getElementById("artist").textContent = pattern.information.producer;
-    document.getElementById("scoreArtist").textContent = pattern.information.producer;
-    document.getElementById("authorNamespace").textContent = pattern.information.author;
-    document.getElementById("authorComment").textContent = pattern.information.comment;
-    fetch(`${api}/profilePic/${pattern.information.author}`)
+  setText("artist", pattern.information.producer);
+  setText("scoreArtist", pattern.information.producer);
+  setText("authorNamespace", pattern.information.author);
+
+  if (mode == "play") {
+    setText("scoreDifficultyNum", localStorage.difficulty);
+    setText("scoreDifficultyName", difficultyNames[localStorage.difficultySelection]);
+    setText("albumDifficulty", difficultyNames[localStorage.difficultySelection]);
+    setText("albumDifficultyNum", localStorage.difficulty);
+  } else if (mode == "tutorial") {
+    setText("scoreDifficultyNum", "Tutorial");
+    setText("scoreDifficultyName", "Mode");
+    setText("albumDifficulty", "Tutorial");
+    setText("albumDifficultyNum", "Mode");
+    setText("scoreTitle", "Tutorial");
+    setText("title", "Tutorial");
+  }
+
+  if (mode != "tutorial") {
+    setText("authorComment", pattern.information.comment);
+    fetch(`${api}/profilePic/${encodeURIComponent(pattern.information.author)}`)
       .then((res) => res.json())
       .then((data) => {
         document.getElementById("authorIcon").src = data.picture;
       });
-    offset = pattern.information.offset;
-    speed = pattern.information.speed;
-    nowSpeed = pattern.information.speed;
-    currentTriggerIndex = 0;
-    background = new URLSearchParams(window.location.search).get("background");
-    for (let i = 0; i < tracks.length; i++) {
-      if (tracks[i].name == pattern.information.track) {
-        document.getElementById("scoreTitle").textContent =
-          settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
-        document.getElementById("title").textContent =
-          settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
-        fileName = tracks[i].fileName;
-        document.getElementById("albumContainer").style.backgroundImage =
-          `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-        if (background !== "0")
-          document.getElementById("canvasBackground").style.backgroundImage =
-            `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-        else canvasBackground.style.backgroundImage = `url("${cdn}/albums/${settings.display.albumRes}/urlate.webp")`;
-        document.getElementById("scoreBackground").style.backgroundImage =
-          `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-        document.getElementById("scoreAlbum").style.backgroundImage =
-          `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-        albumImg.src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.webp`;
-        break;
-      }
+    if (mode == "test") background = query.get("background");
+    const track = tracks.find((t) => t.name == pattern.information.track);
+    if (track) {
+      const title = settings.general.detailLang == "original" ? track.originalName : track.name;
+      setText("scoreTitle", title);
+      setText("title", title);
+      fileName = track.fileName;
     }
-    fetch(`${cdn}/skins/${settings.game.skin}.json`)
-      .then((res) => res.json())
-      .then((data) => {
-        skin = data;
-        Draw = new Renderer(ctx, { canvasW, canvasH, cursorZoom: settings.game.size }, skin);
-      })
-      .catch((error) => {
-        alert(`Error occurred.\n${error}`);
-        console.error(`Error occurred.\n${error}`);
-      });
-    song = new Howl({
-      src: `${cdn}/tracks/${settings.sound.res}/${fileName}.ogg`,
-      format: ["ogg"],
-      autoplay: false,
-      loop: false,
-      onend: () => {
-        calculateResult();
-      },
-      onload: () => {
-        Howler.autoSuspend = false;
-        Howler.volume(settings.sound.volume.master);
-        song.volume(settings.sound.volume.music);
-        song.rate(rate);
-        if (load == 1) {
-          doneLoading();
-        }
-        load++;
-      },
-    });
   }
+
+  document.getElementById("albumContainer").style.backgroundImage = albumUrl(fileName);
+  document.getElementById("canvasBackground").style.backgroundImage = albumUrl(
+    background === "0" ? "urlate" : fileName,
+  );
+  document.getElementById("scoreBackground").style.backgroundImage = albumUrl(fileName);
+  document.getElementById("scoreAlbum").style.backgroundImage = albumUrl(fileName);
+  albumImg.src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.webp`;
+
+  fetch(`${cdn}/skins/${settings.game.skin}.json`)
+    .then((res) => res.json())
+    .then((data) => {
+      skin = data;
+      Draw = new Renderer(ctx, { canvasW, canvasH, cursorZoom: settings.game.size }, skin);
+    })
+    .catch((error) => {
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
+    });
+  song = new Howl({
+    src: `${cdn}/tracks/${mode == "tutorial" ? "192kbps" : settings.sound.res}/${fileName}.ogg`,
+    format: ["ogg"],
+    autoplay: false,
+    loop: false,
+    onend: () => {
+      calculateResult();
+    },
+    onload: () => {
+      Howler.autoSuspend = false;
+      Howler.volume(settings.sound.volume.master);
+      song.volume(settings.sound.volume.music);
+      song.rate(rate);
+      if (load == 1) {
+        doneLoading();
+      }
+      load++;
+    },
+  });
 };
 
 const settingApply = () => {
@@ -408,6 +451,7 @@ const cntRender = () => {
     globalAlpha = timing.opacityAt(beats);
     nowSpeed = timing.speedAt(beats);
 
+    // Text triggers have a duration, so search around the current beat
     let textEnd = upperBound(pattern.triggers, beats);
     let textStart = lowerBound(pattern.triggers, beats - 32);
     for (let i = textStart; i < textEnd; i++) {
@@ -460,6 +504,7 @@ const cntRender = () => {
       }
       _noteState.globalAlpha = globalAlpha;
       _noteState.isGrabbed = grabbedNotes.has(i);
+
       Draw.note(pattern.patterns[i], _noteState);
 
       if (
@@ -473,6 +518,16 @@ const cntRender = () => {
         miss += pattern.patterns[i].value == 2 ? 2 : 1;
         showOverlay();
         missPoint.push(seekMs);
+        record.push([
+          record.length,
+          pointingCntElement[0].v1,
+          pointingCntElement[0].v2,
+          pointingCntElement[0].i,
+          mouseX,
+          mouseY,
+          "miss(hold)",
+          song.seek() * 1000,
+        ]);
         keyInput.push({ judge: "Miss", key: "-", time: now });
       }
     }
@@ -533,7 +588,10 @@ const cntRender = () => {
     Draw.judges(judgeParticles);
 
     Draw.keyInputUI(keyInput, keyInputTime);
-    Draw.scorePanelUI({ score, combo, difficulty: 3 }, albumImg);
+    Draw.scorePanelUI(
+      { score, combo, difficulty: mode == "play" ? Number(localStorage.difficultySelection) : 3 },
+      albumImg,
+    );
     Draw.systemInfoUI({
       speed: Number(nowSpeed.toFixed(2)),
       bpm: Number(timing.bpmAt(beats).toFixed(2)),
@@ -548,7 +606,44 @@ const cntRender = () => {
 
     if (effectMs != 0 && effectNum != -1) {
       Draw.finalEffect(effectNum, effectMs);
+
       if (now - effectMs >= 2000) effectMs = 0;
+    }
+
+    //new record
+    if (newRecordTime != 0) {
+      let p1 = easeOutQuad(Math.min(1, (now - newRecordTime) / 500));
+      let p2 = easeOutQuad(Math.min(1, Math.max(0, (now - newRecordTime - 300) / 500)));
+      if (newRecordTime + 5000 < now) {
+        if (newRecordTime + 10000 < now) newRecordTime = 0;
+        else ctx.globalAlpha = 1 - (now - newRecordTime - 5000) / 5000;
+      }
+      ctx.beginPath();
+      ctx.fillStyle = "#ffffff";
+      ctx.rect(canvasW * 0.85, canvasH * 0.2, canvasW * 0.15, canvasH * 0.06);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.fillStyle = "#000000";
+      ctx.font = UIFontItalic;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("NEW RECORD!", canvasW * 0.87, canvasH * 0.23);
+      ctx.beginPath();
+      ctx.clearRect(
+        canvasW * 0.85 - 1,
+        canvasH * 0.2 - 1,
+        canvasW * 0.15 - canvasW * 0.145 * p2 + 1,
+        canvasH * 0.06 + 2,
+      );
+      ctx.fillStyle = "#35C692";
+      ctx.rect(
+        canvasW - canvasW * 0.15 * p1,
+        canvasH * 0.2,
+        canvasW * 0.15 * p1 - canvasW * 0.145 * p2,
+        canvasH * 0.06,
+      );
+      ctx.fill();
+      ctx.globalAlpha = globalAlpha;
     }
   } catch (e) {
     if (e) {
@@ -691,7 +786,42 @@ const calculateResult = () => {
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
   }
-  if (autoPlay) document.getElementById("scoreDifficulty").append(" · AUTO");
+  if (mode == "tutorial") {
+    completeTutorial().catch((error) => alert(`Error occurred.\n${error}`));
+    return;
+  }
+  if (autoPlay) {
+    document.getElementById("scoreDifficulty").append(" · AUTO");
+    return;
+  }
+  if (mode != "play") return;
+  fetch(`${api}/playRecord`, {
+    method: "PUT",
+    credentials: "include",
+    body: JSON.stringify({
+      difficultySelection: Number(localStorage.difficultySelection) + 1,
+      fileName,
+      rank,
+      score,
+      maxCombo,
+      rate,
+      perfect,
+      great,
+      good,
+      bad,
+      miss,
+      bullet,
+      accuracy,
+      record,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((res) => res.json())
+    .catch((error) => {
+      alert(`Error occurred while submitting result.\n${error}`);
+    });
 };
 
 const trackMouseSelection = (i, v1, v2, x, y, beats, seekMs) => {
@@ -725,6 +855,16 @@ const trackMouseSelection = (i, v1, v2, x, y, beats, seekMs) => {
             destroyParticles.push(...Factory.createExplosions(x, y));
             destroyedBullets.add(i);
             showOverlay();
+            record.push([
+              record.length,
+              pointingCntElement[0].v1,
+              pointingCntElement[0].v2,
+              pointingCntElement[0].i,
+              mouseX,
+              mouseY,
+              "bullet",
+              song.seek() * 1000,
+            ]);
             keyInput.push({ judge: "Bullet", key: "-", time: Date.now() });
           }
         }
@@ -790,6 +930,16 @@ const hitNote = (i, key, isWheel, beats, label = keyLabel(key, isWheel)) => {
   }
   clickParticles.push(Factory.createClickNote(x, y, pNote.value, judgeSkin, judge));
   judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge, timing));
+  record.push([
+    record.length,
+    pointingCntElement[0].v1,
+    pointingCntElement[0].v2,
+    pointingCntElement[0].i,
+    mouseX,
+    mouseY,
+    judge,
+    song.seek() * 1000,
+  ]);
   keyInput.push({ judge, key: label, time: Date.now() });
 };
 
@@ -868,11 +1018,12 @@ const addScore = (judge, weight = 1, silent = false) => {
     maxCombo = combo;
   }
   let basicScore = (100000000 / patternLength) * weight;
+  const scoreRate = mode == "test" ? 1 : rate;
   let rateCalc;
-  if (rate >= 1) {
-    rateCalc = rate * 0.5 + 0.5;
+  if (scoreRate >= 1) {
+    rateCalc = scoreRate * 0.5 + 0.5;
   } else {
-    rateCalc = rate * rate * 1.3 - 0.3;
+    rateCalc = scoreRate * scoreRate * 1.3 - 0.3;
   }
   if (judge == "perfect") {
     score += Math.round((basicScore + combo * 5) * rateCalc);
@@ -896,6 +1047,9 @@ const addScore = (judge, weight = 1, silent = false) => {
 
 const checkLastNote = (i) => {
   if (i != patternLength - 1) return;
+  if (mode == "play" && !autoPlay && localStorage.record < score) {
+    newRecordTime = Date.now();
+  }
   if (pattern.bullets.length) destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
   effectMs = Date.now();
   if (perfect != 0 && great == 0 && good == 0 && bad == 0 && miss == 0 && bullet == 0) {
@@ -948,6 +1102,7 @@ const releaseHoldNote = (i, judge, beats) => {
   note.beat = beats - note.duration;
   addScore(judge, 2 / total);
   judgeParticles.push(Factory.createJudge(note.x, note.y, judgeSkin, judge, timing));
+  record.push([record.length, 0, 2, i, mouseX, mouseY, `${judge.toLowerCase()}(hold)`, song.seek() * 1000]);
   keyInput.push({ judge, key, time: Date.now() });
   checkLastNote(i);
 };
@@ -1059,14 +1214,17 @@ const resume = () => {
 };
 
 const retry = () => {
-  if (isResultShowing) return location.reload();
+  if (isResultShowing) {
+    if (mode == "play" && !autoPlay && localStorage.record < score) localStorage.record = score;
+    return location.reload();
+  }
   lockPointer();
   blackOverlayContainer.classList.add("show");
 
   setTimeout(() => {
     Draw.initialize();
     song.stop();
-    pattern = parsePattern(localStorage.pattern);
+    pattern = structuredClone(patternBackup);
     timing = new Timing(pattern);
     speed = pattern.information.speed;
     nowSpeed = pattern.information.speed;
@@ -1099,13 +1257,15 @@ const retry = () => {
     comboAlertCount = 0;
     overlayTime = 0;
     keyInput = [];
+    record = [];
     keyInputMemory = 0;
     keyInputTime = 0;
+    newRecordTime = 0;
     effectMs = 0;
     effectNum = -1;
     keyPressing = {};
-    auto?.reset();
     pressingKeys = [];
+    auto?.reset();
     medal = 1;
     medals[0].classList.remove("hide");
     medals[1].classList.remove("hide");
@@ -1123,11 +1283,32 @@ const retry = () => {
   }, 100);
 };
 
+const completeTutorial = () =>
+  fetch(`${api}/tutorial`, { method: "PUT", credentials: "include" })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.result != "success") throw new Error(data.error);
+    });
+
+const home = () => {
+  if (mode == "play") {
+    window.location.href = `${url}/game?initialize=1`;
+  } else if (mode == "test") {
+    window.location.href = `${url}/game?initialize=0`;
+  } else if (confirm(confirmExit)) {
+    completeTutorial()
+      .then(() => {
+        window.location.href = `${url}/game?initialize=0`;
+      })
+      .catch((error) => alert(`Error occurred.\n${error}`));
+  }
+};
+
 const editor = () => {
   window.location.href = `${url}/editor${background == "0" ? "?background=0" : ""}`;
 };
 
-const home = () => {
+const finish = () => {
   window.location.href = `${url}/game?initialize=0`;
 };
 
@@ -1343,8 +1524,10 @@ document.querySelector(".volumeMaster").addEventListener("input", (event) => {
 });
 document.getElementById("loadingContainer").addEventListener("click", requestStart);
 document.getElementById("retryButton").addEventListener("click", retry);
-document.getElementById("nextButton").addEventListener("click", editor);
+document
+  .getElementById("nextButton")
+  .addEventListener("click", mode == "test" ? editor : mode == "tutorial" ? finish : home);
+if (mode == "test") document.getElementById("backToEditor").addEventListener("click", editor);
 document.getElementById("resume").addEventListener("click", resume);
 document.getElementById("retry").addEventListener("click", retry);
-document.getElementById("backToEditor").addEventListener("click", editor);
 document.getElementById("backToHome").addEventListener("click", home);

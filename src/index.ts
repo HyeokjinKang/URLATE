@@ -420,19 +420,22 @@ app.get("/editor", gateLimiter, requireAuth, async (req, res) => {
 });
 
 app.get("/test", gateLimiter, requireAuth, async (req, res) => {
-  res.render("test", {
+  res.render("player", {
+    mode: "test",
     cspNonce: withPlayPageCsp(res),
   });
 });
 
 app.get("/play", gateLimiter, requireAuth, async (req, res) => {
-  res.render("play", {
+  res.render("player", {
+    mode: "play",
     cspNonce: withPlayPageCsp(res),
   });
 });
 
 app.get("/tutorial", gateLimiter, requireAuth, async (req, res) => {
-  res.render("tutorial", {
+  res.render("player", {
+    mode: "tutorial",
     cspNonce: withPlayPageCsp(res),
   });
 });
