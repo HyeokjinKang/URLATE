@@ -1,7 +1,3 @@
-/**
- * factory.js
- * Creates game objects.
- */
 import { Config } from "./constants.js";
 
 const EXPLOSION_POOL = [];

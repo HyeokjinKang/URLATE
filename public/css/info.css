@@ -1,14 +1,3 @@
-/* Hallmark · document pages (/info, /privacy, /error) · theme: Grid · genre: editorial
- *
- * The landing page's language applied to the pages that are only text: the same
- * sheet, the same masthead and colophon from chrome.css, and the same rule
- * vocabulary -- a section opens on an ink rule the way the feed heads and the
- * spec sheet do, and everything else is measure and air.
- *
- * These pages are served under the static CSP, which has no 'unsafe-inline' in
- * style-src, so their stylesheets are linked rather than inlined.
- */
-
 .doc {
   padding-block: var(--space-2xl) var(--space-3xl);
 }
@@ -27,8 +16,6 @@
   margin: 0;
 }
 
-/* A section opens the way a band does on the landing page: an ink rule, then the
-   heading sitting directly under it. */
 .doc__section {
   margin-top: var(--space-2xl);
   padding-top: var(--space-sm);
@@ -79,8 +66,6 @@ b {
   padding-left: 0;
 }
 
-/* The dash keeps the shape the document was written in without asking a list
-   item to be a paragraph that starts with one. */
 .doc__list--plain > li {
   padding-left: 1.1em;
   text-indent: -1.1em;
@@ -156,7 +141,6 @@ b {
   font-weight: 700;
 }
 
-/* One track per line, so a producer with several reads as a list. */
 .credits td a,
 .credits td span {
   display: block;
@@ -220,7 +204,6 @@ b {
   border-bottom-color: var(--color-accent);
 }
 
-/* The icon links carry a mark, not a label, so no rule under them. */
 .doc a:has(img) {
   display: inline;
   border-bottom: 0;

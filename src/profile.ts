@@ -75,8 +75,6 @@ const deleteFromBunny = async (filename: string) => {
   if (!response.ok && response.status !== 404) throw new Error(`BunnyCDN storage responded with ${response.status}`);
 };
 
-// Once the file is in the storage zone, a later failure would leave it there
-// unreferenced. Clean up behind the response instead of holding it.
 const discardUpload = (filename: string | null, context: Record<string, unknown>) => {
   if (!filename) return;
   deleteFromBunny(filename).catch((err) => {
@@ -88,8 +86,6 @@ const discardUpload = (filename: string | null, context: Record<string, unknown>
   });
 };
 
-// The storage zone file a previous profile URL points at, but only when we
-// uploaded it. Default images and external avatars return null and are left alone.
 const oldStorageFile = (fileUrl: string): string | null => {
   if (!fileUrl.startsWith(`${config.project.cdn}/${BUNNY_PATH}/`)) return null;
   let filename: string;
@@ -103,14 +99,10 @@ const oldStorageFile = (fileUrl: string): string | null => {
 };
 
 const upload = multer({
-  // The file never touches the disk: sharp reads the buffer and only the result
-  // is pushed to the storage zone.
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 3 * 1024 * 1024, // 3MB
+    fileSize: 3 * 1024 * 1024,
   },
-  // Rejecting here keeps a non-image from ever being buffered; the handler's
-  // own check runs after multer has already read the file.
   fileFilter: function (req, file, cb) {
     cb(null, file.mimetype.indexOf("image") === 0);
   },
@@ -176,8 +168,6 @@ const assertBunnyConfig = () => {
   if (missing.length) throw new Error(`Missing BunnyCDN storage config: bunny.${missing.join(", bunny.")}`);
 };
 
-// Config check and model load have to finish before the server accepts traffic:
-// learning about a broken storage config on the first upload is too late.
 export const initProfile = async () => {
   assertBunnyConfig();
 
@@ -223,7 +213,6 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
     return;
   }
 
-  // Authenticate before multer, sharp and the NSFW model spend any work.
   const sessionUserid = await resolveSessionUserid(req);
   if (!sessionUserid) {
     res.status(401).json({
@@ -391,7 +380,6 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
       body: JSON.stringify({
         explicit,
-        // Verified against the backend session, never the raw path segment.
         userid: sessionUserid,
         value: publicUrl,
         secret: config.project.secretKey,
@@ -417,7 +405,6 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
         }
 
         if (oldFileUrl) {
-          // Delete the old file without blocking the response.
           (async () => {
             const oldFilename = oldStorageFile(oldFileUrl);
             if (!oldFilename) {

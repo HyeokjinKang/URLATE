@@ -1,6 +1,4 @@
 /* global Howler, Howl, iziToast, url, api, cdn, syncAlert, timeAlert, copiedText */
-// url/cdn/api etc. are set by the page's inline <script> and by the classic
-// library scripts; a module can read them via global scope with no extra wiring.
 let upperBound, lowerBound, escapeHtml;
 let Factory, Updater, Renderer, getCos, getSin, calcAngleDegrees;
 let parsePattern, Timing, PATTERN_VERSION, GRADUAL_TRIGGERS;
@@ -185,13 +183,11 @@ const settingApply = () => {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Signed-out visitors were already turned away by the server gate.
   const request = (path) =>
     fetch(`${api}/${path}`, { method: "GET", credentials: "include" }).then((res) => res.json());
   Promise.all([request("user"), request("tracks"), modulesReady])
     .then(([user, trackList]) => {
       if (user.result != "success") {
-        // The session is gone; sign out instead of leaving a dead page.
         window.location.href = "/logout";
         return;
       }
@@ -2937,7 +2933,7 @@ const hideHelp = () => {
 };
 
 const tmlScrollHorizontal = (direction, splitBy = split) => {
-  let beats = timing.beatAt(song.seek() * 1000); // Get current beat from song position
+  let beats = timing.beatAt(song.seek() * 1000);
   let targetSubdivision;
 
   if (direction > 0) {
@@ -3426,7 +3422,6 @@ const clickActions = {
   elementPaste,
   goGame: () => (window.location.href = `${url}/game?initialize=0`),
   gotoMain,
-  // Confirms before leaving unsaved work.
   gotoMainConfirm: () => gotoMain(true),
   loadEditor,
   newEditor,

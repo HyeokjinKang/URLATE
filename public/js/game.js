@@ -1,6 +1,4 @@
 /* global Howler, Howl, Pace, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable, medalDesc, alias, nothingHere, rating, aliasSelect, pictureMessage, imageError */
-// url/cdn/api etc. are set by the page's inline <script> and by the classic
-// library scripts; a module can read them via global scope with no extra wiring.
 const langDetailSelector = document.getElementById("langDetailSelector");
 const canvasResSelector = document.getElementById("canvasResSelector");
 const albumResSelector = document.getElementById("albumResSelector");
@@ -154,7 +152,6 @@ const loadChart = () => {
     const script = document.createElement("script");
     script.src = "/lib/chart.min.js";
     script.onload = () => resolve(window.Chart);
-    // Drop the cached promise so a later open can try again.
     script.onerror = () => {
       chartLib = null;
       reject(new Error("Failed to load chart.min.js"));
@@ -425,7 +422,6 @@ const checkIntroReady = () => {
   if (introReady.done || !(introReady.video1 && introReady.video2 && introReady.minDelay)) return;
   introReady.done = true;
   document.getElementById("pressAnywhere").textContent = pressAnywhere;
-  // Set only once ready, rather than in markup, so clicks before that do nothing.
   warningContainer.dataset.action = "warningSkip";
 };
 
@@ -508,8 +504,6 @@ document.addEventListener("DOMContentLoaded", () => {
     intro2container.style.display = "flex";
   }
 
-  // The header shows the newest MIRAI announcement. Its own request, so a slow
-  // or failing feed never delays the profile call the screen actually needs.
   fetch(`${api}/notices/${lang}?limit=1`)
     .then((res) => res.json())
     .then((body) => {
@@ -521,11 +515,9 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("noticeSlot").classList.remove("hide");
     })
     .catch((error) => {
-      // Nothing else on the screen depends on it; leave the slot hidden.
       console.error(error);
     });
 
-  // Signed-out visitors were already turned away by the server gate.
   fetch(`${api}/user`, {
     method: "GET",
     credentials: "include",
@@ -563,7 +555,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.result == "success") {
               tracks = data.tracks;
               tracks.sort(sortAsName);
-              // sortSelected already runs tracksUpdate, so skip it when a saved sort was restored.
               if (!restoreSortSettings()) tracksUpdate();
               Howler.volume(settings.sound.volume.master * settings.sound.volume.music);
               intro1video.volume = settings.sound.volume.master * settings.sound.volume.music;
@@ -579,7 +570,6 @@ document.addEventListener("DOMContentLoaded", () => {
             location.reload();
           });
       } else {
-        // The session is gone; sign out instead of leaving a dead page.
         window.location.href = "/logout";
       }
     })
@@ -994,7 +984,6 @@ const gameLoaded = () => {
     visualizerBins[i] = Math.min((VISUALIZER_MIN_HZ + barHz * (i + 0.5)) / binHz, dataArray.length - 2);
   }
   startVisualizer();
-  // Warm the album-art cache during idle time so it doesn't block initial render.
   const preloadAlbums = () => {
     tracks.forEach((e) => {
       const img = new Image();
@@ -1239,7 +1228,6 @@ const menuSelected = (n) => {
     display = 1;
     startVisualizer();
     if (songSelection == -1) {
-      // Restore the last played song; pick a random one only when there is nothing to restore.
       const savedIndex = localStorage.songName ? tracks.findIndex((e) => e.fileName == localStorage.songName) : -1;
       if (savedIndex != -1) {
         songSelected(savedIndex);
@@ -1355,7 +1343,6 @@ const profileUpdate = async (nickname, isMe) => {
       document.getElementsByClassName("profileStatValue")[5].textContent = "-";
       document.getElementById("profileRecentPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
     } else {
-      // Fetch the whole recent play list at once instead of asking per record id.
       const recentRes = await fetch(`${api}/recentPlays/nickname/${encodeURIComponent(nickname)}`, {
         method: "GET",
         credentials: "include",
@@ -1405,8 +1392,6 @@ const profileUpdate = async (nickname, isMe) => {
     let gradientFill = chartCtx.createLinearGradient(0, 0, 0, document.getElementById("profileChart").clientHeight);
     gradientFill.addColorStop(0, "rgba(255, 255, 255, 0.5)");
     gradientFill.addColorStop(1, "rgba(255, 255, 255, 0)");
-    // Without this the throw would skip loadingOverlayHide() below, leaving the
-    // loading overlay stuck over an otherwise finished profile.
     try {
       const Chart = await loadChart();
       if (chartVar) chartVar.destroy();
@@ -1936,7 +1921,6 @@ const visualSyncSetting = () => {
   document.getElementById("visualSyncContainer").classList.add("fadeInAnim");
   document.getElementById("visualSyncValueText").textContent = visualSyncOffset + "ms";
 
-  // Play offsetSong, same as the offset setting screen.
   if (songSelection != -1) {
     const selSong = getSong(songSelection);
     if (selSong) selSong.fade(1, 0, 500);
@@ -2369,8 +2353,6 @@ window.onpopstate = () => {
 // Actions invoked without an argument.
 const clickActions = {
   changeProfile: (arg) => changeProfile(arg),
-  // These attach to elements created via innerHTML rather than markup;
-  // delegation still catches them once inserted.
   bannerToggle: (arg) => bannerToggle(Number(arg)),
   difficultySelected: (arg) => difficultySelected(Number(arg)),
   displayClose,
@@ -2382,7 +2364,6 @@ const clickActions = {
   logout,
   medalDescription,
   menuSelected: (arg) => menuSelected(Number(arg)),
-  // Swallows clicks on the description text; intentionally a no-op.
   noop: () => {},
   offsetDown,
   offsetReset,
@@ -2550,7 +2531,6 @@ const warmDeferredImages = () => {
   const seen = new Set();
   for (const img of document.querySelectorAll('img[loading="lazy"]')) {
     const src = img.getAttribute("src");
-    // An empty src is filled in later by script; skip those and duplicates.
     if (src && !seen.has(src)) {
       seen.add(src);
       urls.push(src);
@@ -2561,7 +2541,6 @@ const warmDeferredImages = () => {
   const next = () => {
     if (i >= urls.length) return;
     const img = new Image();
-    // Move on either way; opening the panel retries.
     img.onload = next;
     img.onerror = next;
     img.src = urls[i++];
