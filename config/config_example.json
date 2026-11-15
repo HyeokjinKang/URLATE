@@ -4,19 +4,12 @@
     "api": "https://api.example.com",
     "cdn": "https://cdn.example.com",
     "game": "https://game.example.com",
-    "nsfw": "https://nsfw.example.com",
     "secretKey": "Something Random",
     "port": 3000,
     "host": "127.0.0.1",
     "trustProxy": 2,
     "sessionCookie": "urlate",
     "cookieDomain": "example.com"
-  },
-  "bunny": {
-    "endpoint": "storage.bunnycdn.com",
-    "storageZone": "example-zone",
-    "accessKey": "Storage Zone Password",
-    "path": "profiles"
   },
   "google": {
     "clientId": "Your Google OAuth Client ID"

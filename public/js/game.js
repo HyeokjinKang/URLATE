@@ -52,7 +52,6 @@ let loadedVsync = true;
 let offsetCtx;
 let profileSong;
 let display = -1;
-let userid;
 let profileid;
 let username = "";
 let picture;
@@ -529,7 +528,6 @@ document.addEventListener("DOMContentLoaded", () => {
         settings = JSON.parse(data.settings);
         loadedVsync = settings.display?.vsync ?? true;
         username = data.nickname;
-        userid = data.userid;
         tutorial = data.tutorial;
         picture = data.picture;
         document.getElementById("profilePic").src = picture;
@@ -2160,7 +2158,7 @@ const picLoaded = async (e, type) => {
   }
   let payload = new FormData();
   payload.append("img", file);
-  fetch(`${url}/profile/${userid}/${type}`, {
+  fetch(`${api}/profile/${type}`, {
     credentials: "include",
     method: "POST",
     body: payload,
