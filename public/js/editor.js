@@ -20,10 +20,8 @@ const modulesReady = (async () => {
     Updater = updater.default;
     Renderer = renderer.default;
     ({ parsePattern, Timing, PATTERN_VERSION, GRADUAL_TRIGGERS } = patternModule);
-
-    console.log("Modules are ready.");
   } catch (err) {
-    console.error("Error occured while loading modules: ", err);
+    console.error("Error occurred while loading modules: ", err);
   }
 })();
 
@@ -206,7 +204,6 @@ document.addEventListener("DOMContentLoaded", () => {
       for (let i = 0; tracks.length > i; i++) {
         let option = document.createElement("option");
         option.textContent = tracks[i].name;
-        if (tracks[i].type == 3) option.disabled = true;
         songSelectBox.options.add(option);
       }
       userName = user.user.nickname;
@@ -215,8 +212,8 @@ document.addEventListener("DOMContentLoaded", () => {
       settingApply();
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
     });
 });
 
@@ -509,8 +506,8 @@ const initialize = (isFirstCalled) => {
         Draw = new Renderer(cntCtx, { canvasW, canvasH }, skin);
       })
       .catch((error) => {
-        alert(`Error occured.\n${error}`);
-        console.error(`Error occured.\n${error}`);
+        alert(`Error occurred.\n${error}`);
+        console.error(`Error occurred.\n${error}`);
       });
     let storedFilter;
     try {
@@ -2470,6 +2467,7 @@ const test = (isAuto = shiftDown) => {
   const params = new URLSearchParams();
   if (background == "0") params.set("background", "0");
   if (isAuto) params.set("auto", "1");
+  if (rate != 1) params.set("rate", rate);
   const query = params.toString();
   window.location.href = `${url}/test${query ? `?${query}` : ""}`;
 };
@@ -3139,12 +3137,12 @@ const globalScrollEvent = (e) => {
           .then((res) => res.json())
           .then((data) => {
             if (data.result != "success") {
-              alert(`Error occured.\n${data.error}`);
+              alert(`Error occurred.\n${data.error}`);
             }
           })
           .catch((error) => {
-            alert(`Error occured.\n${error}`);
-            console.error(`Error occured.\n${error}`);
+            alert(`Error occurred.\n${error}`);
+            console.error(`Error occurred.\n${error}`);
           });
       }, 1000);
     }
@@ -3250,7 +3248,6 @@ window.addEventListener("blur", () => {
 });
 
 document.addEventListener("keyup", (e) => {
-  e = e || window.event;
   if (isMac ? e.key == "Meta" : e.key == "Control") {
     ctrlDown = false;
     isTmlUpdateNeeded = true;
@@ -3261,7 +3258,6 @@ document.addEventListener("keyup", (e) => {
 });
 
 document.addEventListener("keydown", (e) => {
-  e = e || window.event;
   const isTyping = isTypingTarget(e.target);
   if (e.key == "Escape") {
     if (isTyping) {

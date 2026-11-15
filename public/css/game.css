@@ -359,7 +359,7 @@ p {
   box-shadow: 0 0 1vw rgba(20, 20, 20, 0.1);
 }
 
-#line {
+.line {
   border-left: 2px solid #bbb;
   height: 1em;
   margin: 5px;
@@ -485,9 +485,9 @@ p {
 }
 
 #infoContainer::before,
-#storeContainer::before,
+#aboutContainer::before,
 #optionContainer::before,
-#offsetContiner::before,
+#offsetContainer::before,
 #visualSyncContainer::before {
   content: "";
   position: fixed;
@@ -503,7 +503,7 @@ p {
   background-position: center bottom;
 }
 
-#storeContainer::before {
+#aboutContainer::before {
   background-image: url(/images/backgrounds/decorations-advanced.webp);
 }
 
@@ -747,7 +747,7 @@ p {
   }
 }
 
-#storeContainer {
+#aboutContainer {
   display: none;
   align-items: flex-start;
   justify-content: center;
@@ -1654,10 +1654,6 @@ input[type="number"] {
   opacity: 1;
 }
 
-.songSelectionInfo.locked {
-  opacity: 0.5;
-}
-
 .songSelectionTitle {
   display: flex;
   flex-direction: row;
@@ -1665,12 +1661,6 @@ input[type="number"] {
   justify-content: flex-end;
   font-size: 3.5vh;
   font-weight: var(--title-weight);
-}
-
-.songSelectionIcon {
-  margin-left: 7px;
-  margin-bottom: 2px;
-  height: 2.5vh;
 }
 
 .songSelectionArtist {
@@ -1735,14 +1725,6 @@ input[type="number"] {
   color: #fff;
   opacity: 0.2;
   content: "?";
-}
-
-.rankL:before {
-  font-size: 4vh;
-  font-weight: 800;
-  color: #fff;
-  opacity: 0.2;
-  content: "🔒";
 }
 
 .songSelected {
@@ -1852,7 +1834,7 @@ input[type="number"] {
   overflow-y: auto;
 }
 
-#offsetContiner,
+#offsetContainer,
 #visualSyncContainer {
   display: none;
   opacity: 0;
@@ -2142,10 +2124,6 @@ input[type="number"] {
   text-decoration: underline;
   color: #222;
   margin-top: 2vh;
-}
-
-.songSelectionDisable {
-  display: none;
 }
 
 .sortText {

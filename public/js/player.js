@@ -1,4 +1,4 @@
-/* global Pace, Howler, Howl, url, cdn, api */
+/* global Pace, Howler, Howl, url, cdn, api, lang, confirmExit */
 // url/cdn/api etc. are set by the page's inline <script> and by the classic
 // library scripts; a module can read them via global scope with no extra wiring.
 let upperBound,
@@ -14,7 +14,9 @@ let upperBound,
   RELEASE_LATE_FRAMES,
   hitSoundSrc,
   holdTickSoundSrc;
-const autoPlay = localStorage.autoPlay == "true";
+const mode = document.body.dataset.mode;
+const query = new URLSearchParams(window.location.search);
+const autoPlay = mode == "play" ? localStorage.autoPlay == "true" : mode == "test" && query.get("auto") == "1";
 let Factory, Updater, Renderer, createGameAutoPlay;
 let parsePattern, Timing;
 const modulesReady = (async () => {
@@ -48,10 +50,8 @@ const modulesReady = (async () => {
     Renderer = renderer.default;
     createGameAutoPlay = autoplay?.createGameAutoPlay;
     ({ parsePattern, Timing } = patternModule);
-
-    console.log("Modules are ready.");
   } catch (err) {
-    console.error("Error occured while loading modules: ", err);
+    console.error("Error occurred while loading modules: ", err);
   }
 })();
 
@@ -74,11 +74,11 @@ const volumeMasterInput = document.getElementsByClassName("volumeMaster")[0];
 const medals = Array.from(document.getElementsByClassName("medal"));
 let Draw;
 let pattern = {};
+let background = null;
 let patternBackup = {};
 let patternLength = 0;
-let userName = "";
 let difficultyNames = ["EZ", "MID", "HARD"];
-let settings, sync, visualSync, song, tracks, pixelRatio, offset, speed, userid;
+let settings, sync, visualSync, song, tracks, pixelRatio, offset, speed;
 let timing = null;
 let pointingCntElement = [{ v1: "", v2: "", i: "" }];
 let clickParticles = [];
@@ -125,7 +125,7 @@ let comboAlertMs = 0,
 let hide = {},
   frameCounter;
 let load = 0;
-let fileName = "";
+let fileName = mode == "tutorial" ? "tutorial" : "";
 let paceLoaded = 0;
 let overlayTime = 0;
 let shiftDown = false;
@@ -167,23 +167,6 @@ const albumImg = new Image();
 let auto = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-  fetch(`${api}/tracks`, {
-    method: "GET",
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.result == "success") {
-        tracks = data.tracks;
-      } else {
-        alert("Failed to load song list.");
-        console.error("Failed to load song list.");
-      }
-    })
-    .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
-    });
   // Signed-out visitors were already turned away by the server gate.
   fetch(`${api}/user`, {
     method: "GET",
@@ -194,8 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
       await modulesReady;
       if (data.result == "success") {
         data = data.user;
-        userName = data.nickname;
-        userid = data.userid;
         settings = JSON.parse(data.settings);
         initialize(true);
         settingApply();
@@ -205,10 +186,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
     });
 });
+
+const tracksReady =
+  mode == "tutorial"
+    ? Promise.resolve([])
+    : fetch(`${api}/tracks`, { method: "GET", credentials: "include" })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.result == "success") return data.tracks;
+          throw new Error("Failed to load song list.");
+        });
 
 const calcBeats = (seek = song.seek() * 1000) => Number(timing.beatAt(seek - (offset + sync)).toPrecision(10));
 
@@ -235,99 +226,131 @@ const initialize = (isFirstCalled) => {
 
   missCanvas.width = window.innerWidth * 0.2 * pixelRatio;
   missCanvas.height = window.innerHeight * 0.05 * pixelRatio;
-  rate = Math.min(2, Math.max(0.5, Number(localStorage.rate) || 1));
+  if (mode == "play") rate = Math.min(2, Math.max(0.5, Number(localStorage.rate) || 1));
+  else if (mode == "test") rate = parseFloat(query.get("rate")) || 1;
 
   if (isFirstCalled) {
-    fetch(`${cdn}/URLATE-patterns/${localStorage.songName}/${localStorage.difficultySelection}.json`)
-      .then((res) => res.json())
-      .then((data) => {
-        patternBackup = parsePattern(data);
-        pattern = structuredClone(patternBackup);
-        patternLength = pattern.patterns.length;
-
-        noteMaxDuration = 0;
-        for (const note of pattern.patterns) {
-          if (note.duration && note.duration > noteMaxDuration) {
-            noteMaxDuration = note.duration;
-          }
-        }
-        noteMaxDuration += 4;
-
-        const findEnd = pattern.triggers.find((t) => t.value == 6);
-        endBeat = findEnd ? findEnd.beat : null;
-        timing = new Timing(pattern);
-
-        document.getElementById("scoreDifficultyNum").textContent = localStorage.difficulty;
-        document.getElementById("scoreDifficultyName").textContent = difficultyNames[localStorage.difficultySelection];
-        document.getElementById("albumDifficulty").textContent = difficultyNames[localStorage.difficultySelection];
-        document.getElementById("albumDifficultyNum").textContent = localStorage.difficulty;
-        document.getElementById("artist").textContent = pattern.information.producer;
-        document.getElementById("scoreArtist").textContent = pattern.information.producer;
-        document.getElementById("authorNamespace").textContent = pattern.information.author;
-        document.getElementById("authorComment").textContent = pattern.information.comment;
-        fetch(`${api}/profilePic/${pattern.information.author}`)
-          .then((res) => res.json())
-          .then((data) => {
-            document.getElementById("authorIcon").src = data.picture;
-          });
-        offset = pattern.information.offset;
-        speed = pattern.information.speed;
-        nowSpeed = pattern.information.speed;
-        currentTriggerIndex = 0;
-        for (let i = 0; i < tracks.length; i++) {
-          if (tracks[i].name == pattern.information.track) {
-            document.getElementById("scoreTitle").textContent =
-              settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
-            document.getElementById("title").textContent =
-              settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name;
-            fileName = tracks[i].fileName;
-            document.getElementById("albumContainer").style.backgroundImage =
-              `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-            document.getElementById("canvasBackground").style.backgroundImage =
-              `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-            document.getElementById("scoreBackground").style.backgroundImage =
-              `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-            document.getElementById("scoreAlbum").style.backgroundImage =
-              `url("${cdn}/albums/${settings.display.albumRes}/${fileName}.webp")`;
-            albumImg.src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.webp`;
-            break;
-          }
-        }
-        fetch(`${cdn}/skins/${settings.game.skin}.json`)
-          .then((res) => res.json())
-          .then((data) => {
-            skin = data;
-            Draw = new Renderer(ctx, { canvasW, canvasH, cursorZoom: settings.game.size }, skin);
-          })
-          .catch((error) => {
-            alert(`Error occured.\n${error}`);
-            console.error(`Error occured.\n${error}`);
-          });
-        song = new Howl({
-          src: `${cdn}/tracks/${settings.sound.res}/${fileName}.ogg`,
-          format: ["ogg"],
-          autoplay: false,
-          loop: false,
-          onend: () => {
-            calculateResult();
-          },
-          onload: () => {
-            Howler.autoSuspend = false;
-            Howler.volume(settings.sound.volume.master);
-            song.volume(settings.sound.volume.music);
-            song.rate(rate);
-            if (load == 1) {
-              doneLoading();
-            }
-            load++;
-          },
-        });
+    Promise.all([loadPatternData(), tracksReady])
+      .then(([data, trackList]) => {
+        tracks = trackList;
+        applyPattern(data);
       })
       .catch((e) => {
-        alert(`Error occured.\n${e}`);
-        window.location.href = `${url}/game?initialize=1`;
+        alert(`Error occurred.\n${e}`);
+        if (mode == "play") window.location.href = `${url}/game?initialize=1`;
       });
   }
+};
+
+const loadPatternData = () => {
+  if (mode == "test") return Promise.resolve(localStorage.pattern);
+  const path =
+    mode == "tutorial"
+      ? `tutorial/0_${lang}.json`
+      : `${localStorage.songName}/${localStorage.difficultySelection}.json`;
+  return fetch(`${cdn}/URLATE-patterns/${path}`).then((res) => res.json());
+};
+
+const setText = (id, text) => {
+  document.getElementById(id).textContent = text;
+};
+
+const albumUrl = (name) => `url("${cdn}/albums/${settings.display.albumRes}/${name}.webp")`;
+
+const applyPattern = (data) => {
+  patternBackup = parsePattern(data);
+  pattern = structuredClone(patternBackup);
+  patternLength = pattern.patterns.length;
+
+  noteMaxDuration = 0;
+  for (const note of pattern.patterns) {
+    if (note.duration && note.duration > noteMaxDuration) {
+      noteMaxDuration = note.duration;
+    }
+  }
+  noteMaxDuration += 4;
+
+  const findEnd = pattern.triggers.find((t) => t.value == 6);
+  endBeat = findEnd ? findEnd.beat : null;
+  timing = new Timing(pattern);
+
+  offset = pattern.information.offset;
+  speed = pattern.information.speed;
+  nowSpeed = pattern.information.speed;
+  currentTriggerIndex = 0;
+
+  setText("artist", pattern.information.producer);
+  setText("scoreArtist", pattern.information.producer);
+  setText("authorNamespace", pattern.information.author);
+
+  if (mode == "play") {
+    setText("scoreDifficultyNum", localStorage.difficulty);
+    setText("scoreDifficultyName", difficultyNames[localStorage.difficultySelection]);
+    setText("albumDifficulty", difficultyNames[localStorage.difficultySelection]);
+    setText("albumDifficultyNum", localStorage.difficulty);
+  } else if (mode == "tutorial") {
+    setText("scoreDifficultyNum", "Tutorial");
+    setText("scoreDifficultyName", "Mode");
+    setText("albumDifficulty", "Tutorial");
+    setText("albumDifficultyNum", "Mode");
+    setText("scoreTitle", "Tutorial");
+    setText("title", "Tutorial");
+  }
+
+  if (mode != "tutorial") {
+    setText("authorComment", pattern.information.comment);
+    fetch(`${api}/profilePic/${encodeURIComponent(pattern.information.author)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        document.getElementById("authorIcon").src = data.picture;
+      });
+    if (mode == "test") background = query.get("background");
+    const track = tracks.find((t) => t.name == pattern.information.track);
+    if (track) {
+      const title = settings.general.detailLang == "original" ? track.originalName : track.name;
+      setText("scoreTitle", title);
+      setText("title", title);
+      fileName = track.fileName;
+    }
+  }
+
+  document.getElementById("albumContainer").style.backgroundImage = albumUrl(fileName);
+  document.getElementById("canvasBackground").style.backgroundImage = albumUrl(
+    background === "0" ? "urlate" : fileName,
+  );
+  document.getElementById("scoreBackground").style.backgroundImage = albumUrl(fileName);
+  document.getElementById("scoreAlbum").style.backgroundImage = albumUrl(fileName);
+  albumImg.src = `${cdn}/albums/${settings.display.albumRes}/${fileName}.webp`;
+
+  fetch(`${cdn}/skins/${settings.game.skin}.json`)
+    .then((res) => res.json())
+    .then((data) => {
+      skin = data;
+      Draw = new Renderer(ctx, { canvasW, canvasH, cursorZoom: settings.game.size }, skin);
+    })
+    .catch((error) => {
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
+    });
+  song = new Howl({
+    src: `${cdn}/tracks/${mode == "tutorial" ? "192kbps" : settings.sound.res}/${fileName}.ogg`,
+    format: ["ogg"],
+    autoplay: false,
+    loop: false,
+    onend: () => {
+      calculateResult();
+    },
+    onload: () => {
+      Howler.autoSuspend = false;
+      Howler.volume(settings.sound.volume.master);
+      song.volume(settings.sound.volume.music);
+      song.rate(rate);
+      if (load == 1) {
+        doneLoading();
+      }
+      load++;
+    },
+  });
 };
 
 const settingApply = () => {
@@ -565,7 +588,10 @@ const cntRender = () => {
     Draw.judges(judgeParticles);
 
     Draw.keyInputUI(keyInput, keyInputTime);
-    Draw.scorePanelUI({ score, combo, difficulty: Number(localStorage.difficultySelection) }, albumImg);
+    Draw.scorePanelUI(
+      { score, combo, difficulty: mode == "play" ? Number(localStorage.difficultySelection) : 3 },
+      albumImg,
+    );
     Draw.systemInfoUI({
       speed: Number(nowSpeed.toFixed(2)),
       bpm: Number(timing.bpmAt(beats).toFixed(2)),
@@ -760,18 +786,21 @@ const calculateResult = () => {
     missCtx.textBaseline = "bottom";
     missCtx.fillText("Perfect!", missCanvas.width - 10, missCanvas.height * 0.8 - 10);
   }
+  if (mode == "tutorial") {
+    completeTutorial().catch((error) => alert(`Error occurred.\n${error}`));
+    return;
+  }
   if (autoPlay) {
     document.getElementById("scoreDifficulty").append(" · AUTO");
     return;
   }
+  if (mode != "play") return;
   fetch(`${api}/playRecord`, {
     method: "PUT",
     credentials: "include",
     body: JSON.stringify({
       difficultySelection: Number(localStorage.difficultySelection) + 1,
       fileName,
-      userid,
-      userName,
       rank,
       score,
       maxCombo,
@@ -790,13 +819,8 @@ const calculateResult = () => {
     },
   })
     .then((res) => res.json())
-    .then((data) => {
-      if (data.result == "success") {
-        console.log("score submitted!");
-      }
-    })
     .catch((error) => {
-      alert(`Error occured while submitting result.\n${error}`);
+      alert(`Error occurred while submitting result.\n${error}`);
     });
 };
 
@@ -994,11 +1018,12 @@ const addScore = (judge, weight = 1, silent = false) => {
     maxCombo = combo;
   }
   let basicScore = (100000000 / patternLength) * weight;
+  const scoreRate = mode == "test" ? 1 : rate;
   let rateCalc;
-  if (rate >= 1) {
-    rateCalc = rate * 0.5 + 0.5;
+  if (scoreRate >= 1) {
+    rateCalc = scoreRate * 0.5 + 0.5;
   } else {
-    rateCalc = rate * rate * 1.3 - 0.3;
+    rateCalc = scoreRate * scoreRate * 1.3 - 0.3;
   }
   if (judge == "perfect") {
     score += Math.round((basicScore + combo * 5) * rateCalc);
@@ -1022,7 +1047,7 @@ const addScore = (judge, weight = 1, silent = false) => {
 
 const checkLastNote = (i) => {
   if (i != patternLength - 1) return;
-  if (!autoPlay && localStorage.record < score) {
+  if (mode == "play" && !autoPlay && localStorage.record < score) {
     newRecordTime = Date.now();
   }
   if (pattern.bullets.length) destroyAll(pattern.bullets[pattern.bullets.length - 1].beat);
@@ -1176,11 +1201,11 @@ const resume = () => {
     .then((res) => res.json())
     .then((data) => {
       if (data.result != "success") {
-        alert(`Error occured.\n${data.error}`);
+        alert(`Error occurred.\n${data.error}`);
       }
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
     });
   menuContainer.style.display = "none";
   isMenuOpened = false;
@@ -1190,7 +1215,7 @@ const resume = () => {
 
 const retry = () => {
   if (isResultShowing) {
-    if (!autoPlay && localStorage.record < score) localStorage.record = score;
+    if (mode == "play" && !autoPlay && localStorage.record < score) localStorage.record = score;
     return location.reload();
   }
   lockPointer();
@@ -1258,8 +1283,33 @@ const retry = () => {
   }, 100);
 };
 
+const completeTutorial = () =>
+  fetch(`${api}/tutorial`, { method: "PUT", credentials: "include" })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.result != "success") throw new Error(data.error);
+    });
+
 const home = () => {
-  window.location.href = `${url}/game?initialize=1`;
+  if (mode == "play") {
+    window.location.href = `${url}/game?initialize=1`;
+  } else if (mode == "test") {
+    window.location.href = `${url}/game?initialize=0`;
+  } else if (confirm(confirmExit)) {
+    completeTutorial()
+      .then(() => {
+        window.location.href = `${url}/game?initialize=0`;
+      })
+      .catch((error) => alert(`Error occurred.\n${error}`));
+  }
+};
+
+const editor = () => {
+  window.location.href = `${url}/editor${background == "0" ? "?background=0" : ""}`;
+};
+
+const finish = () => {
+  window.location.href = `${url}/game?initialize=0`;
 };
 
 const settingChanged = (e, v) => {
@@ -1358,12 +1408,12 @@ const globalScrollEvent = (e) => {
           .then((res) => res.json())
           .then((data) => {
             if (data.result != "success") {
-              alert(`Error occured.\n${data.error}`);
+              alert(`Error occurred.\n${data.error}`);
             }
           })
           .catch((error) => {
-            alert(`Error occured.\n${error}`);
-            console.error(`Error occured.\n${error}`);
+            alert(`Error occurred.\n${error}`);
+            console.error(`Error occurred.\n${error}`);
           });
       }, 1000);
     } else {
@@ -1399,7 +1449,6 @@ const checkHoldNote = (key) => {
 };
 
 document.addEventListener("keydown", (e) => {
-  e = e || window.event;
   if (e.repeat) return;
   if (pressingKeys.includes(e.key)) return;
   if (e.key == "Shift") {
@@ -1426,7 +1475,6 @@ document.addEventListener("keydown", (e) => {
 });
 
 document.addEventListener("keyup", (e) => {
-  e = e || window.event;
   if (e.key == "Escape") {
     return;
   } else if (e.key == "Shift") {
@@ -1476,7 +1524,10 @@ document.querySelector(".volumeMaster").addEventListener("input", (event) => {
 });
 document.getElementById("loadingContainer").addEventListener("click", requestStart);
 document.getElementById("retryButton").addEventListener("click", retry);
-document.getElementById("nextButton").addEventListener("click", home);
+document
+  .getElementById("nextButton")
+  .addEventListener("click", mode == "test" ? editor : mode == "tutorial" ? finish : home);
+if (mode == "test") document.getElementById("backToEditor").addEventListener("click", editor);
 document.getElementById("resume").addEventListener("click", resume);
 document.getElementById("retry").addEventListener("click", retry);
 document.getElementById("backToHome").addEventListener("click", home);

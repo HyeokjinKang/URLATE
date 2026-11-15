@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Test</title>
+    <title><%= { play: 'URLATE', test: 'Test', tutorial: 'URLATE Tutorial' }[mode] %></title>
     <link rel="preconnect" href="<%= cdn %>" crossorigin />
     <link rel="stylesheet" href="/css/fonts.css" />
     <link rel="stylesheet" href="/css/montserrat.css" />
@@ -17,7 +17,7 @@
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <script data-pace-options='{ "eventLag": false }' src="/lib/pace.min.js"></script>
   </head>
-  <body>
+  <body data-mode="<%= mode %>">
     <div id="colorOverlayContainer"></div>
     <div id="blackOverlayContainer"></div>
     <div id="scoreContainer">
@@ -30,7 +30,13 @@
           <br />
           <span id="scoreArtist">Artist</span>
           <br />
+          <% if (mode == "test") { %>
           <span id="scoreDifficulty"><span id="scoreDifficultyNum">?</span> Testing Mode</span>
+          <% } else { %>
+          <span id="scoreDifficulty"
+            ><span id="scoreDifficultyNum">?</span> <span id="scoreDifficultyName"></span
+          ></span>
+          <% } %>
           <br /><br />
           <canvas id="missPointCanvas"></canvas>
           <br />
@@ -39,7 +45,7 @@
       </div>
       <div id="resultContainer">
         <span id="result">RESULT</span>
-        <img src="/images/icons/nav-arrow-down-solid.svg" id="arrow" />
+        <img src="/images/icons/nav-arrow-down-solid.svg" class="arrow" />
       </div>
       <div id="scoreInfoContainer">
         <div id="scoreInfoScore">
@@ -90,7 +96,9 @@
       <div id="menuBox">
         <div id="resume" class="menuBtn"><span>Resume</span></div>
         <div id="retry" class="menuBtn"><span>Retry</span></div>
+        <% if (mode == "test") { %>
         <div id="backToEditor" class="menuBtn"><span>Back to editor</span></div>
+        <% } %>
         <div id="backToHome" class="menuBtn"><span>Back to home</span></div>
       </div>
       <span id="menuVolume"><%= __('menu_volume') %></span>
@@ -99,23 +107,29 @@
       <div id="albumContainer">
         <div id="albumInfo">
           <span id="author">Pattern by - <span id="authorNamespace"></span></span>
+          <% if (mode == "test") { %>
           <span><span id="albumDifficulty">TEST</span>&nbsp;<span id="albumDifficultyNum">MODE</span></span>
+          <% } else { %>
+          <span><span id="albumDifficulty"></span>&nbsp;<span id="albumDifficultyNum"></span></span>
+          <% } %>
         </div>
       </div>
       <span id="title"></span>
       <span id="artist"></span>
       <span id="clickToStart"><%= __('click_to_start') %></span>
       <span id="loadingUrlate">URLATE <span id="loadingLite">LITE</span></span>
+      <% if (mode != "tutorial") { %>
       <div id="authorContainer">
         <img src="" id="authorIcon" />
         <span id="authorComment"></span>
       </div>
+      <% } %>
     </div>
     <div id="floatingResultContainer">
       <span id="floatingResult">RESULT</span>
     </div>
     <div id="floatingArrowContainer">
-      <img src="/images/icons/nav-arrow-down-solid.svg" id="arrow" />
+      <img src="/images/icons/nav-arrow-down-solid.svg" class="arrow" />
     </div>
     <div id="floatingResumeContainer">
       <span id="floatingResume"><%= __('resume_prompt') %></span>
@@ -138,6 +152,7 @@
       const game = "<%= game %>";
       const alias = "<%= __('alias') %>".split(",");
       const lang = "<%= __('lang') %>";
+      const confirmExit = "<%= __('tutorial_skip_confirm') %>";
       const socketi18n = {
         connected: "<%= __('socket_status_connected') %>",
         reconnecting: "<%= __('socket_status_reconnecting') %>",
@@ -152,6 +167,6 @@
     <script src="/lib/howler.min.js"></script>
     <script src="/lib/iziToast.min.js"></script>
     <script type="module" src="/modules/socket.js"></script>
-    <script type="module" src="/js/test.js"></script>
+    <script type="module" src="/js/player.js"></script>
   </body>
 </html>

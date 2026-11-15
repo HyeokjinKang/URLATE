@@ -29,7 +29,6 @@ const selectSongContainer = document.getElementById("selectSongContainer");
 const trackModsText = document.getElementById("trackModsText");
 const trackModsAuto = document.getElementById("trackModsAuto");
 const selectTitle = document.getElementById("selectTitle");
-const overlayPaymentContainer = document.getElementById("overlayPaymentContainer");
 const overlayLoadingContainer = document.getElementById("overlayLoadingContainer");
 const loadingCircle = document.getElementById("loadingCircle");
 const loadingOverlayCircle = document.getElementById("loadingOverlayCircle");
@@ -111,7 +110,7 @@ let themeSong;
 const SONG_CACHE_MAX = 5;
 const songs = new Map();
 const getSong = (n) => {
-  if (n < 0 || !tracks[n] || tracks[n].type == 3) return null;
+  if (n < 0 || !tracks[n]) return null;
   if (songs.has(n)) {
     const s = songs.get(n);
     songs.delete(n);
@@ -391,11 +390,11 @@ const tutorialSkip = () => {
       .then((res) => res.json())
       .then((data) => {
         if (data.result != "success") {
-          alert(`Error occured.\n${data.error}`);
+          alert(`Error occurred.\n${data.error}`);
         }
       })
       .catch((error) => {
-        console.error(`Error occured.\n${error}`);
+        console.error(`Error occurred.\n${error}`);
         location.reload();
       });
     tutorial -= 2;
@@ -575,8 +574,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           })
           .catch((error) => {
-            alert(`Error occured.\n${error}`);
-            console.error(`Error occured.\n${error}`);
+            alert(`Error occurred.\n${error}`);
+            console.error(`Error occurred.\n${error}`);
             location.reload();
           });
       } else {
@@ -585,8 +584,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
       location.reload();
     });
 });
@@ -696,32 +695,12 @@ const tracksUpdate = () => {
   songs.forEach((s) => s.unload());
   songs.clear();
   let songList = "";
-  const fetchTargets = [];
 
   for (let i = 0; i < tracks.length; i++) {
-    if (tracks[i].type == 3) {
-      songList += `<div class="songSelectionContainer songSelectionDisable">
-        <div class="songSelectionInfo">
-            <span class="songSelectionTitle"></span>
-            <span class="songSelectionArtist"></span>
-        </div>
-        <div class="songSelectionRank">
-            <span class="ranks rankQ"></span>
-        </div>
-      </div>`;
-      continue;
-    }
     songList += `<div class="songSelectionContainer" data-action="songSelected" data-arg="${i}">
               <div class="songSelectionInfo">
                 <div class="songSelectionTitle">
                   ${settings.general.detailLang == "original" ? tracks[i].originalName : tracks[i].name}
-                  ${
-                    tracks[i].type == 1
-                      ? "<img src='/images/ui/track-advanced.webp' class='songSelectionIcon'>"
-                      : tracks[i].type == 2
-                        ? "<img src='/images/ui/track-dlc.webp' class='songSelectionIcon'>"
-                        : ""
-                  }
                 </div>
                 <span class="songSelectionArtist">${tracks[i].producer}</span>
               </div>
@@ -729,27 +708,26 @@ const tracksUpdate = () => {
                 <span class="ranks rankQ"></span>
               </div>
           </div>`;
-    fetchTargets.push(i);
   }
 
   selectSongContainer.innerHTML = songList;
 
-  const defaultRecord = (type) => ({
-    rank: type == 1 ? "rankL" : "rankQ",
+  const defaultRecord = () => ({
+    rank: "rankQ",
     record: 0,
     medal: 0,
     maxcombo: 0,
   });
 
-  fetch(`${api}/trackRecords/${username}`, {
+  fetch(`${api}/trackRecords/${encodeURIComponent(username)}`, {
     method: "GET",
     credentials: "include",
   })
     .then((res) => res.json())
     .then((data) => {
       const records = data.result == "success" ? data.records : {};
-      fetchTargets.forEach((i) => {
-        trackRecords[i] = [defaultRecord(tracks[i].type), defaultRecord(tracks[i].type), defaultRecord(tracks[i].type)];
+      tracks.forEach((_, i) => {
+        trackRecords[i] = [defaultRecord(), defaultRecord(), defaultRecord()];
         const results = records[tracks[i].fileName];
         if (results && results.length) {
           for (let j = 0; j < 3; j++) {
@@ -765,10 +743,6 @@ const tracksUpdate = () => {
               };
             }
           }
-        } else if (tracks[i].type == 1) {
-          const rankEl = document.getElementsByClassName("ranks")[i];
-          rankEl.className = "ranks rankL";
-          document.getElementsByClassName("songSelectionInfo")[i].classList.add("locked");
         }
       });
       if (iniMode != -1) {
@@ -780,8 +754,8 @@ const tracksUpdate = () => {
       }
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
       location.reload();
     });
 };
@@ -1000,10 +974,6 @@ const gameLoaded = () => {
     document.getElementById("songName").style.fontSize = "3vh";
     document.getElementById("header").classList.add("fadeInAnim");
     setTimeout(() => {
-      let backIcons = document.getElementsByClassName("backIcon");
-      for (let i = 0; i < backIcons.length; i++) {
-        backIcons[i].classList.add("show");
-      }
       document.getElementById("songName").classList.add("fadeInAnim");
     });
     document.getElementById("footerLeft").classList.add("fadeInAnim");
@@ -1146,13 +1116,13 @@ const displayClose = () => {
         .then((res) => res.json())
         .then((data) => {
           if (data.result != "success") {
-            alert(`Error occured.\n${data.error}`);
+            alert(`Error occurred.\n${data.error}`);
           }
           loadingHide();
         })
         .catch((error) => {
-          alert(`Error occured.\n${error}`);
-          console.error(`Error occured.\n${error}`);
+          alert(`Error occurred.\n${error}`);
+          console.error(`Error occurred.\n${error}`);
           location.reload();
         });
       fadeOutContainer("optionContainer");
@@ -1178,8 +1148,8 @@ const displayClose = () => {
     } else if (display == 7) {
       //OPTION Offset
       offsetButton.textContent = offset + "ms";
-      document.getElementById("offsetContiner").classList.remove("fadeInAnim");
-      document.getElementById("offsetContiner").classList.add("fadeOutAnim");
+      document.getElementById("offsetContainer").classList.remove("fadeInAnim");
+      document.getElementById("offsetContainer").classList.add("fadeOutAnim");
       if (songSelection != -1) {
         const selSong = getSong(songSelection);
         if (selSong) {
@@ -1192,31 +1162,15 @@ const displayClose = () => {
       }
       offsetSong.fade(1, 0, 500);
       setTimeout(() => {
-        document.getElementById("offsetContiner").classList.remove("fadeOutAnim");
-        document.getElementById("offsetContiner").style.display = "none";
+        document.getElementById("offsetContainer").classList.remove("fadeOutAnim");
+        document.getElementById("offsetContainer").style.display = "none";
         offsetSong.stop();
       }, 500);
       display = 2;
       return;
     } else if (display == 8) {
-      //STORE
-      fadeOutContainer("storeContainer");
-    } else if (display == 9) {
-      //DLC info
-      fadeOutContainer("storeDLCInfo");
-      display = 8;
-      return;
-    } else if (display == 10) {
-      //Skin info
-      fadeOutContainer("storeSkinInfo");
-      display = 8;
-      return;
-    } else if (display == 11) {
-      //Store purchase method selection
-      overlayPaymentContainer.style.pointerEvents = "none";
-      overlayPaymentContainer.style.opacity = "0";
-      display = 8;
-      return;
+      //ABOUT
+      fadeOutContainer("aboutContainer");
     } else if (display == 13) {
       //OPTION VisualSync
       if (visualSyncAnimId) {
@@ -1287,13 +1241,10 @@ const menuSelected = (n) => {
     if (songSelection == -1) {
       // Restore the last played song; pick a random one only when there is nothing to restore.
       const savedIndex = localStorage.songName ? tracks.findIndex((e) => e.fileName == localStorage.songName) : -1;
-      if (savedIndex != -1 && tracks[savedIndex].type != 3) {
+      if (savedIndex != -1) {
         songSelected(savedIndex);
-      } else {
-        const playable = tracks.map((t, i) => (t.type != 3 ? i : -1)).filter((i) => i != -1);
-        if (playable.length > 0) {
-          songSelected(playable[Math.floor(Math.random() * playable.length)]);
-        }
+      } else if (tracks.length > 0) {
+        songSelected(Math.floor(Math.random() * tracks.length));
       }
     }
     document.getElementById("selectContainer").style.display = "flex";
@@ -1310,9 +1261,9 @@ const menuSelected = (n) => {
     document.getElementById("advancedContainer").classList.add("fadeInAnim");
     rankUpdate();
   } else if (n == 3) {
-    //store
-    document.getElementById("storeContainer").style.display = "flex";
-    document.getElementById("storeContainer").classList.add("fadeInAnim");
+    //about
+    document.getElementById("aboutContainer").style.display = "flex";
+    document.getElementById("aboutContainer").classList.add("fadeInAnim");
     display = 8;
   }
 };
@@ -1418,59 +1369,21 @@ const profileUpdate = async (nickname, isMe) => {
             const recentDate = new Date(data.date);
             document.getElementsByClassName("profileStatValue")[5].textContent = `${recentDate.toLocaleDateString()}`;
           }
-          const song = tracks.find((e) => e.fileName == data.filename);
-          const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
-          recentHTML += `<div class="playContainer">
-              <div class="playContainerLeft">
-                <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${escapeHtml(difficulty)}</span>
-                <img src="${cdn}/albums/50/${song.fileName}.webp" class="playAlbum" />
-                <div class="playTitleContainer">
-                  <span class="playTitle">${escapeHtml(settings.general.detailLang == "original" ? song.originalName : song.name)}</span>
-                  <span class="playProducer">${escapeHtml(song.producer)}</span>
-                </div>
-              </div>
-              <div class="playContainerRight">
-                <span class="playDetail">${escapeHtml(data.judge)}</span>
-                <span class="playDetail">${numberWithCommas(Number(data.record))}</span>
-                <span class="playDetail">${Number(data.accuracy).toFixed(2)}%</span>
-                <span class="playRate">${rating} +${Number(data.rating / 100).toFixed(2)}</span>
-              </div>
-            </div>`;
+          recentHTML += playRecordHTML(data, `+${Number(data.rating / 100).toFixed(2)}`);
         }
       }
       document.getElementById("profileRecentPlay").innerHTML = recentHTML;
     }
-    let bestRecords = await fetch(`${api}/bestRecords/${profile.nickname}`, {
+    const bestRes = await fetch(`${api}/bestRecords/${encodeURIComponent(profile.nickname)}`, {
       method: "GET",
       credentials: "include",
-    });
-    bestRecords = await bestRecords.json();
-    if (bestRecords.result == "success") {
-      document.getElementById("profileBestPlay").innerHTML = "";
-      bestRecords = bestRecords.results;
-      if (bestRecords.length == 0)
-        document.getElementById("profileBestPlay").innerHTML = `<span class="nothingHere">${nothingHere}</span>`;
-      for (let i = 0; i < bestRecords.length; i++) {
-        const data = bestRecords[i];
-        const song = tracks.find((e) => e.fileName == data.filename);
-        const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
-        document.getElementById("profileBestPlay").innerHTML += `<div class="playContainer">
-        <div class="playContainerLeft">
-          <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${escapeHtml(difficulty)}</span>
-          <img src="${cdn}/albums/50/${song.fileName}.webp" class="playAlbum" />
-          <div class="playTitleContainer">
-            <span class="playTitle">${escapeHtml(settings.general.detailLang == "original" ? song.originalName : song.name)}</span>
-            <span class="playProducer">${escapeHtml(song.producer)}</span>
-          </div>
-        </div>
-        <div class="playContainerRight">
-          <span class="playDetail">${escapeHtml(data.judge)}</span>
-          <span class="playDetail">${numberWithCommas(Number(data.record))}</span>
-          <span class="playDetail">${Number(data.accuracy).toFixed(2)}%</span>
-          <span class="playRate">${rating} ${data.rating == 0 ? "-" : `+${Number(data.rating / 100).toFixed(2)}`}</span>
-        </div>
-      </div>`;
-      }
+    }).then((res) => res.json());
+    if (bestRes.result == "success") {
+      const bestHTML = bestRes.results
+        .map((data) => playRecordHTML(data, data.rating == 0 ? "-" : `+${Number(data.rating / 100).toFixed(2)}`))
+        .join("");
+      document.getElementById("profileBestPlay").innerHTML =
+        bestHTML || `<span class="nothingHere">${nothingHere}</span>`;
     }
     document.getElementsByClassName("profileMedalText")[0].textContent = profile.ap;
     document.getElementsByClassName("profileMedalText")[1].textContent = profile.fc;
@@ -1540,10 +1453,32 @@ const profileUpdate = async (nickname, isMe) => {
       console.error(e);
     }
   } else {
-    alert(`Error occured.\n${profile.error}`);
-    console.error(`Error occured.\n${profile.error}`);
+    alert(`Error occurred.\n${profile.error}`);
+    console.error(`Error occurred.\n${profile.error}`);
   }
   loadingOverlayHide();
+};
+
+const playRecordHTML = (data, ratingText) => {
+  const song = tracks.find((e) => e.fileName == data.filename);
+  if (!song) return "";
+  const difficulty = JSON.parse(song.difficulty)[data.difficulty - 1];
+  return `<div class="playContainer">
+      <div class="playContainerLeft">
+        <span class="playDifficulty">${["EZ", "MID", "HARD"][data.difficulty - 1]} ${escapeHtml(difficulty)}</span>
+        <img src="${cdn}/albums/50/${song.fileName}.webp" class="playAlbum" />
+        <div class="playTitleContainer">
+          <span class="playTitle">${escapeHtml(settings.general.detailLang == "original" ? song.originalName : song.name)}</span>
+          <span class="playProducer">${escapeHtml(song.producer)}</span>
+        </div>
+      </div>
+      <div class="playContainerRight">
+        <span class="playDetail">${escapeHtml(data.judge)}</span>
+        <span class="playDetail">${numberWithCommas(Number(data.record))}</span>
+        <span class="playDetail">${Number(data.accuracy).toFixed(2)}%</span>
+        <span class="playRate">${rating} ${ratingText}</span>
+      </div>
+    </div>`;
 };
 
 const showProfileBackground = (event) => {
@@ -1599,12 +1534,12 @@ const bannerToggle = (n) => {
     .then((res) => res.json())
     .then((data) => {
       if (data.result != "success") {
-        alert(`Error occured.\n${data.error}`);
+        alert(`Error occurred.\n${data.error}`);
       }
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
       location.reload();
     });
 };
@@ -1702,7 +1637,7 @@ const showProfile = (name) => {
   loadingShow();
   document.getElementById("infoProfileContainer").style.display = "flex";
   document.getElementById("infoProfileContainer").classList.add("fadeInAnim");
-  fetch(`${api}/teamProfile/${name}`, {
+  fetch(`${api}/teamProfile/${encodeURIComponent(name)}`, {
     method: "GET",
     credentials: "include",
   })
@@ -1711,10 +1646,10 @@ const showProfile = (name) => {
       let info = JSON.parse(data.data);
       document.getElementById("infoProfileName").textContent = info[0].name;
       document.getElementById("infoProfilePosition").textContent = info[0].position;
-      document.getElementById("infoProfileImg").src = `images/credits/${info[0].profile}`;
+      document.getElementById("infoProfileImg").src = `/images/credits/${encodeURIComponent(info[0].profile)}`;
       let innerHTML = `<div class="infoProfilePart">
                           <img src="/images/icons/quote.svg" class="infoIcon">
-                          <span id="quote">${info[0].quote}</span>
+                          <span id="quote">${escapeHtml(info[0].quote)}</span>
                      </div>`;
       for (let i = 1; i < info.length; i++) {
         let link = "";
@@ -1737,8 +1672,8 @@ const showProfile = (name) => {
         }
         innerHTML += `
                     <div class="infoProfilePart">
-                        <img src="/images/icons/${info[i].icon}.svg" class="infoIcon">
-                        ${link == "" ? `<span>` : `<a class="blackLink" href="${link}" target="_blank" rel="noopener noreferrer">`}${info[i].content}${link == "" ? `</span>` : `</a>`}
+                        <img src="/images/icons/${encodeURIComponent(info[i].icon)}.svg" class="infoIcon">
+                        ${link == "" ? `<span>` : `<a class="blackLink" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">`}${escapeHtml(info[i].content)}${link == "" ? `</span>` : `</a>`}
                     </div>`;
       }
       document.getElementById("infoProfileBottom").innerHTML = innerHTML;
@@ -1746,8 +1681,8 @@ const showProfile = (name) => {
       display = 5;
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
       location.reload();
     });
 };
@@ -1822,8 +1757,8 @@ const showRank = () => {
 const offsetSetting = () => {
   offsetDrawnState = "";
   display = 7;
-  document.getElementById("offsetContiner").style.display = "flex";
-  document.getElementById("offsetContiner").classList.add("fadeInAnim");
+  document.getElementById("offsetContainer").style.display = "flex";
+  document.getElementById("offsetContainer").classList.add("fadeInAnim");
   if (!themeSong.playing()) {
     const selSong = getSong(songSelection);
     if (selSong) selSong.fade(1, 0, 500);
@@ -2159,10 +2094,11 @@ const changeProfile = (e) => {
             [
               "<button><b>OK</b></button>",
               async (instance, toast) => {
-                loadingOverlayShow();
                 instance.hide({ transitionOut: "fadeOut" }, toast, "confirm");
-                if (element !== "" && ownedAlias.has(Number(element))) {
-                  await fetch(`${api}/profile/alias`, {
+                if (element === "" || !ownedAlias.has(Number(element))) return;
+                loadingOverlayShow();
+                try {
+                  const res = await fetch(`${api}/profile/alias`, {
                     method: "PUT",
                     credentials: "include",
                     body: JSON.stringify({
@@ -2171,21 +2107,19 @@ const changeProfile = (e) => {
                     headers: {
                       "Content-Type": "application/json",
                     },
-                  })
-                    .then((res) => res.json())
-                    .then((data) => {
-                      if (data.result != "success") {
-                        alert(`Error occured.\n${data.error}`);
-                      }
-                    })
-                    .catch((error) => {
-                      alert(`Error occured.\n${error}`);
-                      console.error(`Error occured.\n${error}`);
-                      location.reload();
-                    });
+                  });
+                  const data = await res.json();
+                  if (data.result == "success") {
+                    aliasNum = Number(element);
+                    document.getElementById("profileBio").textContent = `| ${alias[aliasNum]}`;
+                  } else {
+                    alert(`Error occurred.\n${data.error}`);
+                  }
+                } catch (error) {
+                  alert(`Error occurred.\n${error}`);
+                  console.error(`Error occurred.\n${error}`);
+                  location.reload();
                 }
-                aliasNum = Number(element);
-                document.getElementById("profileBio").textContent = `| ${alias[aliasNum]}`;
                 loadingOverlayHide();
               },
               true,
@@ -2242,7 +2176,6 @@ const picLoaded = async (e, type) => {
   }
   let payload = new FormData();
   payload.append("img", file);
-  payload.append("userid", userid);
   fetch(`${url}/profile/${userid}/${type}`, {
     credentials: "include",
     method: "POST",
@@ -2347,12 +2280,12 @@ const scrollEvent = (e) => {
           .then((res) => res.json())
           .then((data) => {
             if (data.result != "success") {
-              alert(`Error occured.\n${data.error}`);
+              alert(`Error occurred.\n${data.error}`);
             }
           })
           .catch((error) => {
-            alert(`Error occured.\n${error}`);
-            console.error(`Error occured.\n${error}`);
+            alert(`Error occurred.\n${error}`);
+            console.error(`Error occurred.\n${error}`);
             location.reload();
           });
       }, 1000);
@@ -2373,24 +2306,10 @@ document.addEventListener("keydown", (e) => {
   if (display == 1 || display == 6) {
     if (key == "arrowup") {
       e.preventDefault();
-      if (songSelection != 0) {
-        let i = songSelection - 1;
-        while (tracks[i].type == 3) {
-          i--;
-          if (i == 0) return;
-        }
-        songSelected(i);
-      }
+      if (songSelection > 0) songSelected(songSelection - 1);
     } else if (key == "arrowdown") {
       e.preventDefault();
-      if (songSelection < tracks.length - 1) {
-        let i = songSelection + 1;
-        while (tracks[i].type == 3) {
-          i++;
-          if (i == tracks.length - 1) return;
-        }
-        songSelected(i);
-      }
+      if (songSelection < tracks.length - 1) songSelected(songSelection + 1);
     } else if (key == "tab") {
       e.preventDefault();
       difficultySelected(difficultySelection + 1 == 3 ? 0 : difficultySelection + 1);

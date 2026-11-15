@@ -211,10 +211,6 @@ body {
   font-weight: 800;
 }
 
-.opacity0 {
-  opacity: 0 !important;
-}
-
 #loadingUrlate {
   color: #fff;
   font-size: 1em;
@@ -726,12 +722,6 @@ body {
   }
 }
 
-.optionValueContainer {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
 .overlay {
   z-index: 300;
   position: fixed;
@@ -866,7 +856,7 @@ body {
   transition-duration: 0.1s;
 }
 
-#arrow {
+.arrow {
   height: 5vh;
 }
 
