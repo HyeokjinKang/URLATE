@@ -204,7 +204,6 @@ document.addEventListener("DOMContentLoaded", () => {
       for (let i = 0; tracks.length > i; i++) {
         let option = document.createElement("option");
         option.textContent = tracks[i].name;
-        if (tracks[i].type == 3) option.disabled = true;
         songSelectBox.options.add(option);
       }
       userName = user.user.nickname;
