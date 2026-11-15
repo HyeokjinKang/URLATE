@@ -2,6 +2,7 @@
 <html lang="<%= __('lang') %>">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>URLATE Client</title>
     <link rel="preconnect" href="<%= cdn %>" crossorigin />
     <link rel="stylesheet" href="/css/fonts.css" />
@@ -74,10 +75,10 @@
         no gap in the header row. %>
         <span id="noticeSlot" class="hide">
           <a id="noticeText" target="_blank" rel="noopener noreferrer"></a>
-          <div id="line"></div>
+          <div class="line"></div>
         </span>
         <img src="/images/icons/info-circle.svg" class="icon clickable" data-action="infoScreen" />
-        <div id="line"></div>
+        <div class="line"></div>
         <img src="/images/icons/settings.svg" class="icon clickable" data-action="optionScreen" />
       </div>
     </div>
@@ -409,7 +410,7 @@
       <img src="/images/credits/supporters.svg" id="tumblbug" loading="lazy" />
     </div>
     <div id="optionContainer" class="containers">
-      <div id="offsetContiner" class="containers">
+      <div id="offsetContainer" class="containers">
         <img
           src="/images/icons/xmark-circle-000000.svg"
           class="icon clickable closeBtn"

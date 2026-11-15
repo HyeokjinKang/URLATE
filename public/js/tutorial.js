@@ -46,7 +46,7 @@ const modulesReady = (async () => {
 
     console.log("Modules are ready.");
   } catch (err) {
-    console.error("Error occured while loading modules: ", err);
+    console.error("Error occurred while loading modules: ", err);
   }
 })();
 
@@ -175,8 +175,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
     });
 });
 
@@ -250,8 +250,8 @@ const initialize = (isFirstCalled) => {
         Draw = new Renderer(ctx, { canvasW, canvasH, cursorZoom: settings.game.size }, skin);
       })
       .catch((error) => {
-        alert(`Error occured.\n${error}`);
-        console.error(`Error occured.\n${error}`);
+        alert(`Error occurred.\n${error}`);
+        console.error(`Error occurred.\n${error}`);
       });
     song = new Howl({
       src: `${cdn}/tracks/192kbps/${fileName}.ogg`,
@@ -659,12 +659,12 @@ const calculateResult = () => {
     .then((res) => res.json())
     .then((data) => {
       if (data.result != "success") {
-        alert(`Error occured.\n${data.error}`);
+        alert(`Error occurred.\n${data.error}`);
       }
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
-      console.error(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
+      console.error(`Error occurred.\n${error}`);
     });
 };
 
@@ -970,11 +970,11 @@ const resume = () => {
     .then((res) => res.json())
     .then((data) => {
       if (data.result != "success") {
-        alert(`Error occured.\n${data.error}`);
+        alert(`Error occurred.\n${data.error}`);
       }
     })
     .catch((error) => {
-      alert(`Error occured.\n${error}`);
+      alert(`Error occurred.\n${error}`);
     });
   menuContainer.style.display = "none";
   isMenuOpened = false;
@@ -1055,14 +1055,14 @@ const home = () => {
       .then((res) => res.json())
       .then((data) => {
         if (data.result != "success") {
-          alert(`Error occured.\n${data.error}`);
+          alert(`Error occurred.\n${data.error}`);
         } else {
           window.location.href = `${url}/game?initialize=0`;
         }
       })
       .catch((error) => {
-        alert(`Error occured.\n${error}`);
-        console.error(`Error occured.\n${error}`);
+        alert(`Error occurred.\n${error}`);
+        console.error(`Error occurred.\n${error}`);
       });
   }
 };
@@ -1167,12 +1167,12 @@ const globalScrollEvent = (e) => {
           .then((res) => res.json())
           .then((data) => {
             if (data.result != "success") {
-              alert(`Error occured.\n${data.error}`);
+              alert(`Error occurred.\n${data.error}`);
             }
           })
           .catch((error) => {
-            alert(`Error occured.\n${error}`);
-            console.error(`Error occured.\n${error}`);
+            alert(`Error occurred.\n${error}`);
+            console.error(`Error occurred.\n${error}`);
           });
       }, 1000);
     } else {

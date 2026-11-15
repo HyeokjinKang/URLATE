@@ -257,7 +257,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
   } else {
     res.status(400).json({
       result: "failed",
-      message: "Error occured while uploading",
+      message: "Error occurred while uploading",
       error: "Invalid type",
     });
     return;
@@ -298,7 +298,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
       });
       res.status(400).json({
         result: "failed",
-        message: "Error occured while uploading",
+        message: "Error occurred while uploading",
         error: err,
       });
       return;
@@ -312,7 +312,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
       });
       res.status(400).json({
         result: "failed",
-        message: "Error occured while uploading",
+        message: "Error occurred while uploading",
         error: "Invalid file type",
       });
       return;
@@ -325,7 +325,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
       });
       res.status(400).json({
         result: "failed",
-        message: "Error occured while uploading",
+        message: "Error occurred while uploading",
         error: "Invalid image",
       });
       return;
@@ -355,7 +355,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
       });
       res.status(400).json({
         result: "failed",
-        message: "Error occured while uploading",
+        message: "Error occurred while uploading",
         error: "Invalid image",
       });
       return;
@@ -374,7 +374,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
       });
       res.status(502).json({
         result: "failed",
-        message: "Error occured while uploading",
+        message: "Error occurred while uploading",
         error: "Storage upload failed",
       });
       return;
@@ -410,7 +410,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
           });
           res.status(400).json({
             result: "failed",
-            message: "Error occured while uploading",
+            message: "Error occurred while uploading",
             error: json.message,
           });
           return;
@@ -455,7 +455,7 @@ profileRouter.post("/profile/:userid/:type", uploadLimiter, async (req, res) => 
         });
         res.status(500).json({
           result: "failed",
-          message: "Error occured while uploading",
+          message: "Error occurred while uploading",
           error: "Internal server error",
         });
       });

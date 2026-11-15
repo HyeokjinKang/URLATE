@@ -359,7 +359,7 @@ p {
   box-shadow: 0 0 1vw rgba(20, 20, 20, 0.1);
 }
 
-#line {
+.line {
   border-left: 2px solid #bbb;
   height: 1em;
   margin: 5px;
@@ -487,7 +487,7 @@ p {
 #infoContainer::before,
 #storeContainer::before,
 #optionContainer::before,
-#offsetContiner::before,
+#offsetContainer::before,
 #visualSyncContainer::before {
   content: "";
   position: fixed;
@@ -1852,7 +1852,7 @@ input[type="number"] {
   overflow-y: auto;
 }
 
-#offsetContiner,
+#offsetContainer,
 #visualSyncContainer {
   display: none;
   opacity: 0;
