@@ -561,7 +561,7 @@ document.addEventListener("DOMContentLoaded", () => {
           .then((res) => res.json())
           .then((data) => {
             if (data.result == "success") {
-              tracks = data.tracks;
+              tracks = data.tracks.filter((track) => track.type != 3);
               tracks.sort(sortAsName);
               // sortSelected already runs tracksUpdate, so skip it when a saved sort was restored.
               if (!restoreSortSettings()) tracksUpdate();
