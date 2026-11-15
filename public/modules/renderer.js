@@ -1,7 +1,3 @@
-/**
- * renderer.js
- * Canvas drawing for the game.
- */
 import { Config, JudgeSkin, KeyInputColors, DiffColors, TimingColors } from "./constants.js";
 import {
   getSin,
@@ -97,7 +93,6 @@ export default class Renderer {
     this.canvasW = layout.canvasW;
     this.canvasH = layout.canvasH;
 
-    // A new canvas width invalidates the caches
     if (this.canvasW !== this.cache.lastCacheW) {
       this.cache.bulletPath = null;
       this.cache.gradient.clear();
@@ -163,7 +158,6 @@ export default class Renderer {
       },
     };
 
-    // Font strings only change on resize, so build them once here
     const defaultSize = this.CONFIG.UI.DEFAULT_FONT_SIZE;
     const scorePanelSize = this.CONFIG.UI.SCORE_PANEL.FONT_SIZE;
     const judgeSize = ~~(this.canvasH / 30);
@@ -210,7 +204,6 @@ export default class Renderer {
     const { x, y, value: type, direction } = note;
     const { globalAlpha, progress, tailProgress, endProgress, isGrabbed, isSelected } = state;
 
-    // A finished note is not drawn
     if (type !== 2 && progress >= 130) return;
     if (type === 2 && endProgress >= 130) return;
 
@@ -1319,7 +1312,7 @@ export default class Renderer {
 
     ctx.save();
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "#ed3a2680"; // red accent
+    ctx.strokeStyle = "#ed3a2680";
     ctx.beginPath();
 
     ctx.moveTo(tw * 100, 0);
@@ -1339,7 +1332,7 @@ export default class Renderer {
 
     ctx.save();
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "#bbbbbb20"; // light grey
+    ctx.strokeStyle = "#bbbbbb20";
     ctx.beginPath();
 
     let x1 = 0,

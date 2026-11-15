@@ -1,4 +1,3 @@
-/** Constants and settings for in-game effects and rendering. */
 export const Config = {
   MATH: {
     PI_5: Math.PI / 5,

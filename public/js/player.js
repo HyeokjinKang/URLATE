@@ -1,6 +1,4 @@
 /* global Pace, Howler, Howl, url, cdn, api, lang, confirmExit */
-// url/cdn/api etc. are set by the page's inline <script> and by the classic
-// library scripts; a module can read them via global scope with no extra wiring.
 let upperBound,
   lowerBound,
   numberWithCommas,
@@ -167,7 +165,6 @@ const albumImg = new Image();
 let auto = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Signed-out visitors were already turned away by the server gate.
   fetch(`${api}/user`, {
     method: "GET",
     credentials: "include",
@@ -181,7 +178,6 @@ document.addEventListener("DOMContentLoaded", () => {
         initialize(true);
         settingApply();
       } else {
-        // The session is gone; sign out instead of leaving a dead page.
         window.location.href = "/logout";
       }
     })

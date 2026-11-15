@@ -15,7 +15,6 @@ const combinedLogPath = path.join(logsDir, "combined.log");
 const MAX_LOG_BYTES = 10 * 1024 * 1024;
 const KEEP_ROTATIONS = 3;
 
-// Remembered so a stat is not needed for every line written.
 const knownSizes = new Map<string, number>();
 
 /**
@@ -51,7 +50,6 @@ function writeToFile(filePath: string, content: string): void {
     fs.appendFileSync(filePath, content, "utf8");
     knownSizes.set(filePath, size + bytes);
   } catch (err) {
-    // Failing to log must never fail the request.
     console.error("Failed to write to log file:", err);
   }
 }

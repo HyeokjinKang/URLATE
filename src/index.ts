@@ -31,7 +31,6 @@ const API_TIMEOUT_MS = 5000;
 
 const app = express();
 
-// Do not advertise the framework version.
 app.disable("x-powered-by");
 
 // Rate limiting keys on the client address, which arrives via X-Forwarded-For.
@@ -44,7 +43,6 @@ app.set("view cache", true);
 app.set("views", __dirname + "/../views");
 app.use(cookieParser());
 
-// Shared across every view -- set once instead of passing on each render().
 app.locals.url = config.project.url;
 app.locals.api = config.project.api;
 app.locals.game = config.project.game;
@@ -134,7 +132,6 @@ const gamePageCsp = (nonce: string) =>
     frame: "'none'",
   });
 
-// A fresh nonce per request; a reused one would let an injected inline script pass.
 const withCsp = (res: Response, policy: (nonce: string) => string): string => {
   const nonce = randomBytes(16).toString("base64");
   res.setHeader("Content-Security-Policy", policy(nonce));
@@ -156,8 +153,6 @@ const authPageLimiter = rateLimit({
   limit: 240,
   standardHeaders: true,
   legacyHeaders: false,
-  // The default response is a bare line of text, which looks broken on a landing
-  // page. Route it through the same error screen as everything else.
   handler: (req, res) => sendError(req, res, 429),
 });
 
@@ -203,7 +198,6 @@ const AUTH_CACHE_TTL_MS = 30 * 1000;
 const AUTH_CACHE_MAX_ENTRIES = 5000;
 const authStatusCache = new Map<string, { status: string; expiresAt: number }>();
 
-// Hashed so live session cookies are not held in memory for the TTL.
 const authCacheKey = (cookie: string) => createHash("sha256").update(cookie).digest("hex");
 
 const readCachedStatus = (key: string): string | null => {
@@ -246,7 +240,6 @@ const gateLimiter = rateLimit({
   handler: (req, res) => sendError(req, res, 429),
 });
 
-// Its own budget, so a burst of page loads can never leave a visitor unable to sign out.
 const logoutLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 20,
@@ -255,8 +248,6 @@ const logoutLimiter = rateLimit({
   handler: (req, res) => sendError(req, res, 429),
 });
 
-// The gate could not reach a verdict. Say so instead of redirecting, which the
-// browser would read as "you are not signed in".
 const unavailable = (req: Request, res: Response) => {
   res.set("Retry-After", "5");
   sendError(req, res, 503);
@@ -303,8 +294,6 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
     if (gatedStatuses.has(status)) return res.redirect(authRedirects[status]);
     next();
   } catch (err) {
-    // Fail closed: an unreachable backend must not open the gate. It must not
-    // claim the visitor is signed out either, so this is not a redirect.
     logger.warn("Failed to check auth status", { path: req.path, error: err });
     unavailable(req, res);
   }

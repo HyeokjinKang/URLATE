@@ -33,7 +33,6 @@ const STATIC_PAGE_CSP = [
   "script-src 'none'",
   "style-src 'self'",
   `font-src 'self' ${config.project.cdn}`,
-  // Just the favicon and the info page's icons, all served by this app.
   "img-src 'self'",
   "base-uri 'none'",
   "form-action 'none'",
@@ -82,8 +81,6 @@ export const sendError = (req: Request, res: Response, status: number): void => 
   // req.accepts honours the order of the Accept header. fetch/XHR usually asks
   // for JSON first, so they get JSON instead of the page.
   if (req.accepts(["html", "json"]) === "html") {
-    // The error page itself is static regardless of where the request came from,
-    // so reset the policy rather than inherit whatever the original route set.
     setStaticPageCsp(res);
     res.render(
       "error",
@@ -95,7 +92,6 @@ export const sendError = (req: Request, res: Response, status: number): void => 
         locale: res.locals.locale ?? "en",
       },
       (err, html) => {
-        // If even the view fails, send the barest response we can.
         if (err) {
           logger.error("Failed to render the error page", err, { status });
           res.type("text").send(`${status} ${title}`);
@@ -131,7 +127,6 @@ export function errorHandler(err: unknown, req: Request, res: Response, next: Ne
   // The stack never goes into a response: it carries absolute paths and dependency
   // versions, and the pm2 config sets no NODE_ENV, so branching on that would leak
   // it in production too.
-  // Error object shape isn't guaranteed, so narrow before reading it.
   const { statusCode: sc, status } = (err ?? {}) as {
     statusCode?: unknown;
     status?: unknown;
