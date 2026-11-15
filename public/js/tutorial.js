@@ -43,8 +43,6 @@ const modulesReady = (async () => {
     Updater = updater.default;
     Renderer = renderer.default;
     ({ parsePattern, Timing } = patternModule);
-
-    console.log("Modules are ready.");
   } catch (err) {
     console.error("Error occurred while loading modules: ", err);
   }
@@ -1208,7 +1206,6 @@ const checkHoldNote = (key) => {
 };
 
 document.addEventListener("keydown", (e) => {
-  e = e || window.event;
   if (e.repeat) return;
   if (pressingKeys.includes(e.key)) return;
   if (e.key == "Shift") {
@@ -1235,7 +1232,6 @@ document.addEventListener("keydown", (e) => {
 });
 
 document.addEventListener("keyup", (e) => {
-  e = e || window.event;
   if (e.key == "Escape") {
     return;
   } else if (e.key == "Shift") {

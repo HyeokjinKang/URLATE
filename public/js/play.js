@@ -48,8 +48,6 @@ const modulesReady = (async () => {
     Renderer = renderer.default;
     createGameAutoPlay = autoplay?.createGameAutoPlay;
     ({ parsePattern, Timing } = patternModule);
-
-    console.log("Modules are ready.");
   } catch (err) {
     console.error("Error occurred while loading modules: ", err);
   }
@@ -76,9 +74,8 @@ let Draw;
 let pattern = {};
 let patternBackup = {};
 let patternLength = 0;
-let userName = "";
 let difficultyNames = ["EZ", "MID", "HARD"];
-let settings, sync, visualSync, song, tracks, pixelRatio, offset, speed, userid;
+let settings, sync, visualSync, song, tracks, pixelRatio, offset, speed;
 let timing = null;
 let pointingCntElement = [{ v1: "", v2: "", i: "" }];
 let clickParticles = [];
@@ -194,8 +191,6 @@ document.addEventListener("DOMContentLoaded", () => {
       await modulesReady;
       if (data.result == "success") {
         data = data.user;
-        userName = data.nickname;
-        userid = data.userid;
         settings = JSON.parse(data.settings);
         initialize(true);
         settingApply();
@@ -770,8 +765,6 @@ const calculateResult = () => {
     body: JSON.stringify({
       difficultySelection: Number(localStorage.difficultySelection) + 1,
       fileName,
-      userid,
-      userName,
       rank,
       score,
       maxCombo,
@@ -790,11 +783,6 @@ const calculateResult = () => {
     },
   })
     .then((res) => res.json())
-    .then((data) => {
-      if (data.result == "success") {
-        console.log("score submitted!");
-      }
-    })
     .catch((error) => {
       alert(`Error occurred while submitting result.\n${error}`);
     });
@@ -1399,7 +1387,6 @@ const checkHoldNote = (key) => {
 };
 
 document.addEventListener("keydown", (e) => {
-  e = e || window.event;
   if (e.repeat) return;
   if (pressingKeys.includes(e.key)) return;
   if (e.key == "Shift") {
@@ -1426,7 +1413,6 @@ document.addEventListener("keydown", (e) => {
 });
 
 document.addEventListener("keyup", (e) => {
-  e = e || window.event;
   if (e.key == "Escape") {
     return;
   } else if (e.key == "Shift") {

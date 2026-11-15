@@ -2,7 +2,7 @@
 import { escapeHtml } from "./utils.js";
 
 const body = document.querySelector("body");
-let isErrorOccured = false;
+let isErrorOccurred = false;
 let achievementCount = 0;
 
 iziToast.settings({
@@ -26,8 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 socket.on("connect", () => {
-  console.log("[Socket.IO] Connected to server");
-  if (isErrorOccured) {
+  if (isErrorOccurred) {
     iziToast.success({
       title: "Connected",
       message: socketi18n.connected,
@@ -47,7 +46,7 @@ socket.on("disconnect", (reason) => {
     message: socketi18n.reconnecting,
     timeout: 2000,
   });
-  isErrorOccured = true;
+  isErrorOccurred = true;
 });
 
 socket.on("connect_error", (err) => {
@@ -68,7 +67,7 @@ socket.on("connect_error", (err) => {
   setTimeout(() => {
     socket.connect();
   }, 1000);
-  isErrorOccured = true;
+  isErrorOccurred = true;
 });
 
 socket.on("connection:conflict", () => {
@@ -85,10 +84,7 @@ socket.on("connection:unauthorized", () => {
 
 socket.on("achievement", (data) => {
   data = JSON.parse(data);
-  console.log("[Socket.IO] Achievement");
-  console.log(data);
   for (const achievement of data) {
-    console.log(achievement.rewards);
     JSON.parse(achievement.rewards).forEach((reward) => {
       [...document.getElementsByClassName("achievementOverlay")].forEach((element, i) => {
         element.style.bottom = `${7 * (i + 1)}vh`;

@@ -20,8 +20,6 @@ const modulesReady = (async () => {
     Updater = updater.default;
     Renderer = renderer.default;
     ({ parsePattern, Timing, PATTERN_VERSION, GRADUAL_TRIGGERS } = patternModule);
-
-    console.log("Modules are ready.");
   } catch (err) {
     console.error("Error occurred while loading modules: ", err);
   }
@@ -206,7 +204,6 @@ document.addEventListener("DOMContentLoaded", () => {
       for (let i = 0; tracks.length > i; i++) {
         let option = document.createElement("option");
         option.textContent = tracks[i].name;
-        if (tracks[i].type == 3) option.disabled = true;
         songSelectBox.options.add(option);
       }
       userName = user.user.nickname;
@@ -3251,7 +3248,6 @@ window.addEventListener("blur", () => {
 });
 
 document.addEventListener("keyup", (e) => {
-  e = e || window.event;
   if (isMac ? e.key == "Meta" : e.key == "Control") {
     ctrlDown = false;
     isTmlUpdateNeeded = true;
@@ -3262,7 +3258,6 @@ document.addEventListener("keyup", (e) => {
 });
 
 document.addEventListener("keydown", (e) => {
-  e = e || window.event;
   const isTyping = isTypingTarget(e.target);
   if (e.key == "Escape") {
     if (isTyping) {
