@@ -8,7 +8,6 @@ import { logger } from "./logger";
 import { visitorHeaders } from "./visitor";
 import { errorHandler, notFoundHandler, sendError, setStaticPageCsp } from "./middleware";
 import { inlineCss } from "./assets";
-import { initProfile, profileRouter } from "./profile";
 import { URL } from "url";
 import { createHash, randomBytes } from "crypto";
 
@@ -395,8 +394,6 @@ app.get("/privacy/2023-08-02", (req, res) => {
   res.render("privacy-2023-08-02");
 });
 
-app.use(profileRouter);
-
 process.on("unhandledRejection", (reason: unknown, promise: Promise<unknown>) => {
   logger.fatal("Unhandled Promise Rejection", reason, {
     promise: promise.toString(),
@@ -408,22 +405,13 @@ process.on("uncaughtException", (error: Error) => {
   process.exit(1);
 });
 
-(async () => {
-  try {
-    await initProfile();
-
-    // Defaults to loopback since a reverse proxy sits in front; a wildcard bind
-    // would expose the port directly regardless of firewall policy.
-    const host = config.project.host ?? "127.0.0.1";
-    app.listen(config.project.port, host, () => {
-      logger.info(`URLATE is running on version ${version}.`);
-      logger.success(`HTTP Server running at ${host}:${config.project.port}.`);
-    });
-  } catch (err) {
-    logger.fatal("Failed to initialize front-end server.", err);
-    process.exit(1);
-  }
-})();
+// Defaults to loopback since a reverse proxy sits in front; a wildcard bind
+// would expose the port directly regardless of firewall policy.
+const host = config.project.host ?? "127.0.0.1";
+app.listen(config.project.port, host, () => {
+  logger.info(`URLATE is running on version ${version}.`);
+  logger.success(`HTTP Server running at ${host}:${config.project.port}.`);
+});
 
 // Must come after the routes: placed earlier, every request would end in a 404.
 app.use(notFoundHandler);

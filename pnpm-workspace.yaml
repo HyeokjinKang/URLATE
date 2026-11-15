@@ -1,5 +1,4 @@
 allowBuilds:
   core-js: true
-  sharp: true
 
 injectWorkspacePackages: true
