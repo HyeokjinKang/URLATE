@@ -1018,11 +1018,12 @@ const addScore = (judge, weight = 1, silent = false) => {
     maxCombo = combo;
   }
   let basicScore = (100000000 / patternLength) * weight;
+  const scoreRate = mode == "test" ? 1 : rate;
   let rateCalc;
-  if (rate >= 1) {
-    rateCalc = rate * 0.5 + 0.5;
+  if (scoreRate >= 1) {
+    rateCalc = scoreRate * 0.5 + 0.5;
   } else {
-    rateCalc = rate * rate * 1.3 - 0.3;
+    rateCalc = scoreRate * scoreRate * 1.3 - 0.3;
   }
   if (judge == "perfect") {
     score += Math.round((basicScore + combo * 5) * rateCalc);
