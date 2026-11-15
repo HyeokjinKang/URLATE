@@ -1,3 +1,7 @@
+/**
+ * updater.js
+ * Core logic: data, physics and lifetime management.
+ */
 import { getSin, getCos } from "./utils.js";
 import Factory from "./factory.js";
 

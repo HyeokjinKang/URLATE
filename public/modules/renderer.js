@@ -1,3 +1,7 @@
+/**
+ * renderer.js
+ * Canvas drawing for the game.
+ */
 import { Config, JudgeSkin, KeyInputColors, DiffColors, TimingColors } from "./constants.js";
 import {
   getSin,
