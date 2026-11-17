@@ -389,6 +389,11 @@ app.get("/privacy", (req, res) => {
   res.render("privacy");
 });
 
+app.get("/privacy/2026-11-01", (req, res) => {
+  setStaticPageCsp(res);
+  res.render("privacy-2026-11-01");
+});
+
 app.get("/privacy/2023-08-02", (req, res) => {
   setStaticPageCsp(res);
   res.render("privacy-2023-08-02");
