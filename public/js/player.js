@@ -1,4 +1,4 @@
-/* global Pace, Howler, Howl, url, cdn, api, lang, confirmExit */
+/* global Pace, Howler, Howl, url, cdn, api, lang, confirmExit, clientVersion */
 let upperBound,
   lowerBound,
   numberWithCommas,
@@ -144,6 +144,7 @@ let resumeX = 0,
 const pointerLockSupported = "requestPointerLock" in canvas;
 let rate = 1;
 let record = [];
+let recordStartMs = 0;
 let keyInput = [];
 let keyInputMemory = 0;
 let keyInputTime = 0;
@@ -380,8 +381,47 @@ const settingApply = () => {
 };
 
 const playSong = () => {
+  if (!recordStartMs) recordStartMs = performance.now();
   song.play();
 };
+
+/* ---- Replay log --------------------------------------------------------- */
+
+const REPLAY_VERSION = 2;
+
+const roundTo = (value, digits) => Number(value.toFixed(digits));
+
+/** Event row: [seekMs, wallMs, kind, index, mouseX, mouseY, judge, key]. index is -1 when no note or bullet applies. */
+const logEvent = (kind, index = -1, judge = "", key = "") => {
+  record.push([
+    roundTo(song.seek() * 1000, 2),
+    roundTo(performance.now() - recordStartMs, 1),
+    kind,
+    index,
+    roundTo(mouseX, 2),
+    roundTo(mouseY, 2),
+    judge,
+    key == null ? "" : String(key),
+  ]);
+};
+
+const replayLog = () => ({
+  v: REPLAY_VERSION,
+  client: clientVersion,
+  settings: {
+    soundOffset: sync,
+    displayOffset: visualSync,
+    sens,
+    inputKeys: inputMode,
+    mouse: settings.input.mouse,
+    rawInput: settings.input.rawInput ?? false,
+    canvasWidth: canvasOW,
+    canvasHeight: canvasOH,
+    pixelRatio,
+    canvasRes: settings.display.canvasRes,
+  },
+  events: record,
+});
 
 const eraseCnt = () => {
   ctx.clearRect(0, 0, canvasW, canvasH);
@@ -514,16 +554,7 @@ const cntRender = () => {
         miss += pattern.patterns[i].value == 2 ? 2 : 1;
         showOverlay();
         missPoint.push(seekMs);
-        record.push([
-          record.length,
-          pointingCntElement[0].v1,
-          pointingCntElement[0].v2,
-          pointingCntElement[0].i,
-          mouseX,
-          mouseY,
-          "miss(hold)",
-          song.seek() * 1000,
-        ]);
+        logEvent("miss", i, "Miss");
         keyInput.push({ judge: "Miss", key: "-", time: now });
       }
     }
@@ -808,7 +839,7 @@ const calculateResult = () => {
       miss,
       bullet,
       accuracy,
-      record,
+      record: replayLog(),
     }),
     headers: {
       "Content-Type": "application/json",
@@ -851,16 +882,7 @@ const trackMouseSelection = (i, v1, v2, x, y, beats, seekMs) => {
             destroyParticles.push(...Factory.createExplosions(x, y));
             destroyedBullets.add(i);
             showOverlay();
-            record.push([
-              record.length,
-              pointingCntElement[0].v1,
-              pointingCntElement[0].v2,
-              pointingCntElement[0].i,
-              mouseX,
-              mouseY,
-              "bullet",
-              song.seek() * 1000,
-            ]);
+            logEvent("bullet", i);
             keyInput.push({ judge: "Bullet", key: "-", time: Date.now() });
           }
         }
@@ -905,6 +927,7 @@ const compClicked = (isTyped, key, isWheel) => {
     }
   }
   keyInput.push({ judge: "Empty", key: keyLabel(key, isWheel), time: Date.now() });
+  if (song.playing()) logEvent("empty", -1, "", keyLabel(key, isWheel));
   clickParticles.push(Factory.createClickDefault(mouseX, mouseY));
 };
 
@@ -926,16 +949,7 @@ const hitNote = (i, key, isWheel, beats, label = keyLabel(key, isWheel)) => {
   }
   clickParticles.push(Factory.createClickNote(x, y, pNote.value, judgeSkin, judge));
   judgeParticles.push(Factory.createJudge(x, y, judgeSkin, judge, timing));
-  record.push([
-    record.length,
-    pointingCntElement[0].v1,
-    pointingCntElement[0].v2,
-    pointingCntElement[0].i,
-    mouseX,
-    mouseY,
-    judge,
-    song.seek() * 1000,
-  ]);
+  logEvent("press", i, judge, label);
   keyInput.push({ judge, key: label, time: Date.now() });
 };
 
@@ -1098,7 +1112,7 @@ const releaseHoldNote = (i, judge, beats) => {
   note.beat = beats - note.duration;
   addScore(judge, 2 / total);
   judgeParticles.push(Factory.createJudge(note.x, note.y, judgeSkin, judge, timing));
-  record.push([record.length, 0, 2, i, mouseX, mouseY, `${judge.toLowerCase()}(hold)`, song.seek() * 1000]);
+  logEvent("release", i, judge, key);
   keyInput.push({ judge, key, time: Date.now() });
   checkLastNote(i);
 };
@@ -1159,6 +1173,7 @@ const isOnResumePoint = () => {
 
 const openMenu = () => {
   if (!isPaused) markResumePoint();
+  if (song.playing()) logEvent("pause");
   isPaused = true;
   floatingResumeContainer.style.opacity = 0;
   floatingResumeContainer.style.display = "none";
@@ -1168,6 +1183,7 @@ const openMenu = () => {
 };
 
 const showResumePrompt = () => {
+  if (song.playing()) logEvent("pause");
   isPaused = true;
   song.pause();
   floatingResumeContainer.style.display = "flex";
@@ -1175,6 +1191,7 @@ const showResumePrompt = () => {
 };
 
 const unpause = () => {
+  logEvent("resume");
   isPaused = false;
   floatingResumeContainer.style.opacity = 0;
   setTimeout(() => {
@@ -1254,6 +1271,7 @@ const retry = () => {
     overlayTime = 0;
     keyInput = [];
     record = [];
+    recordStartMs = 0;
     keyInputMemory = 0;
     keyInputTime = 0;
     newRecordTime = 0;
@@ -1433,6 +1451,7 @@ const medalCheck = (n) => {
 
 const checkHoldNote = (key) => {
   const beats = calcBeats();
+  if (song.playing()) logEvent("up", -1, "", key);
   mouseClicked = false;
   mouseClickedMs = Date.now();
   if (pressingKeys.includes(key)) pressingKeys.splice(pressingKeys.indexOf(key), 1);
