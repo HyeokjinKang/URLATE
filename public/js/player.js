@@ -145,6 +145,8 @@ const pointerLockSupported = "requestPointerLock" in canvas;
 let rate = 1;
 let record = [];
 let recordStartMs = 0;
+let playId = null;
+let playStarting = Promise.resolve();
 let keyInput = [];
 let keyInputMemory = 0;
 let keyInputTime = 0;
@@ -381,8 +383,61 @@ const settingApply = () => {
 };
 
 const playSong = () => {
-  if (!recordStartMs) recordStartMs = performance.now();
+  if (!recordStartMs) {
+    recordStartMs = performance.now();
+    startPlaySession();
+  }
   song.play();
+};
+
+/* ---- Play session ------------------------------------------------------- */
+
+const PLAY_ACK_MS = 3000;
+
+const gameSocket =
+  mode == "play" && !autoPlay
+    ? import("../modules/socket.js").then((m) => m.socket).catch(() => null)
+    : Promise.resolve(null);
+
+const emitPlayWithAck = async (event, data) => {
+  const socket = await gameSocket;
+  if (!socket?.connected) return null;
+  try {
+    return await socket.timeout(PLAY_ACK_MS).emitWithAck(event, data);
+  } catch {
+    return null;
+  }
+};
+
+const emitPlay = (event) => {
+  const id = playId;
+  if (!id) return;
+  gameSocket.then((socket) => socket?.emit(event, { playId: id }));
+};
+
+const startPlaySession = () => {
+  playId = null;
+  if (mode != "play" || autoPlay) return;
+  playStarting = emitPlayWithAck("play:start", {
+    fileName,
+    difficultySelection: Number(localStorage.difficultySelection) + 1,
+    rate,
+  }).then((response) => {
+    playId = response?.ok ? response.playId : null;
+  });
+};
+
+const endPlaySession = async () => {
+  await playStarting;
+  const id = playId;
+  if (id) await emitPlayWithAck("play:end", { playId: id });
+  return id;
+};
+
+const markPaused = () => {
+  if (!song.playing()) return;
+  logEvent("pause");
+  emitPlay("play:pause");
 };
 
 /* ---- Replay log --------------------------------------------------------- */
@@ -419,6 +474,7 @@ const replayLog = () => ({
     canvasHeight: canvasOH,
     pixelRatio,
     canvasRes: settings.display.canvasRes,
+    songMs: roundTo(song.duration() * 1000, 0),
   },
   events: record,
 });
@@ -822,10 +878,16 @@ const calculateResult = () => {
     return;
   }
   if (mode != "play") return;
+  submitRecord(rank, accuracy);
+};
+
+const submitRecord = async (rank, accuracy) => {
+  const submittedPlayId = await endPlaySession();
   fetch(`${api}/playRecord`, {
     method: "PUT",
     credentials: "include",
     body: JSON.stringify({
+      playId: submittedPlayId,
       difficultySelection: Number(localStorage.difficultySelection) + 1,
       fileName,
       rank,
@@ -1173,7 +1235,7 @@ const isOnResumePoint = () => {
 
 const openMenu = () => {
   if (!isPaused) markResumePoint();
-  if (song.playing()) logEvent("pause");
+  markPaused();
   isPaused = true;
   floatingResumeContainer.style.opacity = 0;
   floatingResumeContainer.style.display = "none";
@@ -1183,7 +1245,7 @@ const openMenu = () => {
 };
 
 const showResumePrompt = () => {
-  if (song.playing()) logEvent("pause");
+  markPaused();
   isPaused = true;
   song.pause();
   floatingResumeContainer.style.display = "flex";
@@ -1192,6 +1254,7 @@ const showResumePrompt = () => {
 
 const unpause = () => {
   logEvent("resume");
+  emitPlay("play:resume");
   isPaused = false;
   floatingResumeContainer.style.opacity = 0;
   setTimeout(() => {
