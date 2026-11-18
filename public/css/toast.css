@@ -79,7 +79,7 @@
   float: none;
   width: auto;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   flex-wrap: wrap;
   column-gap: 8px;
   row-gap: 2px;
