@@ -1,4 +1,4 @@
-/* global Howler, Howl, Pace, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable, medalDesc, alias, nothingHere, rating, aliasSelect, pictureMessage, imageError */
+/* global Howler, Howl, Pace, iziToast, url, cdn, api, lang, confirmExit, pressAnywhere, notAvailable, medalDesc, alias, nothingHere, rating, aliasSelect, pictureMessage, imageError, toastTitles */
 const langDetailSelector = document.getElementById("langDetailSelector");
 const canvasResSelector = document.getElementById("canvasResSelector");
 const albumResSelector = document.getElementById("albumResSelector");
@@ -2152,7 +2152,7 @@ const picLoaded = async (e, type) => {
   if (file.type.indexOf("image") == -1) {
     loadingOverlayHide();
     return iziToast.error({
-      title: "Error!",
+      title: toastTitles.error,
       message: imageError,
     });
   }
@@ -2168,12 +2168,12 @@ const picLoaded = async (e, type) => {
       loadingOverlayHide();
       if (data.result == "failed") {
         iziToast.error({
-          title: "Error!",
+          title: toastTitles.error,
           message: imageError,
         });
       } else {
         iziToast.success({
-          title: "Success!",
+          title: toastTitles.success,
         });
         if (type == "background") {
           document.getElementById("profileImageContainer").style.backgroundImage = `url("${data.url}")`;
@@ -2198,7 +2198,7 @@ const picLoaded = async (e, type) => {
     .catch(() => {
       loadingOverlayHide();
       iziToast.error({
-        title: "Error!",
+        title: toastTitles.error,
         message: imageError,
       });
     });

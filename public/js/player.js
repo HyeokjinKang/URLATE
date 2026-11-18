@@ -1,4 +1,4 @@
-/* global Pace, Howler, Howl, iziToast, url, cdn, api, lang, confirmExit, clientVersion, recordi18n */
+/* global Pace, Howler, Howl, iziToast, url, cdn, api, lang, confirmExit, clientVersion, recordi18n, toastTitles */
 import { escapeHtml } from "../modules/utils.js";
 
 let upperBound,
@@ -921,7 +921,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const showUploadToast = () => {
   iziToast.destroy();
   iziToast.info({
-    title: "Uploading",
+    title: toastTitles.uploading,
     timeout: false,
     close: false,
     drag: false,
@@ -931,7 +931,7 @@ const showUploadToast = () => {
 const showRetryToast = (error, attempt, delay) => {
   iziToast.destroy();
   iziToast.warning({
-    title: "Retrying",
+    title: toastTitles.retrying,
     message: `${escapeHtml(error.message)}<br>${recordi18n.retrying
       .replace("{sec}", Math.round(delay / 1000))
       .replace("{try}", attempt)
@@ -965,7 +965,7 @@ const submitRecord = async (rank, accuracy) => {
       await sendRecord(payload);
       iziToast.destroy();
       iziToast.success({
-        title: "Saved",
+        title: toastTitles.saved,
         timeout: 3000,
       });
       return;
@@ -973,7 +973,7 @@ const submitRecord = async (rank, accuracy) => {
       if (!error.retryable || attempt >= SUBMIT_RETRY_DELAYS_MS.length) {
         iziToast.destroy();
         iziToast.error({
-          title: "Not saved",
+          title: toastTitles.notSaved,
           message: `${recordi18n.failed}<br>${escapeHtml(error.message)}`,
           timeout: false,
         });
