@@ -5,12 +5,24 @@ const body = document.querySelector("body");
 let isErrorOccurred = false;
 let achievementCount = 0;
 
+const MAX_TOASTS = 2;
+let openToasts = [];
+
 iziToast.settings({
   position: "topCenter",
   transitionIn: "fadeInDown",
   transitionOut: "fadeOutUp",
   transitionInMobile: "fadeInDown",
   transitionOutMobile: "fadeOutUp",
+  onOpening: (instance, toast) => {
+    if (instance.position == "center") return;
+    openToasts = openToasts.filter((t) => t != toast && document.body.contains(t));
+    openToasts.push(toast);
+    while (openToasts.length > MAX_TOASTS) iziToast.hide({}, openToasts.shift());
+  },
+  onClosing: (instance, toast) => {
+    openToasts = openToasts.filter((t) => t != toast);
+  },
 });
 
 export const socket = io(game, {
