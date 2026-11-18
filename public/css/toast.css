@@ -10,6 +10,7 @@
   --toast-warn: #f0a63a;
   --toast-err: #e5484d;
   padding: 14px 18px;
+  box-sizing: border-box;
 }
 
 .iziToast-wrapper .iziToast {
@@ -211,7 +212,6 @@
 @media (max-width: 568px) {
   .iziToast-wrapper {
     padding: 10px 12px;
-    box-sizing: border-box;
     width: 100%;
   }
 
