@@ -908,6 +908,9 @@ const submitRecord = async (rank, accuracy) => {
     },
   })
     .then((res) => res.json())
+    .then((data) => {
+      if (data.result != "success") alert(`Your record was not saved.\n${data.description ?? data.error}`);
+    })
     .catch((error) => {
       alert(`Error occurred while submitting result.\n${error}`);
     });
