@@ -922,7 +922,6 @@ const showUploadToast = () => {
   iziToast.destroy();
   iziToast.info({
     title: "Uploading",
-    message: recordi18n.uploading,
     timeout: false,
     close: false,
     drag: false,
@@ -967,7 +966,6 @@ const submitRecord = async (rank, accuracy) => {
       iziToast.destroy();
       iziToast.success({
         title: "Saved",
-        message: recordi18n.saved,
         timeout: 3000,
       });
       return;

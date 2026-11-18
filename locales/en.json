@@ -225,8 +225,6 @@
   "socket_connection_unauthorized": "You have been logged out. Please log in again.",
   "socket_achievement_reward": "Reward",
   "socket_achievement_alias": "Title",
-  "record_uploading": "Uploading your record..",
-  "record_saved": "Your record has been saved.",
   "record_failed": "Your record was not saved.",
   "record_retrying": "Retrying in {sec}s ({try}/{max})",
   "record_network": "Could not reach the server.",
