@@ -1,4 +1,6 @@
-/* global Pace, Howler, Howl, url, cdn, api, lang, confirmExit, clientVersion */
+/* global Pace, Howler, Howl, iziToast, url, cdn, api, lang, confirmExit, clientVersion, recordi18n */
+import { escapeHtml } from "../modules/utils.js";
+
 let upperBound,
   lowerBound,
   numberWithCommas,
@@ -881,39 +883,110 @@ const calculateResult = () => {
   submitRecord(rank, accuracy);
 };
 
-const submitRecord = async (rank, accuracy) => {
-  const submittedPlayId = await endPlaySession();
-  fetch(`${api}/playRecord`, {
-    method: "PUT",
-    credentials: "include",
-    body: JSON.stringify({
-      playId: submittedPlayId,
-      difficultySelection: Number(localStorage.difficultySelection) + 1,
-      fileName,
-      rank,
-      score,
-      maxCombo,
-      rate,
-      perfect,
-      great,
-      good,
-      bad,
-      miss,
-      bullet,
-      accuracy,
-      record: replayLog(),
-    }),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.result != "success") alert(`Your record was not saved.\n${data.description ?? data.error}`);
-    })
-    .catch((error) => {
-      alert(`Error occurred while submitting result.\n${error}`);
+/* ---- Record submit ------------------------------------------------------ */
+
+const SUBMIT_TIMEOUT_MS = 20000;
+const SUBMIT_RETRY_DELAYS_MS = [2000, 5000, 10000, 20000];
+
+class SubmitError extends Error {
+  constructor(message, retryable) {
+    super(message);
+    this.retryable = retryable;
+  }
+}
+
+const sendRecord = async (payload) => {
+  let res;
+  try {
+    res = await fetch(`${api}/playRecord`, {
+      method: "PUT",
+      credentials: "include",
+      body: payload,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      signal: AbortSignal.timeout(SUBMIT_TIMEOUT_MS),
     });
+  } catch {
+    throw new SubmitError(recordi18n.network, true);
+  }
+  const retryable = res.status >= 500 || res.status == 429;
+  const data = await res.json().catch(() => null);
+  if (data?.result == "success") return;
+  throw new SubmitError(data?.description ?? data?.error ?? `HTTP ${res.status}`, retryable);
+};
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const showUploadToast = () => {
+  iziToast.destroy();
+  iziToast.info({
+    title: "Uploading",
+    message: recordi18n.uploading,
+    timeout: false,
+    close: false,
+    drag: false,
+  });
+};
+
+const showRetryToast = (error, attempt, delay) => {
+  iziToast.destroy();
+  iziToast.warning({
+    title: "Retrying",
+    message: `${escapeHtml(error.message)}<br>${recordi18n.retrying
+      .replace("{sec}", Math.round(delay / 1000))
+      .replace("{try}", attempt)
+      .replace("{max}", SUBMIT_RETRY_DELAYS_MS.length)}`,
+    timeout: delay,
+  });
+};
+
+const submitRecord = async (rank, accuracy) => {
+  showUploadToast();
+  const submittedPlayId = await endPlaySession();
+  const payload = JSON.stringify({
+    playId: submittedPlayId,
+    difficultySelection: Number(localStorage.difficultySelection) + 1,
+    fileName,
+    rank,
+    score,
+    maxCombo,
+    rate,
+    perfect,
+    great,
+    good,
+    bad,
+    miss,
+    bullet,
+    accuracy,
+    record: replayLog(),
+  });
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await sendRecord(payload);
+      iziToast.destroy();
+      iziToast.success({
+        title: "Saved",
+        message: recordi18n.saved,
+        timeout: 3000,
+      });
+      return;
+    } catch (error) {
+      if (!error.retryable || attempt >= SUBMIT_RETRY_DELAYS_MS.length) {
+        iziToast.destroy();
+        iziToast.error({
+          title: "Not saved",
+          message: `${recordi18n.failed}<br>${escapeHtml(error.message)}`,
+          timeout: false,
+        });
+        return;
+      }
+      const delay = SUBMIT_RETRY_DELAYS_MS[attempt];
+      showRetryToast(error, attempt + 1, delay);
+      await wait(delay);
+      showUploadToast();
+    }
+  }
 };
 
 const trackMouseSelection = (i, v1, v2, x, y, beats, seekMs) => {
