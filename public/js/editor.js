@@ -1,4 +1,4 @@
-/* global Howler, Howl, iziToast, url, api, cdn, syncAlert, timeAlert, copiedText */
+/* global Howler, Howl, iziToast, url, api, cdn, syncAlert, timeAlert, copiedText, editori18n */
 let upperBound, lowerBound, escapeHtml;
 let Factory, Updater, Renderer, getCos, getSin, calcAngleDegrees;
 let parsePattern, Timing, PATTERN_VERSION, GRADUAL_TRIGGERS;
@@ -267,7 +267,7 @@ const loadEditor = async () => {
   } catch (e) {
     if (e.name == "AbortError") return;
     iziToast.error({
-      title: "Open failed",
+      title: editori18n.openFailed,
       message: escapeHtml(e.message),
     });
   }
@@ -345,7 +345,7 @@ const dataLoaded = (event) => {
       patternLoaded(e.target.result);
     } catch (error) {
       iziToast.error({
-        title: "Open failed",
+        title: editori18n.openFailed,
         message: escapeHtml(error.message),
       });
       return;
@@ -1639,13 +1639,13 @@ const save = async (isSaveAs = false) => {
     await writePatternFile(data, isSaveAs);
     markSaved(data);
     iziToast.success({
-      title: "Save",
-      message: `Saved to ${escapeHtml(fileHandle.name)}`,
+      title: editori18n.save,
+      message: formatText(editori18n.savedTo, { name: escapeHtml(fileHandle.name) }),
     });
   } catch (e) {
     if (e.name == "AbortError") return;
     iziToast.error({
-      title: "Save failed",
+      title: editori18n.saveFailed,
       message: escapeHtml(e.message),
     });
   }
@@ -1659,19 +1659,19 @@ const settingsInput = (v, e) => {
       if (isNaN(Number(e.value))) {
         if (e.value != "-") {
           iziToast.error({
-            title: "Input Error",
-            message: "Input value is not number.",
+            title: editori18n.inputError,
+            message: editori18n.notNumber,
           });
         }
       } else if (Number(e.value) > 100) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value is too high.",
+          title: editori18n.inputError,
+          message: editori18n.tooHigh,
         });
       } else if (Number(e.value) < -100) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value is too low.",
+          title: editori18n.inputError,
+          message: editori18n.tooLow,
         });
       } else {
         setProperty(v, Number(e.value));
@@ -1685,14 +1685,14 @@ const settingsInput = (v, e) => {
       if (isNaN(Number(e.value))) {
         if (e.value != "-") {
           iziToast.error({
-            title: "Input Error",
-            message: "Input value is not number.",
+            title: editori18n.inputError,
+            message: editori18n.notNumber,
           });
         }
       } else if (Number(e.value) != 1 && Number(e.value) != -1) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value should be 1 or -1.",
+          title: editori18n.inputError,
+          message: editori18n.oneOrMinusOne,
         });
       } else {
         setProperty(v.toLowerCase(), Number(e.value), true);
@@ -1705,13 +1705,13 @@ const settingsInput = (v, e) => {
     case "Timing":
       if (isNaN(Number(e.value))) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value is not number.",
+          title: editori18n.inputError,
+          message: editori18n.notNumber,
         });
       } else if (Number(e.value) < 0) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value is too low.",
+          title: editori18n.inputError,
+          message: editori18n.tooLow,
         });
       } else {
         if (e.value[e.value.length - 1] == ".") return;
@@ -1727,8 +1727,8 @@ const settingsInput = (v, e) => {
       const side = { L: "L", LEFT: "L", R: "R", RIGHT: "R", "": "" }[input];
       if (side === undefined) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value should be L or R.",
+          title: editori18n.inputError,
+          message: editori18n.leftOrRight,
         });
       } else {
         for (const element of batchTargets()) element.direction = side || (element.direction == "L" ? "R" : "L");
@@ -1741,19 +1741,19 @@ const settingsInput = (v, e) => {
       if (isNaN(Number(e.value))) {
         if (e.value != "-") {
           iziToast.error({
-            title: "Input Error",
-            message: "Input value is not number.",
+            title: editori18n.inputError,
+            message: editori18n.notNumber,
           });
         }
       } else if (Number(e.value) > 100) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value is too high.",
+          title: editori18n.inputError,
+          message: editori18n.tooHigh,
         });
       } else if (Number(e.value) < -100) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value is too low.",
+          title: editori18n.inputError,
+          message: editori18n.tooLow,
         });
       } else {
         setProperty("location", Number(e.value));
@@ -1767,8 +1767,8 @@ const settingsInput = (v, e) => {
       if (isNaN(Number(e.value))) {
         if (e.value != "-") {
           iziToast.error({
-            title: "Input Error",
-            message: "Input value is not number.",
+            title: editori18n.inputError,
+            message: editori18n.notNumber,
           });
         }
       } else {
@@ -1782,14 +1782,14 @@ const settingsInput = (v, e) => {
     case "Speed":
       if (selectedCntElement.v1 == 2) {
         iziToast.error({
-          title: "Error",
-          message: "Wrong Element.",
+          title: editori18n.error,
+          message: editori18n.wrongElement,
         });
       } else if (isNaN(Number(e.value))) {
         if (e.value != "-") {
           iziToast.error({
-            title: "Input Error",
-            message: "Input value is not number.",
+            title: editori18n.inputError,
+            message: editori18n.notNumber,
           });
         }
       } else {
@@ -1801,13 +1801,13 @@ const settingsInput = (v, e) => {
     case "Duration":
       if (isNaN(Number(e.value))) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value is not number.",
+          title: editori18n.inputError,
+          message: editori18n.notNumber,
         });
       } else if (Number(e.value) < 0) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value must not be less than 0.",
+          title: editori18n.inputError,
+          message: editori18n.minZero,
         });
       } else {
         setProperty(v.toLowerCase(), Number(e.value), true);
@@ -1827,19 +1827,19 @@ const triggersInput = (v, e) => {
       if (isNaN(Number(e.value))) {
         if (e.value != "-") {
           iziToast.error({
-            title: "Input Error",
-            message: "Input value is not number.",
+            title: editori18n.inputError,
+            message: editori18n.notNumber,
           });
         }
       } else if (Number(e.value) > 100) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value is too high.",
+          title: editori18n.inputError,
+          message: editori18n.tooHigh,
         });
       } else if (Number(e.value) < -100) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value is too low.",
+          title: editori18n.inputError,
+          message: editori18n.tooLow,
         });
       } else {
         setProperty(v, Number(e.value));
@@ -1852,13 +1852,13 @@ const triggersInput = (v, e) => {
     case "num":
       if (isNaN(Number(e.value))) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value is not number.",
+          title: editori18n.inputError,
+          message: editori18n.notNumber,
         });
       } else if (Number(e.value) > pattern.bullets.length || Number(e.value) < 0) {
         iziToast.error({
-          title: "Input Error",
-          message: `Input value must be between 0 and ${pattern.bullets.length}.`,
+          title: editori18n.inputError,
+          message: formatText(editori18n.bulletRange, { max: pattern.bullets.length }),
         });
       } else {
         setProperty(v, Number(e.value));
@@ -1870,13 +1870,13 @@ const triggersInput = (v, e) => {
     case "duration":
       if (isNaN(Number(e.value))) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value is not number.",
+          title: editori18n.inputError,
+          message: editori18n.notNumber,
         });
       } else if (Number(e.value) < 0) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value must not be less than 0.",
+          title: editori18n.inputError,
+          message: editori18n.minZero,
         });
       } else {
         setProperty(v, Number(e.value));
@@ -1887,18 +1887,18 @@ const triggersInput = (v, e) => {
     case "opacity":
       if (isNaN(Number(e.value))) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value is not number.",
+          title: editori18n.inputError,
+          message: editori18n.notNumber,
         });
       } else if (Number(e.value) < 0) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value must not be less than 0.",
+          title: editori18n.inputError,
+          message: editori18n.minZero,
         });
       } else if (Number(e.value) > 1) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value must not be more than 1.",
+          title: editori18n.inputError,
+          message: editori18n.maxOne,
         });
       } else {
         setProperty(v, Number(e.value));
@@ -1911,8 +1911,8 @@ const triggersInput = (v, e) => {
     case "speed":
       if (isNaN(Number(e.value))) {
         iziToast.error({
-          title: "Input Error",
-          message: "Input value is not number.",
+          title: editori18n.inputError,
+          message: editori18n.notNumber,
         });
       } else {
         setProperty(v, Number(e.value));
@@ -1926,8 +1926,8 @@ const triggersInput = (v, e) => {
         return;
       }
       iziToast.error({
-        title: "Input Error",
-        message: "Input value should be 'left', 'center', or 'right'.",
+        title: editori18n.inputError,
+        message: editori18n.textAlign,
       });
       refreshField(e, v);
       break;
@@ -1943,8 +1943,8 @@ const triggersInput = (v, e) => {
         return;
       }
       iziToast.error({
-        title: "Input Error",
-        message: "Input value should be 'top', 'bottom', 'middle', 'alphabetic', 'hanging'.",
+        title: editori18n.inputError,
+        message: editori18n.textBaseline,
       });
       refreshField(e, v);
       break;
@@ -1962,8 +1962,8 @@ const triggersInput = (v, e) => {
 const changeBPM = (e) => {
   if (isNaN(Number(e.value))) {
     iziToast.error({
-      title: "Input Error",
-      message: "Input value is not number.",
+      title: editori18n.inputError,
+      message: editori18n.notNumber,
     });
   } else {
     bpm = Number(e.value);
@@ -1975,19 +1975,19 @@ const changeBPM = (e) => {
 const changeSpeed = (e) => {
   if (isNaN(Number(e.value))) {
     iziToast.error({
-      title: "Input Error",
-      message: "Input value is not number.",
+      title: editori18n.inputError,
+      message: editori18n.notNumber,
     });
   } else {
     if (Number(e.value) > 5) {
       iziToast.error({
-        title: "Input Error",
-        message: "Input value is too high.",
+        title: editori18n.inputError,
+        message: editori18n.tooHigh,
       });
     } else if (Number(e.value) <= 0) {
       iziToast.error({
-        title: "Input Error",
-        message: "Input value is too low.",
+        title: editori18n.inputError,
+        message: editori18n.tooLow,
       });
     } else {
       speed = Number(e.value);
@@ -2000,8 +2000,8 @@ const changeSpeed = (e) => {
 const changeOffset = (e) => {
   if (isNaN(Number(e.value))) {
     iziToast.error({
-      title: "Input Error",
-      message: "Input value is not number.",
+      title: editori18n.inputError,
+      message: editori18n.notNumber,
     });
   } else {
     offset = Number(e.value);
@@ -2131,7 +2131,7 @@ const timelineFollowMouse = (v1, v2, i) => {
 };
 
 const tmlClicked = () => {
-  if (isNaN(Number(song.seek()))) return iziToast.error({ title: "Wait..", message: "Song is not loaded." });
+  if (isNaN(Number(song.seek()))) return iziToast.error({ title: editori18n.wait, message: editori18n.songNotLoaded });
   if (startScrollbarDrag()) return;
   if (mode == 0) {
     timelineFollowMouse();
@@ -2211,7 +2211,7 @@ const timelineAddElement = () => {
 };
 
 const compClicked = () => {
-  if (isNaN(Number(song.seek()))) return iziToast.error({ title: "Wait..", message: "Song is not loaded." });
+  if (isNaN(Number(song.seek()))) return iziToast.error({ title: editori18n.wait, message: editori18n.songNotLoaded });
   if (mode == 0) {
     elementFollowMouse();
   } else if (mode == 1) {
@@ -2559,8 +2559,8 @@ const removeElements = (elements) => {
     if (removed.has(trigger) || !removed.has(targets.get(trigger))) return;
     removed.add(trigger);
     iziToast.warning({
-      title: "Destroy trigger deleted",
-      message: `Trigger_${i} is deleted.`,
+      title: editori18n.triggerDeleted,
+      message: formatText(editori18n.triggerDeletedMessage, { i }),
     });
   });
   for (const key of elementKeys) pattern[key] = pattern[key].filter((element) => !removed.has(element));
@@ -2768,12 +2768,14 @@ const insertEntries = (entries, offset) => {
   return inserted.length;
 };
 
-const plural = (count) => `${count} element${count > 1 ? "s" : ""}`;
+const formatText = (text, values) => text.replace(/\{(\w+)\}/g, (match, key) => values[key] ?? match);
+
+const plural = (count) => formatText(count > 1 ? editori18n.elementsOther : editori18n.elementsOne, { n: count });
 
 const warnNothingSelected = (title) => {
   iziToast.warning({
     title,
-    message: "Nothing Selected.",
+    message: editori18n.nothingSelected,
   });
 };
 
@@ -2813,20 +2815,20 @@ const copyToClipboard = () => {
 
 const elementCopy = () => {
   const count = copyToClipboard();
-  if (!count) return warnNothingSelected("Copy failed");
+  if (!count) return warnNothingSelected(editori18n.copyFailed);
   iziToast.success({
-    title: "Copy",
-    message: `Copied ${plural(count)}`,
+    title: editori18n.copy,
+    message: formatText(editori18n.copied, { count: plural(count) }),
   });
 };
 
 const elementCut = () => {
   const count = copyToClipboard();
-  if (!count) return warnNothingSelected("Cut failed");
+  if (!count) return warnNothingSelected(editori18n.cutFailed);
   deleteElement();
   iziToast.success({
-    title: "Cut",
-    message: `Cut ${plural(count)}`,
+    title: editori18n.cut,
+    message: formatText(editori18n.cutDone, { count: plural(count) }),
   });
 };
 
@@ -2834,36 +2836,36 @@ const elementPaste = () => {
   clipboard ??= loadClipboard();
   if (!clipboard) {
     iziToast.warning({
-      title: "Paste failed",
-      message: "Nothing copied.",
+      title: editori18n.pasteFailed,
+      message: editori18n.nothingCopied,
     });
     return;
   }
   const count = insertEntries(clipboard.elements, Number((currentBeat() - clipboard.beat).toPrecision(10)));
   iziToast.success({
-    title: "Paste",
-    message: `Pasted ${plural(count)}`,
+    title: editori18n.paste,
+    message: formatText(editori18n.pasted, { count: plural(count) }),
   });
   const unlinked = clipboard.elements.filter(
     ({ v1, element, target }) => v1 == 2 && element.value == 0 && target === undefined,
   ).length;
   if (unlinked && clipboard.track !== pattern.information.track) {
     iziToast.warning({
-      title: "Paste",
-      message: `${unlinked} destroy trigger${unlinked > 1 ? "s" : ""} from another track kept the original bullet number.`,
+      title: editori18n.paste,
+      message: formatText(unlinked > 1 ? editori18n.unlinkedOther : editori18n.unlinkedOne, { n: unlinked }),
     });
   }
 };
 
 const elementDuplicate = () => {
   const elements = selectedElements();
-  if (!elements.length) return warnNothingSelected("Duplicate failed");
+  if (!elements.length) return warnNothingSelected(editori18n.duplicateFailed);
   const beats = elements.map(({ element }) => element.beat);
   const offset = Number((Math.max(...beats) - Math.min(...beats) + 1 / split).toPrecision(10));
   const count = insertEntries(toEntries(elements), offset);
   iziToast.success({
-    title: "Duplicate",
-    message: `Duplicated ${plural(count)}`,
+    title: editori18n.duplicate,
+    message: formatText(editori18n.duplicated, { count: plural(count) }),
   });
 };
 
@@ -3201,8 +3203,8 @@ const reflection = (...dirs) => {
   const targets = elements.filter(({ v1 }) => v1 < 2);
   if (!targets.length) {
     iziToast.warning({
-      title: "Reflection Failed",
-      message: elements.length ? "Reflection is not supported for triggers." : "No element is selected for reflection.",
+      title: editori18n.reflectionFailed,
+      message: elements.length ? editori18n.reflectionTriggers : editori18n.reflectionNone,
     });
     return;
   }
