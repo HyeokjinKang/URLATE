@@ -1,9 +1,12 @@
-/* global io, iziToast, game, lang, alias, socketi18n */
+/* global io, iziToast, game, lang, alias, socketi18n, toastTitles */
 import { escapeHtml } from "./utils.js";
 
 const body = document.querySelector("body");
 let isErrorOccurred = false;
 let achievementCount = 0;
+
+const MAX_TOASTS = 2;
+let openToasts = [];
 
 iziToast.settings({
   position: "topCenter",
@@ -11,6 +14,15 @@ iziToast.settings({
   transitionOut: "fadeOutUp",
   transitionInMobile: "fadeInDown",
   transitionOutMobile: "fadeOutUp",
+  onOpening: (instance, toast) => {
+    if (instance.position == "center") return;
+    openToasts = openToasts.filter((t) => t != toast && document.body.contains(t));
+    openToasts.push(toast);
+    while (openToasts.length > MAX_TOASTS) iziToast.hide({}, openToasts.shift());
+  },
+  onClosing: (instance, toast) => {
+    openToasts = openToasts.filter((t) => t != toast);
+  },
 });
 
 export const socket = io(game, {
@@ -28,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 socket.on("connect", () => {
   if (isErrorOccurred) {
     iziToast.success({
-      title: "Connected",
+      title: toastTitles.connected,
       message: socketi18n.connected,
       timeout: 2000,
     });
@@ -42,7 +54,7 @@ socket.on("disconnect", (reason) => {
   } else if (reason === "io client disconnect") return;
   console.error("[Socket.IO] Disconnected from server");
   iziToast.warning({
-    title: "Disconnected",
+    title: toastTitles.disconnected,
     message: socketi18n.reconnecting,
     timeout: 2000,
   });
@@ -60,7 +72,7 @@ socket.on("connect_error", (err) => {
   }
   console.error("[Socket.IO] Cannot connect to server");
   iziToast.error({
-    title: "Connection error",
+    title: toastTitles.connectionError,
     message: socketi18n.reconnecting,
     timeout: 2000,
   });

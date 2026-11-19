@@ -1,4 +1,6 @@
-/* global Pace, Howler, Howl, url, cdn, api, lang, confirmExit, clientVersion */
+/* global Pace, Howler, Howl, iziToast, url, cdn, api, lang, confirmExit, clientVersion, recordi18n, toastTitles */
+import { escapeHtml } from "../modules/utils.js";
+
 let upperBound,
   lowerBound,
   numberWithCommas,
@@ -145,6 +147,8 @@ const pointerLockSupported = "requestPointerLock" in canvas;
 let rate = 1;
 let record = [];
 let recordStartMs = 0;
+let playId = null;
+let playStarting = Promise.resolve();
 let keyInput = [];
 let keyInputMemory = 0;
 let keyInputTime = 0;
@@ -381,8 +385,61 @@ const settingApply = () => {
 };
 
 const playSong = () => {
-  if (!recordStartMs) recordStartMs = performance.now();
+  if (!recordStartMs) {
+    recordStartMs = performance.now();
+    startPlaySession();
+  }
   song.play();
+};
+
+/* ---- Play session ------------------------------------------------------- */
+
+const PLAY_ACK_MS = 3000;
+
+const gameSocket =
+  mode == "play" && !autoPlay
+    ? import("../modules/socket.js").then((m) => m.socket).catch(() => null)
+    : Promise.resolve(null);
+
+const emitPlayWithAck = async (event, data) => {
+  const socket = await gameSocket;
+  if (!socket?.connected) return null;
+  try {
+    return await socket.timeout(PLAY_ACK_MS).emitWithAck(event, data);
+  } catch {
+    return null;
+  }
+};
+
+const emitPlay = (event) => {
+  const id = playId;
+  if (!id) return;
+  gameSocket.then((socket) => socket?.emit(event, { playId: id }));
+};
+
+const startPlaySession = () => {
+  playId = null;
+  if (mode != "play" || autoPlay) return;
+  playStarting = emitPlayWithAck("play:start", {
+    fileName,
+    difficultySelection: Number(localStorage.difficultySelection) + 1,
+    rate,
+  }).then((response) => {
+    playId = response?.ok ? response.playId : null;
+  });
+};
+
+const endPlaySession = async () => {
+  await playStarting;
+  const id = playId;
+  if (id) await emitPlayWithAck("play:end", { playId: id });
+  return id;
+};
+
+const markPaused = () => {
+  if (!song.playing()) return;
+  logEvent("pause");
+  emitPlay("play:pause");
 };
 
 /* ---- Replay log --------------------------------------------------------- */
@@ -419,6 +476,7 @@ const replayLog = () => ({
     canvasHeight: canvasOH,
     pixelRatio,
     canvasRes: settings.display.canvasRes,
+    songMs: roundTo(song.duration() * 1000, 0),
   },
   events: record,
 });
@@ -822,33 +880,111 @@ const calculateResult = () => {
     return;
   }
   if (mode != "play") return;
-  fetch(`${api}/playRecord`, {
-    method: "PUT",
-    credentials: "include",
-    body: JSON.stringify({
-      difficultySelection: Number(localStorage.difficultySelection) + 1,
-      fileName,
-      rank,
-      score,
-      maxCombo,
-      rate,
-      perfect,
-      great,
-      good,
-      bad,
-      miss,
-      bullet,
-      accuracy,
-      record: replayLog(),
-    }),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then((res) => res.json())
-    .catch((error) => {
-      alert(`Error occurred while submitting result.\n${error}`);
+  submitRecord(rank, accuracy);
+};
+
+/* ---- Record submit ------------------------------------------------------ */
+
+const SUBMIT_TIMEOUT_MS = 20000;
+const SUBMIT_RETRY_DELAYS_MS = [2000, 5000, 10000, 20000];
+
+class SubmitError extends Error {
+  constructor(message, retryable) {
+    super(message);
+    this.retryable = retryable;
+  }
+}
+
+const sendRecord = async (payload) => {
+  let res;
+  try {
+    res = await fetch(`${api}/playRecord`, {
+      method: "PUT",
+      credentials: "include",
+      body: payload,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      signal: AbortSignal.timeout(SUBMIT_TIMEOUT_MS),
     });
+  } catch {
+    throw new SubmitError(recordi18n.network, true);
+  }
+  const retryable = res.status >= 500 || res.status == 429;
+  const data = await res.json().catch(() => null);
+  if (data?.result == "success") return;
+  throw new SubmitError(data?.description ?? data?.error ?? `HTTP ${res.status}`, retryable);
+};
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const showUploadToast = () => {
+  iziToast.destroy();
+  iziToast.info({
+    title: toastTitles.uploading,
+    timeout: false,
+    close: false,
+    drag: false,
+  });
+};
+
+const showRetryToast = (error, attempt, delay) => {
+  iziToast.destroy();
+  iziToast.warning({
+    title: toastTitles.retrying,
+    message: `${escapeHtml(error.message)}<br>${recordi18n.retrying
+      .replace("{sec}", Math.round(delay / 1000))
+      .replace("{try}", attempt)
+      .replace("{max}", SUBMIT_RETRY_DELAYS_MS.length)}`,
+    timeout: delay,
+  });
+};
+
+const submitRecord = async (rank, accuracy) => {
+  showUploadToast();
+  const submittedPlayId = await endPlaySession();
+  const payload = JSON.stringify({
+    playId: submittedPlayId,
+    difficultySelection: Number(localStorage.difficultySelection) + 1,
+    fileName,
+    rank,
+    score,
+    maxCombo,
+    rate,
+    perfect,
+    great,
+    good,
+    bad,
+    miss,
+    bullet,
+    accuracy,
+    record: replayLog(),
+  });
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await sendRecord(payload);
+      iziToast.destroy();
+      iziToast.success({
+        title: toastTitles.saved,
+        timeout: 3000,
+      });
+      return;
+    } catch (error) {
+      if (!error.retryable || attempt >= SUBMIT_RETRY_DELAYS_MS.length) {
+        iziToast.destroy();
+        iziToast.error({
+          title: toastTitles.notSaved,
+          message: `${recordi18n.failed}<br>${escapeHtml(error.message)}`,
+          timeout: false,
+        });
+        return;
+      }
+      const delay = SUBMIT_RETRY_DELAYS_MS[attempt];
+      showRetryToast(error, attempt + 1, delay);
+      await wait(delay);
+      showUploadToast();
+    }
+  }
 };
 
 const trackMouseSelection = (i, v1, v2, x, y, beats, seekMs) => {
@@ -1173,7 +1309,7 @@ const isOnResumePoint = () => {
 
 const openMenu = () => {
   if (!isPaused) markResumePoint();
-  if (song.playing()) logEvent("pause");
+  markPaused();
   isPaused = true;
   floatingResumeContainer.style.opacity = 0;
   floatingResumeContainer.style.display = "none";
@@ -1183,7 +1319,7 @@ const openMenu = () => {
 };
 
 const showResumePrompt = () => {
-  if (song.playing()) logEvent("pause");
+  markPaused();
   isPaused = true;
   song.pause();
   floatingResumeContainer.style.display = "flex";
@@ -1192,6 +1328,7 @@ const showResumePrompt = () => {
 
 const unpause = () => {
   logEvent("resume");
+  emitPlay("play:resume");
   isPaused = false;
   floatingResumeContainer.style.opacity = 0;
   setTimeout(() => {
