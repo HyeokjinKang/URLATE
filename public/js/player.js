@@ -138,6 +138,7 @@ let resultEffect = new Howl({
   loop: false,
 });
 let isPaused = false;
+let pauseCount = 0;
 let isReadyToStart = false;
 let isStarted = false;
 let pointerUnlockedMs = 0;
@@ -436,8 +437,23 @@ const endPlaySession = async () => {
   return id;
 };
 
+/** Must match MAX_PAUSES in URLATE-v3l-backend src/replay-check.ts. */
+const MAX_PAUSES = 5;
+
+const pauseLimited = mode == "play" && !autoPlay;
+
+const isResumeBlocked = () => pauseLimited && pauseCount > MAX_PAUSES;
+
+const updatePauseLimit = () => {
+  const blocked = isResumeBlocked();
+  document.getElementById("resume").classList.toggle("disabled", blocked);
+  document.getElementById("menuPauseLimit").style.display = blocked ? "block" : "none";
+};
+
 const markPaused = () => {
   if (!song.playing()) return;
+  pauseCount++;
+  updatePauseLimit();
   logEvent("pause");
   emitPlay("play:pause");
 };
@@ -1327,6 +1343,7 @@ const showResumePrompt = () => {
 };
 
 const unpause = () => {
+  if (isResumeBlocked()) return;
   logEvent("resume");
   emitPlay("play:resume");
   isPaused = false;
@@ -1338,6 +1355,7 @@ const unpause = () => {
 };
 
 const resume = () => {
+  if (isResumeBlocked()) return;
   fetch(`${api}/settings`, {
     method: "PUT",
     credentials: "include",
@@ -1409,6 +1427,8 @@ const retry = () => {
     keyInput = [];
     record = [];
     recordStartMs = 0;
+    pauseCount = 0;
+    updatePauseLimit();
     keyInputMemory = 0;
     keyInputTime = 0;
     newRecordTime = 0;

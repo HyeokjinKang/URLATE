@@ -315,6 +315,19 @@ body {
   background-color: #ffffff22;
 }
 
+.menuBtn.disabled {
+  cursor: var(--cursor-default);
+  color: #ffffff44;
+  background-color: transparent;
+}
+
+#menuPauseLimit {
+  display: none;
+  color: #ff8888;
+  font-size: 2vh;
+  font-weight: 600;
+}
+
 #menuVolume {
   color: #ffffff77;
   font-size: 2vh;
