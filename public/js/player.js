@@ -445,9 +445,11 @@ const pauseLimited = mode == "play" && !autoPlay;
 const isResumeBlocked = () => pauseLimited && pauseCount > MAX_PAUSES;
 
 const updatePauseLimit = () => {
-  const blocked = isResumeBlocked();
-  document.getElementById("resume").classList.toggle("disabled", blocked);
-  document.getElementById("menuPauseLimit").style.display = blocked ? "block" : "none";
+  if (!pauseLimited) return;
+  const resumeButton = document.getElementById("resume");
+  resumeButton.classList.toggle("disabled", isResumeBlocked());
+  resumeButton.firstElementChild.textContent = `Resume (${Math.max(MAX_PAUSES - pauseCount, 0)}/${MAX_PAUSES})`;
+  document.getElementById("menuPauseLimit").style.display = "block";
 };
 
 const markPaused = () => {

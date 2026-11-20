@@ -321,14 +321,18 @@ body {
   background-color: transparent;
 }
 
-#menuPauseLimit {
-  display: none;
-  color: #ff8888;
-  font-size: 2vh;
-  font-weight: 600;
+#menuNotes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
-#menuVolume {
+#menuPauseLimit {
+  display: none;
+}
+
+#menuVolume,
+#menuPauseLimit {
   color: #ffffff77;
   font-size: 2vh;
   font-weight: 600;
