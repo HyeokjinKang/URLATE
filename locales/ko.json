@@ -214,6 +214,7 @@
   "click_to_start": "클릭해서 시작",
   "resume_prompt": "원을 클릭해서 재개",
   "menu_volume": "음량은 Shift + 마우스휠로 조정할 수 있습니다.",
+  "menu_pause_limit": "일시정지는 한 곡에 5번으로 제한됩니다.",
   "goto_game": "나가기",
   "editor_main": "에디터 메인",
   "time_alert": "타임라인의 시계를 클릭하면 현재값을 복사할 수 있습니다.",

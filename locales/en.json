@@ -214,6 +214,7 @@
   "click_to_start": "Click to start",
   "resume_prompt": "Click the circle to resume",
   "menu_volume": "You can adjust the volume with Shift + Mouse Scroll.",
+  "menu_pause_limit": "You can pause up to 5 times per song.",
   "goto_game": "Exit",
   "editor_main": "Editor Main",
   "time_alert": "Click the clock on the timeline to copy the current value.",

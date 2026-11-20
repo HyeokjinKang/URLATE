@@ -315,7 +315,28 @@ body {
   background-color: #ffffff22;
 }
 
-#menuVolume {
+.resumeCount {
+  font-size: 0.75em;
+}
+
+.menuBtn.disabled {
+  cursor: var(--cursor-default);
+  color: #ffffff44;
+  background-color: transparent;
+}
+
+#menuNotes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#menuPauseLimit {
+  display: none;
+}
+
+#menuVolume,
+#menuPauseLimit {
   color: #ffffff77;
   font-size: 2vh;
   font-weight: 600;
