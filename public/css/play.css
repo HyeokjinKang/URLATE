@@ -315,6 +315,10 @@ body {
   background-color: #ffffff22;
 }
 
+.resumeCount {
+  font-size: 0.75em;
+}
+
 .menuBtn.disabled {
   cursor: var(--cursor-default);
   color: #ffffff44;

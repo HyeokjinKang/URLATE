@@ -448,7 +448,8 @@ const updatePauseLimit = () => {
   if (!pauseLimited) return;
   const resumeButton = document.getElementById("resume");
   resumeButton.classList.toggle("disabled", isResumeBlocked());
-  resumeButton.firstElementChild.textContent = `Resume (${Math.max(MAX_PAUSES - pauseCount, 0)}/${MAX_PAUSES})`;
+  resumeButton.querySelector(".resumeCount").textContent =
+    ` (${Math.max(MAX_PAUSES - pauseCount + 1, 0)}/${MAX_PAUSES})`;
   document.getElementById("menuPauseLimit").style.display = "block";
 };
 
