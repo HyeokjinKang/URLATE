@@ -76,6 +76,7 @@ let Draw;
 let pattern = {};
 let background = null;
 let patternBackup = {};
+let patternHash = null;
 let patternLength = 0;
 let difficultyNames = ["EZ", "MID", "HARD"];
 let settings, sync, visualSync, song, tracks, pixelRatio, offset, speed;
@@ -250,7 +251,18 @@ const loadPatternData = () => {
     mode == "tutorial"
       ? `tutorial/0_${lang}.json`
       : `${localStorage.songName}/${localStorage.difficultySelection}.json`;
-  return fetch(`${cdn}/URLATE-patterns/${path}`).then((res) => res.json());
+  return fetch(`${cdn}/URLATE-patterns/${path}`)
+    .then((res) => res.text())
+    .then(async (text) => {
+      patternHash = await sha256Hex(text);
+      return text;
+    });
+};
+
+const sha256Hex = async (text) => {
+  if (!crypto.subtle) return null;
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
 };
 
 const setText = (id, text) => {
@@ -496,6 +508,7 @@ const replayLog = () => ({
     pixelRatio,
     canvasRes: settings.display.canvasRes,
     songMs: roundTo(song.duration() * 1000, 0),
+    patternHash,
   },
   events: record,
 });
